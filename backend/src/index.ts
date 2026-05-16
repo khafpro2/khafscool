@@ -3,12 +3,14 @@ import cors from '@fastify/cors';
 import { env } from './config/env.js';
 import { authRoutes } from './routes/auth.routes.js';
 import { coursesRoutes } from './routes/courses.routes.js';
+import { billingRoutes } from './routes/billing.routes.js';
 
 const app = Fastify({ logger: true });
 
 await app.register(cors, { origin: true, credentials: true });
 await app.register(authRoutes);
 await app.register(coursesRoutes);
+await app.register(billingRoutes);
 
 app.get('/health', async () => ({ ok: true, service: 'apple-mdm-academy-api' }));
 
