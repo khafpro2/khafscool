@@ -1,0 +1,191 @@
+import bcrypt from 'bcrypt';
+import type { FastifyReply, FastifyRequest } from 'fastify';
+import { AuthProvider } from '@prisma/client';
+import { oauthProviders, type OAuthProviderName } from '../config/oauth.js';
+import { prisma } from '../lib/prisma.js';
+import {
+  buildAuthorizeUrl,
+  consumePkce,
+  exchangeCodeAndGetProfile,
+} from '../services/oauth.service.js';
+import {
+  createRefreshToken,
+  revokeRefreshToken,
+  rotateRefreshToken,
+  signAccessToken,
+} from '../services/token.service.js';
+
+const providerMap: Record<OAuthProviderName, AuthProvider> = {
+  apple: AuthProvider.APPLE,
+  google: AuthProvider.GOOGLE,
+  microsoft: AuthProvider.MICROSOFT,
+};
+
+function sanitizeUser(user: {
+  id: string;
+  email: string | null;
+  displayName: string | null;
+  provider: AuthProvider;
+}) {
+  return {
+    id: user.id,
+    email: user.email,
+    displayName: user.displayName,
+    provider: user.provider,
+  };
+}
+
+function addDays(days: number) {
+  const d = new Date();
+  d.setDate(d.getDate() + days);
+  return d;
+}
+
+async function findOrCreateOAuthUser(provider: OAuthProviderName, profile: { sub: string; email?: string; name?: string }) {
+  const authProvider = providerMap[provider];
+  let user = await prisma.user.findFirst({
+    where: { provider: authProvider, externalId: profile.sub },
+  });
+
+  if (!user) {
+    user = await prisma.user.create({
+      data: {
+        email: profile.email,
+        displayName: profile.name,
+        provider: authProvider,
+        externalId: profile.sub,
+        progress: { create: {} },
+        subscription: {
+          create: { plan: 'FREE_TRIAL', status: 'trialing', trialEndsAt: addDays(14) },
+        },
+      },
+    });
+
+    const weekStart = new Date();
+    weekStart.setHours(0, 0, 0, 0);
+    await prisma.userQuest.create({
+      data: {
+        userId: user.id,
+        questKey: 'weekly-apple-3',
+        label: 'Termine 3 modules Apple cette semaine',
+        target: 3,
+        weekStart,
+      },
+    });
+  }
+
+  return user;
+}
+
+function tokenResponse(user: { id: string; email: string | null; displayName: string | null; provider: AuthProvider }, refresh: { plainToken: string }) {
+  const accessToken = signAccessToken({ sub: user.id, email: user.email });
+  return { accessToken, refreshToken: refresh.plainToken, user: sanitizeUser(user) };
+}
+
+export async function startOAuth(
+  req: FastifyRequest<{ Params: { provider: OAuthProviderName }; Querystring: { redirect?: string } }>,
+  reply: FastifyReply
+) {
+  const config = oauthProviders[req.params.provider];
+  if (!config) return reply.status(400).send({ error: 'UNKNOWN_PROVIDER' });
+
+  const { url } = buildAuthorizeUrl(config, req.query.redirect);
+  return reply.redirect(url);
+}
+
+export async function oauthCallback(
+  req: FastifyRequest<{
+    Params: { provider: OAuthProviderName };
+    Querystring: { code?: string; state?: string };
+  }>,
+  reply: FastifyReply
+) {
+  const provider = req.params.provider;
+  const config = oauthProviders[provider];
+  const code = req.query.code ?? 'dev-code';
+  const pkce = req.query.state ? consumePkce(req.query.state) : undefined;
+
+  const profile = await exchangeCodeAndGetProfile(provider, code, config);
+  const user = await findOrCreateOAuthUser(provider, profile);
+  const refresh = await createRefreshToken(user.id);
+  const tokens = tokenResponse(user, refresh);
+
+  if (pkce?.redirect) {
+    const redirect = new URL(pkce.redirect);
+    redirect.searchParams.set('accessToken', tokens.accessToken);
+    redirect.searchParams.set('refreshToken', tokens.refreshToken);
+    return reply.redirect(redirect.toString());
+  }
+
+  return reply.send(tokens);
+}
+
+export async function registerLocal(
+  req: FastifyRequest<{ Body: { email: string; password: string; displayName: string } }>,
+  reply: FastifyReply
+) {
+  const { email, password, displayName } = req.body;
+  const existing = await prisma.user.findUnique({ where: { email } });
+  if (existing) return reply.status(409).send({ error: 'EMAIL_EXISTS' });
+
+  const passwordHash = await bcrypt.hash(password, 12);
+  const user = await prisma.user.create({
+    data: {
+      email,
+      passwordHash,
+      displayName,
+      provider: AuthProvider.LOCAL,
+      progress: { create: {} },
+      subscription: { create: { plan: 'FREE_TRIAL', status: 'trialing', trialEndsAt: addDays(14) } },
+    },
+  });
+
+  const refresh = await createRefreshToken(user.id);
+  return reply.status(201).send(tokenResponse(user, refresh));
+}
+
+export async function loginLocal(
+  req: FastifyRequest<{ Body: { email: string; password: string } }>,
+  reply: FastifyReply
+) {
+  const { email, password } = req.body;
+  const user = await prisma.user.findUnique({ where: { email } });
+  if (!user?.passwordHash) return reply.status(401).send({ error: 'INVALID_CREDENTIALS' });
+
+  const ok = await bcrypt.compare(password, user.passwordHash);
+  if (!ok) return reply.status(401).send({ error: 'INVALID_CREDENTIALS' });
+
+  const refresh = await createRefreshToken(user.id);
+  return reply.send(tokenResponse(user, refresh));
+}
+
+export async function refreshTokens(
+  req: FastifyRequest<{ Body: { refreshToken: string } }>,
+  reply: FastifyReply
+) {
+  try {
+    const rotated = await rotateRefreshToken(req.body.refreshToken);
+    const user = await prisma.user.findUniqueOrThrow({ where: { id: rotated.userId } });
+    const accessToken = signAccessToken({ sub: user.id, email: user.email });
+    return reply.send({ accessToken, refreshToken: rotated.plainToken });
+  } catch {
+    return reply.status(401).send({ error: 'INVALID_REFRESH' });
+  }
+}
+
+export async function logout(
+  req: FastifyRequest<{ Body: { refreshToken?: string } }>,
+  reply: FastifyReply
+) {
+  if (req.body.refreshToken) await revokeRefreshToken(req.body.refreshToken);
+  return reply.send({ ok: true });
+}
+
+export async function getCurrentUser(req: FastifyRequest, reply: FastifyReply) {
+  const user = await prisma.user.findUnique({
+    where: { id: req.user.sub },
+    include: { progress: true, subscription: true },
+  });
+  if (!user) return reply.status(404).send({ error: 'NOT_FOUND' });
+  return reply.send({ user: sanitizeUser(user), progress: user.progress, subscription: user.subscription });
+}
