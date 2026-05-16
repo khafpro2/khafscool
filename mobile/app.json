@@ -1,0 +1,13 @@
+{
+  "expo": {
+    "name": "Apple MDM Academy",
+    "slug": "apple-mdm-academy",
+    "scheme": "applemdmacademy",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "splash": { "backgroundColor": "#F5F5F7" },
+    "ios": { "bundleIdentifier": "com.amacademy.app", "supportsTablet": true },
+    "android": { "package": "com.amacademy.app" }
+  }
+}
