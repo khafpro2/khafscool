@@ -1,0 +1,151 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum AuthProvider {
+  APPLE
+  GOOGLE
+  MICROSOFT
+  LOCAL
+}
+
+enum CourseTrack {
+  APPLE
+  JAMF
+  INTUNE
+  SERVICENOW
+}
+
+enum UserLevel {
+  NOVICE
+  TECHNICIAN
+  MDM_ADMIN
+  APPLE_READY
+}
+
+model User {
+  id             String           @id @default(uuid())
+  email          String?          @unique
+  passwordHash   String?
+  displayName    String?
+  avatarUrl      String?
+  provider       AuthProvider     @default(LOCAL)
+  externalId     String?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  refreshTokens  RefreshToken[]
+  progress       UserProgress?
+  moduleProgress ModuleProgress[]
+  quests         UserQuest[]
+  subscription   Subscription?
+
+  @@unique([provider, externalId])
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  userId    String
+  tokenHash String   @unique
+  expiresAt DateTime
+  revoked   Boolean  @default(false)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Course {
+  id          String      @id @default(uuid())
+  track       CourseTrack
+  slug        String      @unique
+  title       String
+  description String
+  sortOrder   Int         @default(0)
+  modules     Module[]
+}
+
+model Module {
+  id         String           @id @default(uuid())
+  courseId   String
+  slug       String
+  title      String
+  summary    String
+  imageUrl   String?
+  sortOrder  Int              @default(0)
+  course     Course           @relation(fields: [courseId], references: [id])
+  questions  Question[]
+  game       Game?
+  progresses ModuleProgress[]
+
+  @@unique([courseId, slug])
+}
+
+model Question {
+  id            String @id @default(uuid())
+  moduleId      String
+  type          String
+  prompt        String
+  options       Json
+  correctOption String
+  explanation   String
+  module        Module @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+}
+
+model Game {
+  id       String @id @default(uuid())
+  moduleId String @unique
+  type     String
+  scenario String
+  steps    Json
+  solution Json
+  module   Module @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+}
+
+model UserProgress {
+  userId String    @id
+  points Int       @default(0)
+  level  UserLevel @default(NOVICE)
+  badges String[]  @default([])
+  user   User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model ModuleProgress {
+  id          String    @id @default(uuid())
+  userId      String
+  moduleId    String
+  quizScore   Int?
+  gameScore   Int?
+  completedAt DateTime?
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  module      Module    @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, moduleId])
+}
+
+model UserQuest {
+  id        String   @id @default(uuid())
+  userId    String
+  questKey  String
+  label     String
+  target    Int
+  progress  Int      @default(0)
+  completed Boolean  @default(false)
+  weekStart DateTime
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, questKey, weekStart])
+}
+
+model Subscription {
+  id                   String    @id @default(uuid())
+  userId               String    @unique
+  stripeCustomerId     String?
+  stripeSubscriptionId String?
+  plan                 String    @default("FREE_TRIAL")
+  status               String    @default("trialing")
+  trialEndsAt          DateTime?
+  currentPeriodEnd     DateTime?
+  user                 User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
