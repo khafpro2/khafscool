@@ -35,6 +35,14 @@ pnpm db:seed
 pnpm dev
 ```
 
+Pour lancer uniquement le web en développement :
+
+```bash
+pnpm --filter web dev
+```
+
+Le serveur web écoute sur [http://127.0.0.1:3000](http://127.0.0.1:3000). Le script force ce hostname et active le polling Watchpack afin d'éviter les erreurs de découverte réseau et de watchers sur macOS.
+
 ## URLs
 
 
