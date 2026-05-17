@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-
-=======
-
 # Apple MDM Academy
 
 Plateforme de formation gamifiée pour techniciens Apple et administrateurs MDM (parcours Apple, Jamf Pro, Intune, ServiceNow).
@@ -63,6 +59,8 @@ pnpm dev
 | GET     | `/courses/:slug`           | Détail parcours                          |
 | POST    | `/modules/:id/complete`    | Terminer module (quiz + jeu)             |
 | GET     | `/users/me/dashboard`      | Tableau de bord                          |
+| GET     | `/quests/weekly`           | Quêtes hebdomadaires de l'utilisateur    |
+| GET     | `/leaderboard`             | Classement privé par points              |
 | POST    | `/billing/checkout`        | Checkout Stripe (stub)                   |
 
 
@@ -81,8 +79,7 @@ Définir `EXPO_PUBLIC_API_URL=http://<votre-ip-lan>:4000` pour tester sur appare
 ## Prochaines étapes
 
 - Brancher SDK natifs SSO (Apple, Google, MSAL)
-- Parcours Jamf, Intune, ServiceNow (seeds)
+- Parcours Jamf et contenus avancés Intune/ServiceNow
 - Stripe Checkout réel + webhooks
 - Certification Sprint (7–14 jours)
-  > > > > > > > a1d8d08 (chore: monorepo scaffold + shared types)
 

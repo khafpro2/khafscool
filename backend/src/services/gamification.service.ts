@@ -1,4 +1,4 @@
-import { UserLevel } from '@prisma/client';
+import { CourseTrack, UserLevel } from '@prisma/client';
 import { prisma } from '../lib/prisma.js';
 
 const LEVEL_THRESHOLDS: { level: UserLevel; min: number }[] = [
@@ -8,11 +8,42 @@ const LEVEL_THRESHOLDS: { level: UserLevel; min: number }[] = [
   { level: UserLevel.NOVICE, min: 0 },
 ];
 
+const TRACK_BADGES: Partial<Record<CourseTrack, string>> = {
+  [CourseTrack.APPLE]: 'apple-mdm-foundation',
+  [CourseTrack.INTUNE]: 'intune-professional',
+  [CourseTrack.SERVICENOW]: 'servicenow-ninja',
+};
+
+const WEEKLY_QUESTS = [
+  {
+    questKey: 'weekly-apple-3',
+    label: 'Termine 3 modules Apple cette semaine',
+    target: 3,
+  },
+  {
+    questKey: 'weekly-mdm-4',
+    label: 'Termine 4 modules MDM cette semaine',
+    target: 4,
+  },
+];
+
 function computeLevel(points: number): UserLevel {
   for (const t of LEVEL_THRESHOLDS) {
     if (points >= t.min) return t.level;
   }
   return UserLevel.NOVICE;
+}
+
+function maskEmail(email: string | null) {
+  if (!email) return null;
+  const [name, domain] = email.split('@');
+  if (!domain) return '***';
+  const visible = name.slice(0, Math.min(2, name.length));
+  return `${visible}${name.length > 2 ? '***' : '*'}@${domain}`;
+}
+
+function publicName(displayName: string | null, email: string | null) {
+  return displayName?.trim() || maskEmail(email) || 'Apprenant';
 }
 
 function gradeQuiz(answers: Record<string, string>, questions: { id: string; correctOption: string }[]) {
@@ -70,12 +101,13 @@ export async function completeModule(
   const newLevel = computeLevel(progress.points);
   const badges = [...new Set(progress.badges)];
 
-  if (module.course.track === 'APPLE') {
-    const appleCompleted = await prisma.moduleProgress.count({
-      where: { userId, completedAt: { not: null }, module: { course: { track: 'APPLE' } } },
+  const trackBadge = TRACK_BADGES[module.course.track];
+  if (trackBadge) {
+    const completedOnTrack = await prisma.moduleProgress.count({
+      where: { userId, completedAt: { not: null }, module: { course: { track: module.course.track } } },
     });
-    if (appleCompleted >= 1 && !badges.includes('apple-mdm-foundation')) {
-      badges.push('apple-mdm-foundation');
+    if (completedOnTrack >= 1 && !badges.includes(trackBadge)) {
+      badges.push(trackBadge);
     }
   }
 
@@ -87,13 +119,15 @@ export async function completeModule(
   if (module.course.track === 'APPLE') {
     await incrementWeeklyQuest(userId, 'weekly-apple-3');
   }
+  await incrementWeeklyQuest(userId, 'weekly-mdm-4');
 
-  const preparationScore = await computeApplePreparation(userId);
+  const preparationScore = await computePreparationByTrack(userId, CourseTrack.APPLE);
 
   return { quizScore, gameScore, pointsEarned, level: newLevel, badges, preparationScore };
 }
 
 async function incrementWeeklyQuest(userId: string, questKey: string) {
+  await ensureWeeklyQuests(userId);
   const weekStart = startOfWeek(new Date());
   const quest = await prisma.userQuest.findFirst({ where: { userId, questKey, weekStart } });
   if (!quest) return;
@@ -105,9 +139,9 @@ async function incrementWeeklyQuest(userId: string, questKey: string) {
   });
 }
 
-async function computeApplePreparation(userId: string) {
+async function computePreparationByTrack(userId: string, track: CourseTrack) {
   const rows = await prisma.moduleProgress.findMany({
-    where: { userId, module: { course: { track: 'APPLE' } } },
+    where: { userId, module: { course: { track } } },
   });
   if (!rows.length) return 0;
   const avg =
@@ -124,10 +158,40 @@ function startOfWeek(d: Date) {
   return copy;
 }
 
+export async function ensureWeeklyQuests(userId: string) {
+  const weekStart = startOfWeek(new Date());
+
+  await Promise.all(
+    WEEKLY_QUESTS.map((quest) =>
+      prisma.userQuest.upsert({
+        where: { userId_questKey_weekStart: { userId, questKey: quest.questKey, weekStart } },
+        create: { userId, weekStart, ...quest },
+        update: {
+          label: quest.label,
+          target: quest.target,
+        },
+      })
+    )
+  );
+
+  return prisma.userQuest.findMany({
+    where: { userId, weekStart },
+    orderBy: { questKey: 'asc' },
+  });
+}
+
 export async function getDashboard(userId: string) {
+  const weekStart = startOfWeek(new Date());
+  await ensureWeeklyQuests(userId);
+
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    include: { progress: true, moduleProgress: true, quests: true, subscription: true },
+    include: {
+      progress: true,
+      moduleProgress: true,
+      quests: { where: { weekStart }, orderBy: { questKey: 'asc' } },
+      subscription: true,
+    },
   });
   if (!user) throw new Error('USER_NOT_FOUND');
 
@@ -139,12 +203,30 @@ export async function getDashboard(userId: string) {
   const coursesWithProgress = courses.map((c) => {
     const total = c.modules.length;
     const done = c.modules.filter((m) => m.progresses.some((p) => p.completedAt)).length;
+    const nextModule = c.modules.find((m) => !m.progresses.some((p) => p.completedAt));
     return {
       id: c.id,
       slug: c.slug,
       title: c.title,
       track: c.track,
+      totalModules: total,
+      completedModules: done,
       progressPercent: total ? Math.round((done / total) * 100) : 0,
+      nextModule: nextModule
+        ? { id: nextModule.id, slug: nextModule.slug, title: nextModule.title }
+        : null,
+    };
+  });
+
+  const preparationByTrack = Object.values(CourseTrack).map((track) => {
+    const trackCourses = coursesWithProgress.filter((course) => course.track === track);
+    return {
+      track,
+      score: trackCourses.length
+        ? Math.round(
+            trackCourses.reduce((sum, course) => sum + course.progressPercent, 0) / trackCourses.length
+          )
+        : 0,
     };
   });
 
@@ -168,11 +250,43 @@ export async function getDashboard(userId: string) {
       modulesCompleted: completed,
       timeSpentMinutes: completed * 12,
       averageQuizScore: avgQuiz,
-      preparationScore: await computeApplePreparation(userId),
+      preparationScore: await computePreparationByTrack(userId, CourseTrack.APPLE),
+      preparationByTrack,
     },
     badges: user.progress?.badges ?? [],
     quests: user.quests,
     courses: coursesWithProgress,
     subscription: user.subscription,
+  };
+}
+
+export async function getLeaderboard(userId: string) {
+  const leaders = await prisma.userProgress.findMany({
+    orderBy: [{ points: 'desc' }, { userId: 'asc' }],
+    take: 10,
+    include: { user: true },
+  });
+
+  const currentUserProgress = await prisma.userProgress.findUnique({
+    where: { userId },
+    include: { user: true },
+  });
+
+  const currentUserRank = currentUserProgress
+    ? 1 + (await prisma.userProgress.count({ where: { points: { gt: currentUserProgress.points } } }))
+    : null;
+
+  return {
+    leaderboard: leaders.map((entry, index) => ({
+      rank: index + 1,
+      userId: entry.userId === userId ? entry.userId : undefined,
+      displayName: publicName(entry.user.displayName, entry.user.email),
+      email: entry.userId === userId ? entry.user.email : maskEmail(entry.user.email),
+      points: entry.points,
+      level: entry.level,
+      badges: entry.badges,
+      isCurrentUser: entry.userId === userId,
+    })),
+    currentUserRank,
   };
 }

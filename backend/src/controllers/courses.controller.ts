@@ -46,3 +46,13 @@ export async function getDashboard(req: FastifyRequest, reply: FastifyReply) {
   const data = await gamification.getDashboard(req.user.sub);
   return reply.send(data);
 }
+
+export async function getWeeklyQuests(req: FastifyRequest, reply: FastifyReply) {
+  const quests = await gamification.ensureWeeklyQuests(req.user.sub);
+  return reply.send({ quests });
+}
+
+export async function getLeaderboard(req: FastifyRequest, reply: FastifyReply) {
+  const data = await gamification.getLeaderboard(req.user.sub);
+  return reply.send(data);
+}
