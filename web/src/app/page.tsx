@@ -11,11 +11,11 @@ export default function HomePage() {
         préparation aux certifications. Contenus originaux inspirés de la documentation officielle.
       </p>
       <div style={{ marginTop: '2rem', display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-        <Link href="/dashboard" className="btn">
-          Voir le tableau de bord
+        <Link href="/auth" className="btn">
+          Démarrer le MVP
         </Link>
-        <Link href="/pricing" className="btn" style={{ background: '#1d1d1f' }}>
-          Voir les offres
+        <Link href="/courses" className="btn" style={{ background: '#1d1d1f' }}>
+          Explorer les parcours
         </Link>
       </div>
       <div
