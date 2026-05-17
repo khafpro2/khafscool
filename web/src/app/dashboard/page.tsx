@@ -1,8 +1,10 @@
+import { cookies } from 'next/headers';
 import { ProgressOverview } from '@/components/dashboard/ProgressOverview';
-import { fetchDashboard } from '@/lib/api';
+import { fetchDashboard, type DashboardCourse, type DashboardQuest } from '@/lib/api';
 
 export default async function DashboardPage() {
-  const data = await fetchDashboard();
+  const token = (await cookies()).get('ama_access')?.value;
+  const data = await fetchDashboard(token);
   const { user, stats, badges, quests, courses } = data;
 
   return (
@@ -33,9 +35,12 @@ export default async function DashboardPage() {
             gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
           }}
         >
-          {courses.map((c: { id: string; title: string; progressPercent: number }) => (
+          {courses.map((c: DashboardCourse) => (
             <article key={c.id} className="card">
               <h3 style={{ fontWeight: 600 }}>{c.title}</h3>
+              <p style={{ marginTop: '0.25rem', color: 'var(--muted)', fontSize: '0.85rem' }}>
+                Track {c.track}
+              </p>
               <div style={{ marginTop: '0.75rem', height: 8, background: '#e5e5ea', borderRadius: 4 }}>
                 <div
                   style={{
@@ -57,7 +62,7 @@ export default async function DashboardPage() {
       <section style={{ marginTop: '2rem' }}>
         <h2 style={{ fontSize: '1.25rem', fontWeight: 600 }}>Quêtes de la semaine</h2>
         <ul style={{ marginTop: '1rem', listStyle: 'none', display: 'grid', gap: '0.5rem' }}>
-          {quests.map((q: { id: string; label: string; progress: number; target: number }) => (
+          {quests.map((q: DashboardQuest) => (
             <li key={q.id} className="card" style={{ display: 'flex', justifyContent: 'space-between' }}>
               <span>{q.label}</span>
               <span style={{ fontWeight: 600 }}>
