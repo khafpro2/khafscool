@@ -1,5 +1,6 @@
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
+import type { Prisma } from '@prisma/client';
 import { env } from '../config/env.js';
 import { prisma } from '../lib/prisma.js';
 
@@ -23,20 +24,25 @@ function hashToken(token: string): string {
   return crypto.createHash('sha256').update(token).digest('hex');
 }
 
-export async function createRefreshToken(userId: string) {
+function buildRefreshToken() {
   const plainToken = crypto.randomBytes(48).toString('hex');
   const expiresAt = new Date();
   expiresAt.setDate(expiresAt.getDate() + REFRESH_DAYS);
+  return { plainToken, tokenHash: hashToken(plainToken), expiresAt };
+}
+
+export async function createRefreshToken(userId: string) {
+  const refresh = buildRefreshToken();
 
   await prisma.refreshToken.create({
     data: {
       userId,
-      tokenHash: hashToken(plainToken),
-      expiresAt,
+      tokenHash: refresh.tokenHash,
+      expiresAt: refresh.expiresAt,
     },
   });
 
-  return { plainToken, expiresAt };
+  return { plainToken: refresh.plainToken, expiresAt: refresh.expiresAt };
 }
 
 export async function rotateRefreshToken(oldPlain: string) {
@@ -46,9 +52,24 @@ export async function rotateRefreshToken(oldPlain: string) {
     throw new Error('INVALID_REFRESH');
   }
 
-  await prisma.refreshToken.update({ where: { id: existing.id }, data: { revoked: true } });
-  const refresh = await createRefreshToken(existing.userId);
-  return { ...refresh, userId: existing.userId };
+  const refresh = buildRefreshToken();
+  await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    const revoked = await tx.refreshToken.updateMany({
+      where: { id: existing.id, revoked: false, expiresAt: { gt: new Date() } },
+      data: { revoked: true },
+    });
+    if (revoked.count !== 1) throw new Error('INVALID_REFRESH');
+
+    await tx.refreshToken.create({
+      data: {
+        userId: existing.userId,
+        tokenHash: refresh.tokenHash,
+        expiresAt: refresh.expiresAt,
+      },
+    });
+  });
+
+  return { plainToken: refresh.plainToken, expiresAt: refresh.expiresAt, userId: existing.userId };
 }
 
 export async function revokeRefreshToken(plainToken: string) {

@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { AuthProvider } from '@prisma/client';
+import { z } from 'zod';
 import { oauthProviders, type OAuthProviderName } from '../config/oauth.js';
 import { prisma } from '../lib/prisma.js';
 import {
@@ -20,6 +21,20 @@ const providerMap: Record<OAuthProviderName, AuthProvider> = {
   google: AuthProvider.GOOGLE,
   microsoft: AuthProvider.MICROSOFT,
 };
+
+const registerSchema = z.object({
+  email: z.string().email().transform((value) => value.trim().toLowerCase()),
+  password: z.string().min(8),
+  displayName: z.string().trim().min(1).max(120),
+});
+
+const loginSchema = z.object({
+  email: z.string().email().transform((value) => value.trim().toLowerCase()),
+  password: z.string().min(1),
+});
+
+const refreshSchema = z.object({ refreshToken: z.string().min(1) });
+const logoutSchema = z.object({ refreshToken: z.string().min(1).optional() });
 
 function sanitizeUser(user: {
   id: string;
@@ -41,16 +56,50 @@ function addDays(days: number) {
   return d;
 }
 
+function startOfWeek(d: Date) {
+  const copy = new Date(d);
+  const day = copy.getDay();
+  const diff = copy.getDate() - day + (day === 0 ? -6 : 1);
+  copy.setDate(diff);
+  copy.setHours(0, 0, 0, 0);
+  return copy;
+}
+
+async function createWeeklyOnboardingQuest(userId: string) {
+  const weekStart = startOfWeek(new Date());
+  await prisma.userQuest.upsert({
+    where: {
+      userId_questKey_weekStart: {
+        userId,
+        questKey: 'weekly-apple-3',
+        weekStart,
+      },
+    },
+    create: {
+      userId,
+      questKey: 'weekly-apple-3',
+      label: 'Termine 3 modules Apple cette semaine',
+      target: 3,
+      weekStart,
+    },
+    update: {},
+  });
+}
+
 async function findOrCreateOAuthUser(provider: OAuthProviderName, profile: { sub: string; email?: string; name?: string }) {
   const authProvider = providerMap[provider];
   let user = await prisma.user.findFirst({
     where: { provider: authProvider, externalId: profile.sub },
   });
 
+  if (!user && profile.email) {
+    user = await prisma.user.findUnique({ where: { email: profile.email.trim().toLowerCase() } });
+  }
+
   if (!user) {
     user = await prisma.user.create({
       data: {
-        email: profile.email,
+        email: profile.email?.trim().toLowerCase(),
         displayName: profile.name,
         provider: authProvider,
         externalId: profile.sub,
@@ -60,18 +109,7 @@ async function findOrCreateOAuthUser(provider: OAuthProviderName, profile: { sub
         },
       },
     });
-
-    const weekStart = new Date();
-    weekStart.setHours(0, 0, 0, 0);
-    await prisma.userQuest.create({
-      data: {
-        userId: user.id,
-        questKey: 'weekly-apple-3',
-        label: 'Termine 3 modules Apple cette semaine',
-        target: 3,
-        weekStart,
-      },
-    });
+    await createWeeklyOnboardingQuest(user.id);
   }
 
   return user;
@@ -102,6 +140,7 @@ export async function oauthCallback(
 ) {
   const provider = req.params.provider;
   const config = oauthProviders[provider];
+  if (!config) return reply.status(400).send({ error: 'UNKNOWN_PROVIDER' });
   const code = req.query.code ?? 'dev-code';
   const pkce = req.query.state ? consumePkce(req.query.state) : undefined;
 
@@ -124,7 +163,10 @@ export async function registerLocal(
   req: FastifyRequest<{ Body: { email: string; password: string; displayName: string } }>,
   reply: FastifyReply
 ) {
-  const { email, password, displayName } = req.body;
+  const parsed = registerSchema.safeParse(req.body);
+  if (!parsed.success) return reply.status(400).send({ error: 'INVALID_BODY', issues: parsed.error.flatten() });
+
+  const { email, password, displayName } = parsed.data;
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) return reply.status(409).send({ error: 'EMAIL_EXISTS' });
 
@@ -139,6 +181,7 @@ export async function registerLocal(
       subscription: { create: { plan: 'FREE_TRIAL', status: 'trialing', trialEndsAt: addDays(14) } },
     },
   });
+  await createWeeklyOnboardingQuest(user.id);
 
   const refresh = await createRefreshToken(user.id);
   return reply.status(201).send(tokenResponse(user, refresh));
@@ -148,7 +191,10 @@ export async function loginLocal(
   req: FastifyRequest<{ Body: { email: string; password: string } }>,
   reply: FastifyReply
 ) {
-  const { email, password } = req.body;
+  const parsed = loginSchema.safeParse(req.body);
+  if (!parsed.success) return reply.status(400).send({ error: 'INVALID_BODY', issues: parsed.error.flatten() });
+
+  const { email, password } = parsed.data;
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user?.passwordHash) return reply.status(401).send({ error: 'INVALID_CREDENTIALS' });
 
@@ -164,10 +210,12 @@ export async function refreshTokens(
   reply: FastifyReply
 ) {
   try {
-    const rotated = await rotateRefreshToken(req.body.refreshToken);
+    const parsed = refreshSchema.safeParse(req.body);
+    if (!parsed.success) return reply.status(400).send({ error: 'INVALID_BODY', issues: parsed.error.flatten() });
+
+    const rotated = await rotateRefreshToken(parsed.data.refreshToken);
     const user = await prisma.user.findUniqueOrThrow({ where: { id: rotated.userId } });
-    const accessToken = signAccessToken({ sub: user.id, email: user.email });
-    return reply.send({ accessToken, refreshToken: rotated.plainToken });
+    return reply.send(tokenResponse(user, rotated));
   } catch {
     return reply.status(401).send({ error: 'INVALID_REFRESH' });
   }
@@ -177,7 +225,10 @@ export async function logout(
   req: FastifyRequest<{ Body: { refreshToken?: string } }>,
   reply: FastifyReply
 ) {
-  if (req.body.refreshToken) await revokeRefreshToken(req.body.refreshToken);
+  const parsed = logoutSchema.safeParse(req.body ?? {});
+  if (!parsed.success) return reply.status(400).send({ error: 'INVALID_BODY', issues: parsed.error.flatten() });
+
+  if (parsed.data.refreshToken) await revokeRefreshToken(parsed.data.refreshToken);
   return reply.send({ ok: true });
 }
 
