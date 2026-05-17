@@ -1,15 +1,99 @@
-import { ProgressOverview } from '@/components/dashboard/ProgressOverview';
-import { fetchDashboard } from '@/lib/api';
+'use client';
 
-export default async function DashboardPage() {
-  const data = await fetchDashboard();
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import type { DashboardData } from '@/lib/api';
+import { fetchDashboard } from '@/lib/api';
+import { clearAuthTokens, getAccessToken } from '@/lib/auth';
+import { ProgressOverview } from '@/components/dashboard/ProgressOverview';
+
+export default function DashboardPage() {
+  const [data, setData] = useState<DashboardData | null>(null);
+  const [hasToken, setHasToken] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const token = getAccessToken();
+    setHasToken(Boolean(token));
+    if (!token) {
+      setIsLoading(false);
+      return;
+    }
+
+    fetchDashboard(token)
+      .then(setData)
+      .finally(() => setIsLoading(false));
+  }, []);
+
+  function handleLogout() {
+    clearAuthTokens();
+    setHasToken(false);
+    setData(null);
+  }
+
+  if (isLoading) {
+    return (
+      <section style={{ padding: '2rem 0' }}>
+        <h1 style={{ fontSize: '2rem', fontWeight: 700 }}>Tableau de bord</h1>
+        <p style={{ color: 'var(--muted)', marginTop: '0.5rem' }}>Chargement du compte...</p>
+      </section>
+    );
+  }
+
+  if (!hasToken) {
+    return (
+      <section style={{ padding: '2rem 0', maxWidth: 720 }}>
+        <h1 style={{ fontSize: '2rem', fontWeight: 700 }}>Tableau de bord</h1>
+        <div className="card" style={{ marginTop: '1rem' }}>
+          <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>Connecte-toi pour suivre ta progression</h2>
+          <p style={{ color: 'var(--muted)', marginTop: '0.5rem' }}>
+            Le dashboard utilise le token local pour appeler `/users/me/dashboard`. Sans token, le MVP te
+            laisse explorer les parcours en mode démo.
+          </p>
+          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginTop: '1rem' }}>
+            <Link className="btn" href="/auth">
+              Se connecter ou s’inscrire
+            </Link>
+            <Link className="btn" href="/courses" style={{ background: '#1d1d1f' }}>
+              Explorer les parcours
+            </Link>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (!data) {
+    return (
+      <section style={{ padding: '2rem 0' }}>
+        <h1 style={{ fontSize: '2rem', fontWeight: 700 }}>Tableau de bord</h1>
+        <p style={{ color: 'var(--muted)', marginTop: '0.5rem' }}>
+          Impossible de charger les données. Essaie de te reconnecter.
+        </p>
+        <Link className="btn" href="/auth" style={{ marginTop: '1rem' }}>
+          Revenir à la connexion
+        </Link>
+      </section>
+    );
+  }
+
   const { user, stats, badges, quests, courses } = data;
 
   return (
     <section style={{ padding: '2rem 0' }}>
-      <h1 style={{ fontSize: '2rem', fontWeight: 700 }}>Tableau de bord</h1>
+      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
+        <div>
+          <h1 style={{ fontSize: '2rem', fontWeight: 700 }}>Tableau de bord</h1>
+          <p style={{ color: 'var(--muted)', marginTop: '0.25rem' }}>
+            Bonjour, {user.displayName ?? 'Technicien'}
+          </p>
+        </div>
+        <button className="btn" type="button" onClick={handleLogout} style={{ background: '#1d1d1f' }}>
+          Déconnexion locale
+        </button>
+      </div>
       <p style={{ color: 'var(--muted)', marginTop: '0.25rem' }}>
-        Bonjour, {user.displayName ?? 'Technicien'}
+        Session chargée depuis `ama_access`.
       </p>
       <p style={{ marginTop: '0.5rem' }}>
         Niveau : <strong>{stats.level}</strong> · {stats.points} points
@@ -33,22 +117,25 @@ export default async function DashboardPage() {
             gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
           }}
         >
-          {courses.map((c: { id: string; title: string; progressPercent: number }) => (
+          {courses.map((c) => (
             <article key={c.id} className="card">
               <h3 style={{ fontWeight: 600 }}>{c.title}</h3>
               <div style={{ marginTop: '0.75rem', height: 8, background: '#e5e5ea', borderRadius: 4 }}>
                 <div
                   style={{
                     height: '100%',
-                    width: `${c.progressPercent}%`,
+                    width: `${c.progressPercent ?? 0}%`,
                     background: 'var(--accent)',
                     borderRadius: 4,
                   }}
                 />
               </div>
               <p style={{ marginTop: '0.5rem', fontSize: '0.875rem', color: 'var(--muted)' }}>
-                {c.progressPercent}% complété
+                {c.progressPercent ?? 0}% complété
               </p>
+              <Link href={`/courses/${c.slug}`} style={{ display: 'inline-block', marginTop: '0.75rem', fontWeight: 600 }}>
+                Ouvrir le parcours
+              </Link>
             </article>
           ))}
         </div>

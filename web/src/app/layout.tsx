@@ -14,8 +14,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <header className="container">
           <nav className="nav">
             <Link href="/">Accueil</Link>
+            <Link href="/auth">Connexion</Link>
             <Link href="/pricing">Tarifs</Link>
             <Link href="/dashboard">Tableau de bord</Link>
+            <Link href="/courses">Parcours</Link>
             <Link href="/resources">Ressources</Link>
           </nav>
         </header>
