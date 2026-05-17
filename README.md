@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-
-=======
-
 # Apple MDM Academy
 
 Plateforme de formation gamifiée pour techniciens Apple et administrateurs MDM (parcours Apple, Jamf Pro, Intune, ServiceNow).
@@ -38,6 +34,14 @@ pnpm db:migrate
 pnpm db:seed
 pnpm dev
 ```
+
+Pour lancer uniquement le web en développement :
+
+```bash
+pnpm --filter web dev
+```
+
+Le serveur web écoute sur [http://127.0.0.1:3000](http://127.0.0.1:3000). Le script force ce hostname et active le polling Watchpack afin d'éviter les erreurs de découverte réseau et de watchers sur macOS.
 
 ## URLs
 
@@ -84,5 +88,4 @@ Définir `EXPO_PUBLIC_API_URL=http://<votre-ip-lan>:4000` pour tester sur appare
 - Parcours Jamf, Intune, ServiceNow (seeds)
 - Stripe Checkout réel + webhooks
 - Certification Sprint (7–14 jours)
-  > > > > > > > a1d8d08 (chore: monorepo scaffold + shared types)
 
