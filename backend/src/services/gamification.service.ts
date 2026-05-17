@@ -79,6 +79,15 @@ export async function completeModule(
     }
   }
 
+  if (module.course.track === 'JAMF') {
+    const jamfCompleted = await prisma.moduleProgress.count({
+      where: { userId, completedAt: { not: null }, module: { course: { track: 'JAMF' } } },
+    });
+    if (jamfCompleted >= 2 && !badges.includes('jamf-engineer')) {
+      badges.push('jamf-engineer');
+    }
+  }
+
   await prisma.userProgress.update({
     where: { userId },
     data: { level: newLevel, badges },
