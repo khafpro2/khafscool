@@ -13,7 +13,11 @@ const PROVIDERS = [
   { id: 'microsoft', label: 'Continuer avec Microsoft', color: '#0078D4' },
 ] as const;
 
-export function WelcomeScreen() {
+interface WelcomeScreenProps {
+  onAuthSuccess?: () => void;
+}
+
+export function WelcomeScreen({ onAuthSuccess }: WelcomeScreenProps) {
   const [loading, setLoading] = useState<string | null>(null);
 
   async function handleSSO(provider: (typeof PROVIDERS)[number]['id']) {
@@ -30,6 +34,7 @@ export function WelcomeScreen() {
         if (typeof access === 'string' && typeof refresh === 'string') {
           await saveTokens(access, refresh);
           Alert.alert('Connexion réussie', 'Bienvenue sur Apple MDM Academy !');
+          onAuthSuccess?.();
         }
       }
     } catch {
