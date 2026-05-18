@@ -17,5 +17,11 @@ export async function coursesRoutes(app: FastifyInstance) {
   app.get('/users/me/progress', { preHandler: requireAuth }, courses.getUserProgress);
   app.get('/users/me/dashboard', { preHandler: requireAuth }, courses.getDashboard);
   app.get('/quests/weekly', { preHandler: requireAuth }, courses.getWeeklyQuests);
+  app.post<{ Body: { track?: 'APPLE' | 'JAMF' | 'INTUNE' | 'SERVICENOW'; days?: number } }>(
+    '/sprints/certification/start',
+    { preHandler: requireAuth },
+    courses.startCertificationSprint
+  );
+  app.get('/sprints/certification/current', { preHandler: requireAuth }, courses.getCurrentCertificationSprint);
   app.get('/leaderboard', { preHandler: requireAuth }, courses.getLeaderboard);
 }

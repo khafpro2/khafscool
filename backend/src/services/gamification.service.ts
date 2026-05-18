@@ -1,5 +1,11 @@
-import { CourseTrack, UserLevel } from '@prisma/client';
+import { CourseTrack, UserLevel, type UserQuest } from '@prisma/client';
 import { prisma } from '../lib/prisma.js';
+
+export type CertificationSprintDays = 7 | 14;
+
+const CERTIFICATION_SPRINT_PREFIX = 'sprint:';
+const DEFAULT_CERTIFICATION_SPRINT_DAYS: CertificationSprintDays = 7;
+const CERTIFICATION_SPRINT_DAYS = [7, 14] as const;
 
 const LEVEL_THRESHOLDS: { level: UserLevel; min: number }[] = [
   { level: UserLevel.APPLE_READY, min: 3000 },
@@ -26,6 +32,88 @@ const WEEKLY_QUESTS = [
     target: 4,
   },
 ];
+
+const TRACK_LABELS: Record<CourseTrack, string> = {
+  [CourseTrack.APPLE]: 'Apple',
+  [CourseTrack.JAMF]: 'Jamf',
+  [CourseTrack.INTUNE]: 'Intune',
+  [CourseTrack.SERVICENOW]: 'ServiceNow',
+};
+
+function startOfDay(d: Date) {
+  const copy = new Date(d);
+  copy.setHours(0, 0, 0, 0);
+  return copy;
+}
+
+function addDays(d: Date, days: number) {
+  const copy = new Date(d);
+  copy.setDate(copy.getDate() + days);
+  return copy;
+}
+
+function dateKey(d: Date) {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+export function buildCertificationSprintQuestKey(
+  track: CourseTrack,
+  startDate: Date,
+  days: CertificationSprintDays
+) {
+  return `${CERTIFICATION_SPRINT_PREFIX}${track}:${dateKey(startDate)}:${days}`;
+}
+
+export function parseCertificationSprintQuestKey(questKey: string) {
+  const match = questKey.match(/^sprint:(APPLE|JAMF|INTUNE|SERVICENOW):(\d{4}-\d{2}-\d{2}):(7|14)$/);
+  if (!match) return null;
+
+  return {
+    track: match[1] as CourseTrack,
+    startDate: startOfDay(new Date(Number(match[2].slice(0, 4)), Number(match[2].slice(5, 7)) - 1, Number(match[2].slice(8, 10)))),
+    days: Number(match[3]) as CertificationSprintDays,
+  };
+}
+
+function sprintSummary(quest: UserQuest, now = new Date()) {
+  const parsed = parseCertificationSprintQuestKey(quest.questKey);
+  if (!parsed) return null;
+
+  const endsAt = addDays(parsed.startDate, parsed.days);
+  const remainingModules = Math.max(quest.target - quest.progress, 0);
+
+  return {
+    id: quest.id,
+    questKey: quest.questKey,
+    track: parsed.track,
+    label: quest.label,
+    days: parsed.days,
+    startedAt: parsed.startDate,
+    endsAt,
+    target: quest.target,
+    progress: quest.progress,
+    progressPercent: quest.target ? Math.min(100, Math.round((quest.progress / quest.target) * 100)) : 0,
+    remainingModules,
+    completed: quest.completed,
+    expired: now >= endsAt,
+  };
+}
+
+function isCurrentSprintQuest(quest: UserQuest, now = new Date()) {
+  const summary = sprintSummary(quest, now);
+  return Boolean(summary && !summary.completed && !summary.expired);
+}
+
+export function normalizeCertificationSprintDays(days?: number): CertificationSprintDays {
+  if (days === undefined) return DEFAULT_CERTIFICATION_SPRINT_DAYS;
+  if (CERTIFICATION_SPRINT_DAYS.includes(days as CertificationSprintDays)) {
+    return days as CertificationSprintDays;
+  }
+  throw new Error('INVALID_SPRINT_DAYS');
+}
 
 function computeLevel(points: number): UserLevel {
   for (const t of LEVEL_THRESHOLDS) {
@@ -120,6 +208,7 @@ export async function completeModule(
     await incrementWeeklyQuest(userId, 'weekly-apple-3');
   }
   await incrementWeeklyQuest(userId, 'weekly-mdm-4');
+  await refreshCertificationSprintProgress(userId, module.course.track);
 
   const preparationScore = await computePreparationByTrack(userId, CourseTrack.APPLE);
 
@@ -147,6 +236,95 @@ async function computePreparationByTrack(userId: string, track: CourseTrack) {
   const avg =
     rows.reduce((s, r) => s + ((r.quizScore ?? 0) + (r.gameScore ?? 0)) / 2, 0) / rows.length;
   return Math.round(avg);
+}
+
+async function countCompletedModulesForSprint(userId: string, track: CourseTrack, startedAt: Date) {
+  return prisma.moduleProgress.count({
+    where: {
+      userId,
+      completedAt: { gte: startedAt },
+      module: { course: { track } },
+    },
+  });
+}
+
+async function refreshCertificationSprintProgress(userId: string, track: CourseTrack) {
+  const quests = await prisma.userQuest.findMany({
+    where: {
+      userId,
+      completed: false,
+      questKey: { startsWith: `${CERTIFICATION_SPRINT_PREFIX}${track}:` },
+      weekStart: { gte: addDays(startOfDay(new Date()), -14) },
+    },
+    orderBy: { weekStart: 'desc' },
+  });
+
+  await Promise.all(
+    quests.filter((quest) => isCurrentSprintQuest(quest)).map(async (quest) => {
+      const parsed = parseCertificationSprintQuestKey(quest.questKey);
+      if (!parsed) return;
+
+      const progress = await countCompletedModulesForSprint(userId, parsed.track, parsed.startDate);
+      await prisma.userQuest.update({
+        where: { id: quest.id },
+        data: { progress, completed: progress >= quest.target },
+      });
+    })
+  );
+}
+
+export async function startCertificationSprint(
+  userId: string,
+  payload: { track: CourseTrack; days?: number }
+) {
+  const track = payload.track;
+  if (!Object.values(CourseTrack).includes(track)) {
+    throw new Error('INVALID_SPRINT_TRACK');
+  }
+
+  const days = normalizeCertificationSprintDays(payload.days);
+  const startedAt = startOfDay(new Date());
+  const questKey = buildCertificationSprintQuestKey(track, startedAt, days);
+  const totalModules = await prisma.module.count({ where: { course: { track } } });
+  const target = Math.max(totalModules, 1);
+  const progress = await countCompletedModulesForSprint(userId, track, startedAt);
+
+  const quest = await prisma.userQuest.upsert({
+    where: { userId_questKey_weekStart: { userId, questKey, weekStart: startedAt } },
+    create: {
+      userId,
+      questKey,
+      weekStart: startedAt,
+      label: `Certification Sprint ${TRACK_LABELS[track]} - ${days} jours`,
+      target,
+      progress,
+      completed: progress >= target,
+    },
+    update: {
+      label: `Certification Sprint ${TRACK_LABELS[track]} - ${days} jours`,
+      target,
+      progress,
+      completed: progress >= target,
+    },
+  });
+
+  return sprintSummary(quest);
+}
+
+export async function getCurrentCertificationSprint(userId: string) {
+  const now = new Date();
+  const quests = await prisma.userQuest.findMany({
+    where: {
+      userId,
+      completed: false,
+      questKey: { startsWith: CERTIFICATION_SPRINT_PREFIX },
+      weekStart: { gte: addDays(startOfDay(now), -14) },
+    },
+    orderBy: [{ weekStart: 'desc' }, { questKey: 'asc' }],
+  });
+
+  const currentQuest = quests.find((quest) => isCurrentSprintQuest(quest, now));
+  return currentQuest ? sprintSummary(currentQuest, now) : null;
 }
 
 export async function getCourseProgress(userId: string, slug: string) {
@@ -459,6 +637,7 @@ export async function getDashboard(userId: string) {
     },
     badges: user.progress?.badges ?? [],
     quests: user.quests,
+    certificationSprint: await getCurrentCertificationSprint(userId),
     courses: coursesWithProgress,
     subscription: user.subscription,
   };
