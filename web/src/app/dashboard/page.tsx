@@ -171,6 +171,7 @@ export default function DashboardPage() {
 
       <RecommendedActionCard action={recommendedAction} />
       <SprintDashboardCard sprint={certificationSprint ?? null} />
+      <LeaderboardCallout />
       <QuickActionsGrid actions={quickActions} />
 
       <ProgressOverview
@@ -295,6 +296,38 @@ function SprintMetric({ label, value }: { label: string; value: string }) {
       <p style={{ color: 'var(--muted)', fontSize: '0.8rem', fontWeight: 700 }}>{label}</p>
       <strong style={{ display: 'block', marginTop: '0.2rem' }}>{value}</strong>
     </div>
+  );
+}
+
+function LeaderboardCallout() {
+  return (
+    <section
+      className="card"
+      style={{
+        alignItems: 'center',
+        background: 'linear-gradient(135deg, #ffffff 0%, #fff7d6 100%)',
+        borderColor: '#f0cf7a',
+        display: 'grid',
+        gap: '1rem',
+        gridTemplateColumns: 'minmax(0, 1fr) auto',
+        marginTop: '1.5rem',
+      }}
+    >
+      <div>
+        <p style={{ color: '#8a6d00', fontSize: '0.85rem', fontWeight: 800, textTransform: 'uppercase' }}>
+          Classement
+        </p>
+        <h2 style={{ fontSize: '1.2rem', fontWeight: 800, marginTop: '0.35rem' }}>
+          Compare ta progression à la communauté
+        </h2>
+        <p style={{ color: 'var(--muted)', marginTop: '0.35rem' }}>
+          Découvre le top 10 des apprenants Apple MDM Academy et ton rang actuel.
+        </p>
+      </div>
+      <Link className="btn" href="/leaderboard">
+        Voir le classement
+      </Link>
+    </section>
   );
 }
 

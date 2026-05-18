@@ -167,6 +167,22 @@ export interface CourseProgressData {
   modules: CourseProgressModule[];
 }
 
+export interface LeaderboardEntry {
+  rank: number;
+  userId?: string;
+  displayName: string;
+  email?: string | null;
+  points: number;
+  level: string;
+  badges: string[];
+  isCurrentUser: boolean;
+}
+
+export interface LeaderboardResponse {
+  leaderboard: LeaderboardEntry[];
+  currentUserRank: number | null;
+}
+
 export type CheckoutPlan = 'monthly' | 'yearly' | 'enterprise';
 
 export interface BillingCheckoutResponse {
@@ -335,6 +351,16 @@ export function scoreServiceNowTicket(token: string, payload: TicketScorePayload
   });
 }
 
+export async function fetchLeaderboard(token?: string): Promise<LeaderboardResponse> {
+  if (!token) return mockLeaderboard();
+
+  try {
+    return await apiRequest<LeaderboardResponse>('/leaderboard', { headers: authHeader(token) });
+  } catch {
+    return mockLeaderboard();
+  }
+}
+
 export async function fetchCurrentCertificationSprint(token?: string): Promise<CertificationSprintSummary | null> {
   if (!token) return mockCertificationSprint();
 
@@ -368,6 +394,54 @@ export async function startCertificationSprint(
   } catch {
     return mockCertificationSprint(payload.track, payload.days);
   }
+}
+
+function mockLeaderboard(): LeaderboardResponse {
+  return {
+    leaderboard: [
+      {
+        rank: 1,
+        displayName: 'Camille — Apple Pro',
+        points: 980,
+        level: 'EXPERT',
+        badges: ['apple-mdm-foundation', 'jamf-engineer'],
+        isCurrentUser: false,
+      },
+      {
+        rank: 2,
+        displayName: 'Yanis — Jamf Lead',
+        points: 845,
+        level: 'EXPERT',
+        badges: ['jamf-engineer'],
+        isCurrentUser: false,
+      },
+      {
+        rank: 3,
+        displayName: 'Léa — Intune Specialist',
+        points: 760,
+        level: 'TECHNICIAN',
+        badges: ['intune-professional'],
+        isCurrentUser: false,
+      },
+      {
+        rank: 4,
+        displayName: 'Mehdi — ServiceNow Ninja',
+        points: 690,
+        level: 'TECHNICIAN',
+        badges: ['servicenow-ninja'],
+        isCurrentUser: false,
+      },
+      {
+        rank: 5,
+        displayName: 'Technicien démo (toi)',
+        points: 120,
+        level: 'TECHNICIAN',
+        badges: ['apple-mdm-foundation'],
+        isCurrentUser: true,
+      },
+    ],
+    currentUserRank: 5,
+  };
 }
 
 function mockDashboard(): DashboardData {
