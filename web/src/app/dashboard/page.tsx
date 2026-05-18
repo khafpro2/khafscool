@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import type { CertificationSprintSummary, DashboardData } from '@/lib/api';
 import { fetchDashboard } from '@/lib/api';
 import { clearAuthTokens, getAccessToken } from '@/lib/auth';
+import { formatTrack } from '@/lib/tracks';
 import { ProgressOverview } from '@/components/dashboard/ProgressOverview';
 
 type Quest = { id: string; label: string; progress: number; target: number };
@@ -22,16 +23,6 @@ type RecommendedAction = {
   href: string;
   cta: string;
   meta: string;
-};
-
-const trackLabels: Record<string, string> = {
-  APPLE: 'Apple',
-  JAMF: 'Jamf',
-  INTUNE: 'Intune',
-  SERVICENOW: 'ServiceNow',
-  SERVICENOW_GAME: 'ServiceNow',
-  RESOURCES: 'Ressources',
-  SPRINT: 'Sprint',
 };
 
 const fallbackQuickActions: QuickAction[] = [
@@ -233,6 +224,8 @@ export default function DashboardPage() {
 }
 
 function SprintDashboardCard({ sprint }: { sprint: CertificationSprintSummary | null }) {
+  const sprintStatus = sprint ? formatSprintStatus(sprint) : 'Non démarré';
+
   return (
     <section
       className="card"
@@ -241,7 +234,7 @@ function SprintDashboardCard({ sprint }: { sprint: CertificationSprintSummary | 
         display: 'grid',
         gap: '1rem',
         gridTemplateColumns: 'minmax(0, 1fr) auto',
-        marginTop: '1rem',
+        marginTop: '1.5rem',
       }}
     >
       <div>
@@ -252,7 +245,7 @@ function SprintDashboardCard({ sprint }: { sprint: CertificationSprintSummary | 
           <>
             <h2 style={{ fontSize: '1.2rem', fontWeight: 800, marginTop: '0.35rem' }}>{sprint.label}</h2>
             <p style={{ color: 'var(--muted)', marginTop: '0.35rem' }}>
-              {sprint.progress}/{sprint.target} modules · {sprint.remainingModules} restants · {sprint.progressPercent}%
+              {formatTrack(sprint.track)} · {sprint.days} jours · {sprintStatus}
             </p>
             <div style={{ background: '#e5e5ea', borderRadius: 999, height: 8, marginTop: '0.75rem' }}>
               <div
@@ -264,6 +257,19 @@ function SprintDashboardCard({ sprint }: { sprint: CertificationSprintSummary | 
                 }}
               />
             </div>
+            <div
+              style={{
+                display: 'grid',
+                gap: '0.75rem',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
+                marginTop: '1rem',
+              }}
+            >
+              <SprintMetric label="Progression" value={`${sprint.progress}/${sprint.target}`} />
+              <SprintMetric label="Objectif" value={`${sprint.progressPercent}%`} />
+              <SprintMetric label="Restants" value={String(sprint.remainingModules)} />
+              <SprintMetric label="Statut" value={sprintStatus} />
+            </div>
           </>
         ) : (
           <>
@@ -271,15 +277,24 @@ function SprintDashboardCard({ sprint }: { sprint: CertificationSprintSummary | 
               Aucun sprint actif
             </h2>
             <p style={{ color: 'var(--muted)', marginTop: '0.35rem' }}>
-              Lance un cycle court de préparation sur Apple, Jamf, Intune ou ServiceNow.
+              Lance un cycle court de préparation sur Apple, Jamf, Intune ou ServiceNow, puis suis ton rythme ici.
             </p>
           </>
         )}
       </div>
       <Link className="btn" href="/sprint">
-        {sprint ? 'Voir le sprint' : 'Démarrer'}
+        {sprint ? 'Voir le sprint' : 'Démarrer un sprint'}
       </Link>
     </section>
+  );
+}
+
+function SprintMetric({ label, value }: { label: string; value: string }) {
+  return (
+    <div style={{ background: '#f5f5f7', borderRadius: 12, padding: '0.75rem' }}>
+      <p style={{ color: 'var(--muted)', fontSize: '0.8rem', fontWeight: 700 }}>{label}</p>
+      <strong style={{ display: 'block', marginTop: '0.2rem' }}>{value}</strong>
+    </div>
   );
 }
 
@@ -343,7 +358,7 @@ function QuickActionsGrid({ actions }: { actions: QuickAction[] }) {
             }}
           >
             <span style={{ color: 'var(--muted)', fontSize: '0.75rem', fontWeight: 800 }}>
-              {trackLabels[action.track] ?? action.track}
+              {formatTrack(action.track)}
             </span>
             <strong>{action.label}</strong>
             <span style={{ color: 'var(--muted)' }}>{action.description}</span>
@@ -441,7 +456,7 @@ function getRecommendedAction(data: DashboardData): RecommendedAction {
   if (nextCourse?.nextModule) {
     return {
       title: nextCourse.nextModule.title,
-      description: `Continue le parcours ${trackLabels[nextCourse.track] ?? nextCourse.track} là où tu t’es arrêté.`,
+      description: `Continue le parcours ${formatTrack(nextCourse.track)} là où tu t’es arrêté.`,
       href: `/courses/${nextCourse.slug}#module-${nextCourse.nextModule.slug}`,
       cta: 'Reprendre',
       meta: `${nextCourse.progressPercent ?? 0}% du parcours complété`,
@@ -453,7 +468,7 @@ function getRecommendedAction(data: DashboardData): RecommendedAction {
   if (incompleteCourse) {
     return {
       title: incompleteCourse.title,
-      description: `Ouvre le prochain module disponible pour renforcer ton socle ${trackLabels[incompleteCourse.track] ?? incompleteCourse.track}.`,
+      description: `Ouvre le prochain module disponible pour renforcer ton socle ${formatTrack(incompleteCourse.track)}.`,
       href: `/courses/${incompleteCourse.slug}`,
       cta: 'Continuer',
       meta: `${incompleteCourse.progressPercent ?? 0}% du parcours complété`,
@@ -496,4 +511,10 @@ function formatBadgeLabel(badge: string) {
     .filter(Boolean)
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(' ');
+}
+
+function formatSprintStatus(sprint: CertificationSprintSummary) {
+  if (sprint.completed) return 'Terminé';
+  if (sprint.expired) return 'Expiré';
+  return 'Actif';
 }

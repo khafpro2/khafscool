@@ -10,28 +10,25 @@ import {
   type CertificationSprintTrack,
 } from '@/lib/api';
 import { getAccessToken } from '@/lib/auth';
+import { formatTrack } from '@/lib/tracks';
 
 type SprintStatus = 'idle' | 'loading' | 'starting';
 
-const tracks: { value: CertificationSprintTrack; label: string; description: string }[] = [
+const tracks: { value: CertificationSprintTrack; description: string }[] = [
   {
     value: 'APPLE',
-    label: 'Apple',
     description: 'Device Support, sécurité, diagnostic et fondamentaux MDM Apple.',
   },
   {
     value: 'JAMF',
-    label: 'Jamf',
     description: 'Smart groups, politiques, inventaire et bonnes pratiques Jamf Pro.',
   },
   {
     value: 'INTUNE',
-    label: 'Intune',
     description: 'Enrôlement mobile, conformité, profils et intégration Microsoft.',
   },
   {
     value: 'SERVICENOW',
-    label: 'ServiceNow',
     description: 'Qualification, priorisation et clôture propre des tickets support.',
   },
 ];
@@ -150,7 +147,7 @@ export default function SprintPage() {
         <section className="card">
           <h2 style={{ fontSize: '1.25rem', fontWeight: 800 }}>Démarrer un sprint</h2>
           <p style={{ color: 'var(--muted)', marginTop: '0.4rem' }}>
-            Objectif sélectionné: <strong>{selectedTrackMeta.label}</strong> sur <strong>{selectedDays} jours</strong>.
+            Objectif sélectionné: <strong>{formatTrack(selectedTrackMeta.value)}</strong> sur <strong>{selectedDays} jours</strong>.
           </p>
 
           <div
@@ -182,7 +179,7 @@ export default function SprintPage() {
                   <span style={{ color: isSelected ? 'var(--accent)' : 'var(--muted)', fontSize: '0.8rem', fontWeight: 800 }}>
                     {track.value}
                   </span>
-                  <strong style={{ display: 'block', marginTop: '0.35rem' }}>{track.label}</strong>
+                  <strong style={{ display: 'block', marginTop: '0.35rem' }}>{formatTrack(track.value)}</strong>
                   <span style={{ color: 'var(--muted)', display: 'block', marginTop: '0.35rem' }}>{track.description}</span>
                 </button>
               );
@@ -299,7 +296,7 @@ function CurrentSprintCard({
         }}
       >
         <SprintMetric label="Restants" value={String(sprint.remainingModules)} />
-        <SprintMetric label="Track" value={sprint.track} />
+        <SprintMetric label="Track" value={formatTrack(sprint.track)} />
         <SprintMetric label="Statut" value={sprint.completed ? 'Terminé' : sprint.expired ? 'Expiré' : 'Actif'} />
         <SprintMetric label="Durée" value={`${sprint.days} j`} />
       </div>
