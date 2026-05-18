@@ -30,6 +30,7 @@ const trackLabels: Record<string, string> = {
   INTUNE: 'Intune',
   SERVICENOW: 'ServiceNow',
   SERVICENOW_GAME: 'ServiceNow',
+  RESOURCES: 'Ressources',
   SPRINT: 'Sprint',
 };
 
@@ -64,6 +65,12 @@ const fallbackQuickActions: QuickAction[] = [
     href: '/sprint',
     track: 'SPRINT',
     primary: true,
+  },
+  {
+    label: 'Ressources officielles',
+    description: 'Vérifier les sources éditeurs avant un module, un sprint ou une certification.',
+    href: '/resources',
+    track: 'RESOURCES',
   },
   {
     label: 'Lancer le mini-jeu ServiceNow',

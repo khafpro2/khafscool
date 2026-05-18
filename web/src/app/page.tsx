@@ -17,6 +17,9 @@ export default function HomePage() {
         <Link href="/courses" className="btn" style={{ background: '#1d1d1f' }}>
           Explorer les parcours
         </Link>
+        <Link href="/resources" className="btn" style={{ background: '#0f7a3b' }}>
+          Vérifier les sources officielles
+        </Link>
         <Link href="/servicenow" className="btn" style={{ background: '#4f46e5' }}>
           Jouer au scoring ServiceNow
         </Link>
