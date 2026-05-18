@@ -1,5 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import * as courses from '../controllers/courses.controller.js';
+import type { CertificationSprintRequestBody } from '../controllers/courses.controller.js';
 import { requireAuth } from '../middleware/auth.middleware.js';
 
 export async function coursesRoutes(app: FastifyInstance) {
@@ -18,7 +19,7 @@ export async function coursesRoutes(app: FastifyInstance) {
   app.get('/users/me/progress', { preHandler: requireAuth }, courses.getUserProgress);
   app.get('/users/me/dashboard', { preHandler: requireAuth }, courses.getDashboard);
   app.get('/quests/weekly', { preHandler: requireAuth }, courses.getWeeklyQuests);
-  app.post<{ Body: { track?: 'APPLE' | 'JAMF' | 'INTUNE' | 'SERVICENOW'; days?: number } }>(
+  app.post<{ Body: CertificationSprintRequestBody }>(
     '/sprints/certification/start',
     { preHandler: requireAuth },
     courses.startCertificationSprint

@@ -1,7 +1,24 @@
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { CourseTrack } from '@prisma/client';
+import { z } from 'zod';
 import { prisma } from '../lib/prisma.js';
 import * as gamification from '../services/gamification.service.js';
+
+const certificationSprintRequestSchema = z.object({
+  track: z.nativeEnum(CourseTrack, {
+    required_error: 'track is required',
+    invalid_type_error: 'track must be a valid course track',
+  }),
+  days: z.union([z.literal(7), z.literal(14)], {
+    invalid_type_error: 'days must be 7 or 14',
+  }).optional(),
+});
+
+export type CertificationSprintRequestBody = z.infer<typeof certificationSprintRequestSchema>;
+
+export function parseCertificationSprintRequest(body: unknown) {
+  return certificationSprintRequestSchema.safeParse(body ?? {});
+}
 
 export async function listCourses(_req: FastifyRequest, reply: FastifyReply) {
   const courses = await prisma.course.findMany({ orderBy: { sortOrder: 'asc' } });
@@ -94,16 +111,24 @@ export async function getWeeklyQuests(req: FastifyRequest, reply: FastifyReply) 
 }
 
 export async function startCertificationSprint(
-  req: FastifyRequest<{ Body: { track?: CourseTrack; days?: number } }>,
+  req: FastifyRequest<{ Body: unknown }>,
   reply: FastifyReply
 ) {
-  try {
-    const track = req.body?.track;
-    if (!track) return reply.status(400).send({ error: 'INVALID_SPRINT_TRACK' });
+  const parsedBody = parseCertificationSprintRequest(req.body);
+  if (!parsedBody.success) {
+    return reply.status(400).send({
+      error: 'INVALID_CERTIFICATION_SPRINT_REQUEST',
+      details: parsedBody.error.issues.map((issue) => ({
+        field: issue.path.join('.') || 'body',
+        message: issue.message,
+      })),
+    });
+  }
 
+  try {
     const certificationSprint = await gamification.startCertificationSprint(req.user.sub, {
-      track,
-      days: req.body?.days,
+      track: parsedBody.data.track,
+      days: parsedBody.data.days,
     });
     return reply.status(201).send({ certificationSprint });
   } catch (e) {

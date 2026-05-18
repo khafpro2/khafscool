@@ -69,6 +69,7 @@ Le serveur web écoute sur [http://127.0.0.1:3000](http://127.0.0.1:3000). Le sc
 | POST    | `/modules/:id/complete`    | Terminer module (quiz + jeu)             |
 | GET     | `/users/me/dashboard`      | Tableau de bord                          |
 | GET     | `/quests/weekly`           | Quêtes hebdomadaires de l'utilisateur    |
+| POST    | `/sprints/certification/start` | Démarre un sprint certification privé |
 | GET     | `/leaderboard`             | Classement privé par points              |
 | POST    | `/servicenow/ticket-score` | Scoring pédagogique d'un ticket          |
 | POST    | `/billing/checkout`        | Checkout Stripe (stub)                   |
@@ -101,6 +102,19 @@ curl -X POST http://localhost:4000/servicenow/ticket-score \
 ```
 
 La réponse contient `score` sur 100, `feedback` en français et `suggestions` d'amélioration.
+
+### Certification Sprint
+
+Route privée Bearer qui démarre un sprint de révision sur 7 ou 14 jours pour un parcours.
+
+```bash
+curl -X POST http://localhost:4000/sprints/certification/start \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{ "track": "INTUNE", "days": 14 }'
+```
+
+Le body doit contenir `track` (`APPLE`, `JAMF`, `INTUNE` ou `SERVICENOW`) et peut contenir `days` (`7` ou `14`, défaut `7`). Un body invalide retourne `400` avec `error: "INVALID_CERTIFICATION_SPRINT_REQUEST"` et des détails par champ.
 
 ## OAuth (développement)
 
