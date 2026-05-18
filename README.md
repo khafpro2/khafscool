@@ -129,6 +129,27 @@ Le script cible `http://localhost:4000` par défaut. Pour tester un autre backen
 API_URL=http://127.0.0.1:4000 pnpm smoke:api
 ```
 
+### Smoke test web
+
+Quand le serveur web local est lancé, un smoke test sans navigateur vérifie rapidement les pages MVP principales : auth, dashboard, courses, servicenow, sprint, pricing, diagnostics et mvp.
+
+```bash
+pnpm --filter web dev
+pnpm smoke:web
+```
+
+Le script cible `http://127.0.0.1:3000` par défaut. Pour tester une autre origine web :
+
+```bash
+WEB_URL=http://localhost:3000 pnpm smoke:web
+```
+
+Pour enchaîner les smokes API puis web, avec les serveurs déjà lancés dans des terminaux séparés :
+
+```bash
+pnpm smoke:all
+```
+
 ### Mini-jeu ServiceNow — ticket scoring
 
 Route privée Bearer qui évalue un ticket ServiceNow simulé sans écrire en base.

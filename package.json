@@ -9,7 +9,9 @@
     "db:generate": "pnpm --filter backend exec prisma generate",
     "db:migrate": "pnpm --filter backend exec prisma migrate dev",
     "db:seed": "pnpm --filter backend exec tsx prisma/seed.ts",
-    "smoke:api": "node scripts/smoke-api.mjs"
+    "smoke:api": "node scripts/smoke-api.mjs",
+    "smoke:web": "node scripts/smoke-web.mjs",
+    "smoke:all": "pnpm smoke:api && pnpm smoke:web"
   },
   "devDependencies": {
     "turbo": "^2.3.3",
