@@ -133,8 +133,11 @@ export default function DashboardPage() {
               <p style={{ marginTop: '0.5rem', fontSize: '0.875rem', color: 'var(--muted)' }}>
                 {c.progressPercent ?? 0}% complété
               </p>
-              <Link href={`/courses/${c.slug}`} style={{ display: 'inline-block', marginTop: '0.75rem', fontWeight: 600 }}>
-                Ouvrir le parcours
+              <Link
+                href={`/courses/${c.slug}${c.nextModule ? `#module-${c.nextModule.slug}` : ''}`}
+                style={{ display: 'inline-block', marginTop: '0.75rem', fontWeight: 600 }}
+              >
+                {c.nextModule ? `Continuer : ${c.nextModule.title}` : 'Ouvrir le parcours'}
               </Link>
             </article>
           ))}

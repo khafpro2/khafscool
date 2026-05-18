@@ -149,6 +149,210 @@ async function computePreparationByTrack(userId: string, track: CourseTrack) {
   return Math.round(avg);
 }
 
+export async function getCourseProgress(userId: string, slug: string) {
+  const course = await prisma.course.findUnique({
+    where: { slug },
+    include: {
+      modules: {
+        orderBy: { sortOrder: 'asc' },
+        include: { progresses: { where: { userId } } },
+      },
+    },
+  });
+  if (!course) throw new Error('COURSE_NOT_FOUND');
+
+  const modules = course.modules.map((module) => {
+    const progress = module.progresses[0] ?? null;
+    const completed = Boolean(progress?.completedAt);
+    const score =
+      progress?.quizScore !== null && progress?.quizScore !== undefined
+        ? Math.round(((progress.quizScore ?? 0) + (progress.gameScore ?? 0)) / 2)
+        : null;
+
+    return {
+      id: module.id,
+      slug: module.slug,
+      title: module.title,
+      summary: module.summary,
+      sortOrder: module.sortOrder,
+      completed,
+      completedAt: progress?.completedAt ?? null,
+      quizScore: progress?.quizScore ?? null,
+      gameScore: progress?.gameScore ?? null,
+      score,
+    };
+  });
+
+  const totalModules = modules.length;
+  const completedModules = modules.filter((module) => module.completed).length;
+  const scoredModules = modules.filter((module) => module.score !== null);
+  const nextModule = modules.find((module) => !module.completed) ?? null;
+
+  return {
+    course: {
+      id: course.id,
+      slug: course.slug,
+      title: course.title,
+      description: course.description,
+      track: course.track,
+    },
+    progress: {
+      totalModules,
+      completedModules,
+      progressPercent: totalModules ? Math.round((completedModules / totalModules) * 100) : 0,
+      averageScore: scoredModules.length
+        ? Math.round(scoredModules.reduce((sum, module) => sum + (module.score ?? 0), 0) / scoredModules.length)
+        : 0,
+      nextModule: nextModule
+        ? { id: nextModule.id, slug: nextModule.slug, title: nextModule.title }
+        : null,
+    },
+    modules,
+  };
+}
+
+export async function getUserProgress(userId: string) {
+  const weekStart = startOfWeek(new Date());
+  await ensureWeeklyQuests(userId);
+
+  const [user, courses, recentProgress] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        progress: true,
+        quests: { where: { weekStart }, orderBy: { questKey: 'asc' } },
+      },
+    }),
+    prisma.course.findMany({
+      include: {
+        modules: {
+          orderBy: { sortOrder: 'asc' },
+          include: { progresses: { where: { userId } } },
+        },
+      },
+      orderBy: { sortOrder: 'asc' },
+    }),
+    prisma.moduleProgress.findMany({
+      where: { userId, completedAt: { not: null } },
+      include: { module: { include: { course: true } } },
+      orderBy: { completedAt: 'desc' },
+      take: 5,
+    }),
+  ]);
+  if (!user) throw new Error('USER_NOT_FOUND');
+
+  const totalModules = courses.reduce((sum, course) => sum + course.modules.length, 0);
+  const completedModules = courses.reduce(
+    (sum, course) => sum + course.modules.filter((module) => module.progresses.some((p) => p.completedAt)).length,
+    0
+  );
+  const scoredModules = courses.flatMap((course) =>
+    course.modules.flatMap((module) =>
+      module.progresses.map((progress) => ({
+        quizScore: progress.quizScore,
+        gameScore: progress.gameScore,
+      }))
+    )
+  );
+  const coursesWithProgress = courses.map((course) => {
+    const total = course.modules.length;
+    const done = course.modules.filter((module) => module.progresses.some((progress) => progress.completedAt)).length;
+    const nextModule = course.modules.find((module) => !module.progresses.some((progress) => progress.completedAt));
+
+    return {
+      id: course.id,
+      slug: course.slug,
+      title: course.title,
+      track: course.track,
+      totalModules: total,
+      completedModules: done,
+      progressPercent: total ? Math.round((done / total) * 100) : 0,
+      nextModule: nextModule
+        ? { id: nextModule.id, slug: nextModule.slug, title: nextModule.title }
+        : null,
+    };
+  });
+
+  const tracks = Object.values(CourseTrack).map((track) => {
+    const trackCourses = courses.filter((course) => course.track === track);
+    const trackModules = trackCourses.flatMap((course) => course.modules);
+    const trackCompletedModules = trackModules.filter((module) =>
+      module.progresses.some((progress) => progress.completedAt)
+    );
+    const trackScoredModules = trackModules.flatMap((module) =>
+      module.progresses.map((progress) => ({
+        quizScore: progress.quizScore,
+        gameScore: progress.gameScore,
+      }))
+    );
+    const nextModule = trackModules.find((module) => !module.progresses.some((progress) => progress.completedAt));
+
+    return {
+      track,
+      totalModules: trackModules.length,
+      completedModules: trackCompletedModules.length,
+      progressPercent: trackModules.length
+        ? Math.round((trackCompletedModules.length / trackModules.length) * 100)
+        : 0,
+      averageScore: averageProgressScore(trackScoredModules),
+      nextModule: nextModule
+        ? {
+            id: nextModule.id,
+            slug: nextModule.slug,
+            title: nextModule.title,
+            courseSlug: trackCourses.find((course) => course.id === nextModule.courseId)?.slug ?? null,
+          }
+        : null,
+    };
+  });
+
+  return {
+    user: {
+      id: user.id,
+      email: user.email,
+      displayName: user.displayName,
+    },
+    progress: {
+      totalModules,
+      completedModules,
+      progressPercent: totalModules ? Math.round((completedModules / totalModules) * 100) : 0,
+      averageScore: averageProgressScore(scoredModules),
+      points: user.progress?.points ?? 0,
+      level: user.progress?.level ?? UserLevel.NOVICE,
+    },
+    badges: user.progress?.badges ?? [],
+    quests: user.quests,
+    courses: coursesWithProgress,
+    tracks,
+    recentCompletedModules: recentProgress.map((progress) => ({
+      id: progress.module.id,
+      slug: progress.module.slug,
+      title: progress.module.title,
+      courseSlug: progress.module.course.slug,
+      courseTitle: progress.module.course.title,
+      track: progress.module.course.track,
+      completedAt: progress.completedAt,
+      quizScore: progress.quizScore,
+      gameScore: progress.gameScore,
+    })),
+  };
+}
+
+function averageProgressScore(rows: { quizScore: number | null; gameScore: number | null }[]) {
+  const scores = rows
+    .map((row) => {
+      const quizScore = row.quizScore ?? null;
+      const gameScore = row.gameScore ?? null;
+      if (quizScore === null && gameScore === null) return null;
+      if (quizScore === null) return gameScore;
+      if (gameScore === null) return quizScore;
+      return Math.round((quizScore + gameScore) / 2);
+    })
+    .filter((score): score is number => score !== null);
+
+  return scores.length ? Math.round(scores.reduce((sum, score) => sum + score, 0) / scores.length) : 0;
+}
+
 function startOfWeek(d: Date) {
   const copy = new Date(d);
   const day = copy.getDay();

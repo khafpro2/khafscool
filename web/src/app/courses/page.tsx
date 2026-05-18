@@ -62,9 +62,14 @@ export default function CoursesPage() {
               )}
               <p style={{ color: 'var(--muted)', marginTop: '0.75rem', fontSize: '0.9rem' }}>
                 Progression : {course.progressPercent ?? 0}%
+                {course.totalModules ? ` · ${course.completedModules ?? 0}/${course.totalModules} modules` : ''}
               </p>
-              <Link className="btn" href={`/courses/${course.slug}`} style={{ marginTop: '1rem' }}>
-                Ouvrir
+              <Link
+                className="btn"
+                href={`/courses/${course.slug}${course.nextModule ? `#module-${course.nextModule.slug}` : ''}`}
+                style={{ marginTop: '1rem' }}
+              >
+                {course.nextModule ? 'Reprendre le prochain module' : 'Ouvrir'}
               </Link>
             </article>
           ))}

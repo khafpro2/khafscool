@@ -28,6 +28,36 @@ export interface DashboardData {
   courses: CourseSummary[];
 }
 
+export interface CourseNextModule {
+  id: string;
+  slug: string;
+  title: string;
+  courseSlug?: string | null;
+}
+
+export interface UserProgressData {
+  user: AuthUser;
+  progress: {
+    totalModules: number;
+    completedModules: number;
+    progressPercent: number;
+    averageScore: number;
+    points: number;
+    level: string;
+  };
+  badges: string[];
+  quests: { id: string; label: string; progress: number; target: number }[];
+  courses: CourseSummary[];
+  tracks: {
+    track: string;
+    totalModules: number;
+    completedModules: number;
+    progressPercent: number;
+    averageScore: number;
+    nextModule?: CourseNextModule | null;
+  }[];
+}
+
 export interface CourseSummary {
   id: string;
   slug: string;
@@ -35,6 +65,9 @@ export interface CourseSummary {
   track: string;
   description?: string;
   progressPercent?: number;
+  totalModules?: number;
+  completedModules?: number;
+  nextModule?: CourseNextModule | null;
 }
 
 export interface CourseQuestion {
@@ -44,6 +77,19 @@ export interface CourseQuestion {
   options: { id: string; label: string }[];
   correctOption?: string;
   explanation?: string;
+}
+
+export interface TicketScorePayload {
+  shortDescription: string;
+  category: string;
+  priority: string;
+  resolutionNote: string;
+}
+
+export interface TicketScoreResult {
+  score: number;
+  feedback: string[];
+  suggestions: string[];
 }
 
 export interface CourseModule {
@@ -62,6 +108,31 @@ export interface CourseModule {
 
 export interface CourseDetail extends CourseSummary {
   modules: CourseModule[];
+}
+
+export interface CourseProgressModule {
+  id: string;
+  slug: string;
+  title: string;
+  summary: string;
+  sortOrder?: number;
+  completed: boolean;
+  completedAt: string | null;
+  quizScore: number | null;
+  gameScore: number | null;
+  score: number | null;
+}
+
+export interface CourseProgressData {
+  course: CourseSummary;
+  progress: {
+    totalModules: number;
+    completedModules: number;
+    progressPercent: number;
+    averageScore: number;
+    nextModule: CourseNextModule | null;
+  };
+  modules: CourseProgressModule[];
 }
 
 async function apiRequest<T>(path: string, init: RequestInit = {}) {
@@ -97,7 +168,8 @@ export function register(email: string, password: string, displayName: string) {
 
 export async function fetchDashboard(token?: string): Promise<DashboardData> {
   try {
-    return await apiRequest<DashboardData>('/users/me/dashboard', { headers: authHeader(token) });
+    const data = await apiRequest<UserProgressData>('/users/me/progress', { headers: authHeader(token) });
+    return toDashboardData(data);
   } catch {
     return mockDashboard();
   }
@@ -105,6 +177,11 @@ export async function fetchDashboard(token?: string): Promise<DashboardData> {
 
 export async function fetchCourses(token?: string): Promise<CourseSummary[]> {
   try {
+    if (token) {
+      const progressData = await apiRequest<UserProgressData>('/users/me/progress', { headers: authHeader(token) });
+      return mergeMvpCourses(progressData.courses);
+    }
+
     const data = await apiRequest<{ courses: CourseSummary[] }>('/courses', { headers: authHeader(token) });
     return mergeMvpCourses(data.courses);
   } catch {
@@ -123,6 +200,22 @@ export async function fetchCourse(slug: string, token?: string): Promise<CourseD
   }
 }
 
+export async function fetchCourseProgress(slug: string, token?: string): Promise<CourseProgressData> {
+  if (!token) {
+    const fallback = DEMO_COURSES.find((course) => course.slug === slug);
+    if (!fallback) throw new Error('Course not found');
+    return courseToProgress(fallback);
+  }
+
+  try {
+    return apiRequest<CourseProgressData>(`/courses/${slug}/progress`, { headers: authHeader(token) });
+  } catch {
+    const fallback = DEMO_COURSES.find((course) => course.slug === slug);
+    if (!fallback) throw new Error('Course progress not found');
+    return courseToProgress(fallback);
+  }
+}
+
 export async function completeModule(
   moduleId: string,
   token: string,
@@ -136,6 +229,14 @@ export async function completeModule(
     badges: string[];
     preparationScore: number;
   }>(`/modules/${moduleId}/complete`, {
+    method: 'POST',
+    headers: authHeader(token),
+    body: JSON.stringify(payload),
+  });
+}
+
+export function scoreServiceNowTicket(token: string, payload: TicketScorePayload) {
+  return apiRequest<TicketScoreResult>('/servicenow/ticket-score', {
     method: 'POST',
     headers: authHeader(token),
     body: JSON.stringify(payload),
@@ -159,6 +260,25 @@ function mockDashboard(): DashboardData {
       { id: '1', slug: 'apple-cert-prep', title: 'Parcours Apple', track: 'APPLE', progressPercent: 100 },
       { id: '2', slug: 'jamf-pro-foundations', title: 'Fondamentaux Jamf Pro', track: 'JAMF', progressPercent: 0 },
     ],
+  };
+}
+
+function toDashboardData(data: UserProgressData): DashboardData {
+  const appleTrack = data.tracks.find((track) => track.track === 'APPLE');
+
+  return {
+    user: data.user,
+    stats: {
+      points: data.progress.points,
+      level: data.progress.level,
+      modulesCompleted: data.progress.completedModules,
+      timeSpentMinutes: data.progress.completedModules * 12,
+      averageQuizScore: data.progress.averageScore,
+      preparationScore: appleTrack?.progressPercent ?? data.progress.progressPercent,
+    },
+    badges: data.badges,
+    quests: data.quests,
+    courses: data.courses,
   };
 }
 
@@ -190,6 +310,51 @@ function normalizeCourse(course: CourseDetail): CourseDetail {
           }
         : null,
     })),
+  };
+}
+
+function courseToProgress(course: CourseDetail): CourseProgressData {
+  const completedModules = course.completedModules ?? 0;
+  const progressPercent =
+    course.progressPercent ?? (course.modules.length ? Math.round((completedModules / course.modules.length) * 100) : 0);
+  const completedCount = Math.round((progressPercent / 100) * course.modules.length);
+  const modules = course.modules.map((module, index) => {
+    const completed = index < completedCount;
+    return {
+      id: module.id,
+      slug: module.slug,
+      title: module.title,
+      summary: module.summary,
+      sortOrder: index + 1,
+      completed,
+      completedAt: completed ? new Date().toISOString() : null,
+      quizScore: completed ? 85 : null,
+      gameScore: completed ? 90 : null,
+      score: completed ? 88 : null,
+    };
+  });
+  const nextModule = modules.find((module) => !module.completed) ?? null;
+
+  return {
+    course: {
+      id: course.id,
+      slug: course.slug,
+      title: course.title,
+      track: course.track,
+      description: course.description,
+      progressPercent,
+      totalModules: course.modules.length,
+      completedModules: completedCount,
+      nextModule: nextModule ? { id: nextModule.id, slug: nextModule.slug, title: nextModule.title } : null,
+    },
+    progress: {
+      totalModules: course.modules.length,
+      completedModules: completedCount,
+      progressPercent,
+      averageScore: modules.some((module) => module.score !== null) ? 88 : 0,
+      nextModule: nextModule ? { id: nextModule.id, slug: nextModule.slug, title: nextModule.title } : null,
+    },
+    modules,
   };
 }
 
