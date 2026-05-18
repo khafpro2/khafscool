@@ -27,12 +27,17 @@ interface LearnerDashboardScreenProps {
 
 const certificationSprintTracks: CertificationSprintTrack[] = ['APPLE', 'JAMF', 'INTUNE', 'SERVICENOW'];
 
+type SprintMessage = {
+  text: string;
+  tone: 'success' | 'error' | 'info';
+};
+
 export function LearnerDashboardScreen({ onSignOut }: LearnerDashboardScreenProps) {
   const [dashboard, setDashboard] = useState<LearnerDashboard | null>(null);
   const [sprint, setSprint] = useState<CertificationSprintSummary | null>(null);
   const [sprintSource, setSprintSource] = useState<'api' | 'demo'>('api');
   const [startingTrack, setStartingTrack] = useState<CertificationSprintTrack | null>(null);
-  const [sprintMessage, setSprintMessage] = useState<string | null>(null);
+  const [sprintMessage, setSprintMessage] = useState<SprintMessage | null>(null);
   const [loading, setLoading] = useState(true);
 
   async function loadDashboard() {
@@ -46,7 +51,7 @@ export function LearnerDashboardScreen({ onSignOut }: LearnerDashboardScreenProp
     setSprintSource(nextSprint.source);
     setSprintMessage(
       nextSprint.source === 'demo'
-        ? 'Mode démo : connectez-vous pour enregistrer un vrai sprint.'
+        ? { text: 'Mode démo : connectez-vous pour enregistrer un vrai sprint.', tone: 'info' }
         : null
     );
     setLoading(false);
@@ -75,9 +80,14 @@ export function LearnerDashboardScreen({ onSignOut }: LearnerDashboardScreenProp
       setSprintSource(nextSprint.source);
       setSprintMessage(
         nextSprint.source === 'demo'
-          ? 'Sprint de démonstration démarré localement.'
-          : 'Sprint démarré pour 7 jours.'
+          ? { text: `Sprint ${formatTrack(track)} démarré en démo locale.`, tone: 'info' }
+          : { text: `Sprint ${formatTrack(track)} démarré pour 7 jours.`, tone: 'success' }
       );
+    } catch {
+      setSprintMessage({
+        text: `Impossible de démarrer le sprint ${formatTrack(track)}. Réessayez dans un instant.`,
+        tone: 'error',
+      });
     } finally {
       setStartingTrack(null);
     }
@@ -189,9 +199,12 @@ function SprintCard({
 }: {
   sprint: CertificationSprintSummary | null;
   startingTrack: CertificationSprintTrack | null;
-  message: string | null;
+  message: SprintMessage | null;
   onStart: (track: CertificationSprintTrack) => void;
 }) {
+  const sprintStatus = sprint ? formatSprintStatus(sprint) : null;
+  const isStartingAnySprint = startingTrack !== null;
+
   return (
     <View style={styles.sprintCard}>
       <View style={styles.sprintHeader}>
@@ -206,10 +219,31 @@ function SprintCard({
 
       {sprint ? (
         <View style={styles.sprintProgress}>
+          <View style={styles.sprintStatusRow}>
+            <Text
+              style={[
+                styles.sprintStatusPill,
+                sprint.completed
+                  ? styles.sprintStatusCompleted
+                  : sprint.expired
+                    ? styles.sprintStatusExpired
+                    : styles.sprintStatusActive,
+              ]}
+            >
+              {sprintStatus}
+            </Text>
+            <Text style={styles.sprintDeadline}>Échéance {formatSprintDate(sprint.endsAt)}</Text>
+          </View>
           <ProgressBar progress={sprint.progressPercent} />
           <Text style={styles.sprintMeta}>
-            {sprint.progress}/{sprint.target} modules · fin le {formatSprintDate(sprint.endsAt)}
+            {formatTrack(sprint.track)} · {sprint.progress}/{sprint.target} modules ·{' '}
+            {sprint.progressPercent} % complété
           </Text>
+          <View style={styles.sprintMetrics}>
+            <SprintMetric label="Track" value={formatTrack(sprint.track)} />
+            <SprintMetric label="Objectif" value={`${sprint.progress}/${sprint.target}`} />
+            <SprintMetric label="Restants" value={String(sprint.remainingModules)} />
+          </View>
         </View>
       ) : (
         <Text style={styles.sprintMeta}>
@@ -217,7 +251,20 @@ function SprintCard({
         </Text>
       )}
 
-      {message ? <Text style={styles.sprintMessage}>{message}</Text> : null}
+      {message ? (
+        <Text
+          style={[
+            styles.sprintMessage,
+            message.tone === 'success'
+              ? styles.sprintMessageSuccess
+              : message.tone === 'error'
+                ? styles.sprintMessageError
+                : styles.sprintMessageInfo,
+          ]}
+        >
+          {message.text}
+        </Text>
+      ) : null}
 
       <View style={styles.trackButtons}>
         {certificationSprintTracks.map((track) => {
@@ -225,17 +272,29 @@ function SprintCard({
           return (
             <Pressable
               key={track}
-              disabled={startingTrack !== null}
+              disabled={isStartingAnySprint}
               onPress={() => onStart(track)}
-              style={[styles.trackButton, startingTrack !== null ? styles.trackButtonDisabled : null]}
+              style={[styles.trackButton, isStartingAnySprint ? styles.trackButtonDisabled : null]}
             >
-              <Text style={styles.trackButtonText}>
-                {isStarting ? 'Démarrage…' : formatTrack(track)}
-              </Text>
+              <View style={styles.trackButtonContent}>
+                {isStarting ? <ActivityIndicator color="#FFFFFF" size="small" /> : null}
+                <Text style={styles.trackButtonText}>
+                  {isStarting ? 'Démarrage…' : formatTrack(track)}
+                </Text>
+              </View>
             </Pressable>
           );
         })}
       </View>
+    </View>
+  );
+}
+
+function SprintMetric({ label, value }: { label: string; value: string }) {
+  return (
+    <View style={styles.sprintMetric}>
+      <Text style={styles.sprintMetricValue}>{value}</Text>
+      <Text style={styles.sprintMetricLabel}>{label}</Text>
     </View>
   );
 }
@@ -312,18 +371,26 @@ function formatBadge(badge: string) {
     .join(' ');
 }
 
-function formatTrack(track: string) {
-  const labels: Record<string, string> = {
+function formatTrack(track: CertificationSprintTrack | string) {
+  const labels: Record<CertificationSprintTrack, string> = {
     APPLE: 'Apple',
     INTUNE: 'Intune',
     JAMF: 'Jamf',
     SERVICENOW: 'ServiceNow',
   };
-  return labels[track] ?? track;
+  return track in labels ? labels[track as CertificationSprintTrack] : track;
+}
+
+function formatSprintStatus(sprint: CertificationSprintSummary) {
+  if (sprint.completed) return 'Terminé';
+  if (sprint.expired) return 'Expiré';
+  return 'Actif';
 }
 
 function formatSprintDate(value: string) {
-  return new Date(value).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return 'à confirmer';
+  return date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
 }
 
 const styles = StyleSheet.create({
@@ -361,8 +428,29 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   sprintProgress: { marginTop: 14 },
+  sprintStatusRow: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 8, marginBottom: 12 },
+  sprintStatusPill: {
+    borderRadius: 999,
+    fontSize: 12,
+    fontWeight: '800',
+    overflow: 'hidden',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    textTransform: 'uppercase',
+  },
+  sprintStatusActive: { backgroundColor: '#EAF3FF', color: '#0066CC' },
+  sprintStatusCompleted: { backgroundColor: '#E9F8EE', color: '#1F7A3A' },
+  sprintStatusExpired: { backgroundColor: '#FFECEC', color: '#B3261E' },
+  sprintDeadline: { color: '#6E6E73', fontWeight: '700' },
   sprintMeta: { color: '#6E6E73', lineHeight: 20, marginTop: 10 },
-  sprintMessage: { color: '#007AFF', fontWeight: '700', lineHeight: 20, marginTop: 10 },
+  sprintMetrics: { flexDirection: 'row', gap: 10, marginTop: 14 },
+  sprintMetric: { flex: 1, backgroundColor: '#F5F5F7', borderRadius: 14, padding: 12 },
+  sprintMetricValue: { color: '#1D1D1F', fontSize: 16, fontWeight: '800' },
+  sprintMetricLabel: { color: '#6E6E73', fontSize: 12, fontWeight: '700', marginTop: 3 },
+  sprintMessage: { borderRadius: 14, fontWeight: '700', lineHeight: 20, marginTop: 10, padding: 12 },
+  sprintMessageSuccess: { backgroundColor: '#E9F8EE', color: '#1F7A3A' },
+  sprintMessageError: { backgroundColor: '#FFECEC', color: '#B3261E' },
+  sprintMessageInfo: { backgroundColor: '#EAF3FF', color: '#0066CC' },
   trackButtons: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginTop: 14 },
   trackButton: {
     backgroundColor: '#1D1D1F',
@@ -373,6 +461,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   trackButtonDisabled: { opacity: 0.6 },
+  trackButtonContent: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   trackButtonText: { color: '#FFFFFF', fontWeight: '800' },
   sectionHeader: { marginBottom: 10 },
   sectionTitle: { color: '#1D1D1F', fontSize: 20, fontWeight: '800' },
