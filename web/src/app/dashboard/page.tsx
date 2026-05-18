@@ -5,9 +5,17 @@ import { useEffect, useState } from 'react';
 import type { CertificationSprintSummary, DashboardData } from '@/lib/api';
 import { fetchDashboard } from '@/lib/api';
 import { getAccessToken, logoutSession } from '@/lib/auth';
-import { formatBadge, formatTrack } from '@/lib/tracks';
+import { formatTrack } from '@/lib/tracks';
 import { ProgressOverview } from '@/components/dashboard/ProgressOverview';
 import { WeeklyQuestsCallout } from '@/components/dashboard/WeeklyQuestsCallout';
+import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
+import { LevelPill } from '@/components/ui/LevelPill';
+import { ProgressBar } from '@/components/ui/ProgressBar';
+import { TrackIcon } from '@/components/ui/TrackIcon';
+import { TrailCard } from '@/components/ui/TrailCard';
+import { estimatePoints, getBadgeVisual, getRankInfo, inferLevelFromModules } from '@/lib/design';
 
 type Quest = { id: string; label: string; progress: number; target: number };
 type QuickAction = {
@@ -46,14 +54,8 @@ const fallbackQuickActions: QuickAction[] = [
     track: 'INTUNE',
   },
   {
-    label: 'Continuer ServiceNow',
-    description: 'S’entraîner à qualifier et clôturer un ticket support.',
-    href: '/courses',
-    track: 'SERVICENOW',
-  },
-  {
     label: 'Sprint certification',
-    description: 'Planifier 7 ou 14 jours de révision Apple, Jamf, Intune ou ServiceNow.',
+    description: 'Planifier 7 ou 14 jours de révision Apple, Jamf ou Intune.',
     href: '/sprint',
     track: 'SPRINT',
     primary: true,
@@ -63,12 +65,6 @@ const fallbackQuickActions: QuickAction[] = [
     description: 'Vérifier les sources éditeurs avant un module, un sprint ou une certification.',
     href: '/resources',
     track: 'RESOURCES',
-  },
-  {
-    label: 'Lancer le mini-jeu ServiceNow',
-    description: 'Scorer une note de résolution avec le mode connecté ou le fallback local.',
-    href: '/servicenow',
-    track: 'SERVICENOW_GAME',
   },
 ];
 
@@ -99,8 +95,8 @@ export default function DashboardPage() {
   if (isLoading) {
     return (
       <section style={{ padding: '2rem 0' }}>
-        <h1 style={{ fontSize: '2rem', fontWeight: 700 }}>Tableau de bord</h1>
-        <p style={{ color: 'var(--muted)', marginTop: '0.5rem' }}>Chargement du compte...</p>
+        <h1 style={{ fontSize: '2rem', fontWeight: 800 }}>Tableau de bord</h1>
+        <p className="muted" style={{ marginTop: '0.5rem' }}>Chargement du compte...</p>
       </section>
     );
   }
@@ -109,23 +105,33 @@ export default function DashboardPage() {
     const recommendedAction = getFallbackRecommendation();
 
     return (
-      <section style={{ padding: '2rem 0', maxWidth: 720 }}>
-        <h1 style={{ fontSize: '2rem', fontWeight: 700 }}>Tableau de bord</h1>
-        <div className="card" style={{ marginTop: '1rem' }}>
-          <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>Connecte-toi pour suivre ta progression</h2>
-          <p style={{ color: 'var(--muted)', marginTop: '0.5rem' }}>
-            Le dashboard utilise le token local pour appeler `/users/me/dashboard`. Sans token, le MVP te
-            laisse explorer les parcours en mode démo.
+      <section style={{ padding: '1rem 0 2rem' }}>
+        <Card
+          variant="gradient"
+          style={{
+            background: 'linear-gradient(135deg, #032d60 0%, #0070d2 60%, #16cdf1 100%)',
+          }}
+        >
+          <span className="hero-eyebrow" style={{ background: 'rgba(255,255,255,0.16)', borderColor: 'rgba(255,255,255,0.32)' }}>
+            <span aria-hidden>{'\u{1F3AF}'}</span> Tableau de bord MDM Academy
+          </span>
+          <h1 style={{ fontSize: '2rem', fontWeight: 800, marginTop: '0.75rem' }}>
+            Connecte-toi pour suivre ta progression Trailblazer.
+          </h1>
+          <p style={{ marginTop: '0.5rem', maxWidth: 600 }}>
+            Le tableau de bord utilise le token local pour appeler <code>/users/me/progress</code>. Sans
+            token, le MVP te laisse explorer les parcours en mode démo.
           </p>
-          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginTop: '1rem' }}>
-            <Link className="btn" href="/auth">
+          <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', marginTop: '1.25rem' }}>
+            <Button href="/auth" variant="secondary" size="lg">
               Se connecter ou s’inscrire
-            </Link>
-            <Link className="btn" href="/courses" style={{ background: '#1d1d1f' }}>
+            </Button>
+            <Button href="/courses" size="lg" variant="ghost" style={{ color: '#fff', borderColor: 'rgba(255,255,255,0.4)' }}>
               Explorer les parcours
-            </Link>
+            </Button>
           </div>
-        </div>
+        </Card>
+
         <RecommendedActionCard action={recommendedAction} />
         <WeeklyQuestsCallout />
         <QuickActionsGrid actions={fallbackQuickActions} />
@@ -136,13 +142,13 @@ export default function DashboardPage() {
   if (!data) {
     return (
       <section style={{ padding: '2rem 0' }}>
-        <h1 style={{ fontSize: '2rem', fontWeight: 700 }}>Tableau de bord</h1>
-        <p style={{ color: 'var(--muted)', marginTop: '0.5rem' }}>
+        <h1 style={{ fontSize: '2rem', fontWeight: 800 }}>Tableau de bord</h1>
+        <p className="muted" style={{ marginTop: '0.5rem' }}>
           Impossible de charger les données. Essaie de te reconnecter.
         </p>
-        <Link className="btn" href="/auth" style={{ marginTop: '1rem' }}>
+        <Button href="/auth" style={{ marginTop: '1rem' }}>
           Revenir à la connexion
-        </Link>
+        </Button>
       </section>
     );
   }
@@ -152,24 +158,8 @@ export default function DashboardPage() {
   const quickActions = getQuickActions(data);
 
   return (
-    <section style={{ padding: '2rem 0' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
-        <div>
-          <h1 style={{ fontSize: '2rem', fontWeight: 700 }}>Tableau de bord</h1>
-          <p style={{ color: 'var(--muted)', marginTop: '0.25rem' }}>
-            Bonjour, {user.displayName ?? 'Technicien'}
-          </p>
-        </div>
-        <button className="btn" type="button" onClick={handleLogout} style={{ background: '#1d1d1f' }}>
-          Déconnexion locale
-        </button>
-      </div>
-      <p style={{ color: 'var(--muted)', marginTop: '0.25rem' }}>
-        Session chargée depuis `ama_access`.
-      </p>
-      <p style={{ marginTop: '0.5rem' }}>
-        Niveau : <strong>{stats.level}</strong> · {stats.points} points
-      </p>
+    <section style={{ padding: '1rem 0 2rem' }}>
+      <TrailblazerRankCard user={user.displayName ?? 'Technicien'} points={stats.points} level={stats.level} onLogout={handleLogout} />
 
       <RecommendedActionCard action={recommendedAction} />
       <SprintDashboardCard sprint={certificationSprint ?? null} />
@@ -185,40 +175,37 @@ export default function DashboardPage() {
         preparationScore={stats.preparationScore}
       />
 
-      <section style={{ marginTop: '2rem' }}>
-        <h2 style={{ fontSize: '1.25rem', fontWeight: 600 }}>Parcours</h2>
-        <div
-          style={{
-            marginTop: '1rem',
-            display: 'grid',
-            gap: '1rem',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-          }}
-        >
-          {courses.map((c) => (
-            <article key={c.id} className="card">
-              <h3 style={{ fontWeight: 600 }}>{c.title}</h3>
-              <div style={{ marginTop: '0.75rem', height: 8, background: '#e5e5ea', borderRadius: 4 }}>
-                <div
-                  style={{
-                    height: '100%',
-                    width: `${c.progressPercent ?? 0}%`,
-                    background: 'var(--accent)',
-                    borderRadius: 4,
-                  }}
-                />
-              </div>
-              <p style={{ marginTop: '0.5rem', fontSize: '0.875rem', color: 'var(--muted)' }}>
-                {c.progressPercent ?? 0}% complété
-              </p>
-              <Link
-                href={`/courses/${c.slug}${c.nextModule ? `#module-${c.nextModule.slug}` : ''}`}
-                style={{ display: 'inline-block', marginTop: '0.75rem', fontWeight: 600 }}
-              >
-                {c.nextModule ? `Continuer : ${c.nextModule.title}` : 'Ouvrir le parcours'}
-              </Link>
-            </article>
-          ))}
+      <section className="section">
+        <div className="section-head">
+          <div>
+            <span className="section-eyebrow">Mes parcours</span>
+            <h2>Continue là où tu t’étais arrêté</h2>
+          </div>
+          <Link href="/courses" style={{ fontWeight: 700 }}>
+            Voir tout le catalogue →
+          </Link>
+        </div>
+        <div className="grid grid-cards-lg">
+          {courses.map((course) => {
+            const level = inferLevelFromModules(course.totalModules);
+            const points = estimatePoints(course.totalModules, level);
+            return (
+              <TrailCard
+                key={course.id}
+                href={`/courses/${course.slug}${course.nextModule ? `#module-${course.nextModule.slug}` : ''}`}
+                title={course.title}
+                description={course.description}
+                track={course.track}
+                trackLabel={formatTrack(course.track)}
+                totalModules={course.totalModules}
+                completedModules={course.completedModules}
+                progressPercent={course.progressPercent}
+                level={level}
+                points={points}
+                cta={course.nextModule ? 'Continuer' : 'Ouvrir'}
+              />
+            );
+          })}
         </div>
       </section>
 
@@ -227,177 +214,268 @@ export default function DashboardPage() {
   );
 }
 
+function TrailblazerRankCard({
+  user,
+  points,
+  level,
+  onLogout,
+}: {
+  user: string;
+  points: number;
+  level: string;
+  onLogout: () => void;
+}) {
+  const rank = getRankInfo(points);
+  const previousFloor = rank.minPoints;
+  const ceiling = rank.nextPoints ?? Math.max(previousFloor + 100, points + 100);
+  const span = Math.max(1, ceiling - previousFloor);
+  const progressInRank = Math.max(0, Math.min(span, points - previousFloor));
+  const percent = Math.round((progressInRank / span) * 100);
+  const remaining = rank.nextPoints != null ? Math.max(0, rank.nextPoints - points) : 0;
+
+  return (
+    <Card
+      style={{
+        background: rank.gradient,
+        color: '#fff',
+        borderColor: 'transparent',
+        boxShadow: 'var(--shadow-md)',
+      }}
+    >
+      <div
+        style={{
+          display: 'grid',
+          gap: '1.25rem',
+          gridTemplateColumns: 'minmax(0, 1fr) auto',
+          alignItems: 'center',
+        }}
+      >
+        <div>
+          <span
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              padding: '0.2rem 0.65rem',
+              borderRadius: 999,
+              background: 'rgba(255,255,255,0.18)',
+              border: '1px solid rgba(255,255,255,0.32)',
+              fontSize: '0.78rem',
+              fontWeight: 800,
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+            }}
+          >
+            <span aria-hidden>{rank.icon}</span> Rang Trailblazer
+          </span>
+          <h1 style={{ fontSize: '2rem', fontWeight: 800, marginTop: '0.5rem' }}>
+            Bonjour {user}
+          </h1>
+          <p style={{ marginTop: '0.35rem', color: 'rgba(255,255,255,0.92)' }}>
+            Rang <strong style={{ color: '#fff' }}>{rank.name}</strong> · niveau{' '}
+            <strong style={{ color: '#fff' }}>{level}</strong> · {points} points cumulés
+          </p>
+          <div style={{ marginTop: '1rem', maxWidth: 560 }}>
+            <div
+              role="progressbar"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={percent}
+              style={{
+                background: 'rgba(255,255,255,0.22)',
+                borderRadius: 999,
+                height: 10,
+                overflow: 'hidden',
+              }}
+            >
+              <div
+                style={{
+                  background: 'linear-gradient(90deg, #ffffff 0%, #ffce5b 100%)',
+                  height: '100%',
+                  width: `${percent}%`,
+                  borderRadius: 999,
+                }}
+              />
+            </div>
+            <p style={{ marginTop: '0.5rem', fontSize: '0.9rem', color: 'rgba(255,255,255,0.92)' }}>
+              {rank.nextName
+                ? `${remaining} pts pour atteindre le rang ${rank.nextName}`
+                : 'Rang maximal atteint — bravo Champion·ne !'}
+            </p>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={onLogout}
+          className="btn btn-secondary btn-sm"
+          style={{ background: 'rgba(255,255,255,0.16)', color: '#fff', borderColor: 'rgba(255,255,255,0.32)' }}
+        >
+          Déconnexion locale
+        </button>
+      </div>
+    </Card>
+  );
+}
+
 function SprintDashboardCard({ sprint }: { sprint: CertificationSprintSummary | null }) {
   const sprintStatus = sprint ? formatSprintStatus(sprint) : 'Non démarré';
 
   return (
-    <section
-      className="card"
-      style={{
-        alignItems: 'center',
-        display: 'grid',
-        gap: '1rem',
-        gridTemplateColumns: 'minmax(0, 1fr) auto',
-        marginTop: '1.5rem',
-      }}
-    >
-      <div>
-        <p style={{ color: 'var(--accent)', fontSize: '0.85rem', fontWeight: 800, textTransform: 'uppercase' }}>
-          Certification Sprint
-        </p>
-        {sprint ? (
-          <>
-            <h2 style={{ fontSize: '1.2rem', fontWeight: 800, marginTop: '0.35rem' }}>{sprint.label}</h2>
-            <p style={{ color: 'var(--muted)', marginTop: '0.35rem' }}>
-              {formatTrack(sprint.track)} · {sprint.days} jours · {sprintStatus}
-            </p>
-            <div style={{ background: '#e5e5ea', borderRadius: 999, height: 8, marginTop: '0.75rem' }}>
+    <Card style={{ marginTop: '1.25rem' }}>
+      <div
+        style={{
+          display: 'grid',
+          gap: '1.25rem',
+          gridTemplateColumns: 'minmax(0, 1fr) auto',
+          alignItems: 'center',
+        }}
+      >
+        <div>
+          <span className="section-eyebrow">Sprint certification</span>
+          {sprint ? (
+            <>
+              <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginTop: '0.4rem' }}>{sprint.label}</h2>
+              <p className="muted" style={{ marginTop: '0.35rem' }}>
+                {formatTrack(sprint.track)} · {sprint.days} jours · {sprintStatus}
+              </p>
+              <ProgressBar
+                value={Math.min(100, sprint.progressPercent)}
+                tone={sprint.completed ? 'success' : 'accent'}
+                style={{ marginTop: '0.85rem' }}
+              />
               <div
                 style={{
-                  background: sprint.completed ? '#0f7a3b' : 'var(--accent)',
-                  borderRadius: 999,
-                  height: '100%',
-                  width: `${Math.min(100, sprint.progressPercent)}%`,
+                  display: 'grid',
+                  gap: '0.75rem',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
+                  marginTop: '1rem',
                 }}
-              />
-            </div>
-            <div
-              style={{
-                display: 'grid',
-                gap: '0.75rem',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
-                marginTop: '1rem',
-              }}
-            >
-              <SprintMetric label="Progression" value={`${sprint.progress}/${sprint.target}`} />
-              <SprintMetric label="Objectif" value={`${sprint.progressPercent}%`} />
-              <SprintMetric label="Restants" value={String(sprint.remainingModules)} />
-              <SprintMetric label="Statut" value={sprintStatus} />
-            </div>
-          </>
-        ) : (
-          <>
-            <h2 style={{ fontSize: '1.2rem', fontWeight: 800, marginTop: '0.35rem' }}>
-              Aucun sprint actif
-            </h2>
-            <p style={{ color: 'var(--muted)', marginTop: '0.35rem' }}>
-              Lance un cycle court de préparation sur Apple, Jamf, Intune ou ServiceNow, puis suis ton rythme ici.
-            </p>
-          </>
-        )}
+              >
+                <SprintMetric label="Progression" value={`${sprint.progress}/${sprint.target}`} />
+                <SprintMetric label="Objectif" value={`${sprint.progressPercent}%`} />
+                <SprintMetric label="Restants" value={String(sprint.remainingModules)} />
+                <SprintMetric label="Statut" value={sprintStatus} />
+              </div>
+            </>
+          ) : (
+            <>
+              <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginTop: '0.4rem' }}>Aucun sprint actif</h2>
+              <p className="muted" style={{ marginTop: '0.35rem' }}>
+                Lance un cycle court de préparation sur Apple, Jamf ou Intune, puis suis ton rythme ici.
+              </p>
+            </>
+          )}
+        </div>
+        <Button href="/sprint">{sprint ? 'Voir le sprint' : 'Démarrer un sprint'}</Button>
       </div>
-      <Link className="btn" href="/sprint">
-        {sprint ? 'Voir le sprint' : 'Démarrer un sprint'}
-      </Link>
-    </section>
+    </Card>
   );
 }
 
 function SprintMetric({ label, value }: { label: string; value: string }) {
   return (
-    <div style={{ background: '#f5f5f7', borderRadius: 12, padding: '0.75rem' }}>
-      <p style={{ color: 'var(--muted)', fontSize: '0.8rem', fontWeight: 700 }}>{label}</p>
-      <strong style={{ display: 'block', marginTop: '0.2rem' }}>{value}</strong>
+    <div className="stat">
+      <p className="stat-label">{label}</p>
+      <p className="stat-value">{value}</p>
     </div>
   );
 }
 
 function LeaderboardCallout() {
   return (
-    <section
-      className="card"
+    <Card
       style={{
-        alignItems: 'center',
-        background: 'linear-gradient(135deg, #ffffff 0%, #fff7d6 100%)',
+        marginTop: '1.25rem',
+        background: 'linear-gradient(135deg, #fff7d6 0%, #ffffff 100%)',
         borderColor: '#f0cf7a',
         display: 'grid',
         gap: '1rem',
         gridTemplateColumns: 'minmax(0, 1fr) auto',
-        marginTop: '1.5rem',
+        alignItems: 'center',
       }}
     >
       <div>
-        <p style={{ color: '#8a6d00', fontSize: '0.85rem', fontWeight: 800, textTransform: 'uppercase' }}>
+        <span style={{ color: '#8a6d00', fontSize: '0.8rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
           Classement
-        </p>
+        </span>
         <h2 style={{ fontSize: '1.2rem', fontWeight: 800, marginTop: '0.35rem' }}>
           Compare ta progression à la communauté
         </h2>
-        <p style={{ color: 'var(--muted)', marginTop: '0.35rem' }}>
-          Découvre le top 10 des apprenants Apple MDM Academy et ton rang actuel.
+        <p className="muted" style={{ marginTop: '0.35rem' }}>
+          Découvre le top 10 des apprenants MDM Academy et ton rang actuel.
         </p>
       </div>
-      <Link className="btn" href="/leaderboard">
-        Voir le classement
-      </Link>
-    </section>
+      <Button href="/leaderboard">Voir le classement</Button>
+    </Card>
   );
 }
 
 function RecommendedActionCard({ action }: { action: RecommendedAction }) {
   return (
-    <section
-      className="card"
+    <Card
       style={{
-        background: 'linear-gradient(135deg, #ffffff 0%, #eef6ff 100%)',
-        borderColor: '#c7ddff',
-        marginTop: '1.5rem',
+        marginTop: '1.25rem',
+        background: 'linear-gradient(135deg, #ffffff 0%, #e3f0ff 100%)',
+        borderColor: '#c5dbf3',
       }}
     >
-      <p style={{ color: 'var(--accent)', fontSize: '0.85rem', fontWeight: 800, textTransform: 'uppercase' }}>
-        Prochaine action recommandée
-      </p>
+      <span className="section-eyebrow">Prochaine action recommandée</span>
       <div
         style={{
-          alignItems: 'end',
           display: 'grid',
           gap: '1rem',
           gridTemplateColumns: 'minmax(0, 1fr) auto',
-          marginTop: '0.5rem',
+          alignItems: 'center',
+          marginTop: '0.4rem',
         }}
       >
         <div>
           <h2 style={{ fontSize: '1.35rem', fontWeight: 800 }}>{action.title}</h2>
-          <p style={{ color: 'var(--muted)', marginTop: '0.35rem' }}>{action.description}</p>
-          <p style={{ color: 'var(--muted)', fontSize: '0.9rem', marginTop: '0.75rem' }}>{action.meta}</p>
+          <p className="muted" style={{ marginTop: '0.35rem' }}>{action.description}</p>
+          <p className="muted" style={{ fontSize: '0.85rem', marginTop: '0.5rem' }}>{action.meta}</p>
         </div>
-        <Link className="btn" href={action.href}>
-          {action.cta}
-        </Link>
+        <Button href={action.href}>{action.cta}</Button>
       </div>
-    </section>
+    </Card>
   );
 }
 
 function QuickActionsGrid({ actions }: { actions: QuickAction[] }) {
   return (
-    <section style={{ marginTop: '1.5rem' }}>
-      <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>Accès rapides</h2>
+    <section className="section" style={{ marginTop: '1.5rem' }}>
+      <div className="section-head">
+        <div>
+          <span className="section-eyebrow">Accès rapides</span>
+          <h2>Reprends en un clic</h2>
+        </div>
+      </div>
       <div
         style={{
           display: 'grid',
           gap: '0.75rem',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))',
-          marginTop: '0.75rem',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
         }}
       >
         {actions.map((action) => (
           <Link
-            className="card"
             href={action.href}
             key={action.label}
+            className="card card-soft"
             style={{
-              borderColor: action.primary ? '#c7ddff' : 'var(--border)',
-              color: 'inherit',
               display: 'grid',
-              gap: '0.4rem',
+              gap: '0.5rem',
+              color: 'inherit',
+              borderColor: action.primary ? '#c5dbf3' : 'var(--border-soft)',
             }}
           >
-            <span style={{ color: 'var(--muted)', fontSize: '0.75rem', fontWeight: 800 }}>
-              {formatTrack(action.track)}
-            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem' }}>
+              <TrackIcon track={action.track} size="sm" />
+              <span className="muted" style={{ fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                {formatTrack(action.track)}
+              </span>
+            </div>
             <strong>{action.label}</strong>
-            <span style={{ color: 'var(--muted)' }}>{action.description}</span>
+            <span className="muted" style={{ fontSize: '0.9rem' }}>{action.description}</span>
             {typeof action.progress === 'number' && (
               <span style={{ color: 'var(--accent)', fontSize: '0.85rem', fontWeight: 700 }}>
                 {action.progress}% complété
@@ -416,17 +494,17 @@ function QuestsBadgesPanel({ quests, badges }: { quests: Quest[]; badges: string
       style={{
         display: 'grid',
         gap: '1rem',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
         marginTop: '2rem',
       }}
     >
-      <div className="card">
-        <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>Quêtes de la semaine</h2>
+      <Card>
+        <h2 style={{ fontSize: '1.2rem', fontWeight: 800 }}>Quêtes de la semaine</h2>
         {quests.length > 0 ? (
           <ul style={{ display: 'grid', gap: '0.85rem', listStyle: 'none', marginTop: '1rem' }}>
             {quests.map((quest) => {
-              const progressPercent = quest.target > 0 ? Math.min(100, Math.round((quest.progress / quest.target) * 100)) : 0;
-
+              const target = Math.max(1, quest.target);
+              const progressPercent = Math.min(100, Math.round((quest.progress / target) * 100));
               return (
                 <li key={quest.id}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem' }}>
@@ -435,53 +513,51 @@ function QuestsBadgesPanel({ quests, badges }: { quests: Quest[]; badges: string
                       {quest.progress}/{quest.target}
                     </strong>
                   </div>
-                  <div style={{ background: '#e5e5ea', borderRadius: 999, height: 8, marginTop: '0.5rem' }}>
-                    <div
-                      style={{
-                        background: 'var(--accent)',
-                        borderRadius: 999,
-                        height: '100%',
-                        width: `${progressPercent}%`,
-                      }}
-                    />
-                  </div>
+                  <ProgressBar
+                    value={progressPercent}
+                    tone={progressPercent >= 100 ? 'success' : 'accent'}
+                    size="sm"
+                    style={{ marginTop: '0.4rem' }}
+                  />
                 </li>
               );
             })}
           </ul>
         ) : (
-          <p style={{ color: 'var(--muted)', marginTop: '0.75rem' }}>
-            Aucune quête active pour le moment. Continue un module ou lance le mini-jeu ServiceNow pour garder le rythme.
+          <p className="muted" style={{ marginTop: '0.75rem' }}>
+            Aucune quête active pour le moment. Continue un module ou démarre un sprint pour garder le
+            rythme.
           </p>
         )}
-      </div>
+      </Card>
 
-      <div className="card">
-        <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>Badges</h2>
+      <Card>
+        <h2 style={{ fontSize: '1.2rem', fontWeight: 800 }}>Badges</h2>
         {badges.length > 0 ? (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '1rem' }}>
-            {badges.map((badge) => (
-              <span
-                key={badge}
-                style={{
-                  background: '#eef6ff',
-                  border: '1px solid #c7ddff',
-                  borderRadius: 999,
-                  color: '#0057b8',
-                  fontWeight: 700,
-                  padding: '0.35rem 0.7rem',
-                }}
-              >
-                {formatBadge(badge)}
-              </span>
-            ))}
+            {badges.map((slug) => {
+              const visual = getBadgeVisual(slug);
+              return (
+                <Badge
+                  key={slug}
+                  icon={visual.icon}
+                  style={{ background: visual.bg, color: visual.color, border: `1px solid ${visual.color}22` }}
+                  tone="accent"
+                >
+                  {visual.label}
+                </Badge>
+              );
+            })}
           </div>
         ) : (
-          <p style={{ color: 'var(--muted)', marginTop: '0.75rem' }}>
+          <p className="muted" style={{ marginTop: '0.75rem' }}>
             Aucun badge débloqué. Termine un module complet pour afficher tes premières récompenses.
           </p>
         )}
-      </div>
+        <p className="muted" style={{ marginTop: '0.85rem', fontSize: '0.85rem' }}>
+          <LevelPill level="Intermédiaire" /> ton niveau évolue avec tes points et tes super-badges.
+        </p>
+      </Card>
     </section>
   );
 }
@@ -516,11 +592,11 @@ function getRecommendedAction(data: DashboardData): RecommendedAction {
 
 function getFallbackRecommendation(): RecommendedAction {
   return {
-    title: 'Mini-jeu ServiceNow',
-    description: 'Teste une note de résolution et obtiens un score local même sans session connectée.',
-    href: '/servicenow',
-    cta: 'Lancer le mini-jeu',
-    meta: 'Fallback démo disponible dans ce navigateur',
+    title: 'Préparer un sprint certification',
+    description: 'Planifie 7 ou 14 jours de révision Apple, Jamf ou Intune pour cadrer ta progression.',
+    href: '/sprint',
+    cta: 'Lancer un sprint',
+    meta: 'Disponible avec ou sans session connectée',
   };
 }
 

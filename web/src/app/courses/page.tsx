@@ -6,10 +6,19 @@ import type { CourseSummary } from '@/lib/api';
 import { fetchCourses } from '@/lib/api';
 import { getAccessToken } from '@/lib/auth';
 import { formatTrack } from '@/lib/tracks';
+import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
+import { LevelPill } from '@/components/ui/LevelPill';
+import { TrailCard } from '@/components/ui/TrailCard';
+import { inferLevelFromModules, type TrailLevel } from '@/lib/design';
+
+const LEVELS: ('TOUS' | TrailLevel)[] = ['TOUS', 'Débutant', 'Intermédiaire', 'Avancé'];
 
 export default function CoursesPage() {
   const [courses, setCourses] = useState<CourseSummary[]>([]);
   const [selectedTrack, setSelectedTrack] = useState('TOUS');
+  const [selectedLevel, setSelectedLevel] = useState<'TOUS' | TrailLevel>('TOUS');
   const [hasToken, setHasToken] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -25,195 +34,231 @@ export default function CoursesPage() {
     () => ['TOUS', ...Array.from(new Set(courses.map((course) => course.track))).sort()],
     [courses]
   );
-  const filteredCourses = useMemo(
-    () => (selectedTrack === 'TOUS' ? courses : courses.filter((course) => course.track === selectedTrack)),
-    [courses, selectedTrack]
+
+  const enrichedCourses = useMemo(
+    () =>
+      courses.map((course) => ({
+        course,
+        level: inferLevelFromModules(course.totalModules),
+      })),
+    [courses]
   );
+
+  const filteredCourses = useMemo(() => {
+    return enrichedCourses.filter(({ course, level }) => {
+      if (selectedTrack !== 'TOUS' && course.track !== selectedTrack) return false;
+      if (selectedLevel !== 'TOUS' && level !== selectedLevel) return false;
+      return true;
+    });
+  }, [enrichedCourses, selectedTrack, selectedLevel]);
+
   const moduleCount = courses.reduce((total, course) => total + (course.totalModules ?? 0), 0);
+  const inProgressCount = courses.filter(
+    (course) => (course.progressPercent ?? 0) > 0 && (course.progressPercent ?? 0) < 100
+  ).length;
 
   return (
-    <section style={{ padding: '2rem 0' }}>
+    <section style={{ padding: '1rem 0' }}>
       <div
-        className="card"
+        className="hero"
         style={{
-          background: 'linear-gradient(135deg, #ffffff 0%, #eef6ff 55%, #fff8e6 100%)',
-          display: 'grid',
-          gap: '1.5rem',
-          gridTemplateColumns: 'minmax(0, 1fr) minmax(240px, 0.45fr)',
-          padding: '1.75rem',
+          background: 'linear-gradient(135deg, #032d60 0%, #0070d2 55%, #16cdf1 100%)',
+          marginTop: 0,
         }}
       >
-        <div>
-          <p style={{ color: 'var(--accent)', fontSize: '0.85rem', fontWeight: 800, textTransform: 'uppercase' }}>
-            Catalogue public
-          </p>
-          <h1 style={{ fontSize: '2.35rem', fontWeight: 800, lineHeight: 1.12, marginTop: '0.35rem' }}>
-            Choisis ton parcours Apple, MDM ou support
-          </h1>
-          <p style={{ color: 'var(--muted)', fontSize: '1.05rem', marginTop: '0.75rem', maxWidth: 720 }}>
-            Compare les parcours, repère le volume de modules et démarre une préparation guidée. Le catalogue reste
-            consultable en local si l’API publique est indisponible.
-          </p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '1.25rem' }}>
-            <Link className="btn" href={hasToken ? '/dashboard' : '/auth'}>
-              {hasToken ? 'Voir mon dashboard' : 'Créer un compte'}
-            </Link>
-            <Link className="btn" href="/sprint" style={{ background: '#1d1d1f' }}>
-              Lancer un sprint
-            </Link>
-          </div>
+        <span className="hero-eyebrow">
+          <span aria-hidden>{'\u{1F4DA}'}</span> Catalogue MDM Academy
+        </span>
+        <h1>Choisis ton parcours Apple, Jamf ou Intune.</h1>
+        <p style={{ marginTop: '0.85rem' }}>
+          Filtre par piste et par niveau pour repérer le bon parcours, valide tes unités, gagne des points
+          et débloque ton prochain badge.
+        </p>
+        <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', marginTop: '1.5rem' }}>
+          <Button href={hasToken ? '/dashboard' : '/auth'} variant="secondary" size="lg">
+            {hasToken ? 'Voir mon tableau de bord' : 'Créer un compte'}
+          </Button>
+          <Button href="/sprint" size="lg" variant="ghost" style={{ color: '#fff', borderColor: 'rgba(255,255,255,0.4)' }}>
+            Lancer un sprint
+          </Button>
         </div>
-        <aside
+        <div
           style={{
-            alignSelf: 'stretch',
-            background: 'rgba(255, 255, 255, 0.72)',
-            border: '1px solid var(--border)',
-            borderRadius: 14,
+            marginTop: '1.75rem',
             display: 'grid',
             gap: '0.75rem',
-            padding: '1rem',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
           }}
         >
-          <CatalogStat label="Parcours disponibles" value={String(Math.max(tracks.length - 1, 0))} />
-          <CatalogStat label="Modules catalogue" value={String(moduleCount || 'Démo')} />
-          <CatalogStat label="Accès" value={hasToken ? 'Connecté' : 'Public'} />
-        </aside>
+          <CatalogHeroStat label="Parcours" value={String(Math.max(courses.length, 0))} />
+          <CatalogHeroStat label="Unités cumulées" value={moduleCount ? String(moduleCount) : 'Démo'} />
+          <CatalogHeroStat label="En cours" value={String(inProgressCount)} />
+          <CatalogHeroStat label="Accès" value={hasToken ? 'Connecté' : 'Public'} />
+        </div>
       </div>
 
       {!hasToken && (
-        <section className="card" style={{ background: '#fff8e6', borderColor: '#f0cf7a', marginTop: '1.25rem' }}>
-          <strong>Mode public</strong>
-          <p style={{ color: 'var(--muted)', marginTop: '0.35rem' }}>
-            Tu peux explorer les parcours sans compte. Connecte-toi pour reprendre un module, sauvegarder tes scores
-            et alimenter ton sprint de certification.
-          </p>
-        </section>
+        <Card
+          variant="soft"
+          style={{
+            marginTop: '1.5rem',
+            borderColor: '#f0cf7a',
+            background: 'linear-gradient(135deg, #fff8e6 0%, #ffffff 100%)',
+          }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
+            <div>
+              <strong>Mode public</strong>
+              <p className="muted" style={{ marginTop: '0.35rem' }}>
+                Tu peux explorer le catalogue sans compte. Connecte-toi pour reprendre un module, sauvegarder
+                tes scores et alimenter ton sprint de certification.
+              </p>
+            </div>
+            <Button href="/auth" size="sm">
+              Se connecter
+            </Button>
+          </div>
+        </Card>
       )}
 
-      {isLoading ? (
-        <p style={{ color: 'var(--muted)', marginTop: '2rem' }}>Chargement des parcours...</p>
-      ) : (
-        <>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '1.5rem' }}>
-            {tracks.map((track) => {
-              const isSelected = selectedTrack === track;
+      <div className="section" style={{ marginTop: '2rem' }}>
+        <FilterRow
+          label="Piste"
+          options={tracks}
+          selected={selectedTrack}
+          onSelect={setSelectedTrack}
+          formatOption={(track) => (track === 'TOUS' ? 'Toutes les pistes' : formatTrack(track))}
+        />
+        <FilterRow
+          label="Niveau"
+          options={LEVELS}
+          selected={selectedLevel}
+          onSelect={(level) => setSelectedLevel(level as 'TOUS' | TrailLevel)}
+          formatOption={(level) => (level === 'TOUS' ? 'Tous les niveaux' : level)}
+        />
 
-              return (
-                <button
-                  key={track}
-                  type="button"
-                  onClick={() => setSelectedTrack(track)}
-                  style={{
-                    background: isSelected ? 'var(--accent)' : '#ffffff',
-                    border: '1px solid var(--border)',
-                    borderRadius: 999,
-                    color: isSelected ? '#ffffff' : 'var(--fg)',
-                    cursor: 'pointer',
-                    fontWeight: 800,
-                    padding: '0.55rem 0.9rem',
-                  }}
-                >
-                  {track === 'TOUS' ? 'Tous les parcours' : formatTrack(track)}
-                </button>
-              );
-            })}
-          </div>
-
-          <div
-            style={{
-              display: 'grid',
-              gap: '1rem',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-              marginTop: '1.25rem',
-            }}
-          >
-            {filteredCourses.map((course) => (
-              <CourseCatalogCard course={course} hasToken={hasToken} key={course.slug} />
+        {isLoading ? (
+          <p className="muted" style={{ marginTop: '1.5rem' }}>
+            Chargement des parcours...
+          </p>
+        ) : filteredCourses.length === 0 ? (
+          <Card style={{ marginTop: '1.25rem', textAlign: 'center' }}>
+            <h2 style={{ fontSize: '1.2rem', fontWeight: 800 }}>Aucun parcours ne correspond aux filtres</h2>
+            <p className="muted" style={{ marginTop: '0.5rem' }}>
+              Réinitialise les filtres ou explore un autre niveau pour découvrir le catalogue complet.
+            </p>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '0.6rem', marginTop: '1rem', flexWrap: 'wrap' }}>
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setSelectedTrack('TOUS');
+                  setSelectedLevel('TOUS');
+                }}
+              >
+                Réinitialiser
+              </Button>
+              <Button href="/sprint" variant="ghost">
+                Lancer un sprint
+              </Button>
+            </div>
+          </Card>
+        ) : (
+          <div className="grid grid-cards-lg" style={{ marginTop: '1.25rem' }}>
+            {filteredCourses.map(({ course, level }) => (
+              <TrailCard
+                key={course.slug}
+                href={`/courses/${course.slug}${course.nextModule ? `#module-${course.nextModule.slug}` : ''}`}
+                title={course.title}
+                description={course.description}
+                track={course.track}
+                trackLabel={formatTrack(course.track)}
+                totalModules={course.totalModules}
+                completedModules={course.completedModules}
+                progressPercent={course.progressPercent}
+                level={level}
+              />
             ))}
           </div>
-        </>
-      )}
+        )}
+      </div>
+
+      <Card variant="soft" style={{ marginTop: '2rem' }}>
+        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div>
+            <h2 style={{ fontSize: '1.2rem', fontWeight: 800 }}>Tu hésites ? Démarre par un sprint</h2>
+            <p className="muted" style={{ marginTop: '0.35rem', maxWidth: 600 }}>
+              Sept ou quatorze jours, un objectif clair par piste : laisse-toi guider et reçois ton badge à la fin.
+            </p>
+            <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.8rem', flexWrap: 'wrap' }}>
+              <Badge tone="success" icon="\u{1F3C1}">7 jours</Badge>
+              <Badge tone="success" icon="\u{1F3C1}">14 jours</Badge>
+              <LevelPill level="Intermédiaire" />
+            </div>
+          </div>
+          <Button href="/sprint" size="lg">
+            Lancer un sprint
+          </Button>
+        </div>
+      </Card>
+
+      <p className="muted" style={{ marginTop: '1.5rem', fontSize: '0.85rem' }}>
+        Le catalogue reste consultable en local si l’API <Link href="/diagnostics">backend</Link> est
+        indisponible. Tes scores ne sont sauvegardés qu’en étant connecté.
+      </p>
     </section>
   );
 }
 
-function CourseCatalogCard({ course, hasToken }: { course: CourseSummary; hasToken: boolean }) {
-  const moduleCount = course.totalModules ?? 0;
-  const completedModules = course.completedModules ?? 0;
-  const progressPercent = course.progressPercent ?? 0;
-  const detailHref = `/courses/${course.slug}${course.nextModule ? `#module-${course.nextModule.slug}` : ''}`;
-
+function FilterRow({
+  label,
+  options,
+  selected,
+  onSelect,
+  formatOption,
+}: {
+  label: string;
+  options: readonly string[];
+  selected: string;
+  onSelect: (value: string) => void;
+  formatOption: (value: string) => string;
+}) {
   return (
-    <article className="card" style={{ display: 'flex', flexDirection: 'column', minHeight: 320 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem' }}>
-        <p style={{ color: 'var(--accent)', fontSize: '0.8rem', fontWeight: 800, textTransform: 'uppercase' }}>
-          {formatTrack(course.track)}
-        </p>
-        <span
-          style={{
-            background: '#f5f5f7',
-            borderRadius: 999,
-            color: 'var(--muted)',
-            fontSize: '0.8rem',
-            fontWeight: 800,
-            padding: '0.25rem 0.6rem',
-            whiteSpace: 'nowrap',
-          }}
-        >
-          {moduleCount || 'Démo'} module{moduleCount > 1 ? 's' : ''}
-        </span>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap', marginTop: '1rem' }}>
+      <span className="muted" style={{ fontSize: '0.8rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+        {label}
+      </span>
+      <div className="chip-row">
+        {options.map((option) => (
+          <button
+            key={option}
+            type="button"
+            className="chip"
+            aria-pressed={option === selected}
+            onClick={() => onSelect(option)}
+          >
+            {formatOption(option)}
+          </button>
+        ))}
       </div>
-
-      <h2 style={{ fontSize: '1.35rem', fontWeight: 800, lineHeight: 1.2, marginTop: '0.5rem' }}>{course.title}</h2>
-      {course.description && <p style={{ color: 'var(--muted)', marginTop: '0.65rem' }}>{course.description}</p>}
-
-      <div style={{ marginTop: '1rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', fontSize: '0.9rem' }}>
-          <strong>{hasToken ? `${progressPercent}% complété` : 'Aperçu public'}</strong>
-          <span style={{ color: 'var(--muted)' }}>
-            {moduleCount ? `${completedModules}/${moduleCount}` : 'modules inclus'}
-          </span>
-        </div>
-        <div style={{ background: '#e5e5ea', borderRadius: 999, height: 8, marginTop: '0.5rem' }}>
-          <div
-            style={{
-              background: progressPercent > 0 ? '#0f7a3b' : 'var(--accent)',
-              borderRadius: 999,
-              height: '100%',
-              width: `${Math.min(100, progressPercent)}%`,
-            }}
-          />
-        </div>
-      </div>
-
-      {course.nextModule && (
-        <p style={{ color: 'var(--muted)', fontSize: '0.9rem', marginTop: '0.85rem' }}>
-          Prochaine étape: <strong>{course.nextModule.title}</strong>
-        </p>
-      )}
-
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.65rem', marginTop: 'auto', paddingTop: '1.25rem' }}>
-        <Link className="btn" href={detailHref}>
-          {hasToken ? 'Continuer' : 'Voir le détail'}
-        </Link>
-        {!hasToken && (
-          <Link className="btn" href="/auth" style={{ background: '#1d1d1f' }}>
-            S’inscrire
-          </Link>
-        )}
-        <Link href="/sprint" style={{ alignSelf: 'center', fontWeight: 800 }}>
-          Préparer en sprint
-        </Link>
-      </div>
-    </article>
+    </div>
   );
 }
 
-function CatalogStat({ label, value }: { label: string; value: string }) {
+function CatalogHeroStat({ label, value }: { label: string; value: string }) {
   return (
-    <div style={{ background: '#ffffff', borderRadius: 12, padding: '0.85rem' }}>
-      <p style={{ color: 'var(--muted)', fontSize: '0.8rem', fontWeight: 700 }}>{label}</p>
-      <strong style={{ display: 'block', fontSize: '1.15rem', marginTop: '0.15rem' }}>{value}</strong>
+    <div
+      style={{
+        background: 'rgba(255,255,255,0.14)',
+        border: '1px solid rgba(255,255,255,0.24)',
+        borderRadius: 12,
+        padding: '0.75rem 0.95rem',
+        color: '#fff',
+      }}
+    >
+      <p style={{ fontSize: '0.75rem', fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', opacity: 0.86 }}>
+        {label}
+      </p>
+      <p style={{ fontSize: '1.45rem', fontWeight: 800, marginTop: '0.2rem' }}>{value}</p>
     </div>
   );
 }

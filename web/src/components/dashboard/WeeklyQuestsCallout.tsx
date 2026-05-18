@@ -1,34 +1,32 @@
-import Link from 'next/link';
+import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
 
 export function WeeklyQuestsCallout() {
   return (
-    <section
-      className="card"
+    <Card
       style={{
-        alignItems: 'center',
-        background: 'linear-gradient(135deg, #ffffff 0%, #f4fbf6 100%)',
+        marginTop: '1.25rem',
+        background: 'linear-gradient(135deg, #e8f5ec 0%, #ffffff 100%)',
         borderColor: '#a8d8b2',
         display: 'grid',
         gap: '1rem',
         gridTemplateColumns: 'minmax(0, 1fr) auto',
-        marginTop: '1.5rem',
+        alignItems: 'center',
       }}
     >
       <div>
-        <p style={{ color: '#0f7a3b', fontSize: '0.85rem', fontWeight: 800, textTransform: 'uppercase' }}>
+        <span style={{ color: '#2e844a', fontSize: '0.8rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
           Quêtes hebdo
-        </p>
+        </span>
         <h2 style={{ fontSize: '1.2rem', fontWeight: 800, marginTop: '0.35rem' }}>
           Avance tes objectifs de la semaine
         </h2>
-        <p style={{ color: 'var(--muted)', marginTop: '0.35rem' }}>
-          Suis tes quêtes Apple, Jamf, Intune et ServiceNow, leur progression et les points à débloquer
-          avant la réinitialisation hebdomadaire.
+        <p className="muted" style={{ marginTop: '0.35rem' }}>
+          Suis tes quêtes Apple, Jamf et Intune, leur progression et les points à débloquer avant la
+          réinitialisation hebdomadaire.
         </p>
       </div>
-      <Link className="btn" href="/quests">
-        Voir mes quêtes
-      </Link>
-    </section>
+      <Button href="/quests">Voir mes quêtes</Button>
+    </Card>
   );
 }

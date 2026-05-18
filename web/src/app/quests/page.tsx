@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import {
   fetchWeeklyQuests,
@@ -9,6 +8,11 @@ import {
 } from '@/lib/api';
 import { getAccessToken } from '@/lib/auth';
 import { formatTrack } from '@/lib/tracks';
+import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
+import { ProgressBar } from '@/components/ui/ProgressBar';
+import { TrackIcon } from '@/components/ui/TrackIcon';
 
 type Status = 'loading' | 'ready' | 'error';
 
@@ -40,7 +44,7 @@ export default function WeeklyQuestsPage() {
     return (
       <section style={{ padding: '2rem 0' }}>
         <h1 style={{ fontSize: '2rem', fontWeight: 800 }}>Quêtes hebdo</h1>
-        <p style={{ color: 'var(--muted)', marginTop: '0.5rem' }}>Chargement des quêtes...</p>
+        <p className="muted" style={{ marginTop: '0.5rem' }}>Chargement des quêtes...</p>
       </section>
     );
   }
@@ -49,16 +53,14 @@ export default function WeeklyQuestsPage() {
     return (
       <section style={{ padding: '2rem 0' }}>
         <h1 style={{ fontSize: '2rem', fontWeight: 800 }}>Quêtes hebdo</h1>
-        <p style={{ color: 'var(--muted)', marginTop: '0.5rem' }}>
+        <p className="muted" style={{ marginTop: '0.5rem' }}>
           Impossible de charger les quêtes. Réessaie plus tard ou reconnecte-toi.
         </p>
-        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginTop: '1rem' }}>
-          <Link className="btn" href="/dashboard">
-            Retour au tableau de bord
-          </Link>
-          <Link className="btn" href="/courses" style={{ background: '#1d1d1f' }}>
+        <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', marginTop: '1rem' }}>
+          <Button href="/dashboard">Retour au tableau de bord</Button>
+          <Button href="/courses" variant="dark">
             Voir les parcours
-          </Link>
+          </Button>
         </div>
       </section>
     );
@@ -68,57 +70,55 @@ export default function WeeklyQuestsPage() {
   const isEmpty = quests.length === 0;
 
   return (
-    <section style={{ padding: '2rem 0' }}>
+    <section style={{ padding: '1rem 0 2rem' }}>
       <div
+        className="hero"
         style={{
-          alignItems: 'end',
-          display: 'grid',
-          gap: '1rem',
-          gridTemplateColumns: 'minmax(0, 1fr) auto',
+          background: 'linear-gradient(135deg, #ff9e2c 0%, #ffce5b 60%, #ffe89e 100%)',
+          color: '#3a2200',
         }}
       >
-        <div>
-          <p style={{ color: 'var(--muted)', fontWeight: 700 }}>Gamification</p>
-          <h1 style={{ fontSize: '2.25rem', fontWeight: 800, marginTop: '0.25rem' }}>Quêtes hebdo</h1>
-          <p style={{ color: 'var(--muted)', marginTop: '0.5rem', maxWidth: 720 }}>
-            Des objectifs courts qui se renouvellent chaque semaine pour entretenir ta progression sur Apple,
-            Jamf, Intune et ServiceNow.
-          </p>
-        </div>
-        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-          <Link className="btn" href="/dashboard" style={{ background: '#1d1d1f' }}>
+        <span
+          className="hero-eyebrow"
+          style={{
+            background: 'rgba(255,255,255,0.45)',
+            borderColor: 'rgba(0,0,0,0.08)',
+            color: '#3a2200',
+          }}
+        >
+          <span aria-hidden>{'\u{1F3AF}'}</span> Quêtes hebdo
+        </span>
+        <h1 style={{ color: '#3a2200' }}>Renouvelle ton rythme chaque semaine</h1>
+        <p style={{ marginTop: '0.75rem', color: '#3a2200' }}>
+          Des objectifs courts qui se renouvellent chaque semaine pour entretenir ta progression sur
+          Apple, Jamf et Intune.
+        </p>
+        <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', marginTop: '1.25rem' }}>
+          <Button href="/dashboard" variant="dark">
             Retour dashboard
-          </Link>
-          <Link className="btn" href="/courses">
+          </Button>
+          <Button href="/courses" variant="secondary">
             Voir les parcours
-          </Link>
+          </Button>
         </div>
       </div>
 
-      <section
-        className="card"
+      <Card
         style={{
+          marginTop: '1.5rem',
           background: hasToken && !usingFallback ? '#ffffff' : '#fff8e6',
           borderColor: hasToken && !usingFallback ? 'var(--border)' : '#f0cf7a',
-          marginTop: '1.5rem',
         }}
       >
         <strong>{hasToken ? 'Quêtes connectées' : 'Quêtes en mode démo'}</strong>
-        <p style={{ color: 'var(--muted)', marginTop: '0.35rem' }}>
+        <p className="muted" style={{ marginTop: '0.35rem' }}>
           {hasToken
             ? 'Tes quêtes hebdo sont récupérées via l’endpoint privé GET /quests/weekly.'
             : 'Connecte-toi pour synchroniser tes vraies quêtes. Cet aperçu local permet de découvrir le format.'}
         </p>
-      </section>
+      </Card>
 
-      <section
-        style={{
-          display: 'grid',
-          gap: '0.75rem',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-          marginTop: '1.5rem',
-        }}
-      >
+      <section className="stat-grid" style={{ marginTop: '1.5rem' }}>
         <SummaryStat label="Quêtes complétées" value={`${summary.completed} / ${summary.total}`} />
         <SummaryStat label="Points gagnés" value={`${summary.earnedPoints}`} />
         <SummaryStat
@@ -131,16 +131,16 @@ export default function WeeklyQuestsPage() {
       {isEmpty ? (
         <EmptyState />
       ) : (
-        <section style={{ display: 'grid', gap: '1rem', marginTop: '1.5rem' }}>
+        <div style={{ display: 'grid', gap: '1rem', marginTop: '1.5rem' }}>
           {quests.map((quest) => (
             <QuestCard key={quest.id} quest={quest} />
           ))}
-        </section>
+        </div>
       )}
 
-      <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginTop: '1.5rem' }}>
-        Les quêtes sont calculées côté serveur via <code>GET /quests/weekly</code> (authentification requise).
-        En cas d’indisponibilité ou de session absente, un aperçu démo en français est affiché.
+      <p className="muted" style={{ fontSize: '0.85rem', marginTop: '1.5rem' }}>
+        Les quêtes sont calculées côté serveur via <code>GET /quests/weekly</code> (authentification
+        requise). En cas d’indisponibilité ou de session absente, un aperçu démo en français est affiché.
       </p>
     </section>
   );
@@ -153,123 +153,85 @@ function QuestCard({ quest }: { quest: WeeklyQuest }) {
   const completed = quest.completed || (target > 0 && progress >= target);
 
   return (
-    <article
-      className="card"
+    <Card
       style={{
         borderColor: completed ? '#a8d8b2' : 'var(--border)',
         background: completed ? 'linear-gradient(135deg, #f4fbf6 0%, #ffffff 100%)' : 'var(--card)',
-        display: 'grid',
-        gap: '0.6rem',
       }}
     >
       <div
         style={{
-          alignItems: 'center',
           display: 'grid',
-          gap: '0.5rem',
-          gridTemplateColumns: 'minmax(0, 1fr) auto',
+          gap: '0.75rem',
+          gridTemplateColumns: 'auto minmax(0, 1fr) auto',
+          alignItems: 'center',
         }}
       >
-        <div>
+        <TrackIcon track={quest.track ?? 'QUESTS'} />
+        <div style={{ minWidth: 0 }}>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', alignItems: 'center' }}>
             {quest.track && (
-              <span
-                style={{
-                  background: '#eef6ff',
-                  border: '1px solid #c7ddff',
-                  borderRadius: 999,
-                  color: '#0057b8',
-                  fontSize: '0.72rem',
-                  fontWeight: 800,
-                  padding: '0.18rem 0.55rem',
-                  textTransform: 'uppercase',
-                }}
-              >
+              <Badge tone="accent" icon="\u{1F3AF}">
                 {formatTrack(quest.track)}
-              </span>
+              </Badge>
             )}
-            <StatusPill completed={completed} />
+            <Badge tone={completed ? 'success' : 'warning'} icon={completed ? '\u2705' : '\u23F3'}>
+              {completed ? 'Complétée' : 'En cours'}
+            </Badge>
           </div>
-          <h2 style={{ fontSize: '1.15rem', fontWeight: 800, marginTop: '0.4rem' }}>{quest.label}</h2>
+          <h2 style={{ fontSize: '1.1rem', fontWeight: 800, marginTop: '0.45rem' }}>{quest.label}</h2>
           {quest.description && (
-            <p style={{ color: 'var(--muted)', marginTop: '0.3rem' }}>{quest.description}</p>
+            <p className="muted" style={{ marginTop: '0.3rem' }}>{quest.description}</p>
           )}
         </div>
         <div style={{ textAlign: 'right' }}>
           <strong style={{ fontSize: '1.1rem' }}>
             {progress}/{target}
           </strong>
-          <p style={{ color: 'var(--muted)', fontSize: '0.8rem' }}>{progressPercent}%</p>
+          <p className="muted" style={{ fontSize: '0.8rem' }}>{progressPercent}%</p>
         </div>
       </div>
 
-      <div style={{ background: '#e5e5ea', borderRadius: 999, height: 8 }}>
-        <div
-          style={{
-            background: completed ? '#0f7a3b' : 'var(--accent)',
-            borderRadius: 999,
-            height: '100%',
-            width: `${progressPercent}%`,
-          }}
-        />
-      </div>
+      <ProgressBar
+        value={progressPercent}
+        tone={completed ? 'success' : 'accent'}
+        style={{ marginTop: '0.75rem' }}
+      />
 
       {typeof quest.rewardPoints === 'number' && quest.rewardPoints > 0 && (
-        <p style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>
-          Récompense : <strong style={{ color: 'var(--fg)' }}>{quest.rewardPoints} points</strong>
+        <p className="muted" style={{ marginTop: '0.6rem', fontSize: '0.9rem' }}>
+          Récompense :{' '}
+          <strong style={{ color: 'var(--fg)' }}>{quest.rewardPoints} points</strong>
           {completed ? ' (gagnés)' : ' à débloquer'}
         </p>
       )}
-    </article>
-  );
-}
-
-function StatusPill({ completed }: { completed: boolean }) {
-  return (
-    <span
-      style={{
-        background: completed ? '#e5f5ea' : '#fff4e1',
-        border: `1px solid ${completed ? '#a8d8b2' : '#f0cf7a'}`,
-        borderRadius: 999,
-        color: completed ? '#0f7a3b' : '#8a6d00',
-        fontSize: '0.72rem',
-        fontWeight: 800,
-        padding: '0.18rem 0.55rem',
-        textTransform: 'uppercase',
-      }}
-    >
-      {completed ? 'Complétée' : 'En cours'}
-    </span>
+    </Card>
   );
 }
 
 function SummaryStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="card" style={{ padding: '0.9rem 1rem' }}>
-      <p style={{ color: 'var(--muted)', fontSize: '0.78rem', fontWeight: 800, textTransform: 'uppercase' }}>
-        {label}
-      </p>
-      <strong style={{ display: 'block', fontSize: '1.35rem', marginTop: '0.2rem' }}>{value}</strong>
+    <div className="stat">
+      <p className="stat-label">{label}</p>
+      <p className="stat-value">{value}</p>
     </div>
   );
 }
 
 function EmptyState() {
   return (
-    <section className="card" style={{ marginTop: '1.5rem', textAlign: 'center' }}>
+    <Card style={{ marginTop: '1.5rem', textAlign: 'center' }}>
       <h2 style={{ fontSize: '1.2rem', fontWeight: 800 }}>Aucune quête active</h2>
-      <p style={{ color: 'var(--muted)', marginTop: '0.5rem' }}>
+      <p className="muted" style={{ marginTop: '0.5rem' }}>
         Aucune quête n’a encore été générée pour cette semaine. Termine un module pour amorcer le compteur.
       </p>
-      <div style={{ display: 'flex', justifyContent: 'center', gap: '0.75rem', flexWrap: 'wrap', marginTop: '1rem' }}>
-        <Link className="btn" href="/courses">
-          Lancer un parcours
-        </Link>
-        <Link className="btn" href="/dashboard" style={{ background: '#1d1d1f' }}>
+      <div style={{ display: 'flex', justifyContent: 'center', gap: '0.6rem', flexWrap: 'wrap', marginTop: '1rem' }}>
+        <Button href="/courses">Lancer un parcours</Button>
+        <Button href="/dashboard" variant="dark">
           Retour dashboard
-        </Link>
+        </Button>
       </div>
-    </section>
+    </Card>
   );
 }
 

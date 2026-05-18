@@ -1,10 +1,12 @@
 'use client';
 
-import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { fetchLeaderboard, type LeaderboardEntry, type LeaderboardResponse } from '@/lib/api';
 import { getAccessToken } from '@/lib/auth';
-import { formatBadge } from '@/lib/tracks';
+import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
+import { getBadgeVisual, getRankInfo } from '@/lib/design';
 
 type Status = 'loading' | 'ready' | 'error';
 
@@ -21,8 +23,6 @@ export default function LeaderboardPage() {
     fetchLeaderboard(token)
       .then((response) => {
         setData(response);
-        // Sans token, fetchLeaderboard renvoie directement le mock.
-        // Avec token mais API KO, le mock est aussi renvoyé : on le détecte via l'absence de userId réels.
         setUsingFallback(!token);
         setStatus('ready');
       })
@@ -35,7 +35,7 @@ export default function LeaderboardPage() {
     return (
       <section style={{ padding: '2rem 0' }}>
         <h1 style={{ fontSize: '2rem', fontWeight: 800 }}>Classement</h1>
-        <p style={{ color: 'var(--muted)', marginTop: '0.5rem' }}>Chargement du classement...</p>
+        <p className="muted" style={{ marginTop: '0.5rem' }}>Chargement du classement...</p>
       </section>
     );
   }
@@ -44,62 +44,61 @@ export default function LeaderboardPage() {
     return (
       <section style={{ padding: '2rem 0' }}>
         <h1 style={{ fontSize: '2rem', fontWeight: 800 }}>Classement</h1>
-        <p style={{ color: 'var(--muted)', marginTop: '0.5rem' }}>
+        <p className="muted" style={{ marginTop: '0.5rem' }}>
           Impossible de charger le classement. Réessaie plus tard ou reconnecte-toi.
         </p>
-        <Link className="btn" href="/dashboard" style={{ marginTop: '1rem' }}>
+        <Button href="/dashboard" style={{ marginTop: '1rem' }}>
           Retour au tableau de bord
-        </Link>
+        </Button>
       </section>
     );
   }
 
   const { leaderboard, currentUserRank } = data;
   const topThree = leaderboard.slice(0, 3);
-  const others = leaderboard.slice(3);
 
   return (
-    <section style={{ padding: '2rem 0' }}>
+    <section style={{ padding: '1rem 0 2rem' }}>
       <div
+        className="hero"
         style={{
-          alignItems: 'end',
-          display: 'grid',
-          gap: '1rem',
-          gridTemplateColumns: 'minmax(0, 1fr) auto',
+          background: 'linear-gradient(135deg, #c23934 0%, #ff7a59 60%, #ffb02e 100%)',
         }}
       >
-        <div>
-          <p style={{ color: 'var(--muted)', fontWeight: 700 }}>Communauté</p>
-          <h1 style={{ fontSize: '2.25rem', fontWeight: 800, marginTop: '0.25rem' }}>Classement</h1>
-          <p style={{ color: 'var(--muted)', marginTop: '0.5rem', maxWidth: 720 }}>
-            Le top 10 des apprenants Apple MDM Academy, classés par points gagnés sur les parcours Apple,
-            Jamf, Intune et ServiceNow.
-          </p>
+        <span className="hero-eyebrow">
+          <span aria-hidden>{'\u{1F3C6}'}</span> Communauté MDM Academy
+        </span>
+        <h1>Classement Trailblazer</h1>
+        <p style={{ marginTop: '0.75rem' }}>
+          Le top 10 des apprenants MDM Academy, classés par points gagnés sur les parcours Apple, Jamf
+          et Intune.
+        </p>
+        <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', marginTop: '1.25rem' }}>
+          <Button href="/dashboard" variant="secondary">
+            Retour dashboard
+          </Button>
+          <Button href="/courses" variant="ghost" style={{ color: '#fff', borderColor: 'rgba(255,255,255,0.4)' }}>
+            Voir les parcours
+          </Button>
         </div>
-        <Link className="btn" href="/dashboard" style={{ background: '#1d1d1f' }}>
-          Retour dashboard
-        </Link>
       </div>
 
-      <section
-        className="card"
+      <Card
         style={{
+          marginTop: '1.5rem',
           background: hasToken && !usingFallback ? '#ffffff' : '#fff8e6',
           borderColor: hasToken && !usingFallback ? 'var(--border)' : '#f0cf7a',
-          marginTop: '1.5rem',
         }}
       >
-        <strong>
-          {hasToken ? 'Classement connecté' : 'Classement en mode démo'}
-        </strong>
-        <p style={{ color: 'var(--muted)', marginTop: '0.35rem' }}>
+        <strong>{hasToken ? 'Classement connecté' : 'Classement en mode démo'}</strong>
+        <p className="muted" style={{ marginTop: '0.35rem' }}>
           {hasToken
             ? currentUserRank
               ? `Tu es actuellement classé(e) #${currentUserRank}. Continue les modules pour grimper.`
               : 'Aucun rang détecté pour ton compte. Termine un module pour apparaître au classement.'
             : 'Connecte-toi pour voir les vrais apprenants et ton rang réel. Cet aperçu est un exemple local.'}
         </p>
-      </section>
+      </Card>
 
       {topThree.length > 0 && (
         <section
@@ -116,25 +115,26 @@ export default function LeaderboardPage() {
         </section>
       )}
 
-      <section className="card" style={{ marginTop: '1.5rem', padding: 0, overflow: 'hidden' }}>
+      <Card style={{ marginTop: '1.5rem', padding: 0, overflow: 'hidden' }}>
         <header
           style={{
-            background: '#f5f5f7',
+            background: '#f4f6fb',
             borderBottom: '1px solid var(--border)',
             display: 'grid',
             gap: '0.5rem',
-            gridTemplateColumns: '60px minmax(0, 1.6fr) 100px 120px minmax(0, 1fr)',
+            gridTemplateColumns: '60px minmax(0, 1.6fr) 90px 140px minmax(0, 1fr)',
             padding: '0.85rem 1.25rem',
-            fontSize: '0.8rem',
+            fontSize: '0.78rem',
             fontWeight: 800,
             textTransform: 'uppercase',
             color: 'var(--muted)',
+            letterSpacing: '0.06em',
           }}
         >
           <span>Rang</span>
           <span>Apprenant</span>
           <span>Points</span>
-          <span>Niveau</span>
+          <span>Rang Trailblazer</span>
           <span>Badges</span>
         </header>
         <ul style={{ listStyle: 'none' }}>
@@ -142,14 +142,14 @@ export default function LeaderboardPage() {
             <LeaderboardRow key={entry.rank} entry={entry} />
           ))}
         </ul>
-        {others.length === 0 && topThree.length === 0 && (
-          <p style={{ color: 'var(--muted)', padding: '1.25rem' }}>
+        {leaderboard.length === 0 && (
+          <p className="muted" style={{ padding: '1.25rem' }}>
             Aucun apprenant classé pour le moment. Sois le premier à valider un module.
           </p>
         )}
-      </section>
+      </Card>
 
-      <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginTop: '1rem' }}>
+      <p className="muted" style={{ fontSize: '0.85rem', marginTop: '1rem' }}>
         Les points sont calculés côté serveur via l’endpoint privé <code>GET /leaderboard</code>. En cas
         d’indisponibilité ou de session absente, un aperçu démo en français est affiché.
       </p>
@@ -158,99 +158,99 @@ export default function LeaderboardPage() {
 }
 
 function PodiumCard({ entry }: { entry: LeaderboardEntry }) {
-  const medal = entry.rank === 1 ? '1er' : entry.rank === 2 ? '2e' : '3e';
-  const background = entry.isCurrentUser
-    ? 'linear-gradient(135deg, #eef6ff 0%, #ffffff 100%)'
-    : entry.rank === 1
-      ? 'linear-gradient(135deg, #fff7d6 0%, #ffffff 100%)'
-      : entry.rank === 2
-        ? 'linear-gradient(135deg, #f0f0f3 0%, #ffffff 100%)'
-        : 'linear-gradient(135deg, #fde4cf 0%, #ffffff 100%)';
-  const borderColor = entry.isCurrentUser ? '#85bfff' : 'var(--border)';
+  const rank = getRankInfo(entry.points);
+  const medal = entry.rank === 1 ? '\u{1F947}' : entry.rank === 2 ? '\u{1F948}' : '\u{1F949}';
+  const isCurrent = entry.isCurrentUser;
 
   return (
-    <article
-      className="card"
+    <Card
       style={{
-        background,
-        borderColor,
-        display: 'grid',
-        gap: '0.5rem',
+        background: isCurrent
+          ? 'linear-gradient(135deg, #e3f0ff 0%, #ffffff 100%)'
+          : entry.rank === 1
+            ? 'linear-gradient(135deg, #fff7d6 0%, #ffffff 100%)'
+            : entry.rank === 2
+              ? 'linear-gradient(135deg, #f0f0f3 0%, #ffffff 100%)'
+              : 'linear-gradient(135deg, #fde4cf 0%, #ffffff 100%)',
+        borderColor: isCurrent ? '#85bfff' : 'var(--border)',
       }}
     >
-      <span style={{ color: 'var(--muted)', fontSize: '0.8rem', fontWeight: 800, textTransform: 'uppercase' }}>
-        {medal} place {entry.isCurrentUser ? '· toi' : ''}
-      </span>
-      <strong style={{ fontSize: '1.15rem' }}>{entry.displayName}</strong>
-      <span style={{ color: 'var(--muted)', fontSize: '0.9rem' }}>
-        {entry.points} points · niveau {entry.level}
-      </span>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <span aria-hidden style={{ fontSize: '1.4rem' }}>{medal}</span>
+        <span className="section-eyebrow" style={{ color: 'var(--muted)' }}>
+          #{entry.rank}
+          {isCurrent ? ' · toi' : ''}
+        </span>
+      </div>
+      <strong style={{ fontSize: '1.1rem', display: 'block', marginTop: '0.5rem' }}>{entry.displayName}</strong>
+      <p className="muted" style={{ fontSize: '0.9rem', marginTop: '0.2rem' }}>
+        {entry.points} points · {rank.name}
+      </p>
       {entry.badges.length > 0 && (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem', marginTop: '0.25rem' }}>
-          {entry.badges.slice(0, 3).map((badge) => (
-            <span
-              key={badge}
-              style={{
-                background: '#eef6ff',
-                border: '1px solid #c7ddff',
-                borderRadius: 999,
-                color: '#0057b8',
-                fontSize: '0.75rem',
-                fontWeight: 700,
-                padding: '0.2rem 0.55rem',
-              }}
-            >
-              {formatBadge(badge)}
-            </span>
-          ))}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem', marginTop: '0.6rem' }}>
+          {entry.badges.slice(0, 3).map((slug) => {
+            const visual = getBadgeVisual(slug);
+            return (
+              <Badge
+                key={slug}
+                icon={visual.icon}
+                style={{ background: visual.bg, color: visual.color }}
+                tone="accent"
+              >
+                {visual.label}
+              </Badge>
+            );
+          })}
         </div>
       )}
-    </article>
+    </Card>
   );
 }
 
 function LeaderboardRow({ entry }: { entry: LeaderboardEntry }) {
   const isCurrent = entry.isCurrentUser;
+  const rank = getRankInfo(entry.points);
 
   return (
     <li
       style={{
         alignItems: 'center',
-        background: isCurrent ? '#eef6ff' : 'transparent',
-        borderBottom: '1px solid var(--border)',
+        background: isCurrent ? 'var(--accent-soft)' : 'transparent',
+        borderBottom: '1px solid var(--border-soft)',
         display: 'grid',
         gap: '0.5rem',
-        gridTemplateColumns: '60px minmax(0, 1.6fr) 100px 120px minmax(0, 1fr)',
+        gridTemplateColumns: '60px minmax(0, 1.6fr) 90px 140px minmax(0, 1fr)',
         padding: '0.85rem 1.25rem',
       }}
     >
       <strong style={{ color: isCurrent ? 'var(--accent)' : 'var(--fg)' }}>#{entry.rank}</strong>
-      <div style={{ display: 'grid', gap: '0.15rem' }}>
+      <div style={{ display: 'grid', gap: '0.1rem' }}>
         <strong>{entry.displayName}</strong>
         {isCurrent && (
-          <span style={{ color: 'var(--accent)', fontSize: '0.8rem', fontWeight: 700 }}>C’est toi</span>
+          <span style={{ color: 'var(--accent)', fontSize: '0.78rem', fontWeight: 700 }}>C’est toi</span>
         )}
       </div>
-      <span>{entry.points}</span>
-      <span style={{ color: 'var(--muted)' }}>{entry.level}</span>
+      <span style={{ fontWeight: 700 }}>{entry.points}</span>
+      <Badge tone="outline" icon={rank.icon}>{rank.name}</Badge>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem' }}>
-        {entry.badges.length === 0 && <span style={{ color: 'var(--muted)' }}>—</span>}
-        {entry.badges.slice(0, 3).map((badge) => (
-          <span
-            key={badge}
-            style={{
-              background: '#f5f5f7',
-              border: '1px solid var(--border)',
-              borderRadius: 999,
-              fontSize: '0.75rem',
-              padding: '0.2rem 0.55rem',
-            }}
-          >
-            {formatBadge(badge)}
-          </span>
-        ))}
+        {entry.badges.length === 0 && <span className="muted">—</span>}
+        {entry.badges.slice(0, 3).map((slug) => {
+          const visual = getBadgeVisual(slug);
+          return (
+            <Badge
+              key={slug}
+              icon={visual.icon}
+              tone="accent"
+              style={{ background: visual.bg, color: visual.color }}
+            >
+              {visual.label}
+            </Badge>
+          );
+        })}
         {entry.badges.length > 3 && (
-          <span style={{ color: 'var(--muted)', fontSize: '0.75rem' }}>+{entry.badges.length - 3}</span>
+          <span className="muted" style={{ fontSize: '0.78rem', alignSelf: 'center' }}>
+            +{entry.badges.length - 3}
+          </span>
         )}
       </div>
     </li>
