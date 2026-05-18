@@ -91,7 +91,7 @@ Le seed crée les parcours MVP, modules, quiz, mini-jeux et données de progress
 | POST    | `/sprints/certification/start`     | Démarre un sprint certification privé    |
 | GET     | `/sprints/certification/current`   | Sprint certification actif               |
 | GET     | `/leaderboard`                     | Classement privé par points              |
-| POST    | `/billing/checkout`                | Checkout Stripe (stub)                   |
+| POST    | `/billing/checkout`                | Checkout billing (`monthly`, `yearly`, `enterprise`; demo sans Stripe) |
 
 
 ### Catalogue public

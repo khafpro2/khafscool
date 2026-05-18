@@ -3,7 +3,7 @@ import * as billing from '../controllers/billing.controller.js';
 import { requireAuth } from '../middleware/auth.middleware.js';
 
 export async function billingRoutes(app: FastifyInstance) {
-  app.post<{ Body: { plan: 'monthly' | 'yearly' | 'enterprise' } }>(
+  app.post<{ Body: unknown }>(
     '/billing/checkout',
     { preHandler: requireAuth },
     billing.createCheckout
