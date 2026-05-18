@@ -1,32 +1,54 @@
-import Link from 'next/link';
+'use client';
 
-const PLANS = [
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { createBillingCheckout, type CheckoutPlan } from '@/lib/api';
+import { getAccessToken } from '@/lib/auth';
+
+type CheckoutStatus = {
+  tone: 'info' | 'success' | 'warning' | 'error';
+  title: string;
+  message: string;
+  checkoutUrl?: string;
+};
+
+const PLANS: {
+  name: string;
+  price: string;
+  period: string;
+  description: string;
+  cta: string;
+  checkoutPlan: CheckoutPlan;
+  features: string[];
+  highlight?: boolean;
+}[] = [
   {
-    name: 'Essai gratuit',
-    price: '0 €',
-    period: '14 jours',
-    description: 'Valider le format, tester les parcours et lancer un sprint de démonstration.',
-    cta: 'Démarrer gratuitement',
-    href: '/auth',
-    features: [
-      'Accès découverte aux parcours Apple, Jamf, Intune et ServiceNow',
-      'Sprint Certification en mode démo',
-      'Mini-jeu ServiceNow pour pratiquer la qualification ticket',
-      'Dashboard web/mobile avec progression locale',
-    ],
-  },
-  {
-    name: 'Individuel',
+    name: 'Mensuel',
     price: '19 €',
     period: '/ mois',
     description: 'Pour préparer une certification et suivre une progression personnelle complète.',
-    cta: 'Voir les parcours',
-    href: '/courses',
+    cta: 'Démarrer le checkout mensuel',
+    checkoutPlan: 'monthly',
     features: [
       'Tous les modules Apple, Jamf, Intune et ServiceNow',
       'Sprint Certification 7 ou 14 jours',
       'Ressources officielles et liens de révision',
       'Badges, progression et reprise sur dashboard/mobile',
+    ],
+  },
+  {
+    name: 'Annuel',
+    price: '190 €',
+    period: '/ an',
+    description: 'Pour s’engager sur une année complète de préparation et garder un rythme régulier.',
+    cta: 'Démarrer le checkout annuel',
+    checkoutPlan: 'yearly',
+    features: [
+      'Tous les modules Apple, Jamf, Intune et ServiceNow',
+      'Sprint Certification 7 ou 14 jours',
+      'Ressources officielles et liens de révision',
+      'Deux mois offerts par rapport au mensuel',
     ],
     highlight: true,
   },
@@ -35,8 +57,8 @@ const PLANS = [
     price: 'Sur devis',
     period: '',
     description: 'Pour former une équipe support, standardiser les pratiques et piloter l’adoption.',
-    cta: 'Préparer un sprint',
-    href: '/sprint',
+    cta: 'Démarrer le checkout entreprise',
+    checkoutPlan: 'enterprise',
     features: [
       'Parcours alignés Apple, Jamf, Intune et ServiceNow',
       'Plan de sprint partagé pour cohortes support',
@@ -55,6 +77,74 @@ const MVP_FEATURES = [
 ];
 
 export default function PricingPage() {
+  const router = useRouter();
+  const [status, setStatus] = useState<CheckoutStatus | null>(null);
+  const [pendingPlan, setPendingPlan] = useState<CheckoutPlan | null>(null);
+
+  async function handleCheckout(plan: CheckoutPlan) {
+    const token = getAccessToken();
+
+    if (!token) {
+      setStatus({
+        tone: 'warning',
+        title: 'Connexion requise',
+        message: 'Connecte-toi ou crée un compte gratuit pour lancer un checkout lié à ton profil.',
+      });
+      router.push('/auth');
+      return;
+    }
+
+    setPendingPlan(plan);
+    setStatus({
+      tone: 'info',
+      title: 'Préparation du checkout',
+      message: 'Création de la session de paiement en cours...',
+    });
+
+    try {
+      const checkout = await createBillingCheckout(token, plan);
+
+      if (checkout.checkoutUrl && checkout.mode !== 'demo') {
+        setStatus({
+          tone: 'success',
+          title: 'Checkout prêt',
+          message: 'Redirection vers la page de paiement sécurisée...',
+        });
+        window.location.assign(checkout.checkoutUrl);
+        return;
+      }
+
+      if (checkout.mode === 'demo') {
+        setStatus({
+          tone: 'warning',
+          title: 'Checkout démo prêt',
+          message:
+            checkout.message ??
+            'Le backend a créé une réponse de démonstration. Le paiement réel sera activé quand Stripe sera branché.',
+          checkoutUrl: checkout.checkoutUrl,
+        });
+        return;
+      }
+
+      setStatus({
+        tone: checkout.checkoutUrl ? 'success' : 'warning',
+        title: checkout.checkoutUrl ? 'Checkout prêt' : 'Checkout incomplet',
+        message: checkout.checkoutUrl
+          ? 'Ouvre le lien de paiement pour continuer.'
+          : 'Le backend a répondu sans URL de paiement. Réessaie plus tard ou contacte l’équipe.',
+        checkoutUrl: checkout.checkoutUrl,
+      });
+    } catch {
+      setStatus({
+        tone: 'error',
+        title: 'Checkout indisponible',
+        message: 'Impossible de créer la session de paiement. Reconnecte-toi puis réessaie.',
+      });
+    } finally {
+      setPendingPlan(null);
+    }
+  }
+
   return (
     <section style={{ padding: '2rem 0' }}>
       <div
@@ -76,8 +166,8 @@ export default function PricingPage() {
           </h1>
           <p style={{ color: 'var(--muted)', fontSize: '1.05rem', marginTop: '0.75rem', maxWidth: 760 }}>
             Apple MDM Academy combine parcours métier, sprint de certification, mini-jeu ServiceNow et ressources
-            officielles. Le paiement Stripe est encore un stub: les CTA envoient vers l’inscription, les cours ou le
-            sprint.
+            officielles. Les offres ci-dessous appellent maintenant le backend checkout; en mode MVP, Stripe renvoie
+            une réponse de démonstration claire.
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '1.25rem' }}>
             <Link className="btn" href="/auth">
@@ -144,24 +234,67 @@ export default function PricingPage() {
                 </li>
               ))}
             </ul>
-            <Link
+            <button
               className="btn"
-              href={plan.href}
+              type="button"
+              disabled={pendingPlan !== null}
+              onClick={() => handleCheckout(plan.checkoutPlan)}
               style={{ marginTop: 'auto', textAlign: 'center', width: '100%' }}
             >
-              {plan.cta}
-            </Link>
+              {pendingPlan === plan.checkoutPlan ? 'Préparation...' : plan.cta}
+            </button>
           </article>
         ))}
       </div>
 
-      <section className="card" style={{ background: '#fff8e6', borderColor: '#f0cf7a', marginTop: '1.5rem' }}>
-        <strong>Paiement à brancher</strong>
+      {status && (
+        <section
+          aria-live="polite"
+          className="card"
+          style={{
+            background: statusBackground(status.tone),
+            borderColor: statusBorder(status.tone),
+            marginTop: '1.5rem',
+          }}
+        >
+          <strong>{status.title}</strong>
+          <p style={{ color: 'var(--muted)', marginTop: '0.35rem' }}>{status.message}</p>
+          {status.checkoutUrl && (
+            <a
+              className="btn"
+              href={status.checkoutUrl}
+              rel="noreferrer"
+              target="_blank"
+              style={{ display: 'inline-block', marginTop: '1rem' }}
+            >
+              Ouvrir le lien de checkout
+            </a>
+          )}
+        </section>
+      )}
+
+      <section className="card" style={{ background: '#eef6ff', borderColor: '#85bfff', marginTop: '1.5rem' }}>
+        <strong>Checkout MVP</strong>
         <p style={{ color: 'var(--muted)', marginTop: '0.35rem' }}>
-          Les offres reflètent le MVP actuel. Le checkout Stripe, les taxes et la gestion d’abonnement restent à
-          connecter avant une mise en production commerciale.
+          Les boutons appellent `POST /billing/checkout` avec le token local `ama_access` quand il existe. Sans
+          session, la page te renvoie vers l’inscription; avec le backend de démonstration, elle affiche le lien Stripe
+          simulé sans quitter la page.
         </p>
       </section>
     </section>
   );
+}
+
+function statusBackground(tone: CheckoutStatus['tone']) {
+  if (tone === 'error') return '#fff1f2';
+  if (tone === 'success') return '#ecfdf3';
+  if (tone === 'warning') return '#fff8e6';
+  return '#eef6ff';
+}
+
+function statusBorder(tone: CheckoutStatus['tone']) {
+  if (tone === 'error') return '#f1a8b4';
+  if (tone === 'success') return '#8fd7a5';
+  if (tone === 'warning') return '#f0cf7a';
+  return '#85bfff';
 }

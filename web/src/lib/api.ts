@@ -164,6 +164,20 @@ export interface CourseProgressData {
   modules: CourseProgressModule[];
 }
 
+export type CheckoutPlan = 'monthly' | 'yearly' | 'enterprise';
+
+export interface BillingCheckoutResponse {
+  mode?: 'demo' | 'live';
+  provider?: string;
+  plan: CheckoutPlan;
+  checkoutUrl?: string;
+  stripe?: {
+    configured: boolean;
+    checkoutEnabled: boolean;
+  };
+  message?: string;
+}
+
 async function apiRequest<T>(path: string, init: RequestInit = {}) {
   const res = await fetch(`${API_URL}${path}`, {
     ...init,
@@ -192,6 +206,14 @@ export function register(email: string, password: string, displayName: string) {
   return apiRequest<AuthResponse>('/auth/register', {
     method: 'POST',
     body: JSON.stringify({ email, password, displayName }),
+  });
+}
+
+export function createBillingCheckout(token: string, plan: CheckoutPlan) {
+  return apiRequest<BillingCheckoutResponse>('/billing/checkout', {
+    method: 'POST',
+    headers: authHeader(token),
+    body: JSON.stringify({ plan }),
   });
 }
 
