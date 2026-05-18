@@ -35,13 +35,17 @@ pnpm db:seed
 pnpm dev
 ```
 
-Pour lancer uniquement le web en développement :
+Commandes de lancement ciblées :
 
 ```bash
+pnpm --filter backend dev
 pnpm --filter web dev
+pnpm --filter mobile dev
 ```
 
-Le serveur web écoute sur [http://127.0.0.1:3000](http://127.0.0.1:3000). Le script force ce hostname et active le polling Watchpack afin d'éviter les erreurs de découverte réseau et de watchers sur macOS.
+Le backend écoute sur `http://localhost:4000`. Le web écoute sur [http://127.0.0.1:3000](http://127.0.0.1:3000) ; le script force ce hostname et active le polling Watchpack afin d'éviter les erreurs de découverte réseau et de watchers sur macOS. Pour tester le mobile sur appareil physique, définir `EXPO_PUBLIC_API_URL=http://<votre-ip-lan>:4000`.
+
+Le seed crée les parcours MVP, modules, quiz, mini-jeux et données de progression nécessaires pour explorer l'application localement.
 
 ## URLs
 
@@ -53,26 +57,41 @@ Le serveur web écoute sur [http://127.0.0.1:3000](http://127.0.0.1:3000). Le sc
 | Mobile  | Expo Dev Tools (port 8081)                     |
 
 
+## Web — pages MVP
+
+- `/auth` : inscription, connexion email et entrées OAuth de développement.
+- `/dashboard` : synthèse progression, points, streak et accès rapides.
+- `/courses` : catalogue privé et accès aux détails de parcours.
+- `/servicenow` : mini-jeu de scoring de ticket ServiceNow.
+- `/sprint` : Certification Sprint 7 ou 14 jours.
+- `/resources` : liens vers ressources officielles et documentation utile.
+
 ## API — routes principales
 
 
-| Méthode | Route                      | Description                              |
-| ------- | -------------------------- | ---------------------------------------- |
-| GET     | `/auth/:provider/start`    | Démarre OAuth (apple, google, microsoft) |
-| GET     | `/auth/:provider/callback` | Callback OAuth                           |
-| POST    | `/auth/register`           | Inscription email                        |
-| POST    | `/auth/login`              | Connexion email                          |
-| GET     | `/auth/me`                 | Utilisateur courant (Bearer)             |
-| GET     | `/catalog`                 | Catalogue public des parcours            |
-| GET     | `/courses`                 | Liste des parcours                       |
-| GET     | `/courses/:slug`           | Détail parcours                          |
-| POST    | `/modules/:id/complete`    | Terminer module (quiz + jeu)             |
-| GET     | `/users/me/dashboard`      | Tableau de bord                          |
-| GET     | `/quests/weekly`           | Quêtes hebdomadaires de l'utilisateur    |
-| POST    | `/sprints/certification/start` | Démarre un sprint certification privé |
-| GET     | `/leaderboard`             | Classement privé par points              |
-| POST    | `/servicenow/ticket-score` | Scoring pédagogique d'un ticket          |
-| POST    | `/billing/checkout`        | Checkout Stripe (stub)                   |
+| Méthode | Route                              | Description                              |
+| ------- | ---------------------------------- | ---------------------------------------- |
+| GET     | `/health`                          | Santé API                                |
+| GET     | `/catalog`                         | Catalogue public des parcours            |
+| POST    | `/auth/register`                   | Inscription email                        |
+| POST    | `/auth/login`                      | Connexion email                          |
+| POST    | `/auth/refresh`                    | Rafraîchit les tokens                    |
+| POST    | `/auth/logout`                     | Déconnexion (Bearer)                     |
+| GET     | `/auth/me`                         | Utilisateur courant (Bearer)             |
+| GET     | `/auth/:provider/start`            | Démarre OAuth dev (apple, google, microsoft) |
+| GET     | `/auth/:provider/callback`         | Callback OAuth dev                       |
+| GET     | `/courses`                         | Liste privée des parcours                |
+| GET     | `/courses/:slug`                   | Détail parcours                          |
+| GET     | `/courses/:slug/progress`          | Progression d'un parcours                |
+| POST    | `/modules/:id/complete`            | Terminer module (quiz + jeu)             |
+| GET     | `/users/me/progress`               | Progression globale utilisateur          |
+| GET     | `/users/me/dashboard`              | Tableau de bord                          |
+| GET     | `/quests/weekly`                   | Quêtes hebdomadaires de l'utilisateur    |
+| POST    | `/servicenow/ticket-score`         | Scoring pédagogique d'un ticket          |
+| POST    | `/sprints/certification/start`     | Démarre un sprint certification privé    |
+| GET     | `/sprints/certification/current`   | Sprint certification actif               |
+| GET     | `/leaderboard`                     | Classement privé par points              |
+| POST    | `/billing/checkout`                | Checkout Stripe (stub)                   |
 
 
 ### Catalogue public
@@ -120,18 +139,23 @@ Le body doit contenir `track` (`APPLE`, `JAMF`, `INTUNE` ou `SERVICENOW`) et peu
 
 En dev, le callback OAuth simule un profil utilisateur sans appeler les API fournisseurs. Configurez les variables `*_CLIENT_ID` pour la production.
 
-## Mobile
+## Tests et build
 
 ```bash
-pnpm --filter mobile dev
+pnpm --filter backend test
+pnpm --filter backend build
+pnpm --filter web build
+pnpm build
 ```
 
-Définir `EXPO_PUBLIC_API_URL=http://<votre-ip-lan>:4000` pour tester sur appareil physique.
+## Contenu et ressources
+
+Les contenus pédagogiques du MVP sont originaux et non affiliés à Apple, Jamf, Microsoft ou ServiceNow. Les pages de ressources peuvent pointer vers les documentations officielles pour préparer les certifications et vérifier les pratiques produit.
 
 ## Prochaines étapes
 
 - Brancher SDK natifs SSO (Apple, Google, MSAL)
 - Parcours Jamf et contenus avancés Intune/ServiceNow
 - Stripe Checkout réel + webhooks
-- Certification Sprint (7–14 jours)
+- Finaliser l'expérience mobile complète
 
