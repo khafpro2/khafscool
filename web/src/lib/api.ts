@@ -28,6 +28,13 @@ export interface DashboardData {
   courses: CourseSummary[];
 }
 
+export interface CourseNextModule {
+  id: string;
+  slug: string;
+  title: string;
+  courseSlug?: string | null;
+}
+
 export interface UserProgressData {
   user: AuthUser;
   progress: {
@@ -47,6 +54,7 @@ export interface UserProgressData {
     completedModules: number;
     progressPercent: number;
     averageScore: number;
+    nextModule?: CourseNextModule | null;
   }[];
 }
 
@@ -57,6 +65,9 @@ export interface CourseSummary {
   track: string;
   description?: string;
   progressPercent?: number;
+  totalModules?: number;
+  completedModules?: number;
+  nextModule?: CourseNextModule | null;
 }
 
 export interface CourseQuestion {
@@ -97,6 +108,31 @@ export interface CourseModule {
 
 export interface CourseDetail extends CourseSummary {
   modules: CourseModule[];
+}
+
+export interface CourseProgressModule {
+  id: string;
+  slug: string;
+  title: string;
+  summary: string;
+  sortOrder?: number;
+  completed: boolean;
+  completedAt: string | null;
+  quizScore: number | null;
+  gameScore: number | null;
+  score: number | null;
+}
+
+export interface CourseProgressData {
+  course: CourseSummary;
+  progress: {
+    totalModules: number;
+    completedModules: number;
+    progressPercent: number;
+    averageScore: number;
+    nextModule: CourseNextModule | null;
+  };
+  modules: CourseProgressModule[];
 }
 
 async function apiRequest<T>(path: string, init: RequestInit = {}) {
@@ -141,6 +177,11 @@ export async function fetchDashboard(token?: string): Promise<DashboardData> {
 
 export async function fetchCourses(token?: string): Promise<CourseSummary[]> {
   try {
+    if (token) {
+      const progressData = await apiRequest<UserProgressData>('/users/me/progress', { headers: authHeader(token) });
+      return mergeMvpCourses(progressData.courses);
+    }
+
     const data = await apiRequest<{ courses: CourseSummary[] }>('/courses', { headers: authHeader(token) });
     return mergeMvpCourses(data.courses);
   } catch {
@@ -156,6 +197,22 @@ export async function fetchCourse(slug: string, token?: string): Promise<CourseD
     const fallback = DEMO_COURSES.find((course) => course.slug === slug);
     if (!fallback) throw new Error('Course not found');
     return fallback;
+  }
+}
+
+export async function fetchCourseProgress(slug: string, token?: string): Promise<CourseProgressData> {
+  if (!token) {
+    const fallback = DEMO_COURSES.find((course) => course.slug === slug);
+    if (!fallback) throw new Error('Course not found');
+    return courseToProgress(fallback);
+  }
+
+  try {
+    return apiRequest<CourseProgressData>(`/courses/${slug}/progress`, { headers: authHeader(token) });
+  } catch {
+    const fallback = DEMO_COURSES.find((course) => course.slug === slug);
+    if (!fallback) throw new Error('Course progress not found');
+    return courseToProgress(fallback);
   }
 }
 
@@ -253,6 +310,51 @@ function normalizeCourse(course: CourseDetail): CourseDetail {
           }
         : null,
     })),
+  };
+}
+
+function courseToProgress(course: CourseDetail): CourseProgressData {
+  const completedModules = course.completedModules ?? 0;
+  const progressPercent =
+    course.progressPercent ?? (course.modules.length ? Math.round((completedModules / course.modules.length) * 100) : 0);
+  const completedCount = Math.round((progressPercent / 100) * course.modules.length);
+  const modules = course.modules.map((module, index) => {
+    const completed = index < completedCount;
+    return {
+      id: module.id,
+      slug: module.slug,
+      title: module.title,
+      summary: module.summary,
+      sortOrder: index + 1,
+      completed,
+      completedAt: completed ? new Date().toISOString() : null,
+      quizScore: completed ? 85 : null,
+      gameScore: completed ? 90 : null,
+      score: completed ? 88 : null,
+    };
+  });
+  const nextModule = modules.find((module) => !module.completed) ?? null;
+
+  return {
+    course: {
+      id: course.id,
+      slug: course.slug,
+      title: course.title,
+      track: course.track,
+      description: course.description,
+      progressPercent,
+      totalModules: course.modules.length,
+      completedModules: completedCount,
+      nextModule: nextModule ? { id: nextModule.id, slug: nextModule.slug, title: nextModule.title } : null,
+    },
+    progress: {
+      totalModules: course.modules.length,
+      completedModules: completedCount,
+      progressPercent,
+      averageScore: modules.some((module) => module.score !== null) ? 88 : 0,
+      nextModule: nextModule ? { id: nextModule.id, slug: nextModule.slug, title: nextModule.title } : null,
+    },
+    modules,
   };
 }
 
