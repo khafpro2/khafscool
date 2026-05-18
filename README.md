@@ -104,6 +104,21 @@ curl http://localhost:4000/catalog
 
 La réponse contient `courses` avec `slug`, `track`, `title`, `description` et `moduleCount`.
 
+### Smoke test API
+
+Quand le backend local est lancé, un smoke test sans dépendance externe vérifie rapidement `/health`, `/catalog`, l'inscription/connexion avec un email unique, puis les routes privées principales.
+
+```bash
+pnpm --filter backend dev
+pnpm smoke:api
+```
+
+Le script cible `http://localhost:4000` par défaut. Pour tester un autre backend :
+
+```bash
+API_URL=http://127.0.0.1:4000 pnpm smoke:api
+```
+
 ### Mini-jeu ServiceNow — ticket scoring
 
 Route privée Bearer qui évalue un ticket ServiceNow simulé sans écrire en base.

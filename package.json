@@ -6,7 +6,8 @@
     "build": "turbo run build",
     "db:generate": "pnpm --filter backend exec prisma generate",
     "db:migrate": "pnpm --filter backend exec prisma migrate dev",
-    "db:seed": "pnpm --filter backend exec tsx prisma/seed.ts"
+    "db:seed": "pnpm --filter backend exec tsx prisma/seed.ts",
+    "smoke:api": "node scripts/smoke-api.mjs"
   },
   "devDependencies": {
     "turbo": "^2.3.3",
