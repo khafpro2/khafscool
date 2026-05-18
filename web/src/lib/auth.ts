@@ -24,6 +24,24 @@ export function getRefreshToken() {
   return readStoredValue(REFRESH_KEY);
 }
 
+export function getAuthTokenPresence() {
+  if (typeof window === 'undefined') {
+    return {
+      accessTokenCookie: false,
+      accessTokenLocal: false,
+      refreshTokenCookie: false,
+      refreshTokenLocal: false,
+    };
+  }
+
+  return {
+    accessTokenCookie: Boolean(readCookie(ACCESS_KEY)),
+    accessTokenLocal: Boolean(window.localStorage.getItem(ACCESS_KEY)),
+    refreshTokenCookie: Boolean(readCookie(REFRESH_KEY)),
+    refreshTokenLocal: Boolean(window.localStorage.getItem(REFRESH_KEY)),
+  };
+}
+
 export async function refreshSession(): Promise<RefreshedSession | null> {
   const refreshToken = getRefreshToken();
   if (!refreshToken) return null;

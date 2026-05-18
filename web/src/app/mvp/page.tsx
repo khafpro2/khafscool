@@ -117,6 +117,9 @@ export default function MvpPage() {
           <Link className="btn" href="/dashboard" style={{ background: '#1d1d1f' }}>
             Ouvrir le dashboard
           </Link>
+          <Link href="/diagnostics" style={{ alignSelf: 'center', fontWeight: 800 }}>
+            Diagnostics navigateur
+          </Link>
         </div>
       </div>
 
