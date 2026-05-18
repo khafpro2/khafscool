@@ -28,6 +28,28 @@ export interface DashboardData {
   courses: CourseSummary[];
 }
 
+export interface UserProgressData {
+  user: AuthUser;
+  progress: {
+    totalModules: number;
+    completedModules: number;
+    progressPercent: number;
+    averageScore: number;
+    points: number;
+    level: string;
+  };
+  badges: string[];
+  quests: { id: string; label: string; progress: number; target: number }[];
+  courses: CourseSummary[];
+  tracks: {
+    track: string;
+    totalModules: number;
+    completedModules: number;
+    progressPercent: number;
+    averageScore: number;
+  }[];
+}
+
 export interface CourseSummary {
   id: string;
   slug: string;
@@ -97,7 +119,8 @@ export function register(email: string, password: string, displayName: string) {
 
 export async function fetchDashboard(token?: string): Promise<DashboardData> {
   try {
-    return await apiRequest<DashboardData>('/users/me/dashboard', { headers: authHeader(token) });
+    const data = await apiRequest<UserProgressData>('/users/me/progress', { headers: authHeader(token) });
+    return toDashboardData(data);
   } catch {
     return mockDashboard();
   }
@@ -159,6 +182,25 @@ function mockDashboard(): DashboardData {
       { id: '1', slug: 'apple-cert-prep', title: 'Parcours Apple', track: 'APPLE', progressPercent: 100 },
       { id: '2', slug: 'jamf-pro-foundations', title: 'Fondamentaux Jamf Pro', track: 'JAMF', progressPercent: 0 },
     ],
+  };
+}
+
+function toDashboardData(data: UserProgressData): DashboardData {
+  const appleTrack = data.tracks.find((track) => track.track === 'APPLE');
+
+  return {
+    user: data.user,
+    stats: {
+      points: data.progress.points,
+      level: data.progress.level,
+      modulesCompleted: data.progress.completedModules,
+      timeSpentMinutes: data.progress.completedModules * 12,
+      averageQuizScore: data.progress.averageScore,
+      preparationScore: appleTrack?.progressPercent ?? data.progress.progressPercent,
+    },
+    badges: data.badges,
+    quests: data.quests,
+    courses: data.courses,
   };
 }
 

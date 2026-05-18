@@ -24,6 +24,21 @@ export async function getCourse(
   return reply.send({ course });
 }
 
+export async function getCourseProgress(
+  req: FastifyRequest<{ Params: { slug: string } }>,
+  reply: FastifyReply
+) {
+  try {
+    const data = await gamification.getCourseProgress(req.user.sub, req.params.slug);
+    return reply.send(data);
+  } catch (e) {
+    if ((e as Error).message === 'COURSE_NOT_FOUND') {
+      return reply.status(404).send({ error: 'COURSE_NOT_FOUND' });
+    }
+    throw e;
+  }
+}
+
 export async function completeModule(
   req: FastifyRequest<{
     Params: { id: string };
@@ -44,6 +59,11 @@ export async function completeModule(
 
 export async function getDashboard(req: FastifyRequest, reply: FastifyReply) {
   const data = await gamification.getDashboard(req.user.sub);
+  return reply.send(data);
+}
+
+export async function getUserProgress(req: FastifyRequest, reply: FastifyReply) {
+  const data = await gamification.getUserProgress(req.user.sub);
   return reply.send(data);
 }
 
