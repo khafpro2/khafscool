@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { CourseDetail, CourseProgressData } from '@/lib/api';
 import { completeModule, fetchCourse, fetchCourseProgress } from '@/lib/api';
 import { getAccessToken } from '@/lib/auth';
+import { formatTrack } from '@/lib/tracks';
 
 export function CourseDetailClient({ slug }: { slug: string }) {
   const [course, setCourse] = useState<CourseDetail | null>(null);
@@ -97,7 +98,7 @@ export function CourseDetailClient({ slug }: { slug: string }) {
       <Link href="/courses" style={{ fontWeight: 600 }}>
         ← Tous les parcours
       </Link>
-      <p style={{ color: 'var(--muted)', fontWeight: 700, marginTop: '1.5rem' }}>{course.track}</p>
+      <p style={{ color: 'var(--muted)', fontWeight: 700, marginTop: '1.5rem' }}>{formatTrack(course.track)}</p>
       <h1 style={{ fontSize: '2rem', fontWeight: 800, marginTop: '0.25rem' }}>{course.title}</h1>
       {course.description && (
         <p style={{ color: 'var(--muted)', marginTop: '0.75rem', maxWidth: 760 }}>{course.description}</p>

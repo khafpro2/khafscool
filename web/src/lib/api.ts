@@ -1,4 +1,5 @@
 import { refreshSession } from './auth';
+import { formatTrack } from './tracks';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
 
@@ -424,7 +425,7 @@ function mockCertificationSprint(
     id: `demo-sprint-${track.toLowerCase()}`,
     questKey: `demo:sprint:${track}:${days}`,
     track,
-    label: `Certification Sprint ${track} - ${days} jours`,
+    label: `Certification Sprint ${formatTrack(track)} - ${days} jours`,
     days,
     startedAt: startedAt.toISOString(),
     endsAt: endsAt.toISOString(),

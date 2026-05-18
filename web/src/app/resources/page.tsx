@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
+import { formatTrack } from '@/lib/tracks';
 
 type ResourceTrack = 'APPLE' | 'JAMF' | 'INTUNE' | 'SERVICENOW';
 
@@ -23,7 +24,7 @@ type TrackSection = {
 const TRACK_SECTIONS: TrackSection[] = [
   {
     id: 'APPLE',
-    label: 'Apple',
+    label: 'Apple Device Support',
     focus: 'Support des appareils, sécurité, diagnostic et fondamentaux de gestion Apple.',
     certification: 'À utiliser comme source de vérité pour préparer les objectifs Apple.',
     courseHint: 'Relie ces lectures aux modules Device Support et MDM du parcours Apple.',
@@ -37,7 +38,7 @@ const TRACK_SECTIONS: TrackSection[] = [
   },
   {
     id: 'JAMF',
-    label: 'Jamf',
+    label: 'Jamf Pro',
     focus: 'Administration Jamf Pro, inventaire, smart groups, politiques et bonnes pratiques MDM.',
     certification: 'À consulter avant les révisions Jamf Pro et les exercices de configuration.',
     courseHint: 'Relie ces lectures aux modules Jamf Pro Foundations et aux quêtes de pratique.',
@@ -51,7 +52,7 @@ const TRACK_SECTIONS: TrackSection[] = [
   },
   {
     id: 'INTUNE',
-    label: 'Intune',
+    label: 'Microsoft Intune',
     focus: 'Enrôlement, conformité, profils et gestion des appareils Apple avec Microsoft Intune.',
     certification: 'À utiliser pour valider les détails Microsoft Learn et les prérequis de conformité.',
     courseHint: 'Relie ces lectures aux modules Intune et aux sprints de révision Microsoft.',
@@ -205,7 +206,7 @@ export default function ResourcesPage() {
         <div style={{ display: 'grid', gap: '1rem', marginTop: '1.5rem' }}>
           {visibleSections.map((section) => (
             <article className="card" key={section.id}>
-              <p style={{ color: 'var(--accent)', fontSize: '0.8rem', fontWeight: 800 }}>{section.id}</p>
+              <p style={{ color: 'var(--accent)', fontSize: '0.8rem', fontWeight: 800 }}>{formatTrack(section.id)}</p>
               <h2 style={{ fontSize: '1.35rem', fontWeight: 800, marginTop: '0.25rem' }}>{section.label}</h2>
               <p style={{ color: 'var(--muted)', marginTop: '0.5rem' }}>{section.focus}</p>
 

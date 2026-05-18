@@ -27,6 +27,20 @@ interface LearnerDashboardScreenProps {
 
 const certificationSprintTracks: CertificationSprintTrack[] = ['APPLE', 'JAMF', 'INTUNE', 'SERVICENOW'];
 
+const trackLabels: Record<string, string> = {
+  APPLE: 'Apple Device Support',
+  JAMF: 'Jamf Pro',
+  INTUNE: 'Microsoft Intune',
+  SERVICENOW: 'ServiceNow',
+};
+
+const badgeLabels: Record<string, string> = {
+  'apple-mdm-foundation': 'Fondamentaux Apple MDM',
+  'jamf-engineer': 'Ingénieur Jamf',
+  'intune-professional': 'Professionnel Intune',
+  'servicenow-ninja': 'Ninja ServiceNow',
+};
+
 type SprintMessage = {
   text: string;
   tone: 'success' | 'error' | 'info';
@@ -240,7 +254,7 @@ function SprintCard({
             {sprint.progressPercent} % complété
           </Text>
           <View style={styles.sprintMetrics}>
-            <SprintMetric label="Track" value={formatTrack(sprint.track)} />
+            <SprintMetric label="Parcours" value={formatTrack(sprint.track)} />
             <SprintMetric label="Objectif" value={`${sprint.progress}/${sprint.target}`} />
             <SprintMetric label="Restants" value={String(sprint.remainingModules)} />
           </View>
@@ -365,20 +379,18 @@ function formatLevel(level: string) {
 }
 
 function formatBadge(badge: string) {
-  return badge
-    .split('-')
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(' ');
+  return (
+    badgeLabels[badge] ??
+    badge
+      .split('-')
+      .filter(Boolean)
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join(' ')
+  );
 }
 
 function formatTrack(track: CertificationSprintTrack | string) {
-  const labels: Record<CertificationSprintTrack, string> = {
-    APPLE: 'Apple',
-    INTUNE: 'Intune',
-    JAMF: 'Jamf',
-    SERVICENOW: 'ServiceNow',
-  };
-  return track in labels ? labels[track as CertificationSprintTrack] : track;
+  return trackLabels[track] ?? track;
 }
 
 function formatSprintStatus(sprint: CertificationSprintSummary) {

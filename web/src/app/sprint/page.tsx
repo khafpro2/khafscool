@@ -177,9 +177,9 @@ export default function SprintPage() {
                   }}
                 >
                   <span style={{ color: isSelected ? 'var(--accent)' : 'var(--muted)', fontSize: '0.8rem', fontWeight: 800 }}>
-                    {track.value}
+                    {formatTrack(track.value)}
                   </span>
-                  <strong style={{ display: 'block', marginTop: '0.35rem' }}>{formatTrack(track.value)}</strong>
+                  <strong style={{ display: 'block', marginTop: '0.35rem' }}>Sprint {formatTrack(track.value)}</strong>
                   <span style={{ color: 'var(--muted)', display: 'block', marginTop: '0.35rem' }}>{track.description}</span>
                 </button>
               );
@@ -296,7 +296,7 @@ function CurrentSprintCard({
         }}
       >
         <SprintMetric label="Restants" value={String(sprint.remainingModules)} />
-        <SprintMetric label="Track" value={formatTrack(sprint.track)} />
+        <SprintMetric label="Parcours" value={formatTrack(sprint.track)} />
         <SprintMetric label="Statut" value={sprint.completed ? 'Terminé' : sprint.expired ? 'Expiré' : 'Actif'} />
         <SprintMetric label="Durée" value={`${sprint.days} j`} />
       </div>

@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import type { CertificationSprintSummary, DashboardData } from '@/lib/api';
 import { fetchDashboard } from '@/lib/api';
 import { getAccessToken, logoutSession } from '@/lib/auth';
-import { formatTrack } from '@/lib/tracks';
+import { formatBadge, formatTrack } from '@/lib/tracks';
 import { ProgressOverview } from '@/components/dashboard/ProgressOverview';
 
 type Quest = { id: string; label: string; progress: number; target: number };
@@ -436,7 +436,7 @@ function QuestsBadgesPanel({ quests, badges }: { quests: Quest[]; badges: string
                   padding: '0.35rem 0.7rem',
                 }}
               >
-                {formatBadgeLabel(badge)}
+                {formatBadge(badge)}
               </span>
             ))}
           </div>
@@ -503,14 +503,6 @@ function getQuickActions(data: DashboardData): QuickAction[] {
       progress: course.progressPercent ?? 0,
     };
   });
-}
-
-function formatBadgeLabel(badge: string) {
-  return badge
-    .split('-')
-    .filter(Boolean)
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(' ');
 }
 
 function formatSprintStatus(sprint: CertificationSprintSummary) {

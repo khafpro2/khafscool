@@ -1,3 +1,5 @@
+import { formatBadge } from '@/lib/tracks';
+
 interface Props {
   modulesCompleted: number;
   timeSpentMinutes: number;
@@ -52,7 +54,7 @@ export function ProgressOverview({
                   fontSize: '0.85rem',
                 }}
               >
-                {b}
+                {formatBadge(b)}
               </li>
             ))}
           </ul>

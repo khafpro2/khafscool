@@ -89,9 +89,9 @@ function mockCertificationSprint(
 
 function formatTrack(track: CertificationSprintTrack) {
   const labels: Record<CertificationSprintTrack, string> = {
-    APPLE: 'Apple',
-    JAMF: 'Jamf',
-    INTUNE: 'Intune',
+    APPLE: 'Apple Device Support',
+    JAMF: 'Jamf Pro',
+    INTUNE: 'Microsoft Intune',
     SERVICENOW: 'ServiceNow',
   };
   return labels[track];

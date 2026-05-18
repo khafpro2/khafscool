@@ -5,13 +5,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { CourseSummary } from '@/lib/api';
 import { fetchCourses } from '@/lib/api';
 import { getAccessToken } from '@/lib/auth';
-
-const TRACK_LABELS: Record<string, string> = {
-  APPLE: 'Apple',
-  JAMF: 'Jamf Pro',
-  INTUNE: 'Intune',
-  SERVICENOW: 'ServiceNow',
-};
+import { formatTrack } from '@/lib/tracks';
 
 export default function CoursesPage() {
   const [courses, setCourses] = useState<CourseSummary[]>([]);
@@ -57,7 +51,7 @@ export default function CoursesPage() {
             Choisis ton parcours Apple, MDM ou support
           </h1>
           <p style={{ color: 'var(--muted)', fontSize: '1.05rem', marginTop: '0.75rem', maxWidth: 720 }}>
-            Compare les tracks, repère le volume de modules et démarre une préparation guidée. Le catalogue reste
+            Compare les parcours, repère le volume de modules et démarre une préparation guidée. Le catalogue reste
             consultable en local si l’API publique est indisponible.
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '1.25rem' }}>
@@ -80,7 +74,7 @@ export default function CoursesPage() {
             padding: '1rem',
           }}
         >
-          <CatalogStat label="Tracks disponibles" value={String(Math.max(tracks.length - 1, 0))} />
+          <CatalogStat label="Parcours disponibles" value={String(Math.max(tracks.length - 1, 0))} />
           <CatalogStat label="Modules catalogue" value={String(moduleCount || 'Démo')} />
           <CatalogStat label="Accès" value={hasToken ? 'Connecté' : 'Public'} />
         </aside>
@@ -119,7 +113,7 @@ export default function CoursesPage() {
                     padding: '0.55rem 0.9rem',
                   }}
                 >
-                  {track === 'TOUS' ? 'Tous les tracks' : TRACK_LABELS[track] ?? track}
+                  {track === 'TOUS' ? 'Tous les parcours' : formatTrack(track)}
                 </button>
               );
             })}
@@ -153,7 +147,7 @@ function CourseCatalogCard({ course, hasToken }: { course: CourseSummary; hasTok
     <article className="card" style={{ display: 'flex', flexDirection: 'column', minHeight: 320 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem' }}>
         <p style={{ color: 'var(--accent)', fontSize: '0.8rem', fontWeight: 800, textTransform: 'uppercase' }}>
-          {TRACK_LABELS[course.track] ?? course.track}
+          {formatTrack(course.track)}
         </p>
         <span
           style={{
