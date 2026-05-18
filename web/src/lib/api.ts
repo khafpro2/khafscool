@@ -25,7 +25,27 @@ export interface DashboardData {
   };
   badges: string[];
   quests: { id: string; label: string; progress: number; target: number }[];
+  certificationSprint?: CertificationSprintSummary | null;
   courses: CourseSummary[];
+}
+
+export type CertificationSprintTrack = 'APPLE' | 'JAMF' | 'INTUNE' | 'SERVICENOW';
+export type CertificationSprintDays = 7 | 14;
+
+export interface CertificationSprintSummary {
+  id: string;
+  questKey: string;
+  track: CertificationSprintTrack;
+  label: string;
+  days: CertificationSprintDays;
+  startedAt: string;
+  endsAt: string;
+  target: number;
+  progress: number;
+  progressPercent: number;
+  remainingModules: number;
+  completed: boolean;
+  expired: boolean;
 }
 
 export interface CourseNextModule {
@@ -47,6 +67,7 @@ export interface UserProgressData {
   };
   badges: string[];
   quests: { id: string; label: string; progress: number; target: number }[];
+  certificationSprint?: CertificationSprintSummary | null;
   courses: CourseSummary[];
   tracks: {
     track: string;
@@ -243,6 +264,41 @@ export function scoreServiceNowTicket(token: string, payload: TicketScorePayload
   });
 }
 
+export async function fetchCurrentCertificationSprint(token?: string): Promise<CertificationSprintSummary | null> {
+  if (!token) return mockCertificationSprint();
+
+  try {
+    const data = await apiRequest<{ certificationSprint: CertificationSprintSummary | null }>(
+      '/sprints/certification/current',
+      { headers: authHeader(token) }
+    );
+    return data.certificationSprint;
+  } catch {
+    return mockCertificationSprint();
+  }
+}
+
+export async function startCertificationSprint(
+  token: string | undefined,
+  payload: { track: CertificationSprintTrack; days: CertificationSprintDays }
+): Promise<CertificationSprintSummary> {
+  if (!token) return mockCertificationSprint(payload.track, payload.days);
+
+  try {
+    const data = await apiRequest<{ certificationSprint: CertificationSprintSummary }>(
+      '/sprints/certification/start',
+      {
+        method: 'POST',
+        headers: authHeader(token),
+        body: JSON.stringify(payload),
+      }
+    );
+    return data.certificationSprint;
+  } catch {
+    return mockCertificationSprint(payload.track, payload.days);
+  }
+}
+
 function mockDashboard(): DashboardData {
   return {
     user: { id: 'demo', displayName: 'Technicien démo', email: 'demo@ama.dev' },
@@ -256,6 +312,7 @@ function mockDashboard(): DashboardData {
     },
     badges: ['apple-mdm-foundation'],
     quests: [{ id: '1', label: 'Termine 3 modules Apple cette semaine', progress: 1, target: 3 }],
+    certificationSprint: mockCertificationSprint(),
     courses: [
       { id: '1', slug: 'apple-cert-prep', title: 'Parcours Apple', track: 'APPLE', progressPercent: 100 },
       { id: '2', slug: 'jamf-pro-foundations', title: 'Fondamentaux Jamf Pro', track: 'JAMF', progressPercent: 0 },
@@ -278,7 +335,35 @@ function toDashboardData(data: UserProgressData): DashboardData {
     },
     badges: data.badges,
     quests: data.quests,
+    certificationSprint: data.certificationSprint ?? null,
     courses: data.courses,
+  };
+}
+
+function mockCertificationSprint(
+  track: CertificationSprintTrack = 'APPLE',
+  days: CertificationSprintDays = 7
+): CertificationSprintSummary {
+  const startedAt = new Date();
+  const endsAt = new Date(startedAt);
+  endsAt.setDate(startedAt.getDate() + days);
+  const target = track === 'SERVICENOW' ? 3 : 4;
+  const progress = track === 'APPLE' ? 1 : 0;
+
+  return {
+    id: `demo-sprint-${track.toLowerCase()}`,
+    questKey: `demo:sprint:${track}:${days}`,
+    track,
+    label: `Certification Sprint ${track} - ${days} jours`,
+    days,
+    startedAt: startedAt.toISOString(),
+    endsAt: endsAt.toISOString(),
+    target,
+    progress,
+    progressPercent: Math.round((progress / target) * 100),
+    remainingModules: Math.max(target - progress, 0),
+    completed: progress >= target,
+    expired: false,
   };
 }
 

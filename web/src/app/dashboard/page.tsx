@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import type { DashboardData } from '@/lib/api';
+import type { CertificationSprintSummary, DashboardData } from '@/lib/api';
 import { fetchDashboard } from '@/lib/api';
 import { clearAuthTokens, getAccessToken } from '@/lib/auth';
 import { ProgressOverview } from '@/components/dashboard/ProgressOverview';
@@ -30,6 +30,7 @@ const trackLabels: Record<string, string> = {
   INTUNE: 'Intune',
   SERVICENOW: 'ServiceNow',
   SERVICENOW_GAME: 'ServiceNow',
+  SPRINT: 'Sprint',
 };
 
 const fallbackQuickActions: QuickAction[] = [
@@ -58,11 +59,17 @@ const fallbackQuickActions: QuickAction[] = [
     track: 'SERVICENOW',
   },
   {
+    label: 'Sprint certification',
+    description: 'Planifier 7 ou 14 jours de révision Apple, Jamf, Intune ou ServiceNow.',
+    href: '/sprint',
+    track: 'SPRINT',
+    primary: true,
+  },
+  {
     label: 'Lancer le mini-jeu ServiceNow',
     description: 'Scorer une note de résolution avec le mode connecté ou le fallback local.',
     href: '/servicenow',
     track: 'SERVICENOW_GAME',
-    primary: true,
   },
 ];
 
@@ -140,7 +147,7 @@ export default function DashboardPage() {
     );
   }
 
-  const { user, stats, badges, quests, courses } = data;
+  const { user, stats, badges, quests, courses, certificationSprint } = data;
   const recommendedAction = getRecommendedAction(data);
   const quickActions = getQuickActions(data);
 
@@ -165,6 +172,7 @@ export default function DashboardPage() {
       </p>
 
       <RecommendedActionCard action={recommendedAction} />
+      <SprintDashboardCard sprint={certificationSprint ?? null} />
       <QuickActionsGrid actions={quickActions} />
 
       <ProgressOverview
@@ -213,6 +221,57 @@ export default function DashboardPage() {
       </section>
 
       <QuestsBadgesPanel quests={quests} badges={badges} />
+    </section>
+  );
+}
+
+function SprintDashboardCard({ sprint }: { sprint: CertificationSprintSummary | null }) {
+  return (
+    <section
+      className="card"
+      style={{
+        alignItems: 'center',
+        display: 'grid',
+        gap: '1rem',
+        gridTemplateColumns: 'minmax(0, 1fr) auto',
+        marginTop: '1rem',
+      }}
+    >
+      <div>
+        <p style={{ color: 'var(--accent)', fontSize: '0.85rem', fontWeight: 800, textTransform: 'uppercase' }}>
+          Certification Sprint
+        </p>
+        {sprint ? (
+          <>
+            <h2 style={{ fontSize: '1.2rem', fontWeight: 800, marginTop: '0.35rem' }}>{sprint.label}</h2>
+            <p style={{ color: 'var(--muted)', marginTop: '0.35rem' }}>
+              {sprint.progress}/{sprint.target} modules · {sprint.remainingModules} restants · {sprint.progressPercent}%
+            </p>
+            <div style={{ background: '#e5e5ea', borderRadius: 999, height: 8, marginTop: '0.75rem' }}>
+              <div
+                style={{
+                  background: sprint.completed ? '#0f7a3b' : 'var(--accent)',
+                  borderRadius: 999,
+                  height: '100%',
+                  width: `${Math.min(100, sprint.progressPercent)}%`,
+                }}
+              />
+            </div>
+          </>
+        ) : (
+          <>
+            <h2 style={{ fontSize: '1.2rem', fontWeight: 800, marginTop: '0.35rem' }}>
+              Aucun sprint actif
+            </h2>
+            <p style={{ color: 'var(--muted)', marginTop: '0.35rem' }}>
+              Lance un cycle court de préparation sur Apple, Jamf, Intune ou ServiceNow.
+            </p>
+          </>
+        )}
+      </div>
+      <Link className="btn" href="/sprint">
+        {sprint ? 'Voir le sprint' : 'Démarrer'}
+      </Link>
     </section>
   );
 }
