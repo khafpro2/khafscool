@@ -17,7 +17,6 @@ const LEVEL_THRESHOLDS: { level: UserLevel; min: number }[] = [
 const TRACK_BADGES: Partial<Record<CourseTrack, string>> = {
   [CourseTrack.APPLE]: 'apple-mdm-foundation',
   [CourseTrack.INTUNE]: 'intune-professional',
-  [CourseTrack.SERVICENOW]: 'servicenow-ninja',
 };
 
 const WEEKLY_QUESTS = [
@@ -37,7 +36,6 @@ const TRACK_LABELS: Record<CourseTrack, string> = {
   [CourseTrack.APPLE]: 'Apple',
   [CourseTrack.JAMF]: 'Jamf',
   [CourseTrack.INTUNE]: 'Intune',
-  [CourseTrack.SERVICENOW]: 'ServiceNow',
 };
 
 function startOfDay(d: Date) {
@@ -68,7 +66,7 @@ export function buildCertificationSprintQuestKey(
 }
 
 export function parseCertificationSprintQuestKey(questKey: string) {
-  const match = questKey.match(/^sprint:(APPLE|JAMF|INTUNE|SERVICENOW):(\d{4}-\d{2}-\d{2}):(7|14)$/);
+  const match = questKey.match(/^sprint:(APPLE|JAMF|INTUNE):(\d{4}-\d{2}-\d{2}):(7|14)$/);
   if (!match) return null;
 
   return {

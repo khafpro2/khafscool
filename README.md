@@ -1,8 +1,8 @@
 # Apple MDM Academy
 
-Plateforme de formation gamifiée pour techniciens Apple et administrateurs MDM (parcours Apple, Jamf Pro, Intune, ServiceNow).
+Plateforme de formation gamifiée pour techniciens Apple et administrateurs MDM (parcours Apple, Jamf Pro, Intune).
 
-> **Non affilié** à Apple Inc., Jamf, Microsoft ou ServiceNow. Contenus pédagogiques originaux.
+> **Non affilié** à Apple Inc., Jamf ou Microsoft. Contenus pédagogiques originaux.
 
 ## Stack
 
@@ -69,7 +69,6 @@ Le seed crée les parcours MVP, modules, quiz, mini-jeux et données de progress
 - `/auth` : inscription, connexion email et entrées OAuth de développement.
 - `/dashboard` : synthèse progression, points, streak et accès rapides.
 - `/courses` : catalogue privé et accès aux détails de parcours.
-- `/servicenow` : mini-jeu de scoring de ticket ServiceNow.
 - `/sprint` : Certification Sprint 7 ou 14 jours.
 - `/resources` : liens vers ressources officielles et documentation utile.
 
@@ -94,7 +93,6 @@ Le seed crée les parcours MVP, modules, quiz, mini-jeux et données de progress
 | GET     | `/users/me/progress`               | Progression globale utilisateur          |
 | GET     | `/users/me/dashboard`              | Tableau de bord                          |
 | GET     | `/quests/weekly`                   | Quêtes hebdomadaires de l'utilisateur    |
-| POST    | `/servicenow/ticket-score`         | Scoring pédagogique d'un ticket          |
 | POST    | `/sprints/certification/start`     | Démarre un sprint certification privé    |
 | GET     | `/sprints/certification/current`   | Sprint certification actif               |
 | GET     | `/leaderboard`                     | Classement privé par points              |
@@ -131,7 +129,7 @@ API_URL=http://127.0.0.1:4000 pnpm smoke:api
 
 ### Smoke test web
 
-Quand le serveur web local est lancé, un smoke test sans navigateur vérifie rapidement les pages MVP principales : auth, dashboard, courses, servicenow, sprint, pricing, diagnostics et mvp.
+Quand le serveur web local est lancé, un smoke test sans navigateur vérifie rapidement les pages MVP principales : auth, dashboard, courses, sprint, pricing, diagnostics et mvp.
 
 ```bash
 pnpm --filter web dev
@@ -152,24 +150,6 @@ pnpm smoke:all
 
 La CI valide la syntaxe de `scripts/smoke-api.mjs` et `scripts/smoke-web.mjs` avec `node --check`, mais ne lance pas `pnpm smoke:api` ni `pnpm smoke:web` car ces commandes nécessitent les serveurs locaux et la base de données.
 
-### Mini-jeu ServiceNow — ticket scoring
-
-Route privée Bearer qui évalue un ticket ServiceNow simulé sans écrire en base.
-
-```bash
-curl -X POST http://localhost:4000/servicenow/ticket-score \
-  -H "Authorization: Bearer <token>" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "shortDescription": "MacBook bloqué après enrôlement MDM",
-    "category": "incident",
-    "priority": "P2",
-    "resolutionNote": "Diagnostic réalisé avec vérification du profil MDM. Cause identifiée côté certificat, solution appliquée puis validée avec utilisateur."
-  }'
-```
-
-La réponse contient `score` sur 100, `feedback` en français et `suggestions` d'amélioration.
-
 ### Certification Sprint
 
 Route privée Bearer qui démarre un sprint de révision sur 7 ou 14 jours pour un parcours.
@@ -181,7 +161,7 @@ curl -X POST http://localhost:4000/sprints/certification/start \
   -d '{ "track": "INTUNE", "days": 14 }'
 ```
 
-Le body doit contenir `track` (`APPLE`, `JAMF`, `INTUNE` ou `SERVICENOW`) et peut contenir `days` (`7` ou `14`, défaut `7`). Un body invalide retourne `400` avec `error: "INVALID_CERTIFICATION_SPRINT_REQUEST"` et des détails par champ.
+Le body doit contenir `track` (`APPLE`, `JAMF` ou `INTUNE`) et peut contenir `days` (`7` ou `14`, défaut `7`). Un body invalide retourne `400` avec `error: "INVALID_CERTIFICATION_SPRINT_REQUEST"` et des détails par champ.
 
 ## OAuth (développement)
 
@@ -198,12 +178,12 @@ pnpm build
 
 ## Contenu et ressources
 
-Les contenus pédagogiques du MVP sont originaux et non affiliés à Apple, Jamf, Microsoft ou ServiceNow. Les pages de ressources peuvent pointer vers les documentations officielles pour préparer les certifications et vérifier les pratiques produit.
+Les contenus pédagogiques du MVP sont originaux et non affiliés à Apple, Jamf ou Microsoft. Les pages de ressources peuvent pointer vers les documentations officielles pour préparer les certifications et vérifier les pratiques produit.
 
 ## Prochaines étapes
 
 - Brancher SDK natifs SSO (Apple, Google, MSAL)
-- Parcours Jamf et contenus avancés Intune/ServiceNow
+- Parcours Jamf et contenus avancés Intune
 - Stripe Checkout réel + webhooks
 - Finaliser l'expérience mobile complète
 

@@ -31,7 +31,7 @@ const PLANS: {
     cta: 'Démarrer le checkout mensuel',
     checkoutPlan: 'monthly',
     features: [
-      'Tous les modules Apple, Jamf, Intune et ServiceNow',
+      'Tous les modules Apple, Jamf et Intune',
       'Sprint Certification 7 ou 14 jours',
       'Ressources officielles et liens de révision',
       'Badges, progression et reprise sur dashboard/mobile',
@@ -45,7 +45,7 @@ const PLANS: {
     cta: 'Démarrer le checkout annuel',
     checkoutPlan: 'yearly',
     features: [
-      'Tous les modules Apple, Jamf, Intune et ServiceNow',
+      'Tous les modules Apple, Jamf et Intune',
       'Sprint Certification 7 ou 14 jours',
       'Ressources officielles et liens de révision',
       'Deux mois offerts par rapport au mensuel',
@@ -60,7 +60,7 @@ const PLANS: {
     cta: 'Démarrer le checkout entreprise',
     checkoutPlan: 'enterprise',
     features: [
-      'Parcours alignés Apple, Jamf, Intune et ServiceNow',
+      'Parcours alignés Apple, Jamf et Intune',
       'Plan de sprint partagé pour cohortes support',
       'Ressources officielles pour onboarding et montée en compétence',
       'Suivi équipe à brancher sur le dashboard admin',
@@ -69,9 +69,8 @@ const PLANS: {
 ];
 
 const MVP_FEATURES = [
-  'Parcours guidés Apple, Jamf, Intune et ServiceNow',
+  'Parcours guidés Apple, Jamf et Intune',
   'Sprint Certification pour transformer les modules en plan de révision',
-  'Mini-jeu ServiceNow pour s’entraîner à qualifier et prioriser les tickets',
   'Ressources officielles centralisées pour préparer les examens',
   'Dashboard responsive utilisable côté web et mobile',
 ];
@@ -165,8 +164,8 @@ export default function PricingPage() {
             Choisis le bon niveau pour apprendre Apple MDM
           </h1>
           <p style={{ color: 'var(--muted)', fontSize: '1.05rem', marginTop: '0.75rem', maxWidth: 760 }}>
-            Apple MDM Academy combine parcours métier, sprint de certification, mini-jeu ServiceNow et ressources
-            officielles. Les offres ci-dessous appellent maintenant le backend checkout; en mode MVP, Stripe renvoie
+            Apple MDM Academy combine parcours métier, sprint de certification et ressources officielles.
+            Les offres ci-dessous appellent maintenant le backend checkout; en mode MVP, Stripe renvoie
             une réponse de démonstration claire.
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '1.25rem' }}>

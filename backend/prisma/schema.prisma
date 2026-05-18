@@ -18,7 +18,6 @@ enum CourseTrack {
   APPLE
   JAMF
   INTUNE
-  SERVICENOW
 }
 
 enum UserLevel {

@@ -25,20 +25,18 @@ interface LearnerDashboardScreenProps {
   onSignOut: () => void;
 }
 
-const certificationSprintTracks: CertificationSprintTrack[] = ['APPLE', 'JAMF', 'INTUNE', 'SERVICENOW'];
+const certificationSprintTracks: CertificationSprintTrack[] = ['APPLE', 'JAMF', 'INTUNE'];
 
 const trackLabels: Record<string, string> = {
   APPLE: 'Apple Device Support',
   JAMF: 'Jamf Pro',
   INTUNE: 'Microsoft Intune',
-  SERVICENOW: 'ServiceNow',
 };
 
 const badgeLabels: Record<string, string> = {
   'apple-mdm-foundation': 'Fondamentaux Apple MDM',
   'jamf-engineer': 'Ingénieur Jamf',
   'intune-professional': 'Professionnel Intune',
-  'servicenow-ninja': 'Ninja ServiceNow',
 };
 
 type SprintMessage = {
@@ -183,7 +181,7 @@ export function LearnerDashboardScreen({ onSignOut }: LearnerDashboardScreenProp
         <Text style={styles.cardLabel}>Prochaine étape</Text>
         <Text style={styles.ctaTitle}>{nextCourse?.nextModule?.title ?? 'Découvrir le prochain module'}</Text>
         <Text style={styles.ctaText}>
-          Continuez votre parcours ou entraînez-vous à qualifier un ticket ServiceNow.
+          Continuez votre parcours pour progresser vers la prochaine certification.
         </Text>
         <View style={styles.ctaButtons}>
           <Pressable
@@ -191,9 +189,6 @@ export function LearnerDashboardScreen({ onSignOut }: LearnerDashboardScreenProp
             onPress={() => showNextModule(nextCourse)}
           >
             <Text style={styles.primaryButtonText}>Continuer</Text>
-          </Pressable>
-          <Pressable style={[styles.ctaButton, styles.secondaryButton]} onPress={showServiceNowCta}>
-            <Text style={styles.secondaryButtonText}>ServiceNow</Text>
           </Pressable>
         </View>
       </View>
@@ -261,7 +256,7 @@ function SprintCard({
         </View>
       ) : (
         <Text style={styles.sprintMeta}>
-          Choisissez un objectif Apple, Jamf, Intune ou ServiceNow pour structurer votre préparation.
+          Choisissez un objectif Apple, Jamf ou Intune pour structurer votre préparation.
         </Text>
       )}
 
@@ -360,13 +355,6 @@ function showNextModule(course: CourseSummary | null) {
     course?.nextModule
       ? `Continuez avec « ${course.nextModule.title} » dans le parcours ${course.title}.`
       : 'Aucun module suivant disponible pour le moment.'
-  );
-}
-
-function showServiceNowCta() {
-  Alert.alert(
-    'ServiceNow',
-    'Ouvrez le module ServiceNow sur le web pour vous entraîner à qualifier et prioriser des tickets.'
   );
 }
 
@@ -494,9 +482,7 @@ const styles = StyleSheet.create({
   ctaButtons: { flexDirection: 'row', gap: 10 },
   ctaButton: { flex: 1, padding: 14, borderRadius: 14, alignItems: 'center' },
   primaryButton: { backgroundColor: '#007AFF' },
-  secondaryButton: { backgroundColor: '#EAF3FF' },
   primaryButtonText: { color: '#FFFFFF', fontWeight: '800' },
-  secondaryButtonText: { color: '#0066CC', fontWeight: '800' },
   refreshButton: { padding: 16, alignItems: 'center' },
   refreshText: { color: '#007AFF', fontWeight: '700' },
 });

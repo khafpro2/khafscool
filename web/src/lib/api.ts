@@ -32,7 +32,7 @@ export interface DashboardData {
   courses: CourseSummary[];
 }
 
-export type CertificationSprintTrack = 'APPLE' | 'JAMF' | 'INTUNE' | 'SERVICENOW';
+export type CertificationSprintTrack = 'APPLE' | 'JAMF' | 'INTUNE';
 export type CertificationSprintDays = 7 | 14;
 
 export interface CertificationSprintSummary {
@@ -109,19 +109,6 @@ export interface CourseQuestion {
   options: { id: string; label: string }[];
   correctOption?: string;
   explanation?: string;
-}
-
-export interface TicketScorePayload {
-  shortDescription: string;
-  category: string;
-  priority: string;
-  resolutionNote: string;
-}
-
-export interface TicketScoreResult {
-  score: number;
-  feedback: string[];
-  suggestions: string[];
 }
 
 export interface CourseModule {
@@ -362,14 +349,6 @@ export async function completeModule(
   });
 }
 
-export function scoreServiceNowTicket(token: string, payload: TicketScorePayload) {
-  return apiRequest<TicketScoreResult>('/servicenow/ticket-score', {
-    method: 'POST',
-    headers: authHeader(token),
-    body: JSON.stringify(payload),
-  });
-}
-
 export async function fetchLeaderboard(token?: string): Promise<LeaderboardResponse> {
   if (!token) return mockLeaderboard();
 
@@ -508,22 +487,10 @@ function mockWeeklyQuests(): WeeklyQuestsResponse {
         weekStart,
       },
       {
-        id: 'demo-weekly-servicenow-3',
-        questKey: 'weekly-servicenow-3',
-        label: 'Score 3 tickets ServiceNow',
-        description: 'Pratique la qualification et la résolution avec le mini-jeu ServiceNow.',
-        target: 3,
-        progress: 1,
-        completed: false,
-        rewardPoints: 45,
-        track: 'SERVICENOW',
-        weekStart,
-      },
-      {
         id: 'demo-weekly-mdm-4',
         questKey: 'weekly-mdm-4',
         label: 'Termine 4 modules MDM (toutes pistes)',
-        description: 'Avance sur Apple, Jamf, Intune ou ServiceNow pour décrocher le bonus hebdo.',
+        description: 'Avance sur Apple, Jamf ou Intune pour décrocher le bonus hebdo.',
         target: 4,
         progress: 2,
         completed: false,
@@ -564,14 +531,6 @@ function mockLeaderboard(): LeaderboardResponse {
       },
       {
         rank: 4,
-        displayName: 'Mehdi — ServiceNow Ninja',
-        points: 690,
-        level: 'TECHNICIAN',
-        badges: ['servicenow-ninja'],
-        isCurrentUser: false,
-      },
-      {
-        rank: 5,
         displayName: 'Technicien démo (toi)',
         points: 120,
         level: 'TECHNICIAN',
@@ -579,7 +538,7 @@ function mockLeaderboard(): LeaderboardResponse {
         isCurrentUser: true,
       },
     ],
-    currentUserRank: 5,
+    currentUserRank: 4,
   };
 }
 
@@ -631,7 +590,7 @@ function mockCertificationSprint(
   const startedAt = new Date();
   const endsAt = new Date(startedAt);
   endsAt.setDate(startedAt.getDate() + days);
-  const target = track === 'SERVICENOW' ? 3 : 4;
+  const target = 4;
   const progress = track === 'APPLE' ? 1 : 0;
 
   return {

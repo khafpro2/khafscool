@@ -27,10 +27,6 @@ const tracks: { value: CertificationSprintTrack; description: string }[] = [
     value: 'INTUNE',
     description: 'Enrôlement mobile, conformité, profils et intégration Microsoft.',
   },
-  {
-    value: 'SERVICENOW',
-    description: 'Qualification, priorisation et clôture propre des tickets support.',
-  },
 ];
 
 const dayOptions: CertificationSprintDays[] = [7, 14];
@@ -111,7 +107,7 @@ export default function SprintPage() {
         <div>
           <h1 style={{ fontSize: '2.25rem', fontWeight: 800 }}>Accélère ta préparation certification</h1>
           <p style={{ color: 'var(--muted)', marginTop: '0.75rem', maxWidth: 760 }}>
-            Choisis un objectif Apple, Jamf, Intune ou ServiceNow, puis lance un sprint de 7 ou 14 jours pour
+            Choisis un objectif Apple, Jamf ou Intune, puis lance un sprint de 7 ou 14 jours pour
             transformer tes modules en plan de révision mesurable.
           </p>
         </div>

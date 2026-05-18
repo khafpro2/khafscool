@@ -153,62 +153,6 @@ async function main() {
     ],
   });
 
-  const serviceNowCourse = await seedCourse({
-    track: CourseTrack.SERVICENOW,
-    slug: 'servicenow-ticket-triage',
-    title: 'ServiceNow — Triage support Apple',
-    description:
-      'Mise en situation help desk pour prioriser, qualifier et documenter les incidents Apple dans ServiceNow.',
-    sortOrder: 4,
-    modules: [
-      {
-        slug: 'incident-priority-basics',
-        title: 'Prioriser un incident Apple',
-        summary:
-          'Identifier impact, urgence, catégorie et note de résolution avant escalade vers MDM ou support matériel.',
-        sortOrder: 1,
-        questions: [
-          {
-            type: 'MULTIPLE_CHOICE',
-            prompt:
-              'Un parc de 80 iPad partagés ne reçoit plus les profils Wi-Fi avant une session de formation. Quelle priorité est la plus cohérente ?',
-            options: [
-              { id: 'a', label: 'P1 critique : arrêt complet de toute l’entreprise' },
-              { id: 'b', label: 'P2 élevée : impact large avec contournement limité' },
-              { id: 'c', label: 'P4 basse : demande cosmétique sans urgence' },
-            ],
-            correctOption: 'b',
-            explanation:
-              'L’impact est large et bloque une activité planifiée, mais ne correspond pas forcément à une panne globale entreprise.',
-          },
-          {
-            type: 'TRUE_FALSE',
-            prompt:
-              'Une bonne note de résolution doit inclure le symptôme, la cause probable et l’action réalisée.',
-            options: [
-              { id: 'true', label: 'Vrai' },
-              { id: 'false', label: 'Faux' },
-            ],
-            correctOption: 'true',
-            explanation:
-              'Ces éléments facilitent la recherche ultérieure, la passation et l’analyse des tendances.',
-          },
-        ],
-        game: {
-          type: 'TICKET_TRIAGE',
-          scenario:
-            'Trois tickets arrivent pendant le déploiement iOS. Classe-les pour traiter le risque opérationnel le plus fort en premier.',
-          steps: [
-            { id: 1, label: 'Un utilisateur demande un nouveau fond d’écran géré' },
-            { id: 2, label: 'Les iPhone de direction ne reçoivent plus les profils VPN' },
-            { id: 3, label: 'Un Mac isolé a besoin d’une mise à jour mineure hors délai' },
-          ],
-          solution: { correctOrder: [2, 3, 1] },
-        },
-      },
-    ],
-  });
-
   const intuneCourse = await seedCourse({
     track: CourseTrack.INTUNE,
     slug: 'intune-ios-enrollment',
@@ -265,7 +209,7 @@ async function main() {
     ],
   });
 
-  console.log('✅ Seed OK — parcours:', appleCourse.slug, intuneCourse.slug, serviceNowCourse.slug);
+  console.log('✅ Seed OK — parcours:', appleCourse.slug, intuneCourse.slug);
 }
 
 main()

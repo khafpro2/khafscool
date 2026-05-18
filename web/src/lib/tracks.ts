@@ -2,8 +2,6 @@ const trackLabels: Record<string, string> = {
   APPLE: 'Apple Device Support',
   JAMF: 'Jamf Pro',
   INTUNE: 'Microsoft Intune',
-  SERVICENOW: 'ServiceNow',
-  SERVICENOW_GAME: 'ServiceNow',
   RESOURCES: 'Ressources',
   SPRINT: 'Sprint',
 };
@@ -12,7 +10,6 @@ const badgeLabels: Record<string, string> = {
   'apple-mdm-foundation': 'Fondamentaux Apple MDM',
   'jamf-engineer': 'Ingénieur Jamf',
   'intune-professional': 'Professionnel Intune',
-  'servicenow-ninja': 'Ninja ServiceNow',
 };
 
 export function formatTrack(track: string) {

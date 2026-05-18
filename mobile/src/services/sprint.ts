@@ -1,7 +1,7 @@
 import { getAccessToken } from './auth';
 import { apiFetch } from './api';
 
-export type CertificationSprintTrack = 'APPLE' | 'JAMF' | 'INTUNE' | 'SERVICENOW';
+export type CertificationSprintTrack = 'APPLE' | 'JAMF' | 'INTUNE';
 export type CertificationSprintDays = 7 | 14;
 
 export interface CertificationSprintSummary {
@@ -67,7 +67,7 @@ function mockCertificationSprint(
   const startedAt = new Date();
   const endsAt = new Date(startedAt);
   endsAt.setDate(startedAt.getDate() + days);
-  const target = track === 'SERVICENOW' ? 3 : 4;
+  const target = 4;
   const progress = track === 'APPLE' ? 1 : 0;
 
   return {
@@ -92,7 +92,6 @@ function formatTrack(track: CertificationSprintTrack) {
     APPLE: 'Apple Device Support',
     JAMF: 'Jamf Pro',
     INTUNE: 'Microsoft Intune',
-    SERVICENOW: 'ServiceNow',
   };
   return labels[track];
 }

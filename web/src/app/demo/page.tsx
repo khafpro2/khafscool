@@ -3,13 +3,13 @@ import Link from 'next/link';
 const WITHOUT_ACCOUNT_STEPS = [
   {
     title: 'Catalogue public',
-    description: 'Parcours Apple, Jamf, Intune et ServiceNow consultables sans session pour valider le contenu.',
+    description: 'Parcours Apple, Jamf et Intune consultables sans session pour valider le contenu.',
     href: '/courses',
     cta: 'Explorer le catalogue',
   },
   {
     title: 'Ressources officielles',
-    description: 'Liens Apple, Jamf, Microsoft et ServiceNow pour comparer les références pendant la revue.',
+    description: 'Liens Apple, Jamf et Microsoft pour comparer les références pendant la revue.',
     href: '/resources',
     cta: 'Ouvrir les ressources',
   },
@@ -18,12 +18,6 @@ const WITHOUT_ACCOUNT_STEPS = [
     description: 'Page tarifs visible publiquement, avec redirection vers la connexion au moment du checkout.',
     href: '/pricing',
     cta: 'Voir les tarifs',
-  },
-  {
-    title: 'ServiceNow fallback demo',
-    description: 'Mini-jeu de scoring utilisable même sans token pour tester le scénario de démonstration local.',
-    href: '/servicenow',
-    cta: 'Lancer le fallback',
   },
 ];
 
@@ -66,7 +60,6 @@ const PRIMARY_ROUTES = [
   { href: '/sprint', label: 'Sprint' },
   { href: '/courses', label: 'Catalogue' },
   { href: '/pricing', label: 'Pricing' },
-  { href: '/servicenow', label: 'ServiceNow' },
   { href: '/resources', label: 'Ressources' },
   { href: '/diagnostics', label: 'Diagnostics API/DB' },
   { href: '/mvp', label: 'Résumé MVP' },

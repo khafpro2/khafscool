@@ -73,7 +73,7 @@ const demoProgress: LearnerProgress = {
     points: 420,
     level: 'TECHNICIAN',
   },
-  badges: ['apple-mdm-foundation', 'servicenow-ninja'],
+  badges: ['apple-mdm-foundation'],
   quests: [{ id: 'weekly-apple-3', label: 'Termine 3 modules Apple cette semaine', progress: 1, target: 3 }],
   courses: [
     {
@@ -91,21 +91,6 @@ const demoProgress: LearnerProgress = {
         courseSlug: 'apple-cert-prep',
       },
     },
-    {
-      id: 'demo-servicenow',
-      slug: 'servicenow-ticketing',
-      title: 'Pratique ServiceNow',
-      track: 'SERVICENOW',
-      totalModules: 3,
-      completedModules: 0,
-      progressPercent: 0,
-      nextModule: {
-        id: 'demo-servicenow-module-1',
-        slug: 'ticket-triage',
-        title: 'Qualifier un ticket incident',
-        courseSlug: 'servicenow-ticketing',
-      },
-    },
   ],
   tracks: [
     {
@@ -119,19 +104,6 @@ const demoProgress: LearnerProgress = {
         slug: 'mdm-basics',
         title: 'Bases MDM et enrôlement',
         courseSlug: 'apple-cert-prep',
-      },
-    },
-    {
-      track: 'SERVICENOW',
-      totalModules: 3,
-      completedModules: 0,
-      progressPercent: 0,
-      averageScore: 0,
-      nextModule: {
-        id: 'demo-servicenow-module-1',
-        slug: 'ticket-triage',
-        title: 'Qualifier un ticket incident',
-        courseSlug: 'servicenow-ticketing',
       },
     },
   ],

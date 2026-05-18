@@ -11,7 +11,7 @@ const MVP_SECTIONS = [
   {
     title: 'Parcours et progression',
     description:
-      'Parcours Apple, Jamf, Intune et ServiceNow avec progression, prochaine action recommandée, badges et quêtes côté dashboard.',
+      'Parcours Apple, Jamf et Intune avec progression, prochaine action recommandée, badges et quêtes côté dashboard.',
     href: '/dashboard',
     cta: 'Voir le dashboard',
   },
@@ -23,13 +23,6 @@ const MVP_SECTIONS = [
     cta: 'Lancer un sprint',
   },
   {
-    title: 'ServiceNow scoring',
-    description:
-      'Mini-jeu de qualification et scoring de ticket, utilisable en mode connecté ou en démonstration locale.',
-    href: '/servicenow',
-    cta: 'Jouer au scoring',
-  },
-  {
     title: 'Billing demo',
     description:
       'Page tarifs et checkout MVP avec redirection de connexion, appel backend et réponse de démonstration quand Stripe est simulé.',
@@ -39,7 +32,7 @@ const MVP_SECTIONS = [
   {
     title: 'Ressources officielles',
     description:
-      'Liens de référence Apple, Jamf, Microsoft Intune et ServiceNow pour vérifier les contenus avant une revue métier.',
+      'Liens de référence Apple, Jamf et Microsoft Intune pour vérifier les contenus avant une revue métier.',
     href: '/resources',
     cta: 'Ouvrir les sources',
   },
@@ -64,12 +57,7 @@ const TEST_CHECKLIST = [
   {
     label: 'Démarrer un Certification Sprint',
     href: '/sprint',
-    detail: 'Teste un sprint Apple, Jamf, Intune ou ServiceNow en 7 ou 14 jours.',
-  },
-  {
-    label: 'Scorer un ticket ServiceNow',
-    href: '/servicenow',
-    detail: 'Soumets une note de résolution et vérifie le score obtenu.',
+    detail: 'Teste un sprint Apple, Jamf ou Intune en 7 ou 14 jours.',
   },
   {
     label: 'Essayer le checkout démo',
@@ -87,7 +75,6 @@ const OFFICIAL_LINKS = [
   { label: 'Apple Training & Certifications', href: 'https://training.apple.com' },
   { label: 'Jamf Learning Hub', href: 'https://learn.jamf.com' },
   { label: 'Microsoft Learn - Intune', href: 'https://learn.microsoft.com/mem/intune/' },
-  { label: 'ServiceNow Documentation', href: 'https://docs.servicenow.com' },
 ];
 
 export default function MvpPage() {
@@ -108,7 +95,7 @@ export default function MvpPage() {
         </h1>
         <p style={{ color: 'var(--muted)', fontSize: '1.05rem', marginTop: '0.85rem', maxWidth: 820 }}>
           Cette page regroupe les surfaces principales à vérifier pour la release MVP: authentification,
-          apprentissage, sprint certification, scoring ServiceNow, billing de démonstration et sources officielles.
+          apprentissage, sprint certification, billing de démonstration et sources officielles.
         </p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '1.25rem' }}>
           <Link className="btn" href="/auth">

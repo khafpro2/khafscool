@@ -8,7 +8,6 @@ const pages = [
   { path: '/auth', label: 'auth', marker: 'Compte local MVP' },
   { path: '/dashboard', label: 'dashboard', marker: 'Tableau de bord' },
   { path: '/courses', label: 'courses', marker: 'Catalogue public' },
-  { path: '/servicenow', label: 'servicenow', marker: 'Mini-jeu ServiceNow' },
   { path: '/sprint', label: 'sprint', marker: 'Accélère ta préparation certification' },
   { path: '/pricing', label: 'pricing', marker: 'Tarifs MVP' },
   { path: '/diagnostics', label: 'diagnostics', marker: 'Diagnostics navigateur' },

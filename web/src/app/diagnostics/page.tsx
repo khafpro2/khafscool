@@ -16,7 +16,6 @@ const quickLinks = [
   { href: '/auth', label: 'Auth' },
   { href: '/dashboard', label: 'Dashboard' },
   { href: '/courses', label: 'Parcours' },
-  { href: '/servicenow', label: 'ServiceNow' },
   { href: '/sprint', label: 'Sprint' },
   { href: '/mvp', label: 'MVP' },
 ];

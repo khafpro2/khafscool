@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { formatTrack } from '@/lib/tracks';
 
-type ResourceTrack = 'APPLE' | 'JAMF' | 'INTUNE' | 'SERVICENOW';
+type ResourceTrack = 'APPLE' | 'JAMF' | 'INTUNE';
 
 type OfficialResource = {
   label: string;
@@ -61,20 +61,6 @@ const TRACK_SECTIONS: TrackSection[] = [
         label: 'Microsoft Learn - Intune',
         url: 'https://learn.microsoft.com/mem/intune/',
         description: 'Documentation officielle Microsoft pour Intune et Microsoft Endpoint Manager.',
-      },
-    ],
-  },
-  {
-    id: 'SERVICENOW',
-    label: 'ServiceNow',
-    focus: 'Qualification ITSM, priorisation, incidents et rédaction de notes de résolution.',
-    certification: 'À consulter pour aligner les exercices sur les pratiques documentées ServiceNow.',
-    courseHint: 'Relie ces lectures aux modules ServiceNow et au mini-jeu de scoring de ticket.',
-    resources: [
-      {
-        label: 'ServiceNow Documentation',
-        url: 'https://docs.servicenow.com',
-        description: 'Documentation officielle ServiceNow pour les processus, produits et pratiques ITSM.',
       },
     ],
   },
@@ -151,7 +137,7 @@ export default function ResourcesPage() {
       >
         <strong>Note de conformité</strong>
         <p style={{ color: 'var(--muted)', marginTop: '0.35rem' }}>
-          Apple MDM Academy n’est pas affilié à Apple, Jamf, Microsoft ou ServiceNow. Les parcours internes
+          Apple MDM Academy n’est pas affilié à Apple, Jamf ou Microsoft. Les parcours internes
           restent du contenu original: ils orientent la pratique, mais les exigences officielles doivent être
           confirmées sur les sites des éditeurs.
         </p>
