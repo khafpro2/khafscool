@@ -10,6 +10,9 @@ export default function HomePage() {
         Parcours Apple, Jamf Pro, Microsoft Intune et ServiceNow — quiz, mini‑jeux, badges et
         préparation aux certifications. Contenus originaux inspirés de la documentation officielle.
       </p>
+      <p style={{ marginTop: '0.75rem', color: 'var(--muted)' }}>
+        Reviewer ou testeur ? Consulte le <Link href="/mvp">résumé MVP testable</Link>.
+      </p>
       <div style={{ marginTop: '2rem', display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
         <Link href="/auth" className="btn">
           Démarrer le MVP

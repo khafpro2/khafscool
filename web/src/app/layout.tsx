@@ -14,6 +14,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <header className="container">
           <nav className="nav">
             <Link href="/">Accueil</Link>
+            <Link href="/mvp">MVP</Link>
             <Link href="/auth">Connexion</Link>
             <Link href="/pricing">Tarifs</Link>
             <Link href="/dashboard">Tableau de bord</Link>
