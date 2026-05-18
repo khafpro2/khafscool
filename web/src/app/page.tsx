@@ -17,6 +17,9 @@ export default function HomePage() {
         <Link href="/courses" className="btn" style={{ background: '#1d1d1f' }}>
           Explorer les parcours
         </Link>
+        <Link href="/servicenow" className="btn" style={{ background: '#4f46e5' }}>
+          Jouer au scoring ServiceNow
+        </Link>
       </div>
       <div
         style={{
@@ -30,11 +33,16 @@ export default function HomePage() {
           { title: 'Parcours Apple', desc: 'Device Support, déploiement, sécurité' },
           { title: 'Jamf Pro', desc: 'MDM, ABM, politiques et alertes' },
           { title: 'Intune', desc: 'Gestion Apple en environnement hybride' },
-          { title: 'ServiceNow', desc: 'Tickets, priorités, notes de résolution' },
+          { title: 'ServiceNow', desc: 'Tickets, priorités, notes de résolution', href: '/servicenow' },
         ].map((f) => (
           <article key={f.title} className="card">
             <h3 style={{ fontWeight: 700 }}>{f.title}</h3>
             <p style={{ color: 'var(--muted)', marginTop: '0.5rem', fontSize: '0.95rem' }}>{f.desc}</p>
+            {typeof f.href === 'string' && (
+              <Link href={f.href} style={{ display: 'inline-block', marginTop: '0.75rem', fontWeight: 600 }}>
+                Ouvrir le mini-jeu
+              </Link>
+            )}
           </article>
         ))}
       </div>

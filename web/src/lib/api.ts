@@ -68,6 +68,19 @@ export interface CourseQuestion {
   explanation?: string;
 }
 
+export interface TicketScorePayload {
+  shortDescription: string;
+  category: string;
+  priority: string;
+  resolutionNote: string;
+}
+
+export interface TicketScoreResult {
+  score: number;
+  feedback: string[];
+  suggestions: string[];
+}
+
 export interface CourseModule {
   id: string;
   slug: string;
@@ -159,6 +172,14 @@ export async function completeModule(
     badges: string[];
     preparationScore: number;
   }>(`/modules/${moduleId}/complete`, {
+    method: 'POST',
+    headers: authHeader(token),
+    body: JSON.stringify(payload),
+  });
+}
+
+export function scoreServiceNowTicket(token: string, payload: TicketScorePayload) {
+  return apiRequest<TicketScoreResult>('/servicenow/ticket-score', {
     method: 'POST',
     headers: authHeader(token),
     body: JSON.stringify(payload),
