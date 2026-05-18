@@ -150,6 +150,8 @@ Pour enchaîner les smokes API puis web, avec les serveurs déjà lancés dans d
 pnpm smoke:all
 ```
 
+La CI valide la syntaxe de `scripts/smoke-api.mjs` et `scripts/smoke-web.mjs` avec `node --check`, mais ne lance pas `pnpm smoke:api` ni `pnpm smoke:web` car ces commandes nécessitent les serveurs locaux et la base de données.
+
 ### Mini-jeu ServiceNow — ticket scoring
 
 Route privée Bearer qui évalue un ticket ServiceNow simulé sans écrire en base.
