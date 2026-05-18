@@ -1,3 +1,5 @@
+import { refreshSession } from './auth';
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
 
 export interface AuthUser {
@@ -179,16 +181,43 @@ export interface BillingCheckoutResponse {
 }
 
 async function apiRequest<T>(path: string, init: RequestInit = {}) {
-  const res = await fetch(`${API_URL}${path}`, {
+  const requestInit = withJsonHeaders(init);
+  let res = await fetch(`${API_URL}${path}`, requestInit);
+
+  if (res.status === 401 && hasAuthorizationHeader(requestInit.headers)) {
+    const refreshed = await refreshSession();
+    if (refreshed) {
+      res = await fetch(`${API_URL}${path}`, withAuthorizationHeader(requestInit, refreshed.accessToken));
+    }
+  }
+
+  if (!res.ok) throw new Error(`API error ${res.status}`);
+  return res.json() as Promise<T>;
+}
+
+function withJsonHeaders(init: RequestInit): RequestInit {
+  return {
     ...init,
     headers: {
       'Content-Type': 'application/json',
       ...(init.headers ?? {}),
     },
     cache: 'no-store',
-  });
-  if (!res.ok) throw new Error(`API error ${res.status}`);
-  return res.json() as Promise<T>;
+  };
+}
+
+function hasAuthorizationHeader(headers: RequestInit['headers']) {
+  return Boolean(headers && 'Authorization' in headers && headers.Authorization);
+}
+
+function withAuthorizationHeader(init: RequestInit, token: string): RequestInit {
+  return {
+    ...init,
+    headers: {
+      ...(init.headers as Record<string, string>),
+      Authorization: `Bearer ${token}`,
+    },
+  };
 }
 
 function authHeader(token?: string): Record<string, string> {

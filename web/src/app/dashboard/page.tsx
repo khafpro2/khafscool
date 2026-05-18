@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import type { CertificationSprintSummary, DashboardData } from '@/lib/api';
 import { fetchDashboard } from '@/lib/api';
-import { clearAuthTokens, getAccessToken } from '@/lib/auth';
+import { getAccessToken, logoutSession } from '@/lib/auth';
 import { formatTrack } from '@/lib/tracks';
 import { ProgressOverview } from '@/components/dashboard/ProgressOverview';
 
@@ -89,8 +89,8 @@ export default function DashboardPage() {
       .finally(() => setIsLoading(false));
   }, []);
 
-  function handleLogout() {
-    clearAuthTokens();
+  async function handleLogout() {
+    await logoutSession();
     setHasToken(false);
     setData(null);
   }

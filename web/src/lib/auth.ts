@@ -1,8 +1,11 @@
 import type { AuthResponse } from './api';
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
 const ACCESS_KEY = 'ama_access';
 const REFRESH_KEY = 'ama_refresh';
 const USER_KEY = 'ama_user';
+
+type RefreshedSession = Pick<AuthResponse, 'accessToken' | 'refreshToken'>;
 
 export function storeAuthTokens(auth: AuthResponse) {
   if (typeof window === 'undefined') return;
@@ -21,6 +24,46 @@ export function getRefreshToken() {
   return readStoredValue(REFRESH_KEY);
 }
 
+export async function refreshSession(): Promise<RefreshedSession | null> {
+  const refreshToken = getRefreshToken();
+  if (!refreshToken) return null;
+
+  try {
+    const res = await fetch(`${API_URL}/auth/refresh`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refreshToken }),
+      cache: 'no-store',
+    });
+
+    if (!res.ok) throw new Error(`Refresh failed ${res.status}`);
+
+    const session = (await res.json()) as RefreshedSession;
+    storeSessionTokens(session);
+    return session;
+  } catch {
+    clearAuthTokens();
+    return null;
+  }
+}
+
+export async function logoutSession() {
+  const accessToken = getAccessToken();
+  const refreshToken = getRefreshToken();
+
+  try {
+    if (accessToken && refreshToken) {
+      const res = await sendLogout(accessToken, refreshToken);
+      if (res.status === 401) {
+        const refreshed = await refreshSession();
+        if (refreshed) await sendLogout(refreshed.accessToken, refreshed.refreshToken);
+      }
+    }
+  } finally {
+    clearAuthTokens();
+  }
+}
+
 export function clearAuthTokens() {
   if (typeof window === 'undefined') return;
   window.localStorage.removeItem(ACCESS_KEY);
@@ -28,6 +71,26 @@ export function clearAuthTokens() {
   window.localStorage.removeItem(USER_KEY);
   setCookie(ACCESS_KEY, '', 0);
   setCookie(REFRESH_KEY, '', 0);
+}
+
+function storeSessionTokens(session: RefreshedSession) {
+  if (typeof window === 'undefined') return;
+  window.localStorage.setItem(ACCESS_KEY, session.accessToken);
+  window.localStorage.setItem(REFRESH_KEY, session.refreshToken);
+  setCookie(ACCESS_KEY, session.accessToken, 60 * 60);
+  setCookie(REFRESH_KEY, session.refreshToken, 60 * 60 * 24 * 30);
+}
+
+function sendLogout(accessToken: string, refreshToken: string) {
+  return fetch(`${API_URL}/auth/logout`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify({ refreshToken }),
+    cache: 'no-store',
+  });
 }
 
 function readStoredValue(key: string) {
