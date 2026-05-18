@@ -28,6 +28,7 @@ const initialEndpointCheck: EndpointCheck = {
 
 export default function DiagnosticsPage() {
   const [healthCheck, setHealthCheck] = useState<EndpointCheck>(initialEndpointCheck);
+  const [databaseCheck, setDatabaseCheck] = useState<EndpointCheck>(initialEndpointCheck);
   const [catalogCheck, setCatalogCheck] = useState<EndpointCheck>(initialEndpointCheck);
   const [tokenPresence, setTokenPresence] = useState(() => ({
     accessTokenCookie: false,
@@ -42,8 +43,10 @@ export default function DiagnosticsPage() {
   }, []);
 
   async function runEndpointChecks() {
-    setHealthCheck(await checkHealth());
-    setCatalogCheck(await checkCatalog());
+    const [health, database, catalog] = await Promise.all([checkHealth(), checkDatabase(), checkCatalog()]);
+    setHealthCheck(health);
+    setDatabaseCheck(database);
+    setCatalogCheck(catalog);
   }
 
   const hasAnyToken = Object.values(tokenPresence).some(Boolean);
@@ -66,8 +69,8 @@ export default function DiagnosticsPage() {
           Vérifier rapidement le MVP local
         </h1>
         <p style={{ color: 'var(--muted)', fontSize: '1.05rem', marginTop: '0.85rem', maxWidth: 820 }}>
-          Cette page aide les développeurs et testeurs à confirmer l’état de l’API, du catalogue et de la session
-          locale depuis le navigateur, sans afficher de token.
+          Cette page aide les développeurs et testeurs à confirmer l’état de l’API, de la base Prisma, du catalogue
+          et de la session locale depuis le navigateur, sans afficher de token ni de secret.
         </p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '1.25rem' }}>
           <button className="btn" type="button" onClick={runEndpointChecks}>
@@ -94,6 +97,12 @@ export default function DiagnosticsPage() {
           title="Santé de l’API"
         />
         <StatusCard
+          detail={databaseCheck.detail}
+          label="API /health/db"
+          status={databaseCheck.status}
+          title="Base de données Prisma"
+        />
+        <StatusCard
           detail={catalogCheck.detail}
           label="API /catalog"
           status={catalogCheck.status}
@@ -109,6 +118,22 @@ export default function DiagnosticsPage() {
           status={hasAccessToken && hasRefreshToken ? 'ok' : hasAnyToken ? 'warning' : 'error'}
           title="Tokens navigateur"
         />
+      </section>
+
+      <section className="card" style={{ marginTop: '1rem' }}>
+        <h2 style={{ fontSize: '1.25rem', fontWeight: 800 }}>Conseils DB/API locale</h2>
+        <p style={{ color: 'var(--muted)', marginTop: '0.35rem' }}>
+          Si la carte base de données reste en erreur, vérifie ces points sans partager la valeur de tes variables
+          d’environnement.
+        </p>
+        <ul style={{ color: 'var(--muted)', display: 'grid', gap: '0.45rem', marginTop: '0.85rem', paddingLeft: '1.25rem' }}>
+          <li>Docker Desktop est lancé si tu utilises le Postgres du projet.</li>
+          <li>
+            <code>DATABASE_URL</code> existe côté backend et pointe vers la bonne base locale.
+          </li>
+          <li>Les migrations Prisma ont été appliquées avec <code>pnpm db:migrate</code>.</li>
+          <li>Les données de démonstration ont été chargées avec <code>pnpm db:seed</code>.</li>
+        </ul>
       </section>
 
       <section className="card" style={{ marginTop: '1rem' }}>
@@ -169,6 +194,45 @@ async function checkHealth(): Promise<EndpointCheck> {
   } catch {
     return {
       detail: 'API indisponible depuis le navigateur. Vérifie que le backend écoute bien sur l’URL configurée.',
+      status: 'error',
+    };
+  }
+}
+
+async function checkDatabase(): Promise<EndpointCheck> {
+  try {
+    const res = await fetch(`${API_URL}/health/db`, { cache: 'no-store' });
+    if (res.status === 404) {
+      return {
+        detail: 'Endpoint /health/db absent sur ce backend. Les autres diagnostics restent disponibles.',
+        status: 'warning',
+      };
+    }
+
+    const data = (await res.json().catch(() => null)) as { message?: string; status?: 'ok' | 'error' } | null;
+    const message = data?.message ?? `Réponse HTTP ${res.status} sans message exploitable.`;
+
+    if (!res.ok || data?.status === 'error') {
+      return {
+        detail: `${message} Vérifie Docker Desktop, DATABASE_URL, puis migrate/seed.`,
+        status: 'error',
+      };
+    }
+
+    if (data?.status !== 'ok') {
+      return {
+        detail: 'Réponse reçue, mais le champ status est absent ou inattendu.',
+        status: 'warning',
+      };
+    }
+
+    return {
+      detail: `OK - ${message}`,
+      status: 'ok',
+    };
+  } catch {
+    return {
+      detail: 'Diagnostic DB inaccessible. Vérifie d’abord que le backend répond sur /health.',
       status: 'error',
     };
   }
