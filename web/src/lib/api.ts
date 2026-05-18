@@ -225,7 +225,7 @@ export async function fetchCourses(token?: string): Promise<CourseSummary[]> {
       }))
     );
   } catch {
-    return DEMO_COURSES.map(({ modules, ...course }) => course);
+    return DEMO_COURSES.map(courseToSummary);
   }
 }
 
@@ -391,11 +391,34 @@ function mergeMvpCourses(courses: CourseSummary[]) {
   const merged = [...courses];
   for (const demo of DEMO_COURSES) {
     if (!tracks.has(demo.track)) {
-      const { modules: _modules, ...summary } = demo;
-      merged.push(summary);
+      merged.push(courseToSummary(demo));
     }
   }
   return merged;
+}
+
+function courseToSummary(course: CourseDetail): CourseSummary {
+  const completedModules = course.completedModules ?? 0;
+  const nextModule = course.modules[completedModules] ?? course.modules.find((module) => module);
+
+  return {
+    id: course.id,
+    slug: course.slug,
+    title: course.title,
+    track: course.track,
+    description: course.description,
+    progressPercent: course.progressPercent ?? 0,
+    totalModules: course.modules.length,
+    completedModules,
+    nextModule: nextModule
+      ? {
+          id: nextModule.id,
+          slug: nextModule.slug,
+          title: nextModule.title,
+          courseSlug: course.slug,
+        }
+      : null,
+  };
 }
 
 function normalizeCourse(course: CourseDetail): CourseDetail {
