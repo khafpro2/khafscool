@@ -14,19 +14,41 @@ import {
   LearnerDashboard,
   fetchLearnerDashboard,
 } from '../../services/progress';
+import {
+  CertificationSprintSummary,
+  CertificationSprintTrack,
+  fetchCurrentCertificationSprint,
+  startCertificationSprint,
+} from '../../services/sprint';
 
 interface LearnerDashboardScreenProps {
   onSignOut: () => void;
 }
 
+const certificationSprintTracks: CertificationSprintTrack[] = ['APPLE', 'JAMF', 'INTUNE', 'SERVICENOW'];
+
 export function LearnerDashboardScreen({ onSignOut }: LearnerDashboardScreenProps) {
   const [dashboard, setDashboard] = useState<LearnerDashboard | null>(null);
+  const [sprint, setSprint] = useState<CertificationSprintSummary | null>(null);
+  const [sprintSource, setSprintSource] = useState<'api' | 'demo'>('api');
+  const [startingTrack, setStartingTrack] = useState<CertificationSprintTrack | null>(null);
+  const [sprintMessage, setSprintMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   async function loadDashboard() {
     setLoading(true);
-    const nextDashboard = await fetchLearnerDashboard();
+    const [nextDashboard, nextSprint] = await Promise.all([
+      fetchLearnerDashboard(),
+      fetchCurrentCertificationSprint(),
+    ]);
     setDashboard(nextDashboard);
+    setSprint(nextSprint.data);
+    setSprintSource(nextSprint.source);
+    setSprintMessage(
+      nextSprint.source === 'demo'
+        ? 'Mode démo : connectez-vous pour enregistrer un vrai sprint.'
+        : null
+    );
     setLoading(false);
   }
 
@@ -41,6 +63,24 @@ export function LearnerDashboardScreen({ onSignOut }: LearnerDashboardScreenProp
   async function handleSignOut() {
     await clearTokens();
     onSignOut();
+  }
+
+  async function handleStartSprint(track: CertificationSprintTrack) {
+    setStartingTrack(track);
+    setSprintMessage(null);
+
+    try {
+      const nextSprint = await startCertificationSprint({ track, days: 7 });
+      setSprint(nextSprint.data);
+      setSprintSource(nextSprint.source);
+      setSprintMessage(
+        nextSprint.source === 'demo'
+          ? 'Sprint de démonstration démarré localement.'
+          : 'Sprint démarré pour 7 jours.'
+      );
+    } finally {
+      setStartingTrack(null);
+    }
   }
 
   if (loading || !dashboard) {
@@ -67,7 +107,7 @@ export function LearnerDashboardScreen({ onSignOut }: LearnerDashboardScreenProp
         </Pressable>
       </View>
 
-      {source === 'demo' ? (
+      {source === 'demo' || sprintSource === 'demo' ? (
         <View style={styles.demoBanner}>
           <Text style={styles.demoText}>Mode démo : l’API est indisponible ou aucun token n’est actif.</Text>
         </View>
@@ -85,6 +125,13 @@ export function LearnerDashboardScreen({ onSignOut }: LearnerDashboardScreenProp
           {data.progress.averageScore} %
         </Text>
       </View>
+
+      <SprintCard
+        sprint={sprint}
+        startingTrack={startingTrack}
+        message={sprintMessage}
+        onStart={handleStartSprint}
+      />
 
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>Badges</Text>
@@ -131,6 +178,65 @@ export function LearnerDashboardScreen({ onSignOut }: LearnerDashboardScreenProp
         <Text style={styles.refreshText}>Rafraîchir la progression</Text>
       </Pressable>
     </ScrollView>
+  );
+}
+
+function SprintCard({
+  sprint,
+  startingTrack,
+  message,
+  onStart,
+}: {
+  sprint: CertificationSprintSummary | null;
+  startingTrack: CertificationSprintTrack | null;
+  message: string | null;
+  onStart: (track: CertificationSprintTrack) => void;
+}) {
+  return (
+    <View style={styles.sprintCard}>
+      <View style={styles.sprintHeader}>
+        <View style={styles.sprintText}>
+          <Text style={styles.cardLabel}>Certification Sprint</Text>
+          <Text style={styles.sprintTitle}>
+            {sprint ? `Sprint ${formatTrack(sprint.track)} en cours` : 'Lancez un sprint 7 jours'}
+          </Text>
+        </View>
+        <Text style={styles.sprintDuration}>7 jours</Text>
+      </View>
+
+      {sprint ? (
+        <View style={styles.sprintProgress}>
+          <ProgressBar progress={sprint.progressPercent} />
+          <Text style={styles.sprintMeta}>
+            {sprint.progress}/{sprint.target} modules · fin le {formatSprintDate(sprint.endsAt)}
+          </Text>
+        </View>
+      ) : (
+        <Text style={styles.sprintMeta}>
+          Choisissez un objectif Apple, Jamf, Intune ou ServiceNow pour structurer votre préparation.
+        </Text>
+      )}
+
+      {message ? <Text style={styles.sprintMessage}>{message}</Text> : null}
+
+      <View style={styles.trackButtons}>
+        {certificationSprintTracks.map((track) => {
+          const isStarting = startingTrack === track;
+          return (
+            <Pressable
+              key={track}
+              disabled={startingTrack !== null}
+              onPress={() => onStart(track)}
+              style={[styles.trackButton, startingTrack !== null ? styles.trackButtonDisabled : null]}
+            >
+              <Text style={styles.trackButtonText}>
+                {isStarting ? 'Démarrage…' : formatTrack(track)}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
+    </View>
   );
 }
 
@@ -216,6 +322,10 @@ function formatTrack(track: string) {
   return labels[track] ?? track;
 }
 
+function formatSprintDate(value: string) {
+  return new Date(value).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
+}
+
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F5F5F7' },
   content: { padding: 24, paddingBottom: 40 },
@@ -237,6 +347,33 @@ const styles = StyleSheet.create({
   progressTrack: { height: 8, backgroundColor: '#E5E5EA', borderRadius: 999, overflow: 'hidden' },
   progressFill: { height: '100%', backgroundColor: '#34C759', borderRadius: 999 },
   progressCopy: { color: '#D1D1D6', marginTop: 12, lineHeight: 20 },
+  sprintCard: { backgroundColor: '#FFFFFF', borderRadius: 24, padding: 18, marginBottom: 24 },
+  sprintHeader: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 },
+  sprintText: { flex: 1 },
+  sprintTitle: { color: '#1D1D1F', fontSize: 21, fontWeight: '800' },
+  sprintDuration: {
+    backgroundColor: '#EAF3FF',
+    borderRadius: 999,
+    color: '#0066CC',
+    fontWeight: '800',
+    overflow: 'hidden',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
+  sprintProgress: { marginTop: 14 },
+  sprintMeta: { color: '#6E6E73', lineHeight: 20, marginTop: 10 },
+  sprintMessage: { color: '#007AFF', fontWeight: '700', lineHeight: 20, marginTop: 10 },
+  trackButtons: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginTop: 14 },
+  trackButton: {
+    backgroundColor: '#1D1D1F',
+    borderRadius: 14,
+    minWidth: 112,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  trackButtonDisabled: { opacity: 0.6 },
+  trackButtonText: { color: '#FFFFFF', fontWeight: '800' },
   sectionHeader: { marginBottom: 10 },
   sectionTitle: { color: '#1D1D1F', fontSize: 20, fontWeight: '800' },
   badgeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 24 },
