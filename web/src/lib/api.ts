@@ -91,6 +91,14 @@ export interface CourseSummary {
   nextModule?: CourseNextModule | null;
 }
 
+export interface PublicCourseCatalogItem {
+  slug: string;
+  track: string;
+  title: string;
+  description: string;
+  moduleCount: number;
+}
+
 export interface CourseQuestion {
   id: string;
   type: string;
@@ -203,8 +211,19 @@ export async function fetchCourses(token?: string): Promise<CourseSummary[]> {
       return mergeMvpCourses(progressData.courses);
     }
 
-    const data = await apiRequest<{ courses: CourseSummary[] }>('/courses', { headers: authHeader(token) });
-    return mergeMvpCourses(data.courses);
+    const data = await apiRequest<{ courses: PublicCourseCatalogItem[] }>('/catalog');
+    return mergeMvpCourses(
+      data.courses.map((course) => ({
+        id: course.slug,
+        slug: course.slug,
+        title: course.title,
+        track: course.track,
+        description: course.description,
+        totalModules: course.moduleCount,
+        completedModules: 0,
+        progressPercent: 0,
+      }))
+    );
   } catch {
     return DEMO_COURSES.map(({ modules, ...course }) => course);
   }

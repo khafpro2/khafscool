@@ -38,7 +38,7 @@ export default function CoursesPage() {
 
       {!hasToken && (
         <p className="card" style={{ marginTop: '1.5rem', color: 'var(--muted)' }}>
-          Mode démo : connecte-toi pour charger les vrais parcours protégés et enregistrer ta progression.
+          Catalogue public : connecte-toi pour ouvrir les modules protégés et enregistrer ta progression.
         </p>
       )}
 

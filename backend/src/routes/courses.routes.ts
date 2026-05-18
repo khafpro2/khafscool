@@ -3,6 +3,7 @@ import * as courses from '../controllers/courses.controller.js';
 import { requireAuth } from '../middleware/auth.middleware.js';
 
 export async function coursesRoutes(app: FastifyInstance) {
+  app.get('/catalog', courses.listPublicCatalog);
   app.get('/courses', { preHandler: requireAuth }, courses.listCourses);
   app.get<{ Params: { slug: string } }>(
     '/courses/:slug/progress',

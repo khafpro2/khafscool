@@ -8,6 +8,26 @@ export async function listCourses(_req: FastifyRequest, reply: FastifyReply) {
   return reply.send({ courses });
 }
 
+export async function listPublicCatalog(_req: FastifyRequest, reply: FastifyReply) {
+  const courses = await prisma.course.findMany({
+    orderBy: { sortOrder: 'asc' },
+    select: {
+      slug: true,
+      track: true,
+      title: true,
+      description: true,
+      _count: { select: { modules: true } },
+    },
+  });
+
+  return reply.send({
+    courses: courses.map(({ _count, ...course }) => ({
+      ...course,
+      moduleCount: _count.modules,
+    })),
+  });
+}
+
 export async function getCourse(
   req: FastifyRequest<{ Params: { slug: string } }>,
   reply: FastifyReply

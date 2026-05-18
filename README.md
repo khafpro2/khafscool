@@ -63,6 +63,7 @@ Le serveur web écoute sur [http://127.0.0.1:3000](http://127.0.0.1:3000). Le sc
 | POST    | `/auth/register`           | Inscription email                        |
 | POST    | `/auth/login`              | Connexion email                          |
 | GET     | `/auth/me`                 | Utilisateur courant (Bearer)             |
+| GET     | `/catalog`                 | Catalogue public des parcours            |
 | GET     | `/courses`                 | Liste des parcours                       |
 | GET     | `/courses/:slug`           | Détail parcours                          |
 | POST    | `/modules/:id/complete`    | Terminer module (quiz + jeu)             |
@@ -72,6 +73,16 @@ Le serveur web écoute sur [http://127.0.0.1:3000](http://127.0.0.1:3000). Le sc
 | POST    | `/servicenow/ticket-score` | Scoring pédagogique d'un ticket          |
 | POST    | `/billing/checkout`        | Checkout Stripe (stub)                   |
 
+
+### Catalogue public
+
+Route publique sans Bearer pour alimenter les pages marketing ou web avant connexion.
+
+```bash
+curl http://localhost:4000/catalog
+```
+
+La réponse contient `courses` avec `slug`, `track`, `title`, `description` et `moduleCount`.
 
 ### Mini-jeu ServiceNow — ticket scoring
 
