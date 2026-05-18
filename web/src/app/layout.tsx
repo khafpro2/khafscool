@@ -21,6 +21,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Link href="/dashboard">Tableau de bord</Link>
             <Link href="/sprint">Sprint</Link>
             <Link href="/courses">Parcours</Link>
+            <Link href="/quests">Quêtes</Link>
             <Link href="/leaderboard">Classement</Link>
             <Link href="/servicenow">ServiceNow</Link>
             <Link href="/resources">Ressources</Link>

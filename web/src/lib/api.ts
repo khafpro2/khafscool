@@ -183,6 +183,25 @@ export interface LeaderboardResponse {
   currentUserRank: number | null;
 }
 
+export interface WeeklyQuest {
+  id: string;
+  questKey: string;
+  label: string;
+  description?: string | null;
+  target: number;
+  progress: number;
+  completed: boolean;
+  weekStart?: string | null;
+  rewardPoints?: number | null;
+  track?: string | null;
+}
+
+export interface WeeklyQuestsResponse {
+  quests: WeeklyQuest[];
+  weekStart?: string | null;
+  weekEnd?: string | null;
+}
+
 export type CheckoutPlan = 'monthly' | 'yearly' | 'enterprise';
 
 export interface BillingCheckoutResponse {
@@ -361,6 +380,19 @@ export async function fetchLeaderboard(token?: string): Promise<LeaderboardRespo
   }
 }
 
+export async function fetchWeeklyQuests(token?: string): Promise<WeeklyQuestsResponse> {
+  if (!token) return mockWeeklyQuests();
+
+  try {
+    const data = await apiRequest<WeeklyQuestsResponse>('/quests/weekly', {
+      headers: authHeader(token),
+    });
+    return normalizeWeeklyQuests(data);
+  } catch {
+    return mockWeeklyQuests();
+  }
+}
+
 export async function fetchCurrentCertificationSprint(token?: string): Promise<CertificationSprintSummary | null> {
   if (!token) return mockCertificationSprint();
 
@@ -394,6 +426,113 @@ export async function startCertificationSprint(
   } catch {
     return mockCertificationSprint(payload.track, payload.days);
   }
+}
+
+function startOfIsoWeek(date: Date): Date {
+  const copy = new Date(date);
+  copy.setHours(0, 0, 0, 0);
+  const day = copy.getDay();
+  const diff = copy.getDate() - day + (day === 0 ? -6 : 1);
+  copy.setDate(diff);
+  return copy;
+}
+
+function endOfIsoWeek(date: Date): Date {
+  const start = startOfIsoWeek(date);
+  const end = new Date(start);
+  end.setDate(start.getDate() + 7);
+  return end;
+}
+
+function normalizeWeeklyQuests(data: WeeklyQuestsResponse): WeeklyQuestsResponse {
+  const quests = Array.isArray(data?.quests) ? data.quests : [];
+  const firstWeekStart = data?.weekStart ?? quests.find((quest) => quest.weekStart)?.weekStart ?? null;
+  const computedStart = firstWeekStart ? new Date(firstWeekStart) : startOfIsoWeek(new Date());
+  const computedEnd = data?.weekEnd ? new Date(data.weekEnd) : endOfIsoWeek(computedStart);
+
+  return {
+    quests: quests.map((quest) => ({
+      ...quest,
+      progress: Math.max(0, quest.progress ?? 0),
+      target: Math.max(0, quest.target ?? 0),
+      completed: quest.completed ?? (quest.target > 0 && quest.progress >= quest.target),
+      weekStart: quest.weekStart ?? computedStart.toISOString(),
+    })),
+    weekStart: computedStart.toISOString(),
+    weekEnd: computedEnd.toISOString(),
+  };
+}
+
+function mockWeeklyQuests(): WeeklyQuestsResponse {
+  const weekStart = startOfIsoWeek(new Date()).toISOString();
+  const weekEnd = endOfIsoWeek(new Date()).toISOString();
+
+  return {
+    weekStart,
+    weekEnd,
+    quests: [
+      {
+        id: 'demo-weekly-apple-3',
+        questKey: 'weekly-apple-3',
+        label: 'Termine 3 modules Apple cette semaine',
+        description: 'Renforce ton socle Device Support et MDM Apple en validant 3 modules complets.',
+        target: 3,
+        progress: 1,
+        completed: false,
+        rewardPoints: 60,
+        track: 'APPLE',
+        weekStart,
+      },
+      {
+        id: 'demo-weekly-jamf-2',
+        questKey: 'weekly-jamf-2',
+        label: 'Valide 2 modules Jamf Pro',
+        description: 'Smart groups, politiques et inventaire : confirme tes acquis Jamf.',
+        target: 2,
+        progress: 2,
+        completed: true,
+        rewardPoints: 40,
+        track: 'JAMF',
+        weekStart,
+      },
+      {
+        id: 'demo-weekly-intune-2',
+        questKey: 'weekly-intune-2',
+        label: 'Termine 2 modules Intune',
+        description: 'Enrôlement iOS, profils de configuration et conformité côté Microsoft.',
+        target: 2,
+        progress: 0,
+        completed: false,
+        rewardPoints: 40,
+        track: 'INTUNE',
+        weekStart,
+      },
+      {
+        id: 'demo-weekly-servicenow-3',
+        questKey: 'weekly-servicenow-3',
+        label: 'Score 3 tickets ServiceNow',
+        description: 'Pratique la qualification et la résolution avec le mini-jeu ServiceNow.',
+        target: 3,
+        progress: 1,
+        completed: false,
+        rewardPoints: 45,
+        track: 'SERVICENOW',
+        weekStart,
+      },
+      {
+        id: 'demo-weekly-mdm-4',
+        questKey: 'weekly-mdm-4',
+        label: 'Termine 4 modules MDM (toutes pistes)',
+        description: 'Avance sur Apple, Jamf, Intune ou ServiceNow pour décrocher le bonus hebdo.',
+        target: 4,
+        progress: 2,
+        completed: false,
+        rewardPoints: 80,
+        track: null,
+        weekStart,
+      },
+    ],
+  };
 }
 
 function mockLeaderboard(): LeaderboardResponse {
