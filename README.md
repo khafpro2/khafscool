@@ -69,8 +69,27 @@ Le serveur web écoute sur [http://127.0.0.1:3000](http://127.0.0.1:3000). Le sc
 | GET     | `/users/me/dashboard`      | Tableau de bord                          |
 | GET     | `/quests/weekly`           | Quêtes hebdomadaires de l'utilisateur    |
 | GET     | `/leaderboard`             | Classement privé par points              |
+| POST    | `/servicenow/ticket-score` | Scoring pédagogique d'un ticket          |
 | POST    | `/billing/checkout`        | Checkout Stripe (stub)                   |
 
+
+### Mini-jeu ServiceNow — ticket scoring
+
+Route privée Bearer qui évalue un ticket ServiceNow simulé sans écrire en base.
+
+```bash
+curl -X POST http://localhost:4000/servicenow/ticket-score \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "shortDescription": "MacBook bloqué après enrôlement MDM",
+    "category": "incident",
+    "priority": "P2",
+    "resolutionNote": "Diagnostic réalisé avec vérification du profil MDM. Cause identifiée côté certificat, solution appliquée puis validée avec utilisateur."
+  }'
+```
+
+La réponse contient `score` sur 100, `feedback` en français et `suggestions` d'amélioration.
 
 ## OAuth (développement)
 
