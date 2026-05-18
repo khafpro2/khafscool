@@ -19,7 +19,7 @@ Plateforme de formation gamifiée pour techniciens Apple et administrateurs MDM 
 
 - Node.js 20+
 - pnpm 9+
-- PostgreSQL 15+
+- PostgreSQL 15+ ou Docker pour lancer PostgreSQL localement
 
 ## Installation
 
@@ -29,10 +29,17 @@ cp .env.example .env
 # Éditer DATABASE_URL et les secrets JWT
 
 pnpm install
+pnpm db:up
 pnpm db:generate
 pnpm db:migrate
 pnpm db:seed
 pnpm dev
+```
+
+La configuration Docker démarre PostgreSQL 16 sur `localhost:5432` avec la base `apple_mdm_academy` et l'utilisateur `postgres` / `postgres`, ce qui correspond au `DATABASE_URL` de `.env.example`. Pour arrêter la base locale :
+
+```bash
+pnpm db:down
 ```
 
 Commandes de lancement ciblées :
@@ -109,6 +116,9 @@ La réponse contient `courses` avec `slug`, `track`, `title`, `description` et `
 Quand le backend local est lancé, un smoke test sans dépendance externe vérifie rapidement `/health`, `/catalog`, l'inscription/connexion avec un email unique, puis les routes privées principales.
 
 ```bash
+pnpm db:up
+pnpm db:migrate
+pnpm db:seed
 pnpm --filter backend dev
 pnpm smoke:api
 ```
