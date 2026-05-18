@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { FormEvent, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import {
   scoreServiceNowTicket,
   type TicketScorePayload,
@@ -18,6 +18,66 @@ const initialTicket: TicketScorePayload = {
 };
 
 type ScoreSource = 'api' | 'demo';
+type ScoreLevel = {
+  label: string;
+  color: string;
+  background: string;
+};
+type TicketExample = {
+  title: string;
+  tag: string;
+  description: string;
+  ticket: TicketScorePayload;
+};
+type ScoreHistoryEntry = {
+  id: string;
+  score: number;
+  level: string;
+  summary: string;
+  source: ScoreSource;
+  createdAt: string;
+};
+
+const scoreHistoryStorageKey = 'ama_servicenow_score_history';
+
+const ticketExamples: TicketExample[] = [
+  {
+    title: 'iPhone enrôlement Jamf/Intune',
+    tag: 'Mobile',
+    description: "L'utilisateur ne voit pas l'appareil dans l'inventaire après enrôlement.",
+    ticket: {
+      shortDescription: 'iPhone non visible après enrôlement Jamf/Intune',
+      category: 'incident',
+      priority: 'p2',
+      resolutionNote:
+        "Diagnostic réalisé sur l'enrôlement iOS: appareil présent dans Apple Business Manager mais profil MDM non appliqué. Cause identifiée: assignation MDM Jamf/Intune incorrecte. Solution appliquée avec réassignation, synchronisation du serveur, réenrôlement supervisé, vérification utilisateur et prévention documentée pour les prochains lots.",
+    },
+  },
+  {
+    title: 'Mac MDM bloqué',
+    tag: 'macOS',
+    description: 'Le Mac reste bloqué sur les commandes MDM en attente.',
+    ticket: {
+      shortDescription: 'Mac bloqué avec commandes MDM en attente',
+      category: 'problem',
+      priority: 'p3',
+      resolutionNote:
+        "Diagnostic MDM effectué depuis la console et le Mac: commandes en attente, inventaire obsolète et communication APNs instable. Cause confirmée côté réseau avec accès Apple Push filtré. Solution appliquée par ouverture des flux, renouvellement du profil MDM, exécution d'un recon et vérification utilisateur. Prévention ajoutée dans la checklist réseau.",
+    },
+  },
+  {
+    title: 'Profil Wi-Fi absent',
+    tag: 'Réseau',
+    description: "Le profil Wi-Fi d'entreprise ne descend pas sur un appareil géré.",
+    ticket: {
+      shortDescription: 'Profil Wi-Fi entreprise absent sur appareil géré',
+      category: 'request',
+      priority: 'p4',
+      resolutionNote:
+        "Diagnostic du scope MDM et des groupes dynamiques réalisé: l'appareil était conforme mais exclu du profil Wi-Fi. Cause identifiée: critère de smart group trop restrictif. Solution appliquée en corrigeant le ciblage, forçant la mise à jour de l'inventaire, vérifiant la connexion Wi-Fi avec l'utilisateur et documentant la prévention.",
+    },
+  },
+];
 
 export default function ServiceNowGamePage() {
   const [ticket, setTicket] = useState<TicketScorePayload>(initialTicket);
@@ -25,6 +85,19 @@ export default function ServiceNowGamePage() {
   const [source, setSource] = useState<ScoreSource | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [history, setHistory] = useState<ScoreHistoryEntry[]>([]);
+  const scoreLevel = result ? getScoreLevel(result.score) : null;
+
+  useEffect(() => {
+    try {
+      const storedHistory = window.localStorage.getItem(scoreHistoryStorageKey);
+      if (storedHistory) {
+        setHistory(JSON.parse(storedHistory) as ScoreHistoryEntry[]);
+      }
+    } catch {
+      setHistory([]);
+    }
+  }, []);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -34,20 +107,20 @@ export default function ServiceNowGamePage() {
     const token = getAccessToken();
 
     if (!token) {
-      setResult(scoreTicketLocally(ticket));
-      setSource('demo');
+      const localResult = scoreTicketLocally(ticket);
+      applyScoreResult(localResult, 'demo');
       setMessage('Score local de démo: connecte-toi pour utiliser le scoring privé ServiceNow.');
       setIsSubmitting(false);
       return;
     }
 
     try {
-      setResult(await scoreServiceNowTicket(token, ticket));
-      setSource('api');
+      const apiResult = await scoreServiceNowTicket(token, ticket);
+      applyScoreResult(apiResult, 'api');
       setMessage('Score calculé par le backend privé ServiceNow.');
     } catch {
-      setResult(scoreTicketLocally(ticket));
-      setSource('demo');
+      const localResult = scoreTicketLocally(ticket);
+      applyScoreResult(localResult, 'demo');
       setMessage("API indisponible ou session expirée: score local de démo affiché.");
     } finally {
       setIsSubmitting(false);
@@ -56,6 +129,36 @@ export default function ServiceNowGamePage() {
 
   function updateTicket(field: keyof TicketScorePayload, value: string) {
     setTicket((current) => ({ ...current, [field]: value }));
+  }
+
+  function fillExample(example: TicketExample) {
+    setTicket(example.ticket);
+    setResult(null);
+    setSource(null);
+    setMessage(`Exemple chargé: ${example.title}. Tu peux l'ajuster avant d'évaluer.`);
+  }
+
+  function applyScoreResult(scoreResult: TicketScoreResult, scoreSource: ScoreSource) {
+    setResult(scoreResult);
+    setSource(scoreSource);
+    const historyEntry: ScoreHistoryEntry = {
+      id: `${Date.now()}-${Math.round(scoreResult.score)}`,
+      score: scoreResult.score,
+      level: getScoreLevel(scoreResult.score).label,
+      summary: ticket.shortDescription,
+      source: scoreSource,
+      createdAt: new Date().toISOString(),
+    };
+
+    setHistory((currentHistory) => {
+      const nextHistory = [historyEntry, ...currentHistory].slice(0, 5);
+      try {
+        window.localStorage.setItem(scoreHistoryStorageKey, JSON.stringify(nextHistory));
+      } catch {
+        // L'historique reste disponible en mémoire si le stockage local est bloqué.
+      }
+      return nextHistory;
+    });
   }
 
   return (
@@ -68,6 +171,36 @@ export default function ServiceNowGamePage() {
         Renseigne les champs clés d’un ticket puis compare ton score aux attentes d’un support Apple/MDM:
         contexte, catégorie, priorité et note de résolution exploitable.
       </p>
+
+      <section style={{ marginTop: '1.5rem' }}>
+        <h2 style={{ fontSize: '1.15rem', fontWeight: 700 }}>Scénarios prêts à tester</h2>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+            gap: '0.75rem',
+            marginTop: '0.75rem',
+          }}
+        >
+          {ticketExamples.map((example) => (
+            <article className="card" key={example.title} style={{ display: 'grid', gap: '0.75rem' }}>
+              <div>
+                <span style={pillStyle}>{example.tag}</span>
+                <h3 style={{ fontSize: '1rem', fontWeight: 700, marginTop: '0.6rem' }}>{example.title}</h3>
+                <p style={{ color: 'var(--muted)', marginTop: '0.35rem' }}>{example.description}</p>
+              </div>
+              <button
+                className="btn"
+                type="button"
+                onClick={() => fillExample(example)}
+                style={{ justifySelf: 'start' }}
+              >
+                Remplir cet exemple
+              </button>
+            </article>
+          ))}
+        </div>
+      </section>
 
       <div
         style={{
@@ -138,21 +271,57 @@ export default function ServiceNowGamePage() {
         <aside className="card">
           <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>Résultat</h2>
           {!result ? (
-            <p style={{ color: 'var(--muted)', marginTop: '0.75rem' }}>
-              Lance l’évaluation pour obtenir un score, du feedback et des pistes d’amélioration.
-            </p>
+            <>
+              <p style={{ color: 'var(--muted)', marginTop: '0.75rem' }}>
+                Lance l’évaluation pour obtenir un score, du feedback et des pistes d’amélioration.
+              </p>
+              {message && <p style={{ color: 'var(--muted)', marginTop: '0.75rem' }}>{message}</p>}
+            </>
           ) : (
             <div style={{ marginTop: '1rem' }}>
               <p style={{ color: 'var(--muted)', fontSize: '0.9rem' }}>
                 {source === 'api' ? 'Scoring backend privé' : 'Scoring local de démo'}
               </p>
-              <p style={{ fontSize: '3rem', fontWeight: 800, lineHeight: 1 }}>{result.score}%</p>
-              {message && <p style={{ color: source === 'api' ? 'var(--muted)' : '#b00020', marginTop: '0.5rem' }}>{message}</p>}
+              <div
+                style={{
+                  border: `1px solid ${scoreLevel?.color}`,
+                  borderRadius: 16,
+                  background: scoreLevel?.background,
+                  marginTop: '0.75rem',
+                  padding: '1rem',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '1rem' }}>
+                  <p style={{ fontSize: '3rem', fontWeight: 800, lineHeight: 1, color: scoreLevel?.color }}>
+                    {result.score}%
+                  </p>
+                  <span style={{ ...pillStyle, color: scoreLevel?.color, borderColor: scoreLevel?.color }}>
+                    {scoreLevel?.label}
+                  </span>
+                </div>
+                <div style={{ background: '#ffffff', borderRadius: 999, height: 10, marginTop: '0.85rem' }}>
+                  <div
+                    style={{
+                      background: scoreLevel?.color,
+                      borderRadius: 999,
+                      height: '100%',
+                      width: `${result.score}%`,
+                    }}
+                  />
+                </div>
+              </div>
+              {message && (
+                <p style={{ color: source === 'api' ? 'var(--muted)' : '#b00020', marginTop: '0.75rem' }}>
+                  {message}
+                </p>
+              )}
 
-              <ScoreList title="Feedback" items={result.feedback} />
-              <ScoreList title="Suggestions" items={result.suggestions} emptyLabel="Aucune suggestion: ticket solide." />
+              <ScoreList title="Points forts" items={result.feedback} />
+              <ScoreList title="Prochaines améliorations" items={result.suggestions} emptyLabel="Aucune suggestion: ticket solide." />
             </div>
           )}
+
+          <ScoreHistory history={history} />
 
           <div style={{ borderTop: '1px solid var(--border)', marginTop: '1.5rem', paddingTop: '1rem' }}>
             <p style={{ color: 'var(--muted)' }}>
@@ -165,6 +334,38 @@ export default function ServiceNowGamePage() {
           </div>
         </aside>
       </div>
+    </section>
+  );
+}
+
+function ScoreHistory({ history }: { history: ScoreHistoryEntry[] }) {
+  return (
+    <section style={{ borderTop: '1px solid var(--border)', marginTop: '1.5rem', paddingTop: '1rem' }}>
+      <h3 style={{ fontSize: '1rem', fontWeight: 700 }}>Historique local</h3>
+      {history.length > 0 ? (
+        <ol style={{ display: 'grid', gap: '0.65rem', marginTop: '0.75rem', paddingLeft: '1.25rem' }}>
+          {history.map((entry) => (
+            <li key={entry.id}>
+              <strong>
+                {entry.score}% - {entry.level}
+              </strong>
+              <p style={{ color: 'var(--muted)', marginTop: '0.15rem' }}>
+                {entry.summary} · {entry.source === 'api' ? 'backend' : 'démo locale'} ·{' '}
+                {new Intl.DateTimeFormat('fr-FR', {
+                  day: '2-digit',
+                  month: '2-digit',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                }).format(new Date(entry.createdAt))}
+              </p>
+            </li>
+          ))}
+        </ol>
+      ) : (
+        <p style={{ color: 'var(--muted)', marginTop: '0.5rem' }}>
+          Les 5 derniers scores seront conservés dans ce navigateur.
+        </p>
+      )}
     </section>
   );
 }
@@ -266,6 +467,26 @@ function scoreTicketLocally(payload: TicketScorePayload): TicketScoreResult {
     suggestions,
   };
 }
+
+function getScoreLevel(score: number): ScoreLevel {
+  if (score >= 85) {
+    return { label: 'Prêt à clôturer', color: '#0f7a3b', background: '#ecfdf3' };
+  }
+  if (score >= 65) {
+    return { label: 'À consolider', color: '#946200', background: '#fff8e6' };
+  }
+  return { label: 'À retravailler', color: '#b00020', background: '#fff1f3' };
+}
+
+const pillStyle = {
+  border: '1px solid var(--border)',
+  borderRadius: 999,
+  color: 'var(--muted)',
+  display: 'inline-block',
+  fontSize: '0.8rem',
+  fontWeight: 700,
+  padding: '0.2rem 0.55rem',
+};
 
 const labelStyle = {
   display: 'grid',
