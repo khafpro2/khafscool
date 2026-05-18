@@ -11,9 +11,13 @@ export default function HomePage() {
         préparation aux certifications. Contenus originaux inspirés de la documentation officielle.
       </p>
       <p style={{ marginTop: '0.75rem', color: 'var(--muted)' }}>
-        Reviewer ou testeur ? Consulte le <Link href="/mvp">résumé MVP testable</Link>.
+        Reviewer ou testeur ? Suis le <Link href="/demo">guide de démo</Link> ou consulte le{' '}
+        <Link href="/mvp">résumé MVP testable</Link>.
       </p>
       <div style={{ marginTop: '2rem', display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+        <Link href="/demo" className="btn" style={{ background: '#0f7a3b' }}>
+          Guide de démo
+        </Link>
         <Link href="/auth" className="btn">
           Démarrer le MVP
         </Link>
