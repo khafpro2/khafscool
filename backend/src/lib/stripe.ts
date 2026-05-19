@@ -23,6 +23,14 @@ export function resetStripeClientForTests() {
   stripeClient = null;
 }
 
+export function getStripeWebhookSecret() {
+  return process.env.STRIPE_WEBHOOK_SECRET?.trim() ?? null;
+}
+
+export function stripeWebhookReady() {
+  return Boolean(isStripeConfigured() && getStripeWebhookSecret());
+}
+
 function priceIdForPlan(plan: StripeCheckoutPlan) {
   if (plan === 'monthly') return process.env.STRIPE_PRICE_ID_MONTHLY?.trim();
   if (plan === 'yearly') return process.env.STRIPE_PRICE_ID_YEARLY?.trim();

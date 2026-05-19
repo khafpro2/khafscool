@@ -130,3 +130,55 @@ cd mobile && npx tsc --noEmit
 | CORS bloqué | Ajuster `CORS_ORIGIN` côté API |
 
 Pour le développement local, voir le [README](./README.md).
+
+## Staging / preview (< 30 min)
+
+Objectif : une preview web Vercel + une API staging accessible, sans configurer de comptes cloud depuis ce dépôt.
+
+### 1. API staging (Render — recommandé)
+
+1. Créer un **Web Service** sur [Render](https://render.com) lié au dépôt.
+2. **Root Directory** : `backend`
+3. **Build Command** (depuis la racine du monorepo, si Render le permet) :
+
+   ```bash
+   cd .. && pnpm install --frozen-lockfile && pnpm --filter backend build
+   ```
+
+   Sinon : service avec racine = racine du repo et commande :
+
+   ```bash
+   pnpm install --frozen-lockfile && pnpm --filter backend build
+   ```
+
+4. **Start Command** : `node dist/index.js` (dans `backend/`) ou `pnpm --filter backend start`.
+5. Variables : `DATABASE_URL`, `JWT_SECRET`, `JWT_REFRESH_SECRET`, `CORS_ORIGIN=https://<preview-vercel>.vercel.app`, `STRIPE_*` si billing live.
+6. **Release command** (ou job manuel) : `pnpm --filter backend exec prisma migrate deploy`
+7. Health check : `GET /health` → URL publique notée comme `https://api-staging.example.com`.
+
+Alternative **Railway** : nouveau service depuis le dépôt, dossier `backend/`, mêmes variables, commande de release `prisma migrate deploy`.
+
+### 2. Web preview (Vercel)
+
+1. Importer le dépôt sur [Vercel](https://vercel.com).
+2. **Root Directory** : `web` (monorepo : installer les deps à la racine — voir `web/vercel.json`).
+3. Variable **Preview + Production** : `NEXT_PUBLIC_API_URL` = URL Render/Railway ci-dessus.
+4. Chaque PR obtient une URL `*.vercel.app` ; vérifier `/auth`, `/pricing`, `/dashboard`.
+
+### 3. Webhook Stripe (staging)
+
+1. Dashboard Stripe → **Developers → Webhooks** → endpoint : `https://<api-staging>/billing/webhook`
+2. Événements : `checkout.session.completed`, `customer.subscription.updated`, `customer.subscription.deleted`, `invoice.paid`
+3. Copier le **Signing secret** dans `STRIPE_WEBHOOK_SECRET` sur l’API staging.
+
+### 4. Smoke après déploiement
+
+```bash
+WEB_URL=https://<preview-vercel>.vercel.app pnpm smoke:web
+curl -sf https://<api-staging>/health
+```
+
+### 5. Hook migrate (optionnel)
+
+Sur Render : **Release Command** `cd .. && pnpm --filter backend exec prisma migrate deploy`  
+Sur Railway : commande post-deploy équivalente dans le service API.

@@ -1,11 +1,18 @@
 import type { FastifyReply, FastifyRequest } from 'fastify';
+import type Stripe from 'stripe';
 import { z } from 'zod';
 import { prisma } from '../lib/prisma.js';
 import {
   createStripeCheckoutSession,
+  getStripeClient,
+  getStripeWebhookSecret,
   isStripeConfigured,
   stripeCheckoutReady,
+  stripeWebhookReady,
 } from '../lib/stripe.js';
+import { processStripeWebhookEvent } from '../services/billing-webhook.service.js';
+
+export type BillingWebhookRequest = FastifyRequest & { rawBody?: Buffer };
 
 const checkoutRequestSchema = z.object({
   plan: z.enum(['monthly', 'yearly', 'enterprise'], {
@@ -123,10 +130,43 @@ export async function createCheckout(
   }
 }
 
-export async function stripeWebhook(req: FastifyRequest, reply: FastifyReply) {
-  const event = req.body as { type?: string; data?: { object?: { customer?: string; status?: string } } };
-  if (event.type === 'customer.subscription.updated') {
-    // Mapper customer → userId via stripeCustomerId
+export async function stripeWebhook(req: BillingWebhookRequest, reply: FastifyReply) {
+  if (!stripeWebhookReady()) {
+    return reply.status(503).send({
+      error: 'STRIPE_WEBHOOK_NOT_CONFIGURED',
+      message: 'Configurer STRIPE_SECRET_KEY et STRIPE_WEBHOOK_SECRET.',
+    });
   }
-  return reply.send({ received: true });
+
+  const signature = req.headers['stripe-signature'];
+  if (!signature || typeof signature !== 'string') {
+    return reply.status(400).send({ error: 'MISSING_STRIPE_SIGNATURE' });
+  }
+
+  const rawBody = req.rawBody;
+  if (!rawBody?.length) {
+    return reply.status(400).send({ error: 'MISSING_RAW_BODY' });
+  }
+
+  const stripe = getStripeClient();
+  const webhookSecret = getStripeWebhookSecret();
+  if (!stripe || !webhookSecret) {
+    return reply.status(503).send({ error: 'STRIPE_WEBHOOK_NOT_CONFIGURED' });
+  }
+
+  let event: Stripe.Event;
+  try {
+    event = stripe.webhooks.constructEvent(rawBody, signature, webhookSecret);
+  } catch (error) {
+    req.log.warn({ err: error }, 'stripe webhook signature invalid');
+    return reply.status(400).send({ error: 'INVALID_STRIPE_SIGNATURE' });
+  }
+
+  try {
+    await processStripeWebhookEvent(event);
+    return reply.send({ received: true, type: event.type });
+  } catch (error) {
+    req.log.error({ err: error, eventType: event.type }, 'stripe webhook handler failed');
+    return reply.status(500).send({ error: 'WEBHOOK_HANDLER_FAILED' });
+  }
 }
