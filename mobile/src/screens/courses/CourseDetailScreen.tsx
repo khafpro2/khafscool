@@ -106,6 +106,35 @@ export function CourseDetailScreen() {
           quizAnswers: answers,
           gameOrder: module.game?.steps.map((step) => step.id),
         });
+        const refreshed = await fetchCourseProgress(courseSlug);
+        const courseJustCompleted =
+          result.courseCompleted ||
+          refreshed.data.progress.progressPercent >= 100 ||
+          !refreshed.data.progress.nextModule;
+
+        if (courseJustCompleted) {
+          const completion = result.courseCompletion ?? {
+            slug: courseSlug,
+            title: course?.title ?? refreshed.data.course.title,
+            pointsEarned: sumModuleProgressPoints(refreshed.data.modules),
+            badgeEarned: result.badges?.find((badge) =>
+              ['apple-mdm-foundation', 'jamf-engineer', 'intune-professional'].includes(badge)
+            ),
+          };
+          router.replace({
+            pathname: '/course/[slug]/complete',
+            params: {
+              slug: courseSlug,
+              title: completion.title,
+              pointsEarned: String(completion.pointsEarned),
+              badgeEarned: completion.badgeEarned ?? '',
+              usesDemo: '0',
+            },
+          });
+          setSubmitting(false);
+          return;
+        }
+
         setSuccessNotice({
           badges: result.badges ?? [],
           gameScore: result.gameScore,
@@ -114,7 +143,6 @@ export function CourseDetailScreen() {
           quizScore: result.quizScore,
         });
         setAnswers({});
-        const refreshed = await fetchCourseProgress(courseSlug);
         setProgress(refreshed.data);
         setExpandedModuleId(refreshed.data.progress.nextModule?.id ?? null);
         setSubmitting(false);
@@ -373,6 +401,18 @@ function moduleStatusLabel(status: ModuleStatus) {
   if (status === 'completed') return 'Terminé';
   if (status === 'in_progress') return 'En cours';
   return 'À faire';
+}
+
+function sumModuleProgressPoints(
+  modules: { completed: boolean; quizScore: number | null; gameScore: number | null }[]
+) {
+  return modules
+    .filter((module) => module.completed)
+    .reduce(
+      (sum, module) =>
+        sum + Math.round((module.quizScore ?? 0) * 0.1 + (module.gameScore ?? 0) * 0.2),
+      0
+    );
 }
 
 function computeLocalScore(questions: CourseModule['questions'], answers: Record<string, string>) {

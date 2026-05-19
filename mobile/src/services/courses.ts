@@ -64,14 +64,28 @@ export interface CourseProgressData {
   modules: CourseProgressModule[];
 }
 
-export interface ModuleCompletionResult {
+export interface CourseCompletionResult {
+  slug: string;
+  title: string;
+  pointsEarned: number;
+  badgeEarned?: string;
+}
+
+export interface CompleteModuleResult {
   quizScore: number;
   gameScore: number;
   pointsEarned: number;
   level: string;
   badges: string[];
   preparationScore: number;
+  courseCompleted: boolean;
+  courseCompletion?: CourseCompletionResult;
 }
+
+export const NEXT_COURSE_BY_SLUG: Record<string, { slug: string; title: string }> = {
+  'apple-cert-prep': { slug: 'jamf-pro-foundations', title: 'Fondations Jamf Pro' },
+  'jamf-pro-foundations': { slug: 'intune-ios-enrollment', title: 'Microsoft Intune pour Apple' },
+};
 
 export async function fetchCourse(slug: string): Promise<{ data: CourseDetail; source: 'api' | 'demo' }> {
   const token = await getAccessToken();
@@ -114,8 +128,8 @@ export async function fetchCourseProgress(
 export async function completeModule(
   moduleId: string,
   payload: { quizAnswers?: Record<string, string>; gameOrder?: number[] }
-): Promise<ModuleCompletionResult> {
-  return apiFetch<ModuleCompletionResult>(`/modules/${moduleId}/complete`, {
+): Promise<CompleteModuleResult> {
+  return apiFetch<CompleteModuleResult>(`/modules/${moduleId}/complete`, {
     method: 'POST',
     body: JSON.stringify(payload),
   });
