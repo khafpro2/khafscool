@@ -121,6 +121,58 @@ export async function completeModule(
   });
 }
 
+export interface PublicCourseCatalogItem {
+  slug: string;
+  track: string;
+  title: string;
+  description: string;
+  moduleCount: number;
+}
+
+export async function fetchCourses(): Promise<{ data: CourseSummary[]; source: 'api' | 'demo' }> {
+  const token = await getAccessToken();
+
+  if (token) {
+    try {
+      const data = await apiFetch<{ courses: CourseSummary[] }>('/users/me/progress');
+      return { data: data.courses, source: 'api' };
+    } catch {
+      // fall through to catalog or demo
+    }
+  }
+
+  try {
+    const data = await apiFetch<{ courses: PublicCourseCatalogItem[] }>('/catalog');
+    return {
+      data: data.courses.map((course) => ({
+        id: course.slug,
+        slug: course.slug,
+        title: course.title,
+        track: course.track,
+        description: course.description,
+        totalModules: course.moduleCount,
+        completedModules: 0,
+        progressPercent: 0,
+      })),
+      source: 'api',
+    };
+  } catch {
+    return {
+      data: Object.values(DEMO_COURSES).map((course) => ({
+        id: course.id,
+        slug: course.slug,
+        title: course.title,
+        track: course.track,
+        description: course.description,
+        totalModules: course.modules.length,
+        completedModules: course.completedModules ?? 0,
+        progressPercent: course.progressPercent ?? 0,
+      })),
+      source: 'demo',
+    };
+  }
+}
+
 function courseToProgress(course: CourseDetail): CourseProgressData {
   const completedCount = course.completedModules ?? 0;
   const progressPercent =

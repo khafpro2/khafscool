@@ -196,6 +196,9 @@ export function LearnerDashboardScreen({ onSignOut }: LearnerDashboardScreenProp
       ) : (
         <Text style={styles.emptyText}>Aucun parcours actif. Explore le catalogue pour commencer.</Text>
       )}
+      <Pressable style={styles.catalogButton} onPress={() => router.push('/courses')}>
+        <Text style={styles.catalogButtonText}>Voir tous les parcours →</Text>
+      </Pressable>
 
       <SprintCard
         sprint={sprint}
@@ -479,6 +482,8 @@ const styles = StyleSheet.create({
   sectionTitle: { color: '#1D1D1F', fontSize: 20, fontWeight: '800' },
   sectionHint: { color: '#6E6E73', marginTop: 2, fontSize: 13 },
   emptyText: { color: '#6E6E73', lineHeight: 20, marginBottom: 16 },
+  catalogButton: { marginBottom: 24, paddingVertical: 6 },
+  catalogButtonText: { color: '#0070D2', fontWeight: '800', fontSize: 15 },
   questCard: { backgroundColor: '#FFFFFF', borderRadius: 16, padding: 14, marginBottom: 10 },
   questHeader: { flexDirection: 'row', justifyContent: 'space-between', gap: 12, marginBottom: 10 },
   questLabel: { flex: 1, color: '#1D1D1F', fontWeight: '700', lineHeight: 20 },
