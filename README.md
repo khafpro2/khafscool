@@ -70,7 +70,9 @@ pnpm db:down
 
 Le backend écoute sur `http://localhost:4000`. Le web écoute sur [http://127.0.0.1:3000](http://127.0.0.1:3000) ; le script force ce hostname et active le polling Watchpack afin d'éviter les erreurs de découverte réseau et de watchers sur macOS. Pour tester le mobile sur appareil physique, définir `EXPO_PUBLIC_API_URL=http://<votre-ip-lan>:4000`.
 
-Le seed crée les parcours MVP, modules, quiz, mini-jeux et données de progression nécessaires pour explorer l'application localement.
+Le seed crée les parcours MVP, modules, quiz, mini-jeux et données de progression nécessaires pour explorer l'application localelement.
+
+Pour un déploiement production (Vercel, Railway/Render, Neon, EAS), voir [DEPLOYMENT.md](./DEPLOYMENT.md).
 
 Parcours seedés :
 
