@@ -19,6 +19,13 @@ export interface CourseSummary {
   nextModule?: CourseNextModule | null;
 }
 
+export interface CompletedCourseSummary {
+  slug: string;
+  title: string;
+  track: string;
+  completedAt: string;
+}
+
 export interface LearnerProgress {
   user: {
     id: string;
@@ -36,6 +43,7 @@ export interface LearnerProgress {
   badges: string[];
   quests: { id: string; label: string; progress: number; target: number }[];
   courses: CourseSummary[];
+  completedCourses?: CompletedCourseSummary[];
   tracks?: {
     track: string;
     totalModules: number;
@@ -56,8 +64,14 @@ export async function fetchLearnerDashboard(): Promise<LearnerDashboard> {
   if (!token) return { data: demoProgress, source: 'demo' };
 
   try {
-    const data = await apiFetch<LearnerProgress>('/users/me/progress');
-    return { data, source: 'api' };
+    const [progress, completedCourses] = await Promise.all([
+      apiFetch<LearnerProgress>('/users/me/progress'),
+      apiFetch<{ completedCourses?: CompletedCourseSummary[] }>('/users/me/dashboard').then(
+        (dashboard) => dashboard.completedCourses ?? [],
+        () => [] as CompletedCourseSummary[]
+      ),
+    ]);
+    return { data: { ...progress, completedCourses }, source: 'api' };
   } catch {
     return { data: demoProgress, source: 'demo' };
   }

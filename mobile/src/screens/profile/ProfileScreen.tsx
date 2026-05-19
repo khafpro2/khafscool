@@ -10,7 +10,8 @@ import {
   View,
 } from 'react-native';
 import { WEB_URL } from '../../config';
-import { formatLevel, getRankInfo } from '../../lib/design';
+import { formatLevel, formatTrack, getRankInfo } from '../../lib/design';
+import type { CompletedCourseSummary } from '../../services/progress';
 import { clearTokens } from '../../services/auth';
 import { LearnerDashboard, fetchLearnerDashboard } from '../../services/progress';
 
@@ -51,6 +52,7 @@ export function ProfileScreen() {
   const { data, source } = dashboard;
   const displayName = data.user.displayName ?? 'Trailblazer';
   const rank = getRankInfo(data.progress.points);
+  const completedCourses = data.completedCourses ?? [];
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -78,6 +80,31 @@ export function ProfileScreen() {
           {data.progress.averageScore} %
         </Text>
       </View>
+
+      <Text style={styles.sectionTitle}>Parcours terminés</Text>
+      <Text style={styles.sectionHint}>
+        {source === 'api'
+          ? 'Tes victoires synchronisées depuis le tableau de bord'
+          : 'Connecte-toi pour voir tes parcours validés'}
+      </Text>
+
+      {completedCourses.length > 0 ? (
+        <View style={styles.completedList}>
+          {completedCourses.map((course) => (
+            <CompletedCourseRow key={course.slug} course={course} />
+          ))}
+        </View>
+      ) : (
+        <View style={styles.emptyCompletedCard}>
+          <Text style={styles.emptyCompletedTitle}>Aucun parcours terminé pour l’instant</Text>
+          <Text style={styles.emptyCompletedText}>
+            Valide toutes les unités d’un parcours pour l’ajouter ici et débloquer ton prochain badge.
+          </Text>
+          <Pressable style={styles.catalogLink} onPress={() => router.push('/(tabs)/courses')}>
+            <Text style={styles.catalogLinkText}>Explorer le catalogue →</Text>
+          </Pressable>
+        </View>
+      )}
 
       <Text style={styles.sectionTitle}>Sur le web</Text>
       <Text style={styles.sectionHint}>Profil complet, badges et quêtes hebdomadaires</Text>
@@ -111,6 +138,24 @@ export function ProfileScreen() {
   );
 }
 
+function CompletedCourseRow({ course }: { course: CompletedCourseSummary }) {
+  return (
+    <View style={styles.completedCard}>
+      <Text style={styles.completedTitle}>{course.title}</Text>
+      <Text style={styles.completedMeta}>
+        {formatTrack(course.track)} · {formatCompletedDate(course.completedAt)}
+      </Text>
+      <Text style={styles.completedSlug}>{course.slug}</Text>
+    </View>
+  );
+}
+
+function formatCompletedDate(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return 'date à confirmer';
+  return date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
+}
+
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <View style={styles.stat}>
@@ -138,6 +183,25 @@ const styles = StyleSheet.create({
   heroMeta: { color: 'rgba(255,255,255,0.78)', marginTop: 12, lineHeight: 18, fontSize: 13 },
   sectionTitle: { color: '#1D1D1F', fontSize: 20, fontWeight: '800' },
   sectionHint: { color: '#6E6E73', marginTop: 2, marginBottom: 12, fontSize: 13 },
+  completedList: { gap: 10, marginBottom: 24 },
+  completedCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 18,
+    padding: 16,
+  },
+  completedTitle: { color: '#1D1D1F', fontSize: 17, fontWeight: '800' },
+  completedMeta: { color: '#6E6E73', marginTop: 6, fontSize: 14 },
+  completedSlug: { color: '#AEAEB2', marginTop: 4, fontSize: 12, fontWeight: '600' },
+  emptyCompletedCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 18,
+    padding: 16,
+    marginBottom: 24,
+  },
+  emptyCompletedTitle: { color: '#1D1D1F', fontSize: 17, fontWeight: '800' },
+  emptyCompletedText: { color: '#6E6E73', marginTop: 8, lineHeight: 20, fontSize: 14 },
+  catalogLink: { marginTop: 12 },
+  catalogLinkText: { color: '#0070D2', fontWeight: '800', fontSize: 15 },
   linkCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 18,
