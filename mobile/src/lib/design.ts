@@ -90,3 +90,46 @@ export function formatLevel(level: string) {
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(' ');
 }
+
+export interface TrackVisual {
+  label: string;
+  icon: string;
+  color: string;
+  gradient: [string, string];
+}
+
+const TRACK_VISUALS: Record<string, TrackVisual> = {
+  APPLE: {
+    label: 'Apple Device Support',
+    icon: '\u{1F34E}',
+    color: '#1d1d1f',
+    gradient: ['#1d1d1f', '#7a7d8a'],
+  },
+  JAMF: {
+    label: 'Jamf Pro',
+    icon: '\u{1F6E1}',
+    color: '#ff5b00',
+    gradient: ['#ff5b00', '#ff9e2c'],
+  },
+  INTUNE: {
+    label: 'Microsoft Intune',
+    icon: '\u2601\uFE0F',
+    color: '#0070d2',
+    gradient: ['#0070d2', '#16cdf1'],
+  },
+  DEFAULT: {
+    label: 'Parcours',
+    icon: '\u{1F393}',
+    color: '#0070d2',
+    gradient: ['#032d60', '#16cdf1'],
+  },
+};
+
+export function getTrackVisual(track?: string | null): TrackVisual {
+  if (!track) return TRACK_VISUALS.DEFAULT;
+  return TRACK_VISUALS[track.toUpperCase()] ?? TRACK_VISUALS.DEFAULT;
+}
+
+export function formatTrack(track: string) {
+  return getTrackVisual(track).label;
+}

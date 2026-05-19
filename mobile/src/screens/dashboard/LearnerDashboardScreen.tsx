@@ -1,7 +1,7 @@
+import { useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   Linking,
   Pressable,
   ScrollView,
@@ -10,7 +10,7 @@ import {
   View,
 } from 'react-native';
 import { WEB_URL } from '../../config';
-import { formatLevel, getBadgeVisual, getRankInfo } from '../../lib/design';
+import { formatLevel, formatTrack, getBadgeVisual, getRankInfo } from '../../lib/design';
 import { clearTokens } from '../../services/auth';
 import {
   CourseSummary,
@@ -30,18 +30,13 @@ interface LearnerDashboardScreenProps {
 
 const certificationSprintTracks: CertificationSprintTrack[] = ['APPLE', 'JAMF', 'INTUNE'];
 
-const trackLabels: Record<string, string> = {
-  APPLE: 'Apple Device Support',
-  JAMF: 'Jamf Pro',
-  INTUNE: 'Microsoft Intune',
-};
-
 type SprintMessage = {
   text: string;
   tone: 'success' | 'error' | 'info';
 };
 
 export function LearnerDashboardScreen({ onSignOut }: LearnerDashboardScreenProps) {
+  const router = useRouter();
   const [dashboard, setDashboard] = useState<LearnerDashboard | null>(null);
   const [sprint, setSprint] = useState<CertificationSprintSummary | null>(null);
   const [sprintSource, setSprintSource] = useState<'api' | 'demo'>('api');
@@ -191,7 +186,13 @@ export function LearnerDashboardScreen({ onSignOut }: LearnerDashboardScreenProp
         <Text style={styles.sectionHint}>Continue là où tu t’es arrêté</Text>
       </View>
       {activeCourses.length > 0 ? (
-        activeCourses.map((course) => <CourseProgressCard key={course.id} course={course} />)
+        activeCourses.map((course) => (
+          <CourseProgressCard
+            key={course.id}
+            course={course}
+            onPress={() => router.push(`/course/${course.slug}`)}
+          />
+        ))
       ) : (
         <Text style={styles.emptyText}>Aucun parcours actif. Explore le catalogue pour commencer.</Text>
       )}
@@ -259,7 +260,9 @@ export function LearnerDashboardScreen({ onSignOut }: LearnerDashboardScreenProp
         <View style={styles.ctaButtons}>
           <Pressable
             style={[styles.ctaButton, styles.primaryButton]}
-            onPress={() => showNextModule(nextCourse)}
+            onPress={() => {
+              if (nextCourse?.slug) router.push(`/course/${nextCourse.slug}`);
+            }}
           >
             <Text style={styles.primaryButtonText}>Continuer le parcours</Text>
           </Pressable>
@@ -390,11 +393,11 @@ function Stat({ label, value }: { label: string; value: string }) {
   );
 }
 
-function CourseProgressCard({ course }: { course: CourseSummary }) {
+function CourseProgressCard({ course, onPress }: { course: CourseSummary; onPress: () => void }) {
   const progress = course.progressPercent ?? 0;
 
   return (
-    <View style={styles.courseCard}>
+    <Pressable onPress={onPress} style={styles.courseCard}>
       <View style={styles.courseHeader}>
         <View style={styles.courseText}>
           <Text style={styles.courseTrack}>{formatTrack(course.track)}</Text>
@@ -403,12 +406,13 @@ function CourseProgressCard({ course }: { course: CourseSummary }) {
             {course.completedModules ?? 0}/{course.totalModules ?? 0} modules · {progress} %
           </Text>
         </View>
+        <Text style={styles.courseChevron}>›</Text>
       </View>
       <ProgressBar progress={progress} />
       <Text style={styles.nextModule}>
         {course.nextModule ? `À suivre : ${course.nextModule.title}` : 'Parcours terminé'}
       </Text>
-    </View>
+    </Pressable>
   );
 }
 
@@ -428,19 +432,6 @@ function ProgressBar({
       <View style={[styles.progressFill, { width: `${safeProgress}%`, backgroundColor: fillColor }]} />
     </View>
   );
-}
-
-function showNextModule(course: CourseSummary | null) {
-  Alert.alert(
-    'Prochain module',
-    course?.nextModule
-      ? `Continuez avec « ${course.nextModule.title} » dans le parcours ${course.title}.`
-      : 'Aucun module suivant disponible pour le moment. Ouvrez le catalogue web pour explorer les parcours.'
-  );
-}
-
-function formatTrack(track: CertificationSprintTrack | string) {
-  return trackLabels[track] ?? track;
 }
 
 function formatSprintStatus(sprint: CertificationSprintSummary) {
@@ -558,6 +549,7 @@ const styles = StyleSheet.create({
   courseCard: { backgroundColor: '#FFFFFF', borderRadius: 20, padding: 16, marginBottom: 12 },
   courseHeader: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 },
   courseText: { flex: 1 },
+  courseChevron: { color: '#0070D2', fontSize: 28, fontWeight: '300', marginTop: 8 },
   courseTrack: {
     color: '#0070D2',
     fontSize: 11,
