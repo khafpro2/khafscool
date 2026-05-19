@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import type { CourseDetail, CourseProgressData, CourseProgressModule } from '@/lib/api';
 import { completeModule, fetchCourse, fetchCourseProgress } from '@/lib/api';
@@ -23,6 +24,7 @@ import {
 } from '@/lib/design';
 
 export function CourseDetailClient({ slug }: { slug: string }) {
+  const router = useRouter();
   const [course, setCourse] = useState<CourseDetail | null>(null);
   const [progress, setProgress] = useState<CourseProgressData | null>(null);
   const [usesProgressFallback, setUsesProgressFallback] = useState(false);
@@ -76,6 +78,28 @@ export function CourseDetailClient({ slug }: { slug: string }) {
           quizAnswers: answers,
           gameOrder: activeModule.game?.steps.map((step) => step.id),
         });
+        const updatedProgress = await fetchCourseProgress(slug, token);
+        const courseJustCompleted =
+          backendResult.courseCompleted ||
+          updatedProgress.progress.progressPercent >= 100 ||
+          !updatedProgress.progress.nextModule;
+
+        if (courseJustCompleted) {
+          const completion = backendResult.courseCompletion ?? {
+            slug,
+            title: course?.title ?? updatedProgress.course.title,
+            pointsEarned: sumModuleProgressPoints(updatedProgress.modules),
+            badgeEarned: backendResult.badges?.find((badge) =>
+              ['apple-mdm-foundation', 'jamf-engineer', 'intune-professional'].includes(badge)
+            ),
+          };
+          if (typeof window !== 'undefined') {
+            sessionStorage.setItem(`course-completion:${slug}`, JSON.stringify(completion));
+          }
+          router.push(`/courses/${slug}/complete`);
+          return;
+        }
+
         setSuccessNotice({
           badges: backendResult.badges ?? [],
           gameScore: backendResult.gameScore,
@@ -85,7 +109,7 @@ export function CourseDetailClient({ slug }: { slug: string }) {
         });
         setResult(null);
         setAnswers({});
-        setProgress(await fetchCourseProgress(slug, token));
+        setProgress(updatedProgress);
         setUsesProgressFallback(false);
         return;
       } catch {
@@ -552,6 +576,18 @@ function ModuleStatusStrip({
       })}
     </div>
   );
+}
+
+function sumModuleProgressPoints(
+  modules: { quizScore: number | null; gameScore: number | null; completed: boolean }[]
+) {
+  return modules
+    .filter((module) => module.completed)
+    .reduce(
+      (sum, module) =>
+        sum + Math.round((module.quizScore ?? 0) * 0.1 + (module.gameScore ?? 0) * 0.2),
+      0
+    );
 }
 
 function computeLocalScore(questions: CourseDetail['modules'][number]['questions'], answers: Record<string, string>) {

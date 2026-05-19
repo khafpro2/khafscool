@@ -20,6 +20,55 @@ const TRACK_BADGES: Partial<Record<CourseTrack, string>> = {
   [CourseTrack.INTUNE]: 'intune-professional',
 };
 
+export const NEXT_COURSE_BY_SLUG: Record<string, { slug: string; title: string }> = {
+  'apple-cert-prep': { slug: 'jamf-pro-foundations', title: 'Fondamentaux Jamf Pro' },
+  'jamf-pro-foundations': { slug: 'intune-ios-enrollment', title: 'Microsoft Intune pour Apple' },
+};
+
+export type CourseCompletionPayload = {
+  slug: string;
+  title: string;
+  pointsEarned: number;
+  badgeEarned?: string;
+};
+
+export function modulePointsFromScores(quizScore: number, gameScore: number) {
+  return Math.round(quizScore * 0.1 + gameScore * 0.2);
+}
+
+export function sumCoursePointsFromProgress(
+  rows: { quizScore: number | null; gameScore: number | null }[]
+) {
+  return rows.reduce(
+    (sum, row) => sum + modulePointsFromScores(row.quizScore ?? 0, row.gameScore ?? 0),
+    0
+  );
+}
+
+export function buildCourseCompletionResult(
+  course: { slug: string; title: string; track: CourseTrack },
+  completedModules: number,
+  totalModules: number,
+  badges: string[],
+  coursePointsEarned: number
+): { courseCompleted: boolean; courseCompletion?: CourseCompletionPayload } {
+  const courseCompleted = totalModules > 0 && completedModules >= totalModules;
+  if (!courseCompleted) {
+    return { courseCompleted: false };
+  }
+
+  const trackBadge = TRACK_BADGES[course.track];
+  return {
+    courseCompleted: true,
+    courseCompletion: {
+      slug: course.slug,
+      title: course.title,
+      pointsEarned: coursePointsEarned,
+      ...(trackBadge && badges.includes(trackBadge) ? { badgeEarned: trackBadge } : {}),
+    },
+  };
+}
+
 const WEEKLY_QUESTS = [
   {
     questKey: 'weekly-apple-2',
@@ -227,7 +276,33 @@ export async function completeModule(
 
   const preparationScore = await computePreparationByTrack(userId, CourseTrack.APPLE);
 
-  return { quizScore, gameScore, pointsEarned, level: newLevel, badges, preparationScore };
+  const courseProgressRows = await prisma.moduleProgress.findMany({
+    where: { userId, module: { courseId: module.courseId }, completedAt: { not: null } },
+    select: { quizScore: true, gameScore: true },
+  });
+  const coursePointsEarned = sumCoursePointsFromProgress(courseProgressRows);
+  const { courseCompleted, courseCompletion } = buildCourseCompletionResult(
+    {
+      slug: module.course.slug,
+      title: module.course.title,
+      track: module.course.track,
+    },
+    courseProgressRows.length,
+    await prisma.module.count({ where: { courseId: module.courseId } }),
+    badges,
+    coursePointsEarned
+  );
+
+  return {
+    quizScore,
+    gameScore,
+    pointsEarned,
+    level: newLevel,
+    badges,
+    preparationScore,
+    courseCompleted,
+    ...(courseCompletion ? { courseCompletion } : {}),
+  };
 }
 
 async function incrementWeeklyQuest(userId: string, questKey: string) {
