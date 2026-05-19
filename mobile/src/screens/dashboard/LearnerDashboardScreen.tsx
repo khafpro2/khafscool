@@ -145,6 +145,18 @@ export function LearnerDashboardScreen({ onSignOut }: LearnerDashboardScreenProp
         </View>
       ) : null}
 
+      {data.learningStreak ? (
+        <View style={styles.streakCard}>
+          <Text style={styles.streakEyebrow}>{'\u{1F525}'} Série Trailblazer</Text>
+          <Text style={styles.streakValue}>
+            {data.learningStreak.currentDays} jour{data.learningStreak.currentDays > 1 ? 's' : ''} consécutif{data.learningStreak.currentDays > 1 ? 's' : ''}
+          </Text>
+          <Text style={styles.streakMeta}>
+            Record {data.learningStreak.longestDays} jour{data.learningStreak.longestDays > 1 ? 's' : ''}
+          </Text>
+        </View>
+      ) : null}
+
       <View style={[styles.heroCard, { backgroundColor: rank.gradient[0] }]}>
         <Text style={styles.heroEyebrow}>
           {rank.icon} Rang Trailblazer · {rank.name}
@@ -459,6 +471,17 @@ const styles = StyleSheet.create({
   title: { color: '#1D1D1F', fontSize: 28, fontWeight: '800', maxWidth: 220 },
   signOutButton: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 999, backgroundColor: '#FFFFFF' },
   signOutText: { color: '#6E6E73', fontWeight: '600' },
+  streakCard: {
+    backgroundColor: '#FFF4E8',
+    borderRadius: 18,
+    padding: 16,
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: '#F5B87A',
+  },
+  streakEyebrow: { color: '#B45309', fontSize: 12, fontWeight: '800', textTransform: 'uppercase' },
+  streakValue: { color: '#1D1D1F', fontSize: 22, fontWeight: '800', marginTop: 6 },
+  streakMeta: { color: '#6E6E73', marginTop: 4, fontSize: 13, fontWeight: '600' },
   demoBanner: { backgroundColor: '#FFF7E6', borderRadius: 14, padding: 12, marginBottom: 14 },
   demoText: { color: '#8A5A00', lineHeight: 20 },
   heroCard: { borderRadius: 24, padding: 20, marginBottom: 16 },

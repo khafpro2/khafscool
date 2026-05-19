@@ -23,6 +23,12 @@ export interface CompletedCourseSummary {
   completedAt: string;
 }
 
+export interface LearningStreak {
+  currentDays: number;
+  longestDays: number;
+  lastActivityDate: string | null;
+}
+
 export interface DashboardData {
   user: AuthUser;
   stats: {
@@ -34,10 +40,11 @@ export interface DashboardData {
     preparationScore?: number;
   };
   badges: string[];
-  quests: { id: string; label: string; progress: number; target: number }[];
+  quests: { id: string; questKey?: string; label: string; progress: number; target: number; completed?: boolean }[];
   certificationSprint?: CertificationSprintSummary | null;
   courses: CourseSummary[];
   completedCourses?: CompletedCourseSummary[];
+  learningStreak?: LearningStreak;
 }
 
 export type CertificationSprintTrack = 'APPLE' | 'JAMF' | 'INTUNE';
@@ -349,8 +356,9 @@ interface DashboardApiResponse {
     averageQuizScore: number;
     preparationScore?: number;
   };
+  learningStreak?: LearningStreak;
   badges: string[];
-  quests: { id: string; label: string; progress: number; target: number }[];
+  quests: { id: string; label: string; progress: number; target: number; completed?: boolean }[];
   certificationSprint?: CertificationSprintSummary | null;
   courses: CourseSummary[];
   completedCourses?: CompletedCourseSummary[];
@@ -370,6 +378,7 @@ export async function fetchDashboard(token?: string): Promise<DashboardData> {
         certificationSprint: data.certificationSprint ?? null,
         courses: data.courses,
         completedCourses: data.completedCourses ?? [],
+        learningStreak: data.learningStreak ?? defaultLearningStreak(),
       };
     }
 
@@ -686,7 +695,16 @@ function mockDashboard(): DashboardData {
         completedAt: '2026-03-12T10:30:00.000Z',
       },
     ],
+    learningStreak: {
+      currentDays: 2,
+      longestDays: 4,
+      lastActivityDate: new Date().toISOString().slice(0, 10),
+    },
   };
+}
+
+function defaultLearningStreak(): LearningStreak {
+  return { currentDays: 0, longestDays: 0, lastActivityDate: null };
 }
 
 function toDashboardData(data: UserProgressData): DashboardData {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   fetchWeeklyQuests,
   type WeeklyQuest,
@@ -8,6 +8,7 @@ import {
 } from '@/lib/api';
 import { AuthConnectBanner } from '@/components/auth/AuthConnectBanner';
 import { getAccessToken } from '@/lib/auth';
+import { detectNewlyCompletedQuests, isQuestCompleted } from '@/lib/quest-feedback';
 import { formatTrack } from '@/lib/tracks';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -22,21 +23,28 @@ export default function WeeklyQuestsPage() {
   const [hasToken, setHasToken] = useState(false);
   const [usingFallback, setUsingFallback] = useState(false);
   const [status, setStatus] = useState<Status>('loading');
+  const [completionBanner, setCompletionBanner] = useState<WeeklyQuest[]>([]);
 
-  useEffect(() => {
+  const loadQuests = useCallback(async () => {
     const token = getAccessToken();
     setHasToken(Boolean(token));
+    setStatus('loading');
 
-    fetchWeeklyQuests(token)
-      .then((response) => {
-        setData(response);
-        setUsingFallback(!token);
-        setStatus('ready');
-      })
-      .catch(() => {
-        setStatus('error');
-      });
+    try {
+      const response = await fetchWeeklyQuests(token);
+      const newlyCompleted = detectNewlyCompletedQuests(response.quests);
+      setCompletionBanner(newlyCompleted);
+      setData(response);
+      setUsingFallback(!token);
+      setStatus('ready');
+    } catch {
+      setStatus('error');
+    }
   }, []);
+
+  useEffect(() => {
+    void loadQuests();
+  }, [loadQuests]);
 
   const summary = useMemo(() => buildSummary(data?.quests ?? []), [data]);
   const resetLabel = useMemo(() => formatResetLabel(data?.weekEnd ?? null), [data]);
@@ -99,11 +107,18 @@ export default function WeeklyQuestsPage() {
           <Button href="/dashboard" variant="dark">
             Retour dashboard
           </Button>
+          <Button type="button" variant="secondary" onClick={() => void loadQuests()}>
+            Actualiser
+          </Button>
           <Button href="/courses" variant="secondary">
             Voir les parcours
           </Button>
         </div>
       </div>
+
+      {completionBanner.length > 0 ? (
+        <QuestCompletionBanner quests={completionBanner} onDismiss={() => setCompletionBanner([])} />
+      ) : null}
 
       <Card
         style={{
@@ -148,11 +163,50 @@ export default function WeeklyQuestsPage() {
   );
 }
 
+function QuestCompletionBanner({
+  quests,
+  onDismiss,
+}: {
+  quests: WeeklyQuest[];
+  onDismiss: () => void;
+}) {
+  const earnedPoints = quests.reduce((sum, quest) => sum + (quest.rewardPoints ?? 0), 0);
+
+  return (
+    <Card
+      style={{
+        marginTop: '1.5rem',
+        background: 'linear-gradient(135deg, #e8f5ec 0%, #ffffff 100%)',
+        borderColor: '#2e844a',
+      }}
+    >
+      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'flex-start' }}>
+        <div>
+          <span style={{ color: '#2e844a', fontWeight: 800, textTransform: 'uppercase', fontSize: '0.8rem' }}>
+            Quête accomplie !
+          </span>
+          <h2 style={{ fontSize: '1.2rem', fontWeight: 800, marginTop: '0.35rem' }}>
+            {quests.length > 1 ? `${quests.length} quêtes terminées` : quests[0]?.label}
+          </h2>
+          <p className="muted" style={{ marginTop: '0.35rem' }}>
+            {earnedPoints > 0
+              ? `+${earnedPoints} points gagnés cette semaine.`
+              : 'Bravo, continue sur cette lancée !'}
+          </p>
+        </div>
+        <Button type="button" variant="ghost" size="sm" onClick={onDismiss}>
+          Fermer
+        </Button>
+      </div>
+    </Card>
+  );
+}
+
 function QuestCard({ quest }: { quest: WeeklyQuest }) {
   const target = Math.max(0, quest.target ?? 0);
   const progress = Math.max(0, quest.progress ?? 0);
   const progressPercent = target > 0 ? Math.min(100, Math.round((progress / target) * 100)) : 0;
-  const completed = quest.completed || (target > 0 && progress >= target);
+  const completed = isQuestCompleted(quest);
 
   return (
     <Card
@@ -240,7 +294,7 @@ function EmptyState() {
 function buildSummary(quests: WeeklyQuest[]) {
   return quests.reduce(
     (acc, quest) => {
-      const completed = quest.completed || (quest.target > 0 && quest.progress >= quest.target);
+      const completed = isQuestCompleted(quest);
       const reward = typeof quest.rewardPoints === 'number' ? quest.rewardPoints : 0;
       return {
         total: acc.total + 1,

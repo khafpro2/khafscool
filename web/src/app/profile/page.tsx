@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { ProgressBar } from '@/components/ui/ProgressBar';
+import { LearningStreakCard } from '@/components/dashboard/LearningStreakCard';
 import { TrailCard } from '@/components/ui/TrailCard';
 import {
   estimatePoints,
@@ -85,7 +86,7 @@ export default function ProfilePage() {
     );
   }
 
-  const { user, stats, badges, quests, courses, certificationSprint, completedCourses = [] } = data;
+  const { user, stats, badges, quests, courses, certificationSprint, completedCourses = [], learningStreak } = data;
   const displayName = user.displayName ?? storedUser?.displayName ?? 'Trailblazer';
   const email = user.email ?? storedUser?.email ?? 'demo@ama.dev';
   const rank = getRankInfo(stats.points);
@@ -137,6 +138,8 @@ export default function ProfilePage() {
           </p>
         </Card>
       ) : null}
+
+      {learningStreak ? <LearningStreakCard streak={learningStreak} /> : null}
 
       <ProfileHero
         displayName={displayName}

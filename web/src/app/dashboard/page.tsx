@@ -8,6 +8,7 @@ import { buildAuthUrl, getAccessToken, logoutSession } from '@/lib/auth';
 import { formatTrack } from '@/lib/tracks';
 import { ProgressOverview } from '@/components/dashboard/ProgressOverview';
 import { BadgesCallout } from '@/components/dashboard/BadgesCallout';
+import { LearningStreakCard } from '@/components/dashboard/LearningStreakCard';
 import { WeeklyQuestsCallout } from '@/components/dashboard/WeeklyQuestsCallout';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -155,7 +156,7 @@ export default function DashboardPage() {
     );
   }
 
-  const { user, stats, badges, quests, courses, certificationSprint } = data;
+  const { user, stats, badges, quests, courses, certificationSprint, learningStreak } = data;
   const recommendedAction = getRecommendedAction(data);
   const quickActions = getQuickActions(data);
 
@@ -164,6 +165,7 @@ export default function DashboardPage() {
       <TrailblazerRankCard user={user.displayName ?? 'Technicien'} points={stats.points} level={stats.level} onLogout={handleLogout} />
 
       <RecommendedActionCard action={recommendedAction} />
+      {learningStreak ? <LearningStreakCard streak={learningStreak} /> : null}
       <SprintDashboardCard sprint={certificationSprint ?? null} />
       <WeeklyQuestsCallout />
       <BadgesCallout />

@@ -26,6 +26,12 @@ export interface CompletedCourseSummary {
   completedAt: string;
 }
 
+export interface LearningStreak {
+  currentDays: number;
+  longestDays: number;
+  lastActivityDate: string | null;
+}
+
 export interface LearnerProgress {
   user: {
     id: string;
@@ -44,6 +50,7 @@ export interface LearnerProgress {
   quests: { id: string; label: string; progress: number; target: number }[];
   courses: CourseSummary[];
   completedCourses?: CompletedCourseSummary[];
+  learningStreak?: LearningStreak;
   tracks?: {
     track: string;
     totalModules: number;
@@ -64,14 +71,20 @@ export async function fetchLearnerDashboard(): Promise<LearnerDashboard> {
   if (!token) return { data: demoProgress, source: 'demo' };
 
   try {
-    const [progress, completedCourses] = await Promise.all([
+    const [progress, dashboard] = await Promise.all([
       apiFetch<LearnerProgress>('/users/me/progress'),
-      apiFetch<{ completedCourses?: CompletedCourseSummary[] }>('/users/me/dashboard').then(
-        (dashboard) => dashboard.completedCourses ?? [],
-        () => [] as CompletedCourseSummary[]
-      ),
+      apiFetch<{ completedCourses?: CompletedCourseSummary[]; learningStreak?: LearningStreak }>(
+        '/users/me/dashboard'
+      ).catch(() => ({ completedCourses: [], learningStreak: undefined })),
     ]);
-    return { data: { ...progress, completedCourses }, source: 'api' };
+    return {
+      data: {
+        ...progress,
+        completedCourses: dashboard.completedCourses ?? [],
+        learningStreak: dashboard.learningStreak,
+      },
+      source: 'api',
+    };
   } catch {
     return { data: demoProgress, source: 'demo' };
   }
@@ -88,6 +101,7 @@ const demoProgress: LearnerProgress = {
     level: 'TECHNICIAN',
   },
   badges: ['apple-mdm-foundation'],
+  learningStreak: { currentDays: 2, longestDays: 4, lastActivityDate: '2026-05-18' },
   quests: [{ id: 'weekly-apple-3', label: 'Termine 3 modules Apple cette semaine', progress: 1, target: 3 }],
   courses: [
     {
