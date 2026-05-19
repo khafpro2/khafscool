@@ -2,11 +2,17 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { CourseDetail, CourseProgressData, CourseProgressModule } from '@/lib/api';
 import { completeModule, fetchCourse, fetchCourseProgress } from '@/lib/api';
 import { buildAuthUrl, getAccessToken } from '@/lib/auth';
 import { formatTrack } from '@/lib/tracks';
+import {
+  computeQuizScorePercent,
+  countCorrectAnswers,
+  QUIZ_PASS_PERCENT,
+  QuizPanel,
+} from '@/components/courses/QuizPanel';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -29,6 +35,7 @@ export function CourseDetailClient({ slug }: { slug: string }) {
   const [progress, setProgress] = useState<CourseProgressData | null>(null);
   const [usesProgressFallback, setUsesProgressFallback] = useState(false);
   const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [revealedQuestions, setRevealedQuestions] = useState<Set<string>>(() => new Set());
   const [result, setResult] = useState<string | null>(null);
   const [successNotice, setSuccessNotice] = useState<SuccessNotice | null>(null);
   const [hasToken, setHasToken] = useState(false);
@@ -60,15 +67,72 @@ export function CourseDetailClient({ slug }: { slug: string }) {
     course?.modules.find((module) => module.id === progress?.progress.nextModule?.id) ??
     course?.modules.find((module) => !moduleProgressById.get(module.id)?.completed) ??
     course?.modules[0];
+  const activeQuestionIds = useMemo(
+    () => new Set(activeModule?.questions.map((question) => question.id) ?? []),
+    [activeModule]
+  );
+  const activeRevealedQuestions = useMemo(
+    () => new Set([...revealedQuestions].filter((id) => activeQuestionIds.has(id))),
+    [activeQuestionIds, revealedQuestions]
+  );
+  const answeredActiveCount = useMemo(
+    () => activeModule?.questions.filter((question) => answers[question.id]).length ?? 0,
+    [activeModule, answers]
+  );
   const canSubmit = useMemo(() => {
     if (!activeModule) return false;
     return activeModule.questions.every((question) => answers[question.id]);
   }, [activeModule, answers]);
+  const estimatedActiveScore = useMemo(
+    () => (activeModule ? computeQuizScorePercent(activeModule.questions, answers) : 0),
+    [activeModule, answers]
+  );
+
+  const resetActiveQuizState = useCallback(() => {
+    setAnswers((current) => {
+      const next = { ...current };
+      for (const questionId of activeQuestionIds) {
+        delete next[questionId];
+      }
+      return next;
+    });
+    setRevealedQuestions((current) => {
+      const next = new Set(current);
+      for (const questionId of activeQuestionIds) {
+        next.delete(questionId);
+      }
+      return next;
+    });
+  }, [activeQuestionIds]);
+
+  function handleSelectAnswer(questionId: string, optionId: string) {
+    if (revealedQuestions.has(questionId)) return;
+    setAnswers((current) => ({ ...current, [questionId]: optionId }));
+    setResult(null);
+  }
+
+  function handleRevealQuestion(questionId: string) {
+    if (!answers[questionId]) return;
+    setRevealedQuestions((current) => new Set(current).add(questionId));
+  }
+
+  function handleRevealAllQuestions() {
+    if (!activeModule) return;
+    setRevealedQuestions((current) => {
+      const next = new Set(current);
+      for (const question of activeModule.questions) {
+        if (answers[question.id]) next.add(question.id);
+      }
+      return next;
+    });
+  }
 
   async function handleSubmit() {
     if (!activeModule) return;
 
-    const localScore = computeLocalScore(activeModule.questions, answers);
+    handleRevealAllQuestions();
+    const localScore = computeQuizScorePercent(activeModule.questions, answers);
+    const correctCount = countCorrectAnswers(activeModule.questions, answers);
     const token = getAccessToken();
     setSuccessNotice(null);
 
@@ -108,17 +172,21 @@ export function CourseDetailClient({ slug }: { slug: string }) {
           quizScore: backendResult.quizScore,
         });
         setResult(null);
-        setAnswers({});
+        resetActiveQuizState();
         setProgress(updatedProgress);
         setUsesProgressFallback(false);
         return;
       } catch {
-        setResult(`Score local : ${localScore}%. L’enregistrement backend a échoué, mais le module reste testable.`);
+        setResult(
+          `Score local : ${correctCount}/${activeModule.questions.length} (${localScore}%). L’enregistrement backend a échoué, mais le module reste testable.`
+        );
         return;
       }
     }
 
-    setResult(`Score local : ${localScore}%. Connecte-toi avec l’API disponible pour enregistrer la progression.`);
+    setResult(
+      `Score local : ${correctCount}/${activeModule.questions.length} (${localScore}%). Connecte-toi avec l’API disponible pour enregistrer la progression.`
+    );
   }
 
   if (isLoading) {
@@ -300,6 +368,8 @@ export function CourseDetailClient({ slug }: { slug: string }) {
               const moduleProgress = moduleProgressById.get(module.id);
               const completed = moduleProgress?.completed ?? false;
               const moduleStatus = getModuleStatus(module.id, moduleProgress, progress?.progress.nextModule?.id);
+              const isActiveModule = activeModule?.id === module.id;
+              const isLockedModule = moduleStatus === 'todo';
               return (
                 <Card
                   key={module.id}
@@ -367,40 +437,37 @@ export function CourseDetailClient({ slug }: { slug: string }) {
                     </div>
                   )}
 
-                  <div style={{ display: 'grid', gap: '0.85rem', marginTop: '1rem' }}>
-                    {module.questions.map((question) => (
-                      <fieldset
-                        key={question.id}
-                        style={{
-                          border: '1px solid var(--border-soft)',
-                          borderRadius: 14,
-                          padding: '0.9rem 1rem',
-                          background: '#ffffff',
-                        }}
-                      >
-                        <legend style={{ fontWeight: 700, padding: '0 0.4rem' }}>{question.prompt}</legend>
-                        <div style={{ display: 'grid', gap: '0.45rem', marginTop: '0.6rem' }}>
-                          {question.options.map((option) => (
-                            <label key={option.id} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                              <input
-                                type="radio"
-                                name={question.id}
-                                value={option.id}
-                                checked={answers[question.id] === option.id}
-                                onChange={() =>
-                                  setAnswers((current) => ({ ...current, [question.id]: option.id }))
-                                }
-                              />
-                              {option.label}
-                            </label>
-                          ))}
-                        </div>
-                        {result && question.explanation && (
-                          <p className="muted" style={{ marginTop: '0.65rem' }}>{question.explanation}</p>
-                        )}
-                      </fieldset>
-                    ))}
-                  </div>
+                  {isLockedModule ? (
+                    <Card variant="soft" style={{ marginTop: '1rem' }}>
+                      <p className="muted" style={{ fontSize: '0.9rem' }}>
+                        Termine l&apos;unité précédente pour débloquer le quiz ({module.questions.length} question
+                        {module.questions.length > 1 ? 's' : ''}).
+                      </p>
+                    </Card>
+                  ) : isActiveModule ? (
+                    <QuizPanel
+                      module={module}
+                      answers={answers}
+                      revealedQuestions={activeRevealedQuestions}
+                      reviewMode={false}
+                      onSelectAnswer={handleSelectAnswer}
+                      onRevealQuestion={handleRevealQuestion}
+                      onRevealAll={handleRevealAllQuestions}
+                    />
+                  ) : completed ? (
+                    <Card variant="soft" style={{ marginTop: '1rem' }}>
+                      <Badge tone="success" icon="\u2705">
+                        Quiz terminé
+                      </Badge>
+                      <p className="muted" style={{ marginTop: '0.45rem', fontSize: '0.9rem' }}>
+                        {module.questions.length} question{module.questions.length > 1 ? 's' : ''} complétée
+                        {module.questions.length > 1 ? 's' : ''}
+                        {moduleProgress?.quizScore !== null && moduleProgress?.quizScore !== undefined
+                          ? ` · score ${moduleProgress.quizScore}%`
+                          : ''}
+                      </p>
+                    </Card>
+                  ) : null}
                 </Card>
               );
             })}
@@ -416,11 +483,27 @@ export function CourseDetailClient({ slug }: { slug: string }) {
                   <p style={{ fontWeight: 800, marginTop: '0.2rem' }}>
                     <a href={`#module-${activeModule.slug}`}>{activeModule.title}</a>
                   </p>
+                  <p className="muted" style={{ marginTop: '0.35rem', fontSize: '0.88rem' }}>
+                    Quiz : {answeredActiveCount}/{activeModule.questions.length} réponses
+                    {answeredActiveCount > 0 ? ` · score estimé ${estimatedActiveScore}%` : ''}
+                    {activeModule.questions.length > 0 && (
+                      <>
+                        {' '}
+                        · objectif {Math.ceil((QUIZ_PASS_PERCENT / 100) * activeModule.questions.length)}/
+                        {activeModule.questions.length}
+                      </>
+                    )}
+                  </p>
                 </div>
                 <Button onClick={handleSubmit} disabled={!canSubmit}>
                   Valider l’unité
                 </Button>
               </div>
+              {!canSubmit && activeModule.questions.length > 0 && (
+                <p className="muted" style={{ marginTop: '0.65rem', fontSize: '0.85rem' }}>
+                  Réponds à toutes les questions du quiz pour activer la validation.
+                </p>
+              )}
               {result && (
                 <p style={{ marginTop: '0.85rem', fontWeight: 700, color: 'var(--accent-strong)' }}>{result}</p>
               )}
@@ -588,12 +671,6 @@ function sumModuleProgressPoints(
         sum + Math.round((module.quizScore ?? 0) * 0.1 + (module.gameScore ?? 0) * 0.2),
       0
     );
-}
-
-function computeLocalScore(questions: CourseDetail['modules'][number]['questions'], answers: Record<string, string>) {
-  if (!questions.length) return 0;
-  const correct = questions.filter((question) => question.correctOption && answers[question.id] === question.correctOption);
-  return Math.round((correct.length / questions.length) * 100);
 }
 
 function buildLocalCourseProgress(course: CourseDetail): CourseProgressData {
