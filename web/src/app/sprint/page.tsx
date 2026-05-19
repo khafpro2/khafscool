@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import {
   fetchCurrentCertificationSprint,
@@ -11,25 +10,63 @@ import {
 } from '@/lib/api';
 import { getAccessToken } from '@/lib/auth';
 import { formatTrack } from '@/lib/tracks';
+import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
+import { LevelPill } from '@/components/ui/LevelPill';
+import { ProgressBar } from '@/components/ui/ProgressBar';
+import { TrackIcon } from '@/components/ui/TrackIcon';
+import {
+  estimateDurationMinutes,
+  estimatePoints,
+  formatDurationLabel,
+  getRewardBadgeForTrack,
+  getTrackVisual,
+} from '@/lib/design';
 
 type SprintStatus = 'idle' | 'loading' | 'starting';
 
-const tracks: { value: CertificationSprintTrack; description: string }[] = [
+const TRACK_OPTIONS: {
+  value: CertificationSprintTrack;
+  description: string;
+  courseHref: string;
+}[] = [
   {
     value: 'APPLE',
     description: 'Device Support, sécurité, diagnostic et fondamentaux MDM Apple.',
+    courseHref: '/courses/apple-cert-prep',
   },
   {
     value: 'JAMF',
     description: 'Smart groups, politiques, inventaire et bonnes pratiques Jamf Pro.',
+    courseHref: '/courses/jamf-pro-foundations',
   },
   {
     value: 'INTUNE',
     description: 'Enrôlement mobile, conformité, profils et intégration Microsoft.',
+    courseHref: '/courses',
   },
 ];
 
-const dayOptions: CertificationSprintDays[] = [7, 14];
+const DAY_OPTIONS: CertificationSprintDays[] = [7, 14];
+const SPRINT_GRADIENT = getTrackVisual('SPRINT').gradient;
+const SPRINT_VISUAL = getTrackVisual('SPRINT');
+
+const SPRINT_PLAN_COPY: Record<
+  CertificationSprintDays,
+  { title: string; description: string; modulesHint: string }
+> = {
+  7: {
+    title: 'Sprint intensif — 7 jours',
+    description: 'Rythme soutenu pour réviser les modules clés avant une certification proche.',
+    modulesHint: '4 modules ciblés',
+  },
+  14: {
+    title: 'Sprint étendu — 14 jours',
+    description: 'Progression plus souple avec marge pour consolider chaque piste Apple, Jamf ou Intune.',
+    modulesHint: '4 modules + révisions',
+  },
+};
 
 export default function SprintPage() {
   const [selectedTrack, setSelectedTrack] = useState<CertificationSprintTrack>('APPLE');
@@ -51,7 +88,7 @@ export default function SprintPage() {
             ? currentSprint
               ? 'Sprint courant chargé. Si l’API est indisponible, une démonstration locale reste affichée.'
               : 'Aucun sprint actif côté compte pour le moment.'
-            : 'Mode démo local: connecte-toi pour enregistrer un vrai sprint.'
+            : 'Mode démo local : connecte-toi pour enregistrer un vrai sprint.'
         );
       })
       .catch(() => {
@@ -61,7 +98,7 @@ export default function SprintPage() {
   }, []);
 
   const selectedTrackMeta = useMemo(
-    () => tracks.find((track) => track.value === selectedTrack) ?? tracks[0],
+    () => TRACK_OPTIONS.find((track) => track.value === selectedTrack) ?? TRACK_OPTIONS[0],
     [selectedTrack]
   );
 
@@ -93,131 +130,357 @@ export default function SprintPage() {
   const isBusy = status === 'loading' || status === 'starting';
 
   return (
-    <section style={{ padding: '2rem 0' }}>
-      <p style={{ color: 'var(--muted)', fontWeight: 700 }}>Certification Sprint</p>
+    <section style={{ padding: '1rem 0 2rem' }}>
+      <div className="hero" style={{ background: SPRINT_GRADIENT, marginTop: 0 }}>
+        <span className="hero-eyebrow">
+          <span aria-hidden>{SPRINT_VISUAL.icon}</span> Certification Sprint
+        </span>
+        <h1>Accélère ta préparation certification</h1>
+        <p style={{ marginTop: '0.85rem' }}>
+          Choisis un objectif Apple, Jamf ou Intune, puis lance un sprint de 7 ou 14 jours pour transformer
+          tes modules en plan de révision mesurable.
+        </p>
+        <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', marginTop: '1.5rem' }}>
+          <Button href="/dashboard" variant="secondary" size="lg">
+            Retour dashboard
+          </Button>
+          <Button
+            href="/courses"
+            size="lg"
+            variant="ghost"
+            style={{ color: '#fff', borderColor: 'rgba(255,255,255,0.4)' }}
+          >
+            Explorer les parcours
+          </Button>
+        </div>
+        <div
+          style={{
+            marginTop: '1.75rem',
+            display: 'grid',
+            gap: '0.75rem',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+          }}
+        >
+          <HeroStat label="Pistes" value="3" />
+          <HeroStat label="Durées" value="7 / 14 j" />
+          <HeroStat label="Objectif" value="Certif" />
+          <HeroStat label="Mode" value={hasToken ? 'Connecté' : 'Démo'} />
+        </div>
+      </div>
+
+      <Card
+        style={{
+          marginTop: '1.5rem',
+          background: hasToken ? '#ffffff' : '#fff8e6',
+          borderColor: hasToken ? 'var(--border)' : '#f0cf7a',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            gap: '1rem',
+            flexWrap: 'wrap',
+            alignItems: 'flex-start',
+          }}
+        >
+          <div>
+            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+              <Badge tone={hasToken ? 'success' : 'warning'} icon={hasToken ? '\u{1F512}' : '\u{1F9EA}'}>
+                {hasToken ? 'Session connectée' : 'Mode démo'}
+              </Badge>
+              <LevelPill level="Avancé" />
+            </div>
+            <strong style={{ display: 'block', marginTop: '0.65rem' }}>
+              {hasToken ? 'Synchronisation compte active' : 'Aperçu local sans compte'}
+            </strong>
+            <p className="muted" style={{ marginTop: '0.35rem', maxWidth: 720 }}>
+              {hasToken
+                ? 'Les actions utilisent le token local ama_access. Un fallback démo prend le relais si l’API ne répond pas.'
+                : 'Aucun token local détecté : la page montre un sprint simulé sans modifier ton compte.'}
+            </p>
+          </div>
+          {!hasToken && (
+            <Button href="/auth" size="sm">
+              Se connecter
+            </Button>
+          )}
+        </div>
+      </Card>
+
       <div
         style={{
-          alignItems: 'end',
           display: 'grid',
           gap: '1rem',
-          gridTemplateColumns: 'minmax(0, 1fr) auto',
-          marginTop: '0.25rem',
+          gridTemplateColumns: 'minmax(0, 1fr) minmax(280px, 0.85fr)',
+          marginTop: '1.5rem',
+          alignItems: 'start',
         }}
       >
         <div>
-          <h1 style={{ fontSize: '2.25rem', fontWeight: 800 }}>Accélère ta préparation certification</h1>
-          <p style={{ color: 'var(--muted)', marginTop: '0.75rem', maxWidth: 760 }}>
-            Choisis un objectif Apple, Jamf ou Intune, puis lance un sprint de 7 ou 14 jours pour
-            transformer tes modules en plan de révision mesurable.
-          </p>
-        </div>
-        <Link className="btn" href="/dashboard" style={{ background: '#1d1d1f' }}>
-          Retour dashboard
-        </Link>
-      </div>
+          <Card>
+            <span className="section-eyebrow">Nouveau sprint</span>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginTop: '0.4rem' }}>Démarrer un sprint</h2>
+            <p className="muted" style={{ marginTop: '0.4rem' }}>
+              Objectif sélectionné : <strong>{formatTrack(selectedTrackMeta.value)}</strong> sur{' '}
+              <strong>{selectedDays} jours</strong>.
+            </p>
 
-      <section
-        className="card"
-        style={{
-          background: hasToken ? '#ffffff' : '#fff8e6',
-          borderColor: hasToken ? 'var(--border)' : '#f0cf7a',
-          marginTop: '1.5rem',
-        }}
-      >
-        <strong>{hasToken ? 'Session connectée' : 'Mode démo'}</strong>
-        <p style={{ color: 'var(--muted)', marginTop: '0.35rem' }}>
-          {hasToken
-            ? 'Les actions utilisent le token local ama_access. Un fallback démo prend le relais si l’API ne répond pas.'
-            : 'Aucun token local détecté: la page montre un sprint simulé sans modifier ton compte.'}
-        </p>
-      </section>
+            <div
+              style={{
+                display: 'grid',
+                gap: '0.75rem',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))',
+                marginTop: '1rem',
+              }}
+            >
+              {TRACK_OPTIONS.map((track) => {
+                const isSelected = selectedTrack === track.value;
+                const visual = getTrackVisual(track.value);
 
-      <div
-        style={{
-          display: 'grid',
-          gap: '1rem',
-          gridTemplateColumns: 'minmax(0, 1fr) minmax(280px, 0.8fr)',
-          marginTop: '1.5rem',
-        }}
-      >
-        <section className="card">
-          <h2 style={{ fontSize: '1.25rem', fontWeight: 800 }}>Démarrer un sprint</h2>
-          <p style={{ color: 'var(--muted)', marginTop: '0.4rem' }}>
-            Objectif sélectionné: <strong>{formatTrack(selectedTrackMeta.value)}</strong> sur <strong>{selectedDays} jours</strong>.
-          </p>
+                return (
+                  <button
+                    key={track.value}
+                    type="button"
+                    onClick={() => setSelectedTrack(track.value)}
+                    aria-pressed={isSelected}
+                    style={{
+                      background: isSelected ? `${visual.color}10` : '#ffffff',
+                      border: `2px solid ${isSelected ? visual.color : 'var(--border)'}`,
+                      borderRadius: 14,
+                      color: 'inherit',
+                      cursor: 'pointer',
+                      padding: '1rem',
+                      textAlign: 'left',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                      <TrackIcon track={track.value} size="sm" />
+                      <span style={{ color: visual.color, fontSize: '0.8rem', fontWeight: 800 }}>
+                        {formatTrack(track.value)}
+                      </span>
+                    </div>
+                    <strong style={{ display: 'block', marginTop: '0.5rem' }}>
+                      Sprint {formatTrack(track.value)}
+                    </strong>
+                    <span className="muted" style={{ display: 'block', marginTop: '0.35rem', fontSize: '0.9rem' }}>
+                      {track.description}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
 
-          <div
-            style={{
-              display: 'grid',
-              gap: '0.75rem',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))',
-              marginTop: '1rem',
-            }}
-          >
-            {tracks.map((track) => {
-              const isSelected = selectedTrack === track.value;
-
-              return (
-                <button
-                  key={track.value}
-                  type="button"
-                  onClick={() => setSelectedTrack(track.value)}
-                  style={{
-                    background: isSelected ? '#eef6ff' : '#ffffff',
-                    border: `1px solid ${isSelected ? '#85bfff' : 'var(--border)'}`,
-                    borderRadius: 14,
-                    color: 'inherit',
-                    cursor: 'pointer',
-                    padding: '1rem',
-                    textAlign: 'left',
-                  }}
-                >
-                  <span style={{ color: isSelected ? 'var(--accent)' : 'var(--muted)', fontSize: '0.8rem', fontWeight: 800 }}>
-                    {formatTrack(track.value)}
-                  </span>
-                  <strong style={{ display: 'block', marginTop: '0.35rem' }}>Sprint {formatTrack(track.value)}</strong>
-                  <span style={{ color: 'var(--muted)', display: 'block', marginTop: '0.35rem' }}>{track.description}</span>
-                </button>
-              );
-            })}
-          </div>
-
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '1.25rem' }}>
-            {dayOptions.map((days) => (
-              <button
-                key={days}
-                type="button"
-                onClick={() => setSelectedDays(days)}
+            <div style={{ marginTop: '1.25rem' }}>
+              <span
+                className="muted"
                 style={{
-                  background: selectedDays === days ? 'var(--accent)' : '#ffffff',
-                  border: '1px solid var(--border)',
-                  borderRadius: 999,
-                  color: selectedDays === days ? '#ffffff' : 'var(--fg)',
-                  cursor: 'pointer',
+                  display: 'block',
+                  fontSize: '0.8rem',
                   fontWeight: 800,
-                  padding: '0.55rem 0.9rem',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.06em',
+                  marginBottom: '0.5rem',
                 }}
               >
-                {days} jours
-              </button>
-            ))}
-          </div>
+                Durée du sprint
+              </span>
+              <div className="chip-row">
+                {DAY_OPTIONS.map((days) => (
+                  <button
+                    key={days}
+                    type="button"
+                    className="chip"
+                    aria-pressed={selectedDays === days}
+                    onClick={() => setSelectedDays(days)}
+                  >
+                    {days} jours
+                  </button>
+                ))}
+              </div>
+            </div>
 
-          <button
-            className="btn"
-            type="button"
-            disabled={isBusy}
-            onClick={handleStartSprint}
-            style={{ marginTop: '1.25rem' }}
-          >
-            {status === 'starting' ? 'Démarrage...' : 'Démarrer ce sprint'}
-          </button>
-          {message && <p style={{ color: 'var(--muted)', marginTop: '0.85rem' }}>{message}</p>}
-        </section>
+            <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', marginTop: '1.25rem' }}>
+              <Button type="button" disabled={isBusy} onClick={handleStartSprint}>
+                {status === 'starting' ? 'Démarrage...' : 'Démarrer ce sprint'}
+              </Button>
+              <Button href={selectedTrackMeta.courseHref} variant="secondary">
+                Voir le parcours lié
+              </Button>
+            </div>
+
+            {message && (
+              <p className="muted" style={{ marginTop: '0.85rem' }}>
+                {message}
+              </p>
+            )}
+          </Card>
+
+          <section className="section" style={{ marginTop: '1.5rem' }}>
+            <div className="section-head">
+              <div>
+                <span className="section-eyebrow">Plans de révision</span>
+                <h2>Choisis ton rythme</h2>
+              </div>
+            </div>
+            <div
+              style={{
+                display: 'grid',
+                gap: '1rem',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+              }}
+            >
+              {DAY_OPTIONS.map((days) => (
+                <SprintPlanCard
+                  key={days}
+                  days={days}
+                  track={selectedTrack}
+                  selected={selectedDays === days}
+                  onSelect={() => setSelectedDays(days)}
+                />
+              ))}
+            </div>
+          </section>
+        </div>
 
         <CurrentSprintCard sprint={sprint} isLoading={status === 'loading'} />
       </div>
     </section>
+  );
+}
+
+function HeroStat({ label, value }: { label: string; value: string }) {
+  return (
+    <div
+      style={{
+        background: 'rgba(255,255,255,0.14)',
+        border: '1px solid rgba(255,255,255,0.24)',
+        borderRadius: 12,
+        padding: '0.75rem 0.95rem',
+        color: '#fff',
+      }}
+    >
+      <p
+        style={{
+          fontSize: '0.75rem',
+          fontWeight: 800,
+          letterSpacing: '0.06em',
+          textTransform: 'uppercase',
+          opacity: 0.86,
+        }}
+      >
+        {label}
+      </p>
+      <p style={{ fontSize: '1.45rem', fontWeight: 800, marginTop: '0.2rem' }}>{value}</p>
+    </div>
+  );
+}
+
+function SprintPlanCard({
+  days,
+  track,
+  selected,
+  onSelect,
+}: {
+  days: CertificationSprintDays;
+  track: CertificationSprintTrack;
+  selected: boolean;
+  onSelect: () => void;
+}) {
+  const copy = SPRINT_PLAN_COPY[days];
+  const trackVisual = getTrackVisual(track);
+  const sprintVisual = getTrackVisual('SPRINT');
+  const durationMinutes = estimateDurationMinutes(4);
+  const points = estimatePoints(4, 'Avancé');
+  const reward = getRewardBadgeForTrack(track);
+
+  return (
+    <button
+      type="button"
+      className="trail-card"
+      aria-pressed={selected}
+      aria-label={`${copy.title} — sélectionner ce plan`}
+      onClick={onSelect}
+      style={{
+        cursor: 'pointer',
+        textAlign: 'left',
+        outline: selected ? `3px solid ${sprintVisual.color}` : undefined,
+        outlineOffset: selected ? 2 : undefined,
+      }}
+    >
+      <div className="trail-card-banner" style={{ background: sprintVisual.gradient }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
+          <span className="trail-card-icon" aria-hidden>
+            {sprintVisual.icon}
+          </span>
+          {selected && (
+            <span
+              style={{
+                background: 'rgba(255,255,255,0.18)',
+                border: '1px solid rgba(255,255,255,0.32)',
+                borderRadius: 999,
+                padding: '0.18rem 0.55rem',
+                fontSize: '0.72rem',
+                fontWeight: 800,
+                textTransform: 'uppercase',
+                letterSpacing: '0.06em',
+              }}
+            >
+              Sélectionné
+            </span>
+          )}
+        </div>
+        <span className="trail-card-track">
+          {formatTrack(track)} · {days} jours
+        </span>
+      </div>
+      <div className="trail-card-body">
+        <h3 className="trail-card-title">{copy.title}</h3>
+        <p className="trail-card-desc">{copy.description}</p>
+
+        <div className="trail-card-meta">
+          <LevelPill level="Avancé" />
+          <Badge tone="neutral" icon={'\u{23F1}\uFE0F'}>
+            {formatDurationLabel(durationMinutes)}
+          </Badge>
+          <Badge tone="neutral" icon={'\u{1F4DA}'}>
+            {copy.modulesHint}
+          </Badge>
+          <Badge tone="warning" icon={'\u2B50'}>
+            {points} pts
+          </Badge>
+        </div>
+
+        <div className="trail-card-footer">
+          <span className="trail-card-reward">
+            {reward ? (
+              <>
+                <span aria-hidden>{reward.icon}</span>
+                <strong>Badge {reward.label}</strong>
+              </>
+            ) : (
+              <>
+                <span aria-hidden>{trackVisual.icon}</span>
+                <strong>Objectif {trackVisual.label}</strong>
+              </>
+            )}
+          </span>
+          <span
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.35rem',
+              color: 'var(--accent)',
+              fontWeight: 700,
+              fontSize: '0.9rem',
+            }}
+          >
+            Choisir ce plan
+            <span aria-hidden>{'\u2192'}</span>
+          </span>
+        </div>
+      </div>
+    </button>
   );
 }
 
@@ -230,58 +493,68 @@ function CurrentSprintCard({
 }) {
   if (isLoading) {
     return (
-      <aside className="card">
-        <h2 style={{ fontSize: '1.25rem', fontWeight: 800 }}>Sprint courant</h2>
-        <p style={{ color: 'var(--muted)', marginTop: '0.75rem' }}>Chargement du sprint...</p>
-      </aside>
+      <Card as="aside" style={{ alignSelf: 'start' }}>
+        <span className="section-eyebrow">Sprint courant</span>
+        <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginTop: '0.4rem' }}>Chargement...</h2>
+        <p className="muted" style={{ marginTop: '0.75rem' }}>
+          Récupération du sprint en cours.
+        </p>
+      </Card>
     );
   }
 
   if (!sprint) {
     return (
-      <aside className="card">
-        <h2 style={{ fontSize: '1.25rem', fontWeight: 800 }}>Sprint courant</h2>
-        <p style={{ color: 'var(--muted)', marginTop: '0.75rem' }}>
-          Aucun sprint actif. Choisis un objectif et lance ton prochain cycle de préparation.
+      <Card as="aside" style={{ alignSelf: 'start' }}>
+        <span className="section-eyebrow">Sprint courant</span>
+        <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginTop: '0.4rem' }}>Aucun sprint actif</h2>
+        <p className="muted" style={{ marginTop: '0.75rem' }}>
+          Choisis un objectif et lance ton prochain cycle de préparation.
         </p>
-      </aside>
+        <Button href="/courses" variant="secondary" style={{ marginTop: '1rem' }}>
+          Explorer les parcours
+        </Button>
+      </Card>
     );
   }
 
-  const endsAt = new Intl.DateTimeFormat('fr-FR', {
+  const trackMeta = TRACK_OPTIONS.find((track) => track.value === sprint.track) ?? TRACK_OPTIONS[0];
+  const statusLabel = formatSprintStatus(sprint);
+  const statusTone = sprint.completed ? 'success' : sprint.expired ? 'neutral' : 'accent';
+  const daysRemaining = computeDaysRemaining(sprint.endsAt);
+  const endsAtLabel = new Intl.DateTimeFormat('fr-FR', {
     day: '2-digit',
     month: 'long',
     year: 'numeric',
   }).format(new Date(sprint.endsAt));
 
   return (
-    <aside className="card" style={{ alignSelf: 'start' }}>
-      <p style={{ color: 'var(--accent)', fontSize: '0.8rem', fontWeight: 800, textTransform: 'uppercase' }}>
-        Sprint courant
-      </p>
-      <h2 style={{ fontSize: '1.35rem', fontWeight: 800, marginTop: '0.35rem' }}>{sprint.label}</h2>
-      <p style={{ color: 'var(--muted)', marginTop: '0.5rem' }}>
-        {sprint.days} jours · fin prévue le {endsAt}
-      </p>
-
-      <div style={{ marginTop: '1.25rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem' }}>
-          <strong>{sprint.progressPercent}% complété</strong>
-          <span style={{ color: 'var(--muted)' }}>
-            {sprint.progress}/{sprint.target} modules
+    <Card as="aside" style={{ alignSelf: 'start' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.75rem', alignItems: 'flex-start' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+          <TrackIcon track={sprint.track} size="sm" />
+          <span className="section-eyebrow" style={{ margin: 0 }}>
+            Sprint courant
           </span>
         </div>
-        <div style={{ background: '#e5e5ea', borderRadius: 999, height: 10, marginTop: '0.65rem' }}>
-          <div
-            style={{
-              background: sprint.completed ? '#0f7a3b' : 'var(--accent)',
-              borderRadius: 999,
-              height: '100%',
-              width: `${Math.min(100, sprint.progressPercent)}%`,
-            }}
-          />
-        </div>
+        <Badge tone={statusTone}>{statusLabel}</Badge>
       </div>
+
+      <h2 style={{ fontSize: '1.35rem', fontWeight: 800, marginTop: '0.5rem' }}>{sprint.label}</h2>
+      <p className="muted" style={{ marginTop: '0.5rem' }}>
+        {sprint.days} jours · fin prévue le {endsAtLabel}
+      </p>
+
+      <ProgressBar
+        value={Math.min(100, sprint.progressPercent)}
+        tone={sprint.completed ? 'success' : 'accent'}
+        label={`${sprint.progressPercent}% complété`}
+        showValueLabel
+        style={{ marginTop: '1.1rem' }}
+      />
+      <p className="muted" style={{ fontSize: '0.85rem', marginTop: '0.35rem' }}>
+        {sprint.progress}/{sprint.target} modules validés
+      </p>
 
       <div
         style={{
@@ -292,23 +565,40 @@ function CurrentSprintCard({
         }}
       >
         <SprintMetric label="Restants" value={String(sprint.remainingModules)} />
+        <SprintMetric label="Jours restants" value={String(daysRemaining)} />
         <SprintMetric label="Parcours" value={formatTrack(sprint.track)} />
-        <SprintMetric label="Statut" value={sprint.completed ? 'Terminé' : sprint.expired ? 'Expiré' : 'Actif'} />
-        <SprintMetric label="Durée" value={`${sprint.days} j`} />
+        <SprintMetric label="Statut" value={statusLabel} />
       </div>
 
-      <Link href="/courses" style={{ display: 'inline-block', fontWeight: 700, marginTop: '1.25rem' }}>
-        Continuer les modules
-      </Link>
-    </aside>
+      <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', marginTop: '1.25rem' }}>
+        <Button href="/courses">Continuer modules</Button>
+        <Button href={trackMeta.courseHref} variant="secondary">
+          Voir parcours lié
+        </Button>
+      </div>
+    </Card>
   );
 }
 
 function SprintMetric({ label, value }: { label: string; value: string }) {
   return (
-    <div style={{ background: '#f5f5f7', borderRadius: 12, padding: '0.75rem' }}>
-      <p style={{ color: 'var(--muted)', fontSize: '0.8rem', fontWeight: 700 }}>{label}</p>
-      <strong style={{ display: 'block', marginTop: '0.2rem' }}>{value}</strong>
+    <div className="stat">
+      <p className="stat-label">{label}</p>
+      <p className="stat-value">{value}</p>
     </div>
   );
+}
+
+function formatSprintStatus(sprint: CertificationSprintSummary) {
+  if (sprint.completed) return 'Terminé';
+  if (sprint.expired) return 'Expiré';
+  return 'Actif';
+}
+
+function computeDaysRemaining(endsAt: string) {
+  const end = new Date(endsAt);
+  const now = new Date();
+  const diffMs = end.getTime() - now.getTime();
+  if (diffMs <= 0) return 0;
+  return Math.ceil(diffMs / (1000 * 60 * 60 * 24));
 }

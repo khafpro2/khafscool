@@ -1,10 +1,13 @@
 'use client';
 
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { createBillingCheckout, type CheckoutPlan } from '@/lib/api';
 import { getAccessToken } from '@/lib/auth';
+import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
+import { getTrackVisual } from '@/lib/design';
 
 type CheckoutStatus = {
   tone: 'info' | 'success' | 'warning' | 'error';
@@ -13,67 +16,88 @@ type CheckoutStatus = {
   checkoutUrl?: string;
 };
 
-const PLANS: {
+type PlanConfig = {
   name: string;
   price: string;
   period: string;
   description: string;
   cta: string;
-  checkoutPlan: CheckoutPlan;
   features: string[];
   highlight?: boolean;
-}[] = [
+  checkoutPlan?: CheckoutPlan;
+  free?: boolean;
+};
+
+const PLANS: PlanConfig[] = [
   {
-    name: 'Mensuel',
+    name: 'Gratuit',
+    price: '0 €',
+    period: '',
+    description: 'Découvre les parcours Apple, Jamf et Intune et valide tes premières unités.',
+    cta: 'Créer un compte gratuit',
+    free: true,
+    features: [
+      'Accès au catalogue de parcours en lecture',
+      'Premiers modules et quiz de découverte',
+      'Tableau de bord et classement en mode démo',
+      'Ressources officielles Apple, Jamf et Intune',
+    ],
+  },
+  {
+    name: 'Pro',
     price: '19 €',
     period: '/ mois',
     description: 'Pour préparer une certification et suivre une progression personnelle complète.',
-    cta: 'Démarrer le checkout mensuel',
+    cta: 'Passer au plan Pro',
     checkoutPlan: 'monthly',
-    features: [
-      'Tous les modules Apple, Jamf et Intune',
-      'Sprint Certification 7 ou 14 jours',
-      'Ressources officielles et liens de révision',
-      'Badges, progression et reprise sur dashboard/mobile',
-    ],
-  },
-  {
-    name: 'Annuel',
-    price: '190 €',
-    period: '/ an',
-    description: 'Pour s’engager sur une année complète de préparation et garder un rythme régulier.',
-    cta: 'Démarrer le checkout annuel',
-    checkoutPlan: 'yearly',
-    features: [
-      'Tous les modules Apple, Jamf et Intune',
-      'Sprint Certification 7 ou 14 jours',
-      'Ressources officielles et liens de révision',
-      'Deux mois offerts par rapport au mensuel',
-    ],
     highlight: true,
+    features: [
+      'Tous les modules Apple, Jamf et Intune',
+      'Sprint certification 7 ou 14 jours',
+      'Badges, points et quêtes hebdomadaires',
+      'Progression sauvegardée web et mobile',
+    ],
   },
   {
-    name: 'Entreprise',
+    name: 'Équipe',
     price: 'Sur devis',
     period: '',
-    description: 'Pour former une équipe support, standardiser les pratiques et piloter l’adoption.',
-    cta: 'Démarrer le checkout entreprise',
+    description: 'Pour former une équipe support et standardiser les pratiques MDM.',
+    cta: 'Demander un devis équipe',
     checkoutPlan: 'enterprise',
     features: [
       'Parcours alignés Apple, Jamf et Intune',
-      'Plan de sprint partagé pour cohortes support',
-      'Ressources officielles pour onboarding et montée en compétence',
-      'Suivi équipe à brancher sur le dashboard admin',
+      'Sprints partagés pour cohortes support',
+      'Ressources officielles pour onboarding',
+      'Suivi équipe (dashboard admin à venir)',
     ],
   },
 ];
 
-const MVP_FEATURES = [
-  'Parcours guidés Apple, Jamf et Intune',
-  'Sprint Certification pour transformer les modules en plan de révision',
-  'Ressources officielles centralisées pour préparer les examens',
-  'Dashboard responsive utilisable côté web et mobile',
+const FAQ_ITEMS = [
+  {
+    question: 'Le paiement Stripe est-il déjà actif ?',
+    answer:
+      'En mode MVP, le backend peut renvoyer une session de démonstration. Tu verras un message clair et un lien simulé tant que Stripe n’est pas branché en production.',
+  },
+  {
+    question: 'Puis-je annuler mon abonnement Pro ?',
+    answer:
+      'Oui. Une fois Stripe activé, tu pourras gérer ton abonnement depuis l’espace client. En attendant, contacte l’équipe pour toute question.',
+  },
+  {
+    question: 'Le plan Gratuit suffit-il pour préparer une certification ?',
+    answer:
+      'Le plan Gratuit permet d’explorer le catalogue et les ressources. Le plan Pro débloque tous les modules, les sprints guidés et la sauvegarde complète de ta progression.',
+  },
+  {
+    question: 'Quelle différence entre Pro et Équipe ?',
+    answer:
+      'Pro cible un apprenant individuel. Équipe s’adresse aux organisations qui veulent former plusieurs techniciens avec des parcours et sprints alignés.',
+  },
 ];
+
+const PRICING_GRADIENT = getTrackVisual('DEFAULT').gradient;
 
 export default function PricingPage() {
   const router = useRouter();
@@ -97,7 +121,7 @@ export default function PricingPage() {
     setStatus({
       tone: 'info',
       title: 'Préparation du checkout',
-      message: 'Création de la session de paiement en cours...',
+      message: 'Création de la session de paiement en cours…',
     });
 
     try {
@@ -107,7 +131,7 @@ export default function PricingPage() {
         setStatus({
           tone: 'success',
           title: 'Checkout prêt',
-          message: 'Redirection vers la page de paiement sécurisée...',
+          message: 'Redirection vers la page de paiement sécurisée…',
         });
         window.location.assign(checkout.checkoutUrl);
         return;
@@ -137,64 +161,27 @@ export default function PricingPage() {
       setStatus({
         tone: 'error',
         title: 'Checkout indisponible',
-        message: 'Impossible de créer la session de paiement. Reconnecte-toi puis réessaie.',
+        message:
+          'Impossible de créer la session de paiement pour le moment. Tu peux réessayer après connexion ou utiliser le plan Gratuit en attendant.',
       });
     } finally {
       setPendingPlan(null);
     }
   }
 
+  function handlePlanCta(plan: PlanConfig) {
+    if (plan.free) {
+      router.push('/auth');
+      return;
+    }
+    if (plan.checkoutPlan) {
+      void handleCheckout(plan.checkoutPlan);
+    }
+  }
+
   return (
-    <section style={{ padding: '2rem 0' }}>
-      <div
-        className="card"
-        style={{
-          background: 'linear-gradient(135deg, #ffffff 0%, #eef6ff 55%, #fff8e6 100%)',
-          display: 'grid',
-          gap: '1.5rem',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
-          padding: '1.75rem',
-        }}
-      >
-        <div>
-          <p style={{ color: 'var(--accent)', fontSize: '0.85rem', fontWeight: 800, textTransform: 'uppercase' }}>
-            Tarifs MVP
-          </p>
-          <h1 style={{ fontSize: '2.35rem', fontWeight: 800, lineHeight: 1.12, marginTop: '0.35rem' }}>
-            Choisis le bon niveau pour apprendre Apple MDM
-          </h1>
-          <p style={{ color: 'var(--muted)', fontSize: '1.05rem', marginTop: '0.75rem', maxWidth: 760 }}>
-            Apple MDM Academy combine parcours métier, sprint de certification et ressources officielles.
-            Les offres ci-dessous appellent maintenant le backend checkout; en mode MVP, Stripe renvoie
-            une réponse de démonstration claire.
-          </p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '1.25rem' }}>
-            <Link className="btn" href="/auth">
-              Essayer gratuitement
-            </Link>
-            <Link className="btn" href="/courses" style={{ background: '#1d1d1f' }}>
-              Explorer les cours
-            </Link>
-          </div>
-        </div>
-        <aside
-          style={{
-            background: 'rgba(255, 255, 255, 0.72)',
-            border: '1px solid var(--border)',
-            borderRadius: 14,
-            padding: '1rem',
-          }}
-        >
-          <strong>Inclus dans le MVP</strong>
-          <ul style={{ color: 'var(--muted)', marginTop: '0.75rem', paddingLeft: '1.25rem' }}>
-            {MVP_FEATURES.map((feature) => (
-              <li key={feature} style={{ marginBottom: '0.45rem' }}>
-                {feature}
-              </li>
-            ))}
-          </ul>
-        </aside>
-      </div>
+    <section style={{ padding: '1rem 0 2rem' }}>
+      <PricingHero />
 
       <div
         style={{
@@ -202,54 +189,23 @@ export default function PricingPage() {
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
           gap: '1rem',
+          alignItems: 'stretch',
         }}
       >
         {PLANS.map((plan) => (
-          <article
+          <PricingPlanCard
             key={plan.name}
-            className="card"
-            style={{
-              borderColor: plan.highlight ? 'var(--accent)' : 'var(--border)',
-              borderWidth: plan.highlight ? 2 : 1,
-              display: 'flex',
-              flexDirection: 'column',
-            }}
-          >
-            {plan.highlight && (
-              <p style={{ color: 'var(--accent)', fontSize: '0.8rem', fontWeight: 800, textTransform: 'uppercase' }}>
-                Recommandé
-              </p>
-            )}
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>{plan.name}</h2>
-            <p style={{ marginTop: '0.75rem' }}>
-              <span style={{ fontSize: '2rem', fontWeight: 800 }}>{plan.price}</span>
-              <span style={{ color: 'var(--muted)' }}> {plan.period}</span>
-            </p>
-            <p style={{ color: 'var(--muted)', marginTop: '0.75rem' }}>{plan.description}</p>
-            <ul style={{ marginTop: '1rem', paddingLeft: '1.25rem', color: 'var(--muted)' }}>
-              {plan.features.map((f) => (
-                <li key={f} style={{ marginBottom: '0.35rem' }}>
-                  {f}
-                </li>
-              ))}
-            </ul>
-            <button
-              className="btn"
-              type="button"
-              disabled={pendingPlan !== null}
-              onClick={() => handleCheckout(plan.checkoutPlan)}
-              style={{ marginTop: 'auto', textAlign: 'center', width: '100%' }}
-            >
-              {pendingPlan === plan.checkoutPlan ? 'Préparation...' : plan.cta}
-            </button>
-          </article>
+            plan={plan}
+            pending={plan.checkoutPlan ? pendingPlan === plan.checkoutPlan : false}
+            disabled={pendingPlan !== null}
+            onSelect={() => handlePlanCta(plan)}
+          />
         ))}
       </div>
 
       {status && (
-        <section
+        <Card
           aria-live="polite"
-          className="card"
           style={{
             background: statusBackground(status.tone),
             borderColor: statusBorder(status.tone),
@@ -257,30 +213,118 @@ export default function PricingPage() {
           }}
         >
           <strong>{status.title}</strong>
-          <p style={{ color: 'var(--muted)', marginTop: '0.35rem' }}>{status.message}</p>
+          <p className="muted" style={{ marginTop: '0.35rem' }}>
+            {status.message}
+          </p>
           {status.checkoutUrl && (
-            <a
-              className="btn"
-              href={status.checkoutUrl}
-              rel="noreferrer"
-              target="_blank"
-              style={{ display: 'inline-block', marginTop: '1rem' }}
-            >
+            <a className="btn" href={status.checkoutUrl} rel="noreferrer" target="_blank" style={{ display: 'inline-block', marginTop: '1rem' }}>
               Ouvrir le lien de checkout
             </a>
           )}
-        </section>
+        </Card>
       )}
 
-      <section className="card" style={{ background: '#eef6ff', borderColor: '#85bfff', marginTop: '1.5rem' }}>
-        <strong>Checkout MVP</strong>
-        <p style={{ color: 'var(--muted)', marginTop: '0.35rem' }}>
-          Les boutons appellent `POST /billing/checkout` avec le token local `ama_access` quand il existe. Sans
-          session, la page te renvoie vers l’inscription; avec le backend de démonstration, elle affiche le lien Stripe
-          simulé sans quitter la page.
-        </p>
+      <section className="section">
+        <h2 className="section-title">Questions fréquentes</h2>
+        <div style={{ display: 'grid', gap: '0.75rem', marginTop: '1rem' }}>
+          {FAQ_ITEMS.map((item) => (
+            <Card key={item.question} variant="soft">
+              <h3 style={{ fontSize: '1.05rem', fontWeight: 800 }}>{item.question}</h3>
+              <p className="muted" style={{ marginTop: '0.45rem' }}>
+                {item.answer}
+              </p>
+            </Card>
+          ))}
+        </div>
       </section>
+
+      <Card variant="soft" style={{ marginTop: '1.5rem', borderColor: '#85bfff', background: '#eef6ff' }}>
+        <strong>Checkout MVP</strong>
+        <p className="muted" style={{ marginTop: '0.35rem' }}>
+          Les boutons Pro et Équipe appellent <code>POST /billing/checkout</code> avec le token local{' '}
+          <code>ama_access</code>. Sans session, tu es redirigé vers l’inscription ; en mode démo, un lien
+          Stripe simulé s’affiche sans quitter la page.
+        </p>
+      </Card>
     </section>
+  );
+}
+
+function PricingHero() {
+  return (
+    <div className="hero" style={{ background: PRICING_GRADIENT, marginTop: 0 }}>
+      <span className="hero-eyebrow">
+        <span aria-hidden>{'\u{1F4B3}'}</span> Tarifs MDM Academy
+      </span>
+      <h1>Choisis le bon niveau pour apprendre Apple MDM</h1>
+      <p style={{ marginTop: '0.85rem' }}>
+        Parcours métier, sprint de certification et ressources officielles — commence gratuitement ou passe au
+        plan Pro pour débloquer toute la progression.
+      </p>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '1.25rem' }}>
+        <Button href="/auth" variant="secondary" size="lg">
+          Essayer gratuitement
+        </Button>
+        <Button href="/courses" variant="ghost" size="lg" style={{ color: '#fff', borderColor: 'rgba(255,255,255,0.4)' }}>
+          Explorer les cours
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function PricingPlanCard({
+  plan,
+  pending,
+  disabled,
+  onSelect,
+}: {
+  plan: PlanConfig;
+  pending: boolean;
+  disabled: boolean;
+  onSelect: () => void;
+}) {
+  return (
+    <Card
+      variant={plan.highlight ? 'elevated' : 'default'}
+      style={{
+        borderColor: plan.highlight ? 'var(--accent)' : undefined,
+        borderWidth: plan.highlight ? 2 : undefined,
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
+      {plan.highlight && (
+        <Badge tone="accent" style={{ alignSelf: 'flex-start', marginBottom: '0.5rem' }}>
+          Populaire
+        </Badge>
+      )}
+      <h2 style={{ fontSize: '1.25rem', fontWeight: 800 }}>{plan.name}</h2>
+      <p style={{ marginTop: '0.75rem' }}>
+        <span style={{ fontSize: '2rem', fontWeight: 800 }}>{plan.price}</span>
+        {plan.period && <span className="muted"> {plan.period}</span>}
+      </p>
+      <p className="muted" style={{ marginTop: '0.75rem' }}>
+        {plan.description}
+      </p>
+      <ul style={{ marginTop: '1rem', paddingLeft: '1.25rem', color: 'var(--muted)', flex: 1 }}>
+        {plan.features.map((feature) => (
+          <li key={feature} style={{ marginBottom: '0.35rem' }}>
+            {feature}
+          </li>
+        ))}
+      </ul>
+      <Button
+        type="button"
+        variant={plan.highlight ? 'primary' : plan.free ? 'secondary' : 'dark'}
+        fullWidth
+        disabled={disabled}
+        onClick={onSelect}
+        style={{ marginTop: '1.25rem' }}
+      >
+        {pending ? 'Préparation…' : plan.cta}
+      </Button>
+    </Card>
   );
 }
 
