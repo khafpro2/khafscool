@@ -9,7 +9,7 @@ const POPULAR_TRAILS = [
     title: 'Parcours Apple Device Support',
     description: 'Diagnostic, sécurité et préparation aux fondamentaux Apple Device Support.',
     track: 'APPLE',
-    totalModules: 6,
+    totalModules: 3,
   },
   {
     href: '/courses/jamf-pro-foundations',
@@ -19,11 +19,11 @@ const POPULAR_TRAILS = [
     totalModules: 3,
   },
   {
-    href: '/courses',
+    href: '/courses/intune-ios-enrollment',
     title: 'Microsoft Intune pour Apple',
     description: 'Enrôlement iOS, profils de configuration et conformité hybride Apple x Microsoft.',
     track: 'INTUNE',
-    totalModules: 4,
+    totalModules: 3,
   },
 ];
 

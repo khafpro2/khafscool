@@ -66,9 +66,9 @@ async function findOrCreateOAuthUser(provider: OAuthProviderName, profile: { sub
     await prisma.userQuest.create({
       data: {
         userId: user.id,
-        questKey: 'weekly-apple-3',
-        label: 'Termine 3 modules Apple cette semaine',
-        target: 3,
+        questKey: 'weekly-apple-2',
+        label: 'Valide 2 modules Apple',
+        target: 2,
         weekStart,
       },
     });

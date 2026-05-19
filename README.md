@@ -56,11 +56,11 @@ Le seed crée les parcours MVP, modules, quiz, mini-jeux et données de progress
 
 Parcours seedés :
 
-| Slug | Piste | Titre |
-| ---- | ----- | ----- |
-| `apple-cert-prep` | APPLE | Parcours Apple — Device Support & MDM |
-| `jamf-pro-foundations` | JAMF | Fondamentaux Jamf Pro |
-| `intune-ios-enrollment` | INTUNE | Microsoft Intune — Enrôlement iOS/iPadOS |
+| Slug | Piste | Titre | Modules |
+| ---- | ----- | ----- | ------- |
+| `apple-cert-prep` | APPLE | Parcours Apple — Device Support & MDM | 3 |
+| `jamf-pro-foundations` | JAMF | Fondamentaux Jamf Pro | 3 |
+| `intune-ios-enrollment` | INTUNE | Microsoft Intune — Enrôlement iOS/iPadOS | 3 |
 
 ## URLs
 

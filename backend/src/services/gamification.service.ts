@@ -22,13 +22,18 @@ const TRACK_BADGES: Partial<Record<CourseTrack, string>> = {
 
 const WEEKLY_QUESTS = [
   {
-    questKey: 'weekly-apple-3',
-    label: 'Termine 3 modules Apple cette semaine',
-    target: 3,
+    questKey: 'weekly-apple-2',
+    label: 'Valide 2 modules Apple',
+    target: 2,
   },
   {
     questKey: 'weekly-jamf-2',
     label: 'Valide 2 modules Jamf Pro',
+    target: 2,
+  },
+  {
+    questKey: 'weekly-intune-2',
+    label: 'Termine 2 modules Intune',
     target: 2,
   },
   {
@@ -209,10 +214,13 @@ export async function completeModule(
   });
 
   if (module.course.track === 'APPLE') {
-    await incrementWeeklyQuest(userId, 'weekly-apple-3');
+    await incrementWeeklyQuest(userId, 'weekly-apple-2');
   }
   if (module.course.track === 'JAMF') {
     await incrementWeeklyQuest(userId, 'weekly-jamf-2');
+  }
+  if (module.course.track === 'INTUNE') {
+    await incrementWeeklyQuest(userId, 'weekly-intune-2');
   }
   await incrementWeeklyQuest(userId, 'weekly-mdm-4');
   await refreshCertificationSprintProgress(userId, module.course.track);
