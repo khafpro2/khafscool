@@ -6,7 +6,7 @@ import './globals.css';
 export const metadata: Metadata = {
   title: 'MDM Academy — Formation Apple, Jamf et Intune',
   description:
-    'Plateforme gamifiée pour techniciens Apple et administrateurs MDM : parcours, modules, badges et préparation aux certifications.',
+    'Plateforme gamifiée pour techniciens Apple et administrateurs MDM : parcours, unités, badges et préparation aux certifications.',
 };
 
 const NAV_ITEMS = [

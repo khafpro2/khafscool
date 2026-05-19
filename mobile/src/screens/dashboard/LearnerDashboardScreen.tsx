@@ -10,6 +10,7 @@ import {
   View,
 } from 'react-native';
 import { WEB_URL } from '../../config';
+import { BrandIcon } from '../../components/BrandIcon';
 import { formatLevel, formatTrack, getBadgeVisual, getRankInfo } from '../../lib/design';
 import { clearTokens } from '../../services/auth';
 import {
@@ -152,7 +153,7 @@ export function LearnerDashboardScreen({ onSignOut }: LearnerDashboardScreenProp
             {data.learningStreak.currentDays} jour{data.learningStreak.currentDays > 1 ? 's' : ''} consécutif{data.learningStreak.currentDays > 1 ? 's' : ''}
           </Text>
           <Text style={styles.streakMeta}>
-            Record {data.learningStreak.longestDays} jour{data.learningStreak.longestDays > 1 ? 's' : ''}
+            Meilleure série : {data.learningStreak.longestDays} jour{data.learningStreak.longestDays > 1 ? 's' : ''}
           </Text>
         </View>
       ) : null}
@@ -172,7 +173,7 @@ export function LearnerDashboardScreen({ onSignOut }: LearnerDashboardScreenProp
             : 'Rang maximal atteint — bravo Champion·ne !'}
         </Text>
         <Text style={styles.progressMeta}>
-          {data.progress.completedModules}/{data.progress.totalModules} modules · score moyen{' '}
+          {data.progress.completedModules}/{data.progress.totalModules} unités · score moyen{' '}
           {data.progress.averageScore} %
         </Text>
       </View>
@@ -195,7 +196,7 @@ export function LearnerDashboardScreen({ onSignOut }: LearnerDashboardScreenProp
 
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>Parcours en cours</Text>
-        <Text style={styles.sectionHint}>Continue là où tu t’es arrêté</Text>
+        <Text style={styles.sectionHint}>Reprends là où tu t’es arrêté</Text>
       </View>
       {activeCourses.length > 0 ? (
         activeCourses.map((course) => (
@@ -240,7 +241,7 @@ export function LearnerDashboardScreen({ onSignOut }: LearnerDashboardScreenProp
         })
       ) : (
         <Text style={styles.emptyText}>
-          Aucune quête active. Termine un module ou démarre un sprint pour garder le rythme.
+          Aucune quête active. Termine une unité ou démarre un sprint pour garder le rythme.
         </Text>
       )}
       <Pressable style={styles.linkButton} onPress={() => openWebPath('/quests')}>
@@ -256,19 +257,23 @@ export function LearnerDashboardScreen({ onSignOut }: LearnerDashboardScreenProp
             const visual = getBadgeVisual(badge);
             return (
               <View key={badge} style={[styles.badge, { backgroundColor: visual.bg }]}>
-                <Text style={styles.badgeIcon}>{visual.icon}</Text>
+                {visual.brand ? (
+                  <BrandIcon brand={visual.brand} size="sm" />
+                ) : (
+                  <Text style={styles.badgeIcon}>{visual.icon}</Text>
+                )}
                 <Text style={[styles.badgeText, { color: visual.color }]}>{visual.label}</Text>
               </View>
             );
           })
         ) : (
-          <Text style={styles.emptyText}>Terminez un premier module pour débloquer un badge.</Text>
+          <Text style={styles.emptyText}>Terminez une première unité pour débloquer un badge.</Text>
         )}
       </View>
 
       <View style={styles.ctaCard}>
         <Text style={styles.cardLabel}>Prochaine étape</Text>
-        <Text style={styles.ctaTitle}>{nextCourse?.nextModule?.title ?? 'Découvrir le prochain module'}</Text>
+        <Text style={styles.ctaTitle}>{nextCourse?.nextModule?.title ?? 'Découvrir la prochaine unité'}</Text>
         <Text style={styles.ctaText}>
           Continuez votre parcours pour progresser vers la prochaine certification.
         </Text>
@@ -336,7 +341,7 @@ function SprintCard({
           </View>
           <ProgressBar progress={sprint.progressPercent} />
           <Text style={styles.sprintMeta}>
-            {formatTrack(sprint.track)} · {sprint.progress}/{sprint.target} modules ·{' '}
+            {formatTrack(sprint.track)} · {sprint.progress}/{sprint.target} unités ·{' '}
             {sprint.progressPercent} % complété
           </Text>
           <View style={styles.sprintMetrics}>
@@ -418,7 +423,7 @@ function CourseProgressCard({ course, onPress }: { course: CourseSummary; onPres
           <Text style={styles.courseTrack}>{formatTrack(course.track)}</Text>
           <Text style={styles.courseTitle}>{course.title}</Text>
           <Text style={styles.courseMeta}>
-            {course.completedModules ?? 0}/{course.totalModules ?? 0} modules · {progress} %
+            {course.completedModules ?? 0}/{course.totalModules ?? 0} unités · {progress} %
           </Text>
         </View>
         <Text style={styles.courseChevron}>›</Text>

@@ -14,6 +14,7 @@ import { formatTrack } from '@/lib/tracks';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { BrandIcon } from '@/components/ui/BrandIcon';
 import { TrackIcon } from '@/components/ui/TrackIcon';
 import {
   estimatePoints,
@@ -210,7 +211,11 @@ export function CourseCompleteClient({
                   fontSize: '1.55rem',
                 }}
               >
-                {badgeVisual.icon}
+                {badgeVisual.brand ? (
+                  <BrandIcon brand={badgeVisual.brand} size="lg" />
+                ) : (
+                  badgeVisual.icon
+                )}
               </div>
               <div>
                 <strong style={{ fontSize: '1.05rem' }}>{badgeVisual.label}</strong>

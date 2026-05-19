@@ -259,7 +259,7 @@ export default function ProfilePage() {
                 return (
                   <Badge
                     key={slug}
-                    icon={visual.icon}
+                    brand={visual.brand}
                     style={{ background: visual.bg, color: visual.color, border: `1px solid ${visual.color}22` }}
                     tone="accent"
                   >
@@ -270,7 +270,7 @@ export default function ProfilePage() {
             </div>
           ) : (
             <p className="muted" style={{ marginTop: '0.75rem' }}>
-              Aucun badge débloqué. Termine un module pour afficher tes premières récompenses.
+              Aucun badge débloqué. Termine une unité pour afficher tes premières récompenses.
             </p>
           )}
         </Card>

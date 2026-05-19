@@ -279,7 +279,7 @@ function EmptyState() {
     <Card style={{ marginTop: '1.5rem', textAlign: 'center' }}>
       <h2 style={{ fontSize: '1.2rem', fontWeight: 800 }}>Aucune quête active</h2>
       <p className="muted" style={{ marginTop: '0.5rem' }}>
-        Aucune quête n’a encore été générée pour cette semaine. Termine un module pour amorcer le compteur.
+        Aucune quête n’a encore été générée pour cette semaine. Termine une unité pour amorcer le compteur.
       </p>
       <div style={{ display: 'flex', justifyContent: 'center', gap: '0.6rem', flexWrap: 'wrap', marginTop: '1rem' }}>
         <Button href="/courses">Lancer un parcours</Button>

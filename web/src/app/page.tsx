@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { TrackIcon } from '@/components/ui/TrackIcon';
 import { TrailCard } from '@/components/ui/TrailCard';
 
 const POPULAR_TRAILS = [
@@ -54,7 +55,7 @@ const ROLE_TRAILS = [
 const FEATURES = [
   {
     icon: '\u{1F3AE}',
-    title: 'Modules courts et ludiques',
+    title: 'Unités courtes et ludiques',
     description: 'Quiz, mini-jeux, scénarios : 10 à 15 minutes pour valider une unité et gagner des points.',
   },
   {
@@ -87,7 +88,7 @@ export default function HomePage() {
           courts, ponctués de badges, de quêtes hebdo et de sprints certification.
         </p>
         <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginTop: '1.75rem' }}>
-          <Button href="/courses" size="lg" variant="secondary" icon="\u{1F680}">
+          <Button href="/courses" size="lg" variant="secondary">
             Commencer un parcours
           </Button>
           <Button href="/demo" size="lg" variant="ghost" style={{ color: '#fff', borderColor: 'rgba(255,255,255,0.4)' }}>
@@ -144,9 +145,7 @@ export default function HomePage() {
                 className="trail-card-banner"
                 style={{ background: gradientForRole(role.track), minHeight: 96 }}
               >
-                <span className="trail-card-icon" aria-hidden>
-                  {role.icon}
-                </span>
+                <TrackIcon track={role.track} size="md" className="trail-card-icon" ariaHidden />
                 <span className="trail-card-track">{trackLabelForRole(role.track)}</span>
               </div>
               <div className="trail-card-body">
@@ -154,7 +153,6 @@ export default function HomePage() {
                 <p className="trail-card-desc">{role.description}</p>
                 <div className="trail-card-footer">
                   <span className="trail-card-reward">
-                    <span aria-hidden>{'\u{1F9ED}'}</span>
                     <strong>Parcours guidé</strong>
                   </span>
                   <span style={{ color: 'var(--accent)', fontWeight: 700, fontSize: '0.9rem' }}>
@@ -264,7 +262,7 @@ function gradientForRole(track: string) {
 function trackLabelForRole(track: string) {
   if (track === 'APPLE') return 'Support · Apple';
   if (track === 'JAMF') return 'Admin · Jamf';
-  if (track === 'INTUNE') return 'Admin · Intune';
+  if (track === 'INTUNE') return 'Admin · Microsoft Intune';
   if (track === 'SPRINT') return 'Sprint · Certification';
   return 'Parcours';
 }

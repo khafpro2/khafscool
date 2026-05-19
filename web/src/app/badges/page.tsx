@@ -16,6 +16,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { ProgressBar } from '@/components/ui/ProgressBar';
+import { BrandIcon } from '@/components/ui/BrandIcon';
 import { TrackIcon } from '@/components/ui/TrackIcon';
 
 type Status = 'loading' | 'ready' | 'error';
@@ -144,7 +145,7 @@ export default function BadgesPage() {
           </div>
         ) : (
           <p className="muted" style={{ marginTop: '0.75rem' }}>
-            Aucun badge gagné pour le moment. Termine un module complet pour afficher ta première récompense.
+            Aucun badge gagné pour le moment. Termine une unité complète pour afficher ta première récompense.
           </p>
         )}
       </BadgeSection>
@@ -166,7 +167,7 @@ export default function BadgesPage() {
       <Card style={{ marginTop: '2rem' }}>
         <span className="section-eyebrow">Continuer la progression</span>
         <h2 style={{ fontSize: '1.2rem', fontWeight: 800, marginTop: '0.35rem' }}>
-          Chaque module te rapproche d’un nouveau badge
+          Chaque unité te rapproche d’un nouveau badge
         </h2>
         <p className="muted" style={{ marginTop: '0.35rem' }}>
           Reprends un parcours, lance un sprint ou consulte ton tableau de bord pour suivre ta progression.
@@ -240,7 +241,7 @@ function EarnedBadgeCard({ slug, badge }: { slug: string; badge?: UserBadge }) {
             border: `2px solid ${visual.color}44`,
           }}
         >
-          {visual.icon}
+          {visual.brand ? <BrandIcon brand={visual.brand} size="lg" /> : visual.icon}
         </div>
         <div style={{ minWidth: 0 }}>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', alignItems: 'center' }}>
@@ -249,7 +250,7 @@ function EarnedBadgeCard({ slug, badge }: { slug: string; badge?: UserBadge }) {
             </Badge>
             <Badge
               tone="accent"
-              icon={trackVisual.icon}
+              brand={trackVisual.brand}
               style={{ background: `${trackVisual.color}12`, color: trackVisual.color }}
             >
               {formatTrack(track)}
@@ -302,14 +303,14 @@ function LockedBadgeCard({ slug }: { slug: string }) {
             filter: 'grayscale(0.85)',
           }}
         >
-          {visual.icon}
+          {visual.brand ? <BrandIcon brand={visual.brand} size="lg" /> : visual.icon}
         </div>
         <div style={{ minWidth: 0 }}>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', alignItems: 'center' }}>
             <Badge tone="neutral" icon="\u{1F512}">
               Verrouillé
             </Badge>
-            <Badge tone="outline" icon={getTrackVisual(track).icon}>
+            <Badge tone="outline" brand={getTrackVisual(track).brand}>
               {formatTrack(track)}
             </Badge>
           </div>

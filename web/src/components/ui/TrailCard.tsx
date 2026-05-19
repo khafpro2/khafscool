@@ -3,6 +3,8 @@ import * as React from 'react';
 import { Badge } from './Badge';
 import { LevelPill } from './LevelPill';
 import { ProgressBar } from './ProgressBar';
+import { TrackIcon } from '@/components/ui/TrackIcon';
+import { BrandIcon } from '@/components/ui/BrandIcon';
 import {
   estimateDurationMinutes,
   estimatePoints,
@@ -25,7 +27,7 @@ export interface TrailCardProps {
   level?: TrailLevel;
   durationMinutes?: number;
   points?: number;
-  rewardBadge?: { label: string; icon?: string } | null;
+  rewardBadge?: { label: string; brand?: import('@/lib/brands').BrandId; icon?: string } | null;
   cta?: string;
   ctaSuffix?: React.ReactNode;
   status?: 'available' | 'in-progress' | 'completed';
@@ -62,9 +64,13 @@ export function TrailCard({
     <Link href={href} className="trail-card" aria-label={`${title} — ouvrir le parcours`}>
       <div className="trail-card-banner" style={{ background: visual.gradient }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
-          <span className="trail-card-icon" aria-hidden>
-            {visual.icon}
-          </span>
+          <TrackIcon
+            track={track}
+            size="md"
+            className="trail-card-icon"
+            style={{ background: 'rgba(255,255,255,0.18)', border: '1px solid rgba(255,255,255,0.28)' }}
+            ariaHidden
+          />
           {isCompleted && (
             <span
               style={{
@@ -90,15 +96,15 @@ export function TrailCard({
 
         <div className="trail-card-meta">
           <LevelPill level={effectiveLevel} />
-          <Badge tone="neutral" icon="\u{23F1}\uFE0F">
+          <Badge tone="neutral">
             {formatDurationLabel(effectiveDuration)}
           </Badge>
           {totalModules ? (
-            <Badge tone="neutral" icon="\u{1F4DA}">
+            <Badge tone="neutral">
               {totalModules} unité{totalModules > 1 ? 's' : ''}
             </Badge>
           ) : null}
-          <Badge tone="warning" icon="\u2B50">
+          <Badge tone="warning">
             {effectivePoints} pts
           </Badge>
         </div>
@@ -122,7 +128,11 @@ export function TrailCard({
           <span className="trail-card-reward">
             {effectiveReward ? (
               <>
-                <span aria-hidden>{effectiveReward.icon ?? '\u{1F3C5}'}</span>
+                {effectiveReward.brand ? (
+                  <BrandIcon brand={effectiveReward.brand} size="sm" />
+                ) : (
+                  <span aria-hidden>{effectiveReward.icon ?? '\u{1F3C5}'}</span>
+                )}
                 <strong>Badge {effectiveReward.label}</strong>
               </>
             ) : (
@@ -156,5 +166,5 @@ function deriveProgressPercent(completed?: number, total?: number) {
 function mapTrackReward(track?: string | null) {
   const reward = getRewardBadgeForTrack(track);
   if (!reward) return null;
-  return { label: reward.label, icon: reward.icon };
+  return { label: reward.label, brand: reward.brand };
 }

@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { LevelPill } from '@/components/ui/LevelPill';
 import { ProgressBar } from '@/components/ui/ProgressBar';
+import { BrandIcon } from '@/components/ui/BrandIcon';
 import { TrackIcon } from '@/components/ui/TrackIcon';
 import {
   estimateDurationMinutes,
@@ -59,13 +60,13 @@ const SPRINT_PLAN_COPY: Record<
 > = {
   7: {
     title: 'Sprint intensif — 7 jours',
-    description: 'Rythme soutenu pour réviser les modules clés avant une certification proche.',
-    modulesHint: '4 modules ciblés',
+    description: 'Rythme soutenu pour réviser les unités clés avant une certification proche.',
+    modulesHint: '4 unités ciblées',
   },
   14: {
     title: 'Sprint étendu — 14 jours',
     description: 'Progression plus souple avec marge pour consolider chaque piste Apple, Jamf ou Intune.',
-    modulesHint: '4 modules + révisions',
+    modulesHint: '4 unités + révisions',
   },
 };
 
@@ -140,7 +141,7 @@ export default function SprintPage() {
         <h1>Accélère ta préparation certification</h1>
         <p style={{ marginTop: '0.85rem' }}>
           Choisis un objectif Apple, Jamf ou Intune, puis lance un sprint de 7 ou 14 jours pour transformer
-          tes modules en plan de révision mesurable.
+          tes unités en plan de révision mesurable.
         </p>
         <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', marginTop: '1.5rem' }}>
           <Button href="/dashboard" variant="secondary" size="lg">
@@ -412,9 +413,7 @@ function SprintPlanCard({
     >
       <div className="trail-card-banner" style={{ background: sprintVisual.gradient }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
-          <span className="trail-card-icon" aria-hidden>
-            {sprintVisual.icon}
-          </span>
+          <TrackIcon track="SPRINT" size="md" className="trail-card-icon" ariaHidden />
           {selected && (
             <span
               style={{
@@ -442,13 +441,13 @@ function SprintPlanCard({
 
         <div className="trail-card-meta">
           <LevelPill level="Avancé" />
-          <Badge tone="neutral" icon={'\u{23F1}\uFE0F'}>
+          <Badge tone="neutral">
             {formatDurationLabel(durationMinutes)}
           </Badge>
-          <Badge tone="neutral" icon={'\u{1F4DA}'}>
+          <Badge tone="neutral">
             {copy.modulesHint}
           </Badge>
-          <Badge tone="warning" icon={'\u2B50'}>
+          <Badge tone="warning">
             {points} pts
           </Badge>
         </div>
@@ -457,12 +456,16 @@ function SprintPlanCard({
           <span className="trail-card-reward">
             {reward ? (
               <>
-                <span aria-hidden>{reward.icon}</span>
+                {reward.brand ? <BrandIcon brand={reward.brand} size="sm" /> : null}
                 <strong>Badge {reward.label}</strong>
               </>
             ) : (
               <>
-                <span aria-hidden>{trackVisual.icon}</span>
+                {trackVisual.brand ? (
+                  <BrandIcon brand={trackVisual.brand} size="sm" />
+                ) : (
+                  <span aria-hidden>{trackVisual.icon}</span>
+                )}
                 <strong>Objectif {trackVisual.label}</strong>
               </>
             )}
@@ -555,7 +558,7 @@ function CurrentSprintCard({
         style={{ marginTop: '1.1rem' }}
       />
       <p className="muted" style={{ fontSize: '0.85rem', marginTop: '0.35rem' }}>
-        {sprint.progress}/{sprint.target} modules validés
+        {sprint.progress}/{sprint.target} unités validées
       </p>
 
       <div
@@ -573,7 +576,7 @@ function CurrentSprintCard({
       </div>
 
       <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', marginTop: '1.25rem' }}>
-        <Button href="/courses">Continuer modules</Button>
+        <Button href="/courses">Continuer les unités</Button>
         <Button href={trackMeta.courseHref} variant="secondary">
           Voir parcours lié
         </Button>

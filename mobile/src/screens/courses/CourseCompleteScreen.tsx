@@ -2,6 +2,8 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useMemo } from 'react';
 import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { WEB_URL } from '../../config';
+import { BrandIcon } from '../../components/BrandIcon';
+import { TrackIcon } from '../../components/TrackIcon';
 import { formatTrack, getBadgeVisual, getTrackVisual } from '../../lib/design';
 import { NEXT_COURSE_BY_SLUG } from '../../services/courses';
 
@@ -32,14 +34,15 @@ export function CourseCompleteScreen() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={[styles.hero, { backgroundColor: visual.gradient[0] }]}>
-        <Text style={styles.heroEyebrow}>🎉 Parcours terminé</Text>
+        <TrackIcon track={track} size="lg" style={{ marginBottom: 10 }} />
+        <Text style={styles.heroEyebrow}>Parcours terminé</Text>
         <Text style={styles.heroTitle}>Bravo ! Tu as complété « {title} »</Text>
         <Text style={styles.heroText}>
           Style Trailhead : toutes les unités du parcours {formatTrack(track)} sont validées.
         </Text>
         {usesDemo ? (
           <Text style={styles.demoHint}>
-            Mode démo — connecte-toi sur le web pour enregistrer ta victoire.
+            Mode démo — connectez-vous sur le web pour enregistrer votre progression.
           </Text>
         ) : null}
       </View>
@@ -53,7 +56,11 @@ export function CourseCompleteScreen() {
           <Text style={styles.statLabel}>Super-badge</Text>
           {badgeVisual ? (
             <View style={styles.badgeRow}>
-              <Text style={styles.badgeIcon}>{badgeVisual.icon}</Text>
+              {badgeVisual.brand ? (
+                <BrandIcon brand={badgeVisual.brand} size="md" />
+              ) : (
+                <Text style={styles.badgeIcon}>{badgeVisual.icon}</Text>
+              )}
               <Text style={[styles.badgeLabel, { color: badgeVisual.color }]}>{badgeVisual.label}</Text>
             </View>
           ) : (

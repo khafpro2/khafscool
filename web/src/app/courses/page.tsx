@@ -156,7 +156,7 @@ export default function CoursesPage() {
             <div>
               <strong>Mode public</strong>
               <p className="muted" style={{ marginTop: '0.35rem' }}>
-                Tu peux explorer le catalogue sans compte. Connecte-toi pour reprendre un module, sauvegarder
+                Tu peux explorer le catalogue sans compte. Connecte-toi pour reprendre une unité, sauvegarder
                 tes scores et alimenter ton sprint de certification.
               </p>
             </div>

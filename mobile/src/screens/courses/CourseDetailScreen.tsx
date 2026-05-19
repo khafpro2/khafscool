@@ -10,6 +10,8 @@ import {
   View,
 } from 'react-native';
 import { WEB_URL } from '../../config';
+import { BrandIcon } from '../../components/BrandIcon';
+import { TrackIcon } from '../../components/TrackIcon';
 import { formatTrack, getBadgeVisual, getTrackVisual } from '../../lib/design';
 import {
   CourseDetail,
@@ -197,13 +199,13 @@ export function CourseDetailScreen() {
       </Pressable>
 
       <View style={[styles.heroCard, { backgroundColor: visual.gradient[0] }]}>
-        <Text style={styles.heroIcon}>{visual.icon}</Text>
+        <TrackIcon track={course.track} size="lg" style={{ marginBottom: 8 }} />
         <Text style={styles.heroTrack}>{formatTrack(course.track)}</Text>
         <Text style={styles.heroTitle}>{course.title}</Text>
         {course.description ? <Text style={styles.heroDescription}>{course.description}</Text> : null}
         <View style={styles.heroMeta}>
           <Text style={styles.heroMetaText}>
-            {progress.progress.completedModules}/{progress.progress.totalModules} modules · {percent} %
+            {progress.progress.completedModules}/{progress.progress.totalModules} unités · {percent} %
           </Text>
         </View>
         <ProgressBar progress={percent} fillColor="#FFCE5B" trackColor="rgba(255,255,255,0.22)" />
@@ -212,13 +214,13 @@ export function CourseDetailScreen() {
       {source === 'demo' ? (
         <View style={styles.demoBanner}>
           <Text style={styles.demoText}>
-            Mode démo : connecte-toi pour synchroniser la progression avec l’API.
+            Mode démo : connectez-vous pour synchroniser la progression avec l’API.
           </Text>
         </View>
       ) : null}
 
       <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Modules du parcours</Text>
+        <Text style={styles.sectionTitle}>Unités du parcours</Text>
         <Text style={styles.sectionHint}>3 unités · statut en temps réel</Text>
       </View>
 
@@ -238,7 +240,7 @@ export function CourseDetailScreen() {
                     : styles.stripTodo,
               ]}
             >
-              <Text style={styles.stripIndex}>Module {index + 1}</Text>
+              <Text style={styles.stripIndex}>Unité {index + 1}</Text>
               <Text style={styles.stripTitle} numberOfLines={2}>
                 {module.title}
               </Text>
@@ -264,7 +266,11 @@ export function CourseDetailScreen() {
                 const badge = getBadgeVisual(badgeSlug);
                 return (
                   <View key={badgeSlug} style={[styles.badge, { backgroundColor: badge.bg }]}>
-                    <Text style={styles.badgeIcon}>{badge.icon}</Text>
+                    {badge.brand ? (
+                      <BrandIcon brand={badge.brand} size="sm" />
+                    ) : (
+                      <Text style={styles.badgeIcon}>{badge.icon}</Text>
+                    )}
                     <Text style={[styles.badgeText, { color: badge.color }]}>{badge.label}</Text>
                   </View>
                 );
@@ -294,7 +300,7 @@ export function CourseDetailScreen() {
               style={styles.moduleHeader}
             >
               <View style={styles.moduleHeaderText}>
-                <Text style={styles.moduleIndex}>Module {index + 1}</Text>
+                <Text style={styles.moduleIndex}>Unité {index + 1}</Text>
                 <Text style={styles.moduleTitle}>{module.title}</Text>
                 <Text style={styles.moduleSummary}>{module.summary}</Text>
               </View>
@@ -348,7 +354,7 @@ export function CourseDetailScreen() {
                       {submitting ? (
                         <ActivityIndicator color="#FFFFFF" size="small" />
                       ) : (
-                        <Text style={styles.primaryButtonText}>Valider le module</Text>
+                        <Text style={styles.primaryButtonText}>Valider l’unité</Text>
                       )}
                     </Pressable>
                   </>
@@ -356,8 +362,8 @@ export function CourseDetailScreen() {
                   <View style={styles.webFallback}>
                     <Text style={styles.webFallbackText}>
                       {hasQuestions
-                        ? 'Ce module est verrouillé ou nécessite le web pour le mini-scénario complet.'
-                        : 'Les questions de ce module ne sont pas disponibles hors ligne.'}
+                        ? 'Cette unité est verrouillée ou nécessite le web pour le mini-scénario complet.'
+                        : 'Les questions de cette unité ne sont pas disponibles hors ligne.'}
                     </Text>
                     <Pressable style={styles.secondaryButton} onPress={openWebCourse}>
                       <Text style={styles.secondaryButtonText}>Continuer sur le web →</Text>

@@ -240,7 +240,7 @@ async function apiRequest<T>(path: string, init: RequestInit = {}) {
     }
   }
 
-  if (!res.ok) throw new Error(`API error ${res.status}`);
+  if (!res.ok) throw new Error(`Erreur API ${res.status}`);
   return res.json() as Promise<T>;
 }
 
@@ -435,7 +435,7 @@ export async function fetchCourse(slug: string, token?: string): Promise<CourseD
     return normalizeCourse(data.course);
   } catch {
     const fallback = DEMO_COURSES.find((course) => course.slug === slug);
-    if (!fallback) throw new Error('Course not found');
+    if (!fallback) throw new Error('Parcours introuvable');
     return fallback;
   }
 }
@@ -443,7 +443,7 @@ export async function fetchCourse(slug: string, token?: string): Promise<CourseD
 export async function fetchCourseProgress(slug: string, token?: string): Promise<CourseProgressData> {
   if (!token) {
     const fallback = DEMO_COURSES.find((course) => course.slug === slug);
-    if (!fallback) throw new Error('Course not found');
+    if (!fallback) throw new Error('Parcours introuvable');
     return courseToProgress(fallback);
   }
 
@@ -451,7 +451,7 @@ export async function fetchCourseProgress(slug: string, token?: string): Promise
     return apiRequest<CourseProgressData>(`/courses/${slug}/progress`, { headers: authHeader(token) });
   } catch {
     const fallback = DEMO_COURSES.find((course) => course.slug === slug);
-    if (!fallback) throw new Error('Course progress not found');
+    if (!fallback) throw new Error('Progression du parcours introuvable');
     return courseToProgress(fallback);
   }
 }
@@ -595,8 +595,8 @@ function mockWeeklyQuests(): WeeklyQuestsResponse {
       {
         id: 'demo-weekly-apple-2',
         questKey: 'weekly-apple-2',
-        label: 'Valide 2 modules Apple',
-        description: 'Renforce ton socle Device Support et MDM Apple en validant 2 modules complets.',
+        label: 'Valide 2 unités Apple',
+        description: 'Renforce ton socle Device Support et MDM Apple en validant 2 unités complètes.',
         target: 2,
         progress: 1,
         completed: false,
@@ -607,7 +607,7 @@ function mockWeeklyQuests(): WeeklyQuestsResponse {
       {
         id: 'demo-weekly-jamf-2',
         questKey: 'weekly-jamf-2',
-        label: 'Valide 2 modules Jamf Pro',
+        label: 'Valide 2 unités Jamf Pro',
         description: 'Smart groups, politiques et inventaire : confirme tes acquis Jamf.',
         target: 2,
         progress: 2,
@@ -619,7 +619,7 @@ function mockWeeklyQuests(): WeeklyQuestsResponse {
       {
         id: 'demo-weekly-intune-2',
         questKey: 'weekly-intune-2',
-        label: 'Termine 2 modules Intune',
+        label: 'Termine 2 unités Microsoft Intune',
         description: 'Enrôlement iOS, profils de configuration et conformité côté Microsoft.',
         target: 2,
         progress: 0,
@@ -631,7 +631,7 @@ function mockWeeklyQuests(): WeeklyQuestsResponse {
       {
         id: 'demo-weekly-mdm-4',
         questKey: 'weekly-mdm-4',
-        label: 'Termine 4 modules MDM (toutes pistes)',
+        label: 'Termine 4 unités MDM (toutes pistes)',
         description: 'Avance sur Apple, Jamf ou Intune pour décrocher le bonus hebdo.',
         target: 4,
         progress: 2,
@@ -696,7 +696,7 @@ function mockDashboard(): DashboardData {
       preparationScore: 72,
     },
     badges: ['apple-mdm-foundation'],
-    quests: [{ id: '1', label: 'Termine 3 modules Apple cette semaine', progress: 1, target: 3 }],
+    quests: [{ id: '1', label: 'Termine 3 unités Apple cette semaine', progress: 1, target: 3 }],
     certificationSprint: mockCertificationSprint(),
     courses: [
       { id: '1', slug: 'apple-cert-prep', title: 'Parcours Apple', track: 'APPLE', progressPercent: 100 },
@@ -756,7 +756,7 @@ function mockCertificationSprint(
     id: `demo-sprint-${track.toLowerCase()}`,
     questKey: `demo:sprint:${track}:${days}`,
     track,
-    label: `Certification Sprint ${formatTrack(track)} - ${days} jours`,
+    label: `Sprint certification ${formatTrack(track)} — ${days} jours`,
     days,
     startedAt: startedAt.toISOString(),
     endsAt: endsAt.toISOString(),

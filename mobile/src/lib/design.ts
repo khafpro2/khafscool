@@ -1,6 +1,13 @@
+import type { BrandId } from './brands';
+import { getBadgeBrand, getTrackBrand } from './brands';
+
+export type { BrandId } from './brands';
+export { getBadgeBrand, getTrackBrand } from './brands';
+
 export interface BadgeVisual {
   label: string;
-  icon: string;
+  icon?: string;
+  brand?: BrandId;
   color: string;
   bg: string;
 }
@@ -8,19 +15,19 @@ export interface BadgeVisual {
 const BADGE_VISUALS: Record<string, BadgeVisual> = {
   'apple-mdm-foundation': {
     label: 'Fondamentaux Apple MDM',
-    icon: '\u{1F34F}',
+    brand: 'apple',
     color: '#1d1d1f',
     bg: '#f1f1f4',
   },
   'jamf-engineer': {
     label: 'Ingénieur Jamf',
-    icon: '\u{1F6E1}',
+    brand: 'jamf',
     color: '#a23d00',
     bg: '#fff1e4',
   },
   'intune-professional': {
     label: 'Professionnel Intune',
-    icon: '\u{1F4BC}',
+    brand: 'microsoft',
     color: '#0050a0',
     bg: '#e3f0ff',
   },
@@ -93,7 +100,8 @@ export function formatLevel(level: string) {
 
 export interface TrackVisual {
   label: string;
-  icon: string;
+  icon?: string;
+  brand?: BrandId;
   color: string;
   gradient: [string, string];
 }
@@ -101,19 +109,19 @@ export interface TrackVisual {
 const TRACK_VISUALS: Record<string, TrackVisual> = {
   APPLE: {
     label: 'Apple Device Support',
-    icon: '\u{1F34E}',
+    brand: 'apple',
     color: '#1d1d1f',
     gradient: ['#1d1d1f', '#7a7d8a'],
   },
   JAMF: {
     label: 'Jamf Pro',
-    icon: '\u{1F6E1}',
+    brand: 'jamf',
     color: '#ff5b00',
     gradient: ['#ff5b00', '#ff9e2c'],
   },
   INTUNE: {
     label: 'Microsoft Intune',
-    icon: '\u2601\uFE0F',
+    brand: 'microsoft',
     color: '#0070d2',
     gradient: ['#0070d2', '#16cdf1'],
   },

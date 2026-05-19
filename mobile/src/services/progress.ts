@@ -102,7 +102,7 @@ const demoProgress: LearnerProgress = {
   },
   badges: ['apple-mdm-foundation'],
   learningStreak: { currentDays: 2, longestDays: 4, lastActivityDate: '2026-05-18' },
-  quests: [{ id: 'weekly-apple-3', label: 'Termine 3 modules Apple cette semaine', progress: 1, target: 3 }],
+  quests: [{ id: 'weekly-apple-3', label: 'Termine 3 unités Apple cette semaine', progress: 1, target: 3 }],
   courses: [
     {
       id: 'demo-apple',

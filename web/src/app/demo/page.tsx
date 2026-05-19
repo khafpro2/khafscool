@@ -5,7 +5,7 @@ import { Card } from '@/components/ui/Card';
 const WITHOUT_ACCOUNT_STEPS = [
   {
     title: 'Catalogue public',
-    description: 'Parcours Apple, Jamf et Intune consultables sans session pour valider le contenu 3×3 modules.',
+    description: 'Parcours Apple, Jamf et Intune consultables sans session pour valider le contenu 3×3 unités.',
     href: '/courses',
     cta: 'Explorer le catalogue',
   },
@@ -17,7 +17,7 @@ const WITHOUT_ACCOUNT_STEPS = [
   },
   {
     title: 'Tarifs',
-    description: 'Page tarifs visible publiquement, avec redirection vers la connexion au moment du checkout.',
+    description: 'Page tarifs visible publiquement, avec redirection vers la connexion au moment du paiement.',
     href: '/pricing',
     cta: 'Voir les tarifs',
   },
@@ -44,20 +44,20 @@ const WITH_ACCOUNT_STEPS = [
   },
   {
     title: 'Progression parcours',
-    description: 'Ouvrir un parcours, viser un module et confirmer les statuts à faire / en cours / terminé.',
+    description: 'Ouvrir un parcours, viser une unité et confirmer les statuts à faire / en cours / terminé.',
     href: '/courses/apple-cert-prep',
     cta: 'Continuer un parcours',
   },
   {
-    title: 'Billing démo',
-    description: 'Depuis une session active, déclencher un checkout MVP et vérifier la réponse Stripe simulée.',
+    title: 'Paiement démo',
+    description: 'Depuis une session active, déclencher un paiement MVP et vérifier la réponse Stripe simulée.',
     href: '/pricing',
-    cta: 'Tester le billing',
+    cta: 'Tester le paiement',
   },
 ];
 
 const PRIMARY_ROUTES = [
-  { href: '/auth', label: 'Auth' },
+  { href: '/auth', label: 'Connexion' },
   { href: '/dashboard', label: 'Tableau de bord' },
   { href: '/badges', label: 'Badges' },
   { href: '/quests', label: 'Quêtes' },
@@ -118,7 +118,7 @@ export default function DemoPage() {
         </Badge>
         <h2 style={{ fontSize: '1.35rem', fontWeight: 800, marginTop: '0.75rem' }}>Statut requis avant revue</h2>
         <p className="muted" style={{ marginTop: '0.5rem' }}>
-          Le backend et la base doivent répondre pour tester inscription, tableau de bord, sprint connecté et billing
+          Le backend et la base doivent répondre pour tester inscription, tableau de bord, sprint connecté et paiement
           démo. La page diagnostics vérifie API, Prisma, catalogue (3 parcours) et tokens locaux sans afficher de secret.
         </p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '1rem' }}>

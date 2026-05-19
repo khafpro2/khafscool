@@ -17,7 +17,7 @@ type EndpointCheck = {
 const EXPECTED_CATALOG_SLUGS = ['apple-cert-prep', 'jamf-pro-foundations', 'intune-ios-enrollment'];
 
 const quickLinks = [
-  { href: '/auth', label: 'Auth' },
+  { href: '/auth', label: 'Connexion' },
   { href: '/dashboard', label: 'Tableau de bord' },
   { href: '/courses', label: 'Parcours' },
   { href: '/badges', label: 'Badges' },
@@ -124,7 +124,7 @@ export default function DiagnosticsPage() {
             Vérifie que <code>DATABASE_URL</code> côté backend pointe vers la bonne base locale.
           </li>
           <li>Applique les migrations : <code>pnpm db:migrate</code>.</li>
-          <li>Charge les données de démo : <code>pnpm db:seed</code> (3 parcours × 3 modules).</li>
+          <li>Charge les données de démo : <code>pnpm db:seed</code> (3 parcours × 3 unités).</li>
           <li>Redémarre le backend : <code>pnpm --filter backend dev</code>.</li>
         </ul>
       </Card>
@@ -143,10 +143,10 @@ export default function DiagnosticsPage() {
             marginTop: '1rem',
           }}
         >
-          <TokenPresence label="Access token localStorage" present={tokenPresence.accessTokenLocal} />
-          <TokenPresence label="Access token cookie" present={tokenPresence.accessTokenCookie} />
-          <TokenPresence label="Refresh token localStorage" present={tokenPresence.refreshTokenLocal} />
-          <TokenPresence label="Refresh token cookie" present={tokenPresence.refreshTokenCookie} />
+          <TokenPresence label="Jeton d’accès (localStorage)" present={tokenPresence.accessTokenLocal} />
+          <TokenPresence label="Jeton d’accès (cookie)" present={tokenPresence.accessTokenCookie} />
+          <TokenPresence label="Jeton de rafraîchissement (localStorage)" present={tokenPresence.refreshTokenLocal} />
+          <TokenPresence label="Jeton de rafraîchissement (cookie)" present={tokenPresence.refreshTokenCookie} />
         </div>
       </Card>
 

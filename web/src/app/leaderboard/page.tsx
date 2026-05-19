@@ -96,8 +96,8 @@ export default function LeaderboardPage() {
         <p className="muted" style={{ marginTop: '0.35rem' }}>
           {hasToken
             ? currentUserRank
-              ? `Tu es actuellement classé(e) #${currentUserRank}. Continue les modules pour grimper.`
-              : 'Aucun rang détecté pour ton compte. Termine un module pour apparaître au classement.'
+              ? `Tu es actuellement classé(e) #${currentUserRank}. Continue les unités pour grimper.`
+              : 'Aucun rang détecté pour ton compte. Termine une unité pour apparaître au classement.'
             : 'Connecte-toi pour voir les vrais apprenants et ton rang réel. Cet aperçu est un exemple local.'}
         </p>
       </Card>
@@ -146,7 +146,7 @@ export default function LeaderboardPage() {
         </ul>
         {leaderboard.length === 0 && (
           <p className="muted" style={{ padding: '1.25rem' }}>
-            Aucun apprenant classé pour le moment. Sois le premier à valider un module.
+            Aucun apprenant classé pour le moment. Sois le premier à valider une unité.
           </p>
         )}
       </Card>
@@ -161,7 +161,7 @@ export default function LeaderboardPage() {
 
 function PodiumCard({ entry }: { entry: LeaderboardEntry }) {
   const rank = getRankInfo(entry.points);
-  const medal = entry.rank === 1 ? '\u{1F947}' : entry.rank === 2 ? '\u{1F948}' : '\u{1F949}';
+  const medalLabel = entry.rank === 1 ? '1er' : entry.rank === 2 ? '2e' : '3e';
   const isCurrent = entry.isCurrentUser;
 
   return (
@@ -178,7 +178,18 @@ function PodiumCard({ entry }: { entry: LeaderboardEntry }) {
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-        <span aria-hidden style={{ fontSize: '1.4rem' }}>{medal}</span>
+        <span
+          aria-hidden
+          style={{
+            fontSize: '0.72rem',
+            fontWeight: 800,
+            textTransform: 'uppercase',
+            letterSpacing: '0.06em',
+            color: 'var(--muted)',
+          }}
+        >
+          {medalLabel}
+        </span>
         <span className="section-eyebrow" style={{ color: 'var(--muted)' }}>
           #{entry.rank}
           {isCurrent ? ' · toi' : ''}
@@ -195,7 +206,7 @@ function PodiumCard({ entry }: { entry: LeaderboardEntry }) {
             return (
               <Badge
                 key={slug}
-                icon={visual.icon}
+                brand={visual.brand}
                 style={{ background: visual.bg, color: visual.color }}
                 tone="accent"
               >
@@ -241,7 +252,7 @@ function LeaderboardRow({ entry }: { entry: LeaderboardEntry }) {
           return (
             <Badge
               key={slug}
-              icon={visual.icon}
+              brand={visual.brand}
               tone="accent"
               style={{ background: visual.bg, color: visual.color }}
             >

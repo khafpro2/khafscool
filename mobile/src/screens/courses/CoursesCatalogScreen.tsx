@@ -8,6 +8,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import { TrackIcon } from '../../components/TrackIcon';
 import { formatTrack, getTrackVisual } from '../../lib/design';
 import { CourseSummary, fetchCourses } from '../../services/courses';
 
@@ -80,14 +81,14 @@ function CatalogCourseCard({ course, onPress }: { course: CourseSummary; onPress
   return (
     <Pressable onPress={onPress} style={styles.card}>
       <View style={[styles.banner, { backgroundColor: visual.gradient[0] }]}>
-        <Text style={styles.bannerIcon}>{visual.icon}</Text>
+        <TrackIcon track={course.track} size="md" />
         <Text style={styles.bannerTrack}>{formatTrack(course.track)}</Text>
       </View>
       <View style={styles.cardBody}>
         <Text style={styles.cardTitle}>{course.title}</Text>
         {course.description ? <Text style={styles.cardDesc}>{course.description}</Text> : null}
         <Text style={styles.cardMeta}>
-          {moduleCount} module{moduleCount > 1 ? 's' : ''}
+          {moduleCount} unité{moduleCount > 1 ? 's' : ''}
           {progress > 0 ? ` · ${progress} % complété` : ''}
         </Text>
         <View style={styles.cardFooter}>

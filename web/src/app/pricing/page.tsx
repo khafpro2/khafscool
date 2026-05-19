@@ -38,7 +38,7 @@ const PLANS: PlanConfig[] = [
     free: true,
     features: [
       'Accès au catalogue de parcours en lecture',
-      'Premiers modules et quiz de découverte',
+      'Premières unités et quiz de découverte',
       'Tableau de bord et classement en mode démo',
       'Ressources officielles Apple, Jamf et Intune',
     ],
@@ -52,7 +52,7 @@ const PLANS: PlanConfig[] = [
     checkoutPlan: 'monthly',
     highlight: true,
     features: [
-      'Tous les modules Apple, Jamf et Intune',
+      'Toutes les unités Apple, Jamf et Intune',
       'Sprint certification 7 ou 14 jours',
       'Badges, points et quêtes hebdomadaires',
       'Progression sauvegardée web et mobile',
@@ -88,7 +88,7 @@ const FAQ_ITEMS = [
   {
     question: 'Le plan Gratuit suffit-il pour préparer une certification ?',
     answer:
-      'Le plan Gratuit permet d’explorer le catalogue et les ressources. Le plan Pro débloque tous les modules, les sprints guidés et la sauvegarde complète de ta progression.',
+      'Le plan Gratuit permet d’explorer le catalogue et les ressources. Le plan Pro débloque toutes les unités, les sprints guidés et la sauvegarde complète de ta progression.',
   },
   {
     question: 'Quelle différence entre Pro et Équipe ?',
@@ -118,7 +118,7 @@ export default function PricingPage() {
       setStatus({
         tone: 'warning',
         title: 'Connexion requise',
-        message: 'Connecte-toi ou crée un compte gratuit pour lancer un checkout lié à ton profil.',
+        message: 'Connecte-toi ou crée un compte gratuit pour lancer un paiement lié à ton profil.',
       });
       router.push('/auth');
       return;
@@ -127,7 +127,7 @@ export default function PricingPage() {
     setPendingPlan(plan);
     setStatus({
       tone: 'info',
-      title: 'Préparation du checkout',
+      title: 'Préparation du paiement',
       message: 'Création de la session de paiement en cours…',
     });
 
@@ -137,7 +137,7 @@ export default function PricingPage() {
       if (checkout.checkoutUrl && checkout.mode !== 'demo') {
         setStatus({
           tone: 'success',
-          title: 'Checkout prêt',
+          title: 'Paiement prêt',
           message: 'Redirection vers la page de paiement sécurisée…',
         });
         window.location.assign(checkout.checkoutUrl);
@@ -148,7 +148,7 @@ export default function PricingPage() {
         setBillingMode('demo');
         setStatus({
           tone: 'warning',
-          title: 'Checkout démo prêt',
+          title: 'Paiement démo prêt',
           message:
             checkout.message ??
             'Le backend a créé une réponse de démonstration. Le paiement réel sera activé quand Stripe sera branché.',
@@ -161,7 +161,7 @@ export default function PricingPage() {
 
       setStatus({
         tone: checkout.checkoutUrl ? 'success' : 'warning',
-        title: checkout.checkoutUrl ? 'Checkout prêt' : 'Checkout incomplet',
+        title: checkout.checkoutUrl ? 'Paiement prêt' : 'Paiement incomplet',
         message: checkout.checkoutUrl
           ? 'Ouvre le lien de paiement pour continuer.'
           : 'Le backend a répondu sans URL de paiement. Réessaie plus tard ou contacte l’équipe.',
@@ -170,7 +170,7 @@ export default function PricingPage() {
     } catch {
       setStatus({
         tone: 'error',
-        title: 'Checkout indisponible',
+        title: 'Paiement indisponible',
         message:
           'Impossible de créer la session de paiement pour le moment. Tu peux réessayer après connexion ou utiliser le plan Gratuit en attendant.',
       });
@@ -228,7 +228,7 @@ export default function PricingPage() {
           </p>
           {status.checkoutUrl && (
             <a className="btn" href={status.checkoutUrl} rel="noreferrer" target="_blank" style={{ display: 'inline-block', marginTop: '1rem' }}>
-              Ouvrir le lien de checkout
+              Ouvrir le lien de paiement
             </a>
           )}
         </Card>
@@ -249,7 +249,7 @@ export default function PricingPage() {
       </section>
 
       <Card variant="soft" style={{ marginTop: '1.5rem', borderColor: '#85bfff', background: '#eef6ff' }}>
-        <strong>Checkout MVP</strong>
+        <strong>Paiement MVP</strong>
         <p className="muted" style={{ marginTop: '0.35rem' }}>
           Les boutons Pro et Équipe appellent <code>POST /billing/checkout</code> avec le token local{' '}
           <code>ama_access</code>. Sans session, tu es redirigé vers l’inscription ; en mode démo, un lien

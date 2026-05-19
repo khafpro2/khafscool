@@ -30,13 +30,13 @@ export function LearningStreakCard({ streak }: { streak: LearningStreak }) {
         }}
       >
         <StreakMetric label="Jours consécutifs" value={String(streak.currentDays)} highlight />
-        <StreakMetric label="Record personnel" value={String(streak.longestDays)} />
+        <StreakMetric label="Meilleure série" value={String(streak.longestDays)} />
         <StreakMetric label="Dernière activité" value={lastActivityLabel} compact />
       </div>
       <p className="muted" style={{ marginTop: '0.85rem', fontSize: '0.9rem' }}>
         {streak.currentDays > 0
-          ? 'Continue ta série en validant au moins un module par jour.'
-          : 'Valide un module aujourd’hui pour démarrer ou relancer ta série.'}
+          ? 'Continue ta série en validant au moins une unité par jour.'
+          : 'Valide une unité aujourd’hui pour démarrer ou relancer ta série.'}
       </p>
     </Card>
   );

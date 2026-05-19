@@ -12,11 +12,19 @@ import {
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { BrandIcon } from '@/components/ui/BrandIcon';
+import type { BrandId } from '@/lib/brands';
 
-const SSO_PROVIDERS = [
-  { id: 'apple', label: 'Continuer avec Apple', icon: '\u{1F34E}', variant: 'dark' as const },
-  { id: 'google', label: 'Continuer avec Google', icon: 'G', variant: 'secondary' as const },
-  { id: 'microsoft', label: 'Continuer avec Microsoft', icon: '\u2601\uFE0F', variant: 'primary' as const },
+const SSO_PROVIDERS: {
+  id: string;
+  label: string;
+  brand?: BrandId;
+  icon?: string;
+  variant: 'dark' | 'secondary' | 'primary';
+}[] = [
+  { id: 'apple', label: 'Continuer avec Apple', brand: 'apple', variant: 'dark' },
+  { id: 'google', label: 'Continuer avec Google', icon: 'G', variant: 'secondary' },
+  { id: 'microsoft', label: 'Continuer avec Microsoft', brand: 'microsoft', variant: 'primary' },
 ];
 
 const inputStyle = {
@@ -208,8 +216,20 @@ export default function AuthPage() {
                   href={`${API_URL}/auth/${provider.id}/start?redirect=${encodeURIComponent(redirectPath)}`}
                   variant={provider.variant}
                   fullWidth
-                  icon={provider.icon}
+                  icon={provider.brand ? undefined : provider.icon}
+                  style={
+                    provider.brand
+                      ? { display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }
+                      : undefined
+                  }
                 >
+                  {provider.brand ? (
+                    <BrandIcon
+                      brand={provider.brand}
+                      size="sm"
+                      variant={provider.variant === 'dark' ? 'onColor' : 'default'}
+                    />
+                  ) : null}
                   {provider.label}
                 </Button>
               ))}

@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { LevelPill } from '@/components/ui/LevelPill';
 import { ProgressBar } from '@/components/ui/ProgressBar';
+import { BrandIcon } from '@/components/ui/BrandIcon';
 import { TrackIcon } from '@/components/ui/TrackIcon';
 import {
   estimateDurationMinutes,
@@ -178,14 +179,14 @@ export function CourseDetailClient({ slug }: { slug: string }) {
         return;
       } catch {
         setResult(
-          `Score local : ${correctCount}/${activeModule.questions.length} (${localScore}%). L’enregistrement backend a échoué, mais le module reste testable.`
+          `Score local : ${correctCount}/${activeModule.questions.length} (${localScore}%). L’enregistrement backend a échoué, mais l’unité reste testable.`
         );
         return;
       }
     }
 
     setResult(
-      `Score local : ${correctCount}/${activeModule.questions.length} (${localScore}%). Connecte-toi avec l’API disponible pour enregistrer la progression.`
+      `Score local : ${correctCount}/${activeModule.questions.length} (${localScore}%). Connectez-vous pour enregistrer la progression via l’API.`
     );
   }
 
@@ -250,13 +251,13 @@ export function CourseDetailClient({ slug }: { slug: string }) {
           )}
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '1rem' }}>
             <LevelPill level={level} />
-            <Badge tone="neutral" icon="\u{23F1}\uFE0F" style={{ background: 'rgba(255,255,255,0.18)', color: '#fff', border: '1px solid rgba(255,255,255,0.32)' }}>
+            <Badge tone="neutral" style={{ background: 'rgba(255,255,255,0.18)', color: '#fff', border: '1px solid rgba(255,255,255,0.32)' }}>
               {formatDurationLabel(duration)}
             </Badge>
-            <Badge tone="neutral" icon="\u{1F4DA}" style={{ background: 'rgba(255,255,255,0.18)', color: '#fff', border: '1px solid rgba(255,255,255,0.32)' }}>
+            <Badge tone="neutral" style={{ background: 'rgba(255,255,255,0.18)', color: '#fff', border: '1px solid rgba(255,255,255,0.32)' }}>
               {totalModules} unité{totalModules > 1 ? 's' : ''}
             </Badge>
-            <Badge tone="warning" icon="\u2B50">
+            <Badge tone="warning">
               {points} pts à gagner
             </Badge>
           </div>
@@ -277,8 +278,8 @@ export function CourseDetailClient({ slug }: { slug: string }) {
             <Card variant="soft" style={{ borderColor: '#f0cf7a', background: '#fff8e6' }}>
               <strong>Mode démo</strong>
               <p className="muted" style={{ marginTop: '0.35rem' }}>
-                Les questions fonctionnent localement. Connecte-toi pour enregistrer les scores quand le
-                module vient de l’API.
+                Les questions fonctionnent localement. Connectez-vous pour enregistrer les scores quand le
+                contenu provient de l’API.
               </p>
               <Button href={buildAuthUrl(`/courses/${slug}`)} size="sm" style={{ marginTop: '0.85rem' }}>
                 Se connecter pour enregistrer
@@ -312,7 +313,7 @@ export function CourseDetailClient({ slug }: { slug: string }) {
               <ProgressBar value={percent} tone={percent >= 100 ? 'success' : 'accent'} style={{ marginTop: '0.85rem' }} />
               {usesProgressFallback && (
                 <p className="muted" style={{ marginTop: '0.5rem', fontSize: '0.85rem' }}>
-                  Progression affichée en mode démo. Connecte-toi pour la synchroniser via le backend.
+                  Progression affichée en mode démo. Connectez-vous pour la synchroniser via le backend.
                 </p>
               )}
               <ModuleStatusStrip
@@ -346,7 +347,7 @@ export function CourseDetailClient({ slug }: { slug: string }) {
                   {successNotice.badges.map((badgeSlug) => {
                     const visual = getBadgeVisual(badgeSlug);
                     return (
-                      <Badge key={badgeSlug} tone="warning" icon={visual.icon}>
+                      <Badge key={badgeSlug} tone="warning" brand={visual.brand}>
                         Super-badge : {visual.label}
                       </Badge>
                     );
@@ -532,7 +533,11 @@ export function CourseDetailClient({ slug }: { slug: string }) {
                   boxShadow: '0 6px 14px rgba(255, 176, 46, 0.35)',
                 }}
               >
-                {reward?.icon ?? '\u{1F3C5}'}
+                {reward?.brand ? (
+                  <BrandIcon brand={reward.brand} size="lg" />
+                ) : (
+                  '\u{1F3C5}'
+                )}
               </div>
               <div>
                 <strong style={{ fontSize: '1.05rem' }}>

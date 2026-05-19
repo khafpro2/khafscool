@@ -64,7 +64,7 @@ const fallbackQuickActions: QuickAction[] = [
   },
   {
     label: 'Ressources officielles',
-    description: 'Vérifier les sources éditeurs avant un module, un sprint ou une certification.',
+    description: 'Vérifier les sources éditeurs avant une unité, un sprint ou une certification.',
     href: '/resources',
     track: 'RESOURCES',
   },
@@ -530,7 +530,7 @@ function QuestsBadgesPanel({ quests, badges }: { quests: Quest[]; badges: string
           </ul>
         ) : (
           <p className="muted" style={{ marginTop: '0.75rem' }}>
-            Aucune quête active pour le moment. Continue un module ou démarre un sprint pour garder le
+            Aucune quête active pour le moment. Continue une unité ou démarre un sprint pour garder le
             rythme.
           </p>
         )}
@@ -545,7 +545,7 @@ function QuestsBadgesPanel({ quests, badges }: { quests: Quest[]; badges: string
               return (
                 <Badge
                   key={slug}
-                  icon={visual.icon}
+                  brand={visual.brand}
                   style={{ background: visual.bg, color: visual.color, border: `1px solid ${visual.color}22` }}
                   tone="accent"
                 >
@@ -556,7 +556,7 @@ function QuestsBadgesPanel({ quests, badges }: { quests: Quest[]; badges: string
           </div>
         ) : (
           <p className="muted" style={{ marginTop: '0.75rem' }}>
-            Aucun badge débloqué. Termine un module complet pour afficher tes premières récompenses.
+            Aucun badge débloqué. Termine une unité complète pour afficher tes premières récompenses.
           </p>
         )}
         <p className="muted" style={{ marginTop: '0.85rem', fontSize: '0.85rem' }}>
@@ -585,7 +585,7 @@ function getRecommendedAction(data: DashboardData): RecommendedAction {
   if (incompleteCourse) {
     return {
       title: incompleteCourse.title,
-      description: `Ouvre le prochain module disponible pour renforcer ton socle ${formatTrack(incompleteCourse.track)}.`,
+      description: `Ouvre la prochaine unité disponible pour renforcer ton socle ${formatTrack(incompleteCourse.track)}.`,
       href: `/courses/${incompleteCourse.slug}`,
       cta: 'Continuer',
       meta: `${incompleteCourse.progressPercent ?? 0}% du parcours complété`,
@@ -615,7 +615,7 @@ function getQuickActions(data: DashboardData): QuickAction[] {
 
     return {
       ...fallbackAction,
-      description: course.nextModule ? `Prochain module : ${course.nextModule.title}` : course.description ?? fallbackAction.description,
+      description: course.nextModule ? `Prochaine unité : ${course.nextModule.title}` : course.description ?? fallbackAction.description,
       href: `/courses/${course.slug}${course.nextModule ? `#module-${course.nextModule.slug}` : ''}`,
       progress: course.progressPercent ?? 0,
     };

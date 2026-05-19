@@ -32,7 +32,7 @@ const TRACK_SECTIONS: TrackSection[] = [
     label: 'Apple Device Support',
     focus: 'Support des appareils, sécurité, diagnostic et fondamentaux de gestion Apple.',
     certification: 'À utiliser comme source de vérité pour préparer les objectifs Apple.',
-    courseHint: 'Relie ces lectures aux modules Device Support et MDM du parcours Apple.',
+    courseHint: 'Relie ces lectures aux unités Device Support et MDM du parcours Apple.',
     courseHref: '/courses/apple-cert-prep',
     resources: [
       {
@@ -47,7 +47,7 @@ const TRACK_SECTIONS: TrackSection[] = [
     label: 'Jamf Pro',
     focus: 'Administration Jamf Pro, inventaire, smart groups, politiques et bonnes pratiques MDM.',
     certification: 'À consulter avant les révisions Jamf Pro et les exercices de configuration.',
-    courseHint: 'Relie ces lectures aux modules Jamf Pro Foundations et aux quêtes de pratique.',
+    courseHint: 'Relie ces lectures aux unités Jamf Pro Foundations et aux quêtes de pratique.',
     courseHref: '/courses/jamf-pro-foundations',
     resources: [
       {
@@ -62,7 +62,7 @@ const TRACK_SECTIONS: TrackSection[] = [
     label: 'Microsoft Intune',
     focus: 'Enrôlement, conformité, profils et gestion des appareils Apple avec Microsoft Intune.',
     certification: 'À utiliser pour valider les détails Microsoft Learn et les prérequis de conformité.',
-    courseHint: 'Relie ces lectures aux modules Intune et aux sprints de révision Microsoft.',
+    courseHint: 'Relie ces lectures aux unités Microsoft Intune et aux sprints de révision.',
     courseHref: '/courses',
     resources: [
       {

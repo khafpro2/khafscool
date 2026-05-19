@@ -4,14 +4,14 @@ import { Card } from '@/components/ui/Card';
 
 const DELIVERED = [
   {
-    title: 'Auth web & mobile',
+    title: 'Connexion web et mobile',
     description:
       'Connexion email, OAuth de développement, tokens MVP et reprise de session pour le tableau de bord et l’app mobile.',
     href: '/auth',
     cta: 'Tester la connexion',
   },
   {
-    title: '3 parcours × 3 modules',
+    title: '3 parcours × 3 unités',
     description:
       'Apple Device Support, Jamf Pro et Intune iOS avec quiz, mini-scénarios et progression par unité.',
     href: '/courses',
@@ -36,16 +36,16 @@ const DELIVERED = [
     cta: 'Lancer un sprint',
   },
   {
-    title: 'Billing démo',
-    description: 'Tarifs publics et checkout MVP simulé (mensuel, annuel, entreprise).',
+    title: 'Paiement démo',
+    description: 'Tarifs publics et paiement MVP simulé (mensuel, annuel, entreprise).',
     href: '/pricing',
-    cta: 'Tester le billing',
+    cta: 'Tester le paiement',
   },
 ];
 
 const UPCOMING = [
   {
-    title: 'Stripe Checkout réel',
+    title: 'Paiement Stripe réel',
     description: 'Paiements production avec webhooks et gestion d’abonnement.',
   },
   {
@@ -67,7 +67,7 @@ const TEST_CHECKLIST = [
   { label: 'Confirmer la progression', href: '/dashboard', detail: 'Statistiques, badges, quêtes et accès rapides (connecté ou fallback démo).' },
   { label: 'Explorer un parcours 3 modules', href: '/courses/apple-cert-prep', detail: 'Statuts à faire / en cours / terminé et validation d’unité.' },
   { label: 'Démarrer un sprint', href: '/sprint', detail: 'Sprint Apple, Jamf ou Intune en 7 ou 14 jours.' },
-  { label: 'Essayer le checkout démo', href: '/pricing', detail: 'Plan mensuel, annuel ou entreprise avec message de démonstration.' },
+  { label: 'Essayer le paiement démo', href: '/pricing', detail: 'Plan mensuel, annuel ou entreprise avec message de démonstration.' },
   { label: 'Vérifier API & DB', href: '/diagnostics', detail: 'Health, Prisma, catalogue 3 slugs et tokens masqués.' },
 ];
 
@@ -85,7 +85,7 @@ export default function MvpPage() {
         <h1>Roadmap MVP pour reviewers et testeurs</h1>
         <p style={{ marginTop: '0.75rem' }}>
           Vue d’ensemble des fonctionnalités livrées et des prochaines étapes — authentification, apprentissage
-          gamifié, sprint certification et billing de démonstration.
+          gamifié, sprint certification et paiement de démonstration.
         </p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '1.25rem' }}>
           <Button href="/auth" variant="secondary">

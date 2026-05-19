@@ -11,6 +11,6 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
       ...init?.headers,
     },
   });
-  if (!res.ok) throw new Error(`API ${res.status}`);
+  if (!res.ok) throw new Error(`Erreur API ${res.status}`);
   return res.json() as Promise<T>;
 }

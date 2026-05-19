@@ -74,7 +74,7 @@ export function ProfileScreen() {
             {data.learningStreak.currentDays} jour{data.learningStreak.currentDays > 1 ? 's' : ''} consécutif{data.learningStreak.currentDays > 1 ? 's' : ''}
           </Text>
           <Text style={styles.streakMeta}>
-            Record {data.learningStreak.longestDays} jour{data.learningStreak.longestDays > 1 ? 's' : ''}
+            Meilleure série : {data.learningStreak.longestDays} jour{data.learningStreak.longestDays > 1 ? 's' : ''}
           </Text>
         </View>
       ) : null}
@@ -88,7 +88,7 @@ export function ProfileScreen() {
           <Stat label="Niveau" value={formatLevel(data.progress.level)} />
         </View>
         <Text style={styles.heroMeta}>
-          {data.progress.completedModules}/{data.progress.totalModules} modules · score moyen{' '}
+          {data.progress.completedModules}/{data.progress.totalModules} unités · score moyen{' '}
           {data.progress.averageScore} %
         </Text>
       </View>

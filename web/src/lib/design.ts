@@ -1,8 +1,15 @@
+import type { BrandId } from '@/lib/brands';
+import { getBadgeBrand, getTrackBrand } from '@/lib/brands';
+
+export type { BrandId } from '@/lib/brands';
+export { getBadgeBrand, getTrackBrand } from '@/lib/brands';
+
 export type TrailLevel = 'Débutant' | 'Intermédiaire' | 'Avancé';
 
 export interface TrackVisual {
   label: string;
-  icon: string;
+  icon?: string;
+  brand?: BrandId;
   color: string;
   gradient: string;
   defaultLevel: TrailLevel;
@@ -11,21 +18,21 @@ export interface TrackVisual {
 const TRACK_VISUALS: Record<string, TrackVisual> = {
   APPLE: {
     label: 'Apple Device Support',
-    icon: '\u{1F34E}',
+    brand: 'apple',
     color: '#16191f',
     gradient: 'linear-gradient(135deg, #1d1d1f 0%, #4b4d57 60%, #7a7d8a 100%)',
     defaultLevel: 'Débutant',
   },
   JAMF: {
     label: 'Jamf Pro',
-    icon: '\u{1F6E1}',
+    brand: 'jamf',
     color: '#ff5b00',
     gradient: 'linear-gradient(135deg, #ff5b00 0%, #ff9e2c 100%)',
     defaultLevel: 'Intermédiaire',
   },
   INTUNE: {
     label: 'Microsoft Intune',
-    icon: '\u2601\uFE0F',
+    brand: 'microsoft',
     color: '#0070d2',
     gradient: 'linear-gradient(135deg, #0070d2 0%, #16cdf1 100%)',
     defaultLevel: 'Intermédiaire',
@@ -74,7 +81,8 @@ export function getTrackVisual(track?: string | null): TrackVisual {
 
 export interface BadgeVisual {
   label: string;
-  icon: string;
+  icon?: string;
+  brand?: BrandId;
   color: string;
   bg: string;
 }
@@ -82,19 +90,19 @@ export interface BadgeVisual {
 const BADGE_VISUALS: Record<string, BadgeVisual> = {
   'apple-mdm-foundation': {
     label: 'Fondamentaux Apple MDM',
-    icon: '\u{1F34F}',
+    brand: 'apple',
     color: '#1d1d1f',
     bg: '#f1f1f4',
   },
   'jamf-engineer': {
     label: 'Ingénieur Jamf',
-    icon: '\u{1F6E1}',
+    brand: 'jamf',
     color: '#a23d00',
     bg: '#fff1e4',
   },
   'intune-professional': {
     label: 'Professionnel Intune',
-    icon: '\u{1F4BC}',
+    brand: 'microsoft',
     color: '#0050a0',
     bg: '#e3f0ff',
   },
@@ -186,13 +194,13 @@ export function estimatePoints(totalModules?: number, level: TrailLevel = 'Débu
 export interface RewardBadgeForTrack {
   badgeSlug: string;
   label: string;
-  icon: string;
+  brand: BrandId;
 }
 
 const REWARD_BY_TRACK: Record<string, RewardBadgeForTrack> = {
-  APPLE: { badgeSlug: 'apple-mdm-foundation', label: 'Fondamentaux Apple MDM', icon: '\u{1F34F}' },
-  JAMF: { badgeSlug: 'jamf-engineer', label: 'Ingénieur Jamf', icon: '\u{1F6E1}' },
-  INTUNE: { badgeSlug: 'intune-professional', label: 'Professionnel Intune', icon: '\u{1F4BC}' },
+  APPLE: { badgeSlug: 'apple-mdm-foundation', label: 'Fondamentaux Apple MDM', brand: 'apple' },
+  JAMF: { badgeSlug: 'jamf-engineer', label: 'Ingénieur Jamf', brand: 'jamf' },
+  INTUNE: { badgeSlug: 'intune-professional', label: 'Professionnel Intune', brand: 'microsoft' },
 };
 
 export function getRewardBadgeForTrack(track?: string | null): RewardBadgeForTrack | null {
@@ -215,9 +223,9 @@ const BADGE_TRACK: Record<string, string> = {
 };
 
 const BADGE_CRITERIA: Record<string, string> = {
-  'apple-mdm-foundation': 'Termine au moins un module du parcours Apple Device Support.',
-  'jamf-engineer': 'Termine au moins un module du parcours Jamf Pro.',
-  'intune-professional': 'Termine au moins un module du parcours Microsoft Intune.',
+  'apple-mdm-foundation': 'Termine au moins une unité du parcours Apple Device Support.',
+  'jamf-engineer': 'Termine au moins une unité du parcours Jamf Pro.',
+  'intune-professional': 'Termine au moins une unité du parcours Microsoft Intune.',
 };
 
 export function getBadgeTrack(slug: string): string {
