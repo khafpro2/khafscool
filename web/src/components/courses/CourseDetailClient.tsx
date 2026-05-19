@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
-import type { CourseDetail, CourseProgressData } from '@/lib/api';
+import type { CourseDetail, CourseProgressData, CourseProgressModule } from '@/lib/api';
 import { completeModule, fetchCourse, fetchCourseProgress } from '@/lib/api';
 import { getAccessToken } from '@/lib/auth';
 import { formatTrack } from '@/lib/tracks';
@@ -16,6 +16,7 @@ import {
   estimateDurationMinutes,
   estimatePoints,
   formatDurationLabel,
+  getBadgeVisual,
   getRewardBadgeForTrack,
   getTrackVisual,
   inferLevelFromModules,
@@ -27,6 +28,7 @@ export function CourseDetailClient({ slug }: { slug: string }) {
   const [usesProgressFallback, setUsesProgressFallback] = useState(false);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [result, setResult] = useState<string | null>(null);
+  const [successNotice, setSuccessNotice] = useState<SuccessNotice | null>(null);
   const [hasToken, setHasToken] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -66,6 +68,7 @@ export function CourseDetailClient({ slug }: { slug: string }) {
 
     const localScore = computeLocalScore(activeModule.questions, answers);
     const token = getAccessToken();
+    setSuccessNotice(null);
 
     if (token && !activeModule.id.startsWith('demo-')) {
       try {
@@ -73,9 +76,15 @@ export function CourseDetailClient({ slug }: { slug: string }) {
           quizAnswers: answers,
           gameOrder: activeModule.game?.steps.map((step) => step.id),
         });
-        setResult(
-          `Module complété : ${backendResult.quizScore}% quiz, ${backendResult.gameScore}% mini-jeu, +${backendResult.pointsEarned} points.`
-        );
+        setSuccessNotice({
+          badges: backendResult.badges ?? [],
+          gameScore: backendResult.gameScore,
+          moduleTitle: activeModule.title,
+          pointsEarned: backendResult.pointsEarned,
+          quizScore: backendResult.quizScore,
+        });
+        setResult(null);
+        setAnswers({});
         setProgress(await fetchCourseProgress(slug, token));
         setUsesProgressFallback(false);
         return;
@@ -211,6 +220,51 @@ export function CourseDetailClient({ slug }: { slug: string }) {
                   Progression affichée en mode démo. Connecte-toi pour la synchroniser via le backend.
                 </p>
               )}
+              <ModuleStatusStrip
+                course={course}
+                moduleProgressById={moduleProgressById}
+                nextModuleId={progress.progress.nextModule?.id}
+              />
+            </Card>
+          )}
+
+          {successNotice && (
+            <Card
+              style={{
+                marginTop: '1rem',
+                borderColor: '#a8d8b2',
+                background: 'linear-gradient(135deg, #f4fbf6 0%, #ffffff 100%)',
+              }}
+            >
+              <Badge tone="success" icon="\u{1F389}">
+                Unité terminée
+              </Badge>
+              <p style={{ fontWeight: 800, marginTop: '0.5rem', fontSize: '1.05rem' }}>
+                Bravo ! « {successNotice.moduleTitle} » est complétée.
+              </p>
+              <p className="muted" style={{ marginTop: '0.35rem' }}>
+                Quiz {successNotice.quizScore}% · mini-scénario {successNotice.gameScore}% ·{' '}
+                <strong>+{successNotice.pointsEarned} points</strong>
+              </p>
+              {successNotice.badges.length > 0 ? (
+                <div style={{ marginTop: '0.75rem', display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center' }}>
+                  {successNotice.badges.map((badgeSlug) => {
+                    const visual = getBadgeVisual(badgeSlug);
+                    return (
+                      <Badge key={badgeSlug} tone="warning" icon={visual.icon}>
+                        Super-badge : {visual.label}
+                      </Badge>
+                    );
+                  })}
+                  <Button href="/badges" size="sm" variant="ghost">
+                    Voir mes badges
+                  </Button>
+                </div>
+              ) : (
+                <Button href="/badges" size="sm" style={{ marginTop: '0.75rem' }}>
+                  Voir la collection de badges
+                </Button>
+              )}
             </Card>
           )}
 
@@ -218,6 +272,7 @@ export function CourseDetailClient({ slug }: { slug: string }) {
             {course.modules.map((module, index) => {
               const moduleProgress = moduleProgressById.get(module.id);
               const completed = moduleProgress?.completed ?? false;
+              const moduleStatus = getModuleStatus(module.id, moduleProgress, progress?.progress.nextModule?.id);
               return (
                 <Card
                   key={module.id}
@@ -235,12 +290,15 @@ export function CourseDetailClient({ slug }: { slug: string }) {
                         Unité {index + 1}
                       </span>
                     </div>
-                    {moduleProgress && (
-                      <Badge tone={completed ? 'success' : 'neutral'} icon={completed ? '\u2705' : '\u23F3'}>
-                        {completed ? 'Complétée' : 'À faire'}
-                        {moduleProgress.score !== null ? ` · ${moduleProgress.score}%` : ''}
-                      </Badge>
-                    )}
+                    <Badge
+                      tone={moduleStatus === 'completed' ? 'success' : moduleStatus === 'in_progress' ? 'warning' : 'neutral'}
+                      icon={moduleStatus === 'completed' ? '\u2705' : moduleStatus === 'in_progress' ? '\u{1F3AF}' : '\u23F3'}
+                    >
+                      {moduleStatusLabel(moduleStatus)}
+                      {moduleProgress?.score !== null && moduleProgress?.score !== undefined
+                        ? ` · ${moduleProgress.score}%`
+                        : ''}
+                    </Badge>
                   </div>
                   <h2 style={{ fontSize: '1.3rem', fontWeight: 800, marginTop: '0.5rem' }}>{module.title}</h2>
                   <p className="muted" style={{ marginTop: '0.4rem' }}>{module.summary}</p>
@@ -262,13 +320,20 @@ export function CourseDetailClient({ slug }: { slug: string }) {
                     >
                       <h3 style={{ fontWeight: 800, fontSize: '0.95rem' }}>
                         <span aria-hidden style={{ marginRight: 6 }}>{'\u{1F9E9}'}</span>
-                        Mini-scénario
+                        Mini-scénario MDM
                       </h3>
-                      <p style={{ marginTop: '0.4rem' }}>{module.game.scenario}</p>
-                      <ol style={{ marginTop: '0.6rem', paddingLeft: '1.25rem' }}>
-                        {module.game.steps.map((step) => (
+                      <p className="muted" style={{ marginTop: '0.45rem', fontSize: '0.9rem' }}>
+                        <strong>Comment jouer :</strong> lis le contexte ci-dessous, mémorise l’ordre logique des étapes
+                        (de haut en bas), puis réponds au quiz. La validation enregistre quiz + scénario quand tu es connecté.
+                      </p>
+                      <p style={{ marginTop: '0.65rem', fontWeight: 600 }}>{module.game.scenario}</p>
+                      <p className="muted" style={{ marginTop: '0.5rem', fontSize: '0.85rem' }}>
+                        Ordre attendu des actions :
+                      </p>
+                      <ol style={{ marginTop: '0.35rem', paddingLeft: '1.25rem' }}>
+                        {module.game.steps.map((step, stepIndex) => (
                           <li key={step.id} style={{ marginTop: '0.15rem' }}>
-                            {step.label}
+                            <strong>{stepIndex + 1}.</strong> {step.label}
                           </li>
                         ))}
                       </ol>
@@ -409,6 +474,80 @@ export function CourseDetailClient({ slug }: { slug: string }) {
         </aside>
       </div>
     </section>
+  );
+}
+
+type ModuleStatus = 'completed' | 'in_progress' | 'todo';
+
+type SuccessNotice = {
+  badges: string[];
+  gameScore: number;
+  moduleTitle: string;
+  pointsEarned: number;
+  quizScore: number;
+};
+
+function getModuleStatus(
+  moduleId: string,
+  moduleProgress: CourseProgressModule | undefined,
+  nextModuleId?: string | null
+): ModuleStatus {
+  if (moduleProgress?.completed) return 'completed';
+  if (moduleId === nextModuleId) return 'in_progress';
+  return 'todo';
+}
+
+function moduleStatusLabel(status: ModuleStatus) {
+  if (status === 'completed') return 'Terminé';
+  if (status === 'in_progress') return 'En cours';
+  return 'À faire';
+}
+
+function ModuleStatusStrip({
+  course,
+  moduleProgressById,
+  nextModuleId,
+}: {
+  course: CourseDetail;
+  moduleProgressById: Map<string, CourseProgressModule>;
+  nextModuleId?: string | null;
+}) {
+  return (
+    <div
+      style={{
+        display: 'grid',
+        gap: '0.5rem',
+        marginTop: '1rem',
+        gridTemplateColumns: `repeat(${Math.min(course.modules.length, 3)}, minmax(0, 1fr))`,
+      }}
+    >
+      {course.modules.map((module, index) => {
+        const moduleProgress = moduleProgressById.get(module.id);
+        const status = getModuleStatus(module.id, moduleProgress, nextModuleId);
+        return (
+          <div
+            key={module.id}
+            style={{
+              border: `1px solid ${status === 'completed' ? '#a8d8b2' : status === 'in_progress' ? '#f0cf7a' : 'var(--border-soft)'}`,
+              borderRadius: 12,
+              padding: '0.65rem 0.75rem',
+              background: status === 'completed' ? '#f4fbf6' : status === 'in_progress' ? '#fff8e6' : '#f8fafd',
+            }}
+          >
+            <p className="muted" style={{ fontSize: '0.72rem', fontWeight: 800, textTransform: 'uppercase' }}>
+              Unité {index + 1}
+            </p>
+            <p style={{ fontWeight: 700, fontSize: '0.85rem', marginTop: '0.15rem' }}>{module.title}</p>
+            <Badge
+              tone={status === 'completed' ? 'success' : status === 'in_progress' ? 'warning' : 'neutral'}
+              style={{ marginTop: '0.35rem' }}
+            >
+              {moduleStatusLabel(status)}
+            </Badge>
+          </div>
+        );
+      })}
+    </div>
   );
 }
 

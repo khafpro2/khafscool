@@ -5,13 +5,16 @@ const WEB_URL = (process.env.WEB_URL ?? DEFAULT_WEB_URL).replace(/\/+$/, '');
 const REQUEST_TIMEOUT_MS = Number(process.env.SMOKE_TIMEOUT_MS ?? 10_000);
 
 const pages = [
-  { path: '/auth', label: 'auth', marker: 'Compte local MVP' },
+  { path: '/auth', label: 'auth', marker: 'Authentification' },
   { path: '/dashboard', label: 'dashboard', marker: 'Tableau de bord' },
   { path: '/courses', label: 'courses', marker: 'Catalogue public' },
+  { path: '/badges', label: 'badges', marker: 'Mes super-badges' },
+  { path: '/quests', label: 'quests', marker: 'Quêtes hebdo' },
   { path: '/sprint', label: 'sprint', marker: 'Accélère ta préparation certification' },
   { path: '/pricing', label: 'pricing', marker: 'Tarifs MVP' },
   { path: '/diagnostics', label: 'diagnostics', marker: 'Diagnostics navigateur' },
   { path: '/mvp', label: 'mvp', marker: 'MVP testable' },
+  { path: '/demo', label: 'demo', marker: 'Guide de démonstration' },
 ];
 
 function log(message) {

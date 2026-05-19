@@ -110,6 +110,14 @@ async function main() {
     fail('GET /catalog did not return courses[]');
   }
 
+  const expectedSlugs = ['apple-cert-prep', 'jamf-pro-foundations', 'intune-ios-enrollment'];
+  const catalogSlugs = catalog.courses.map((course) => course?.slug).filter(Boolean);
+  const missingSlugs = expectedSlugs.filter((slug) => !catalogSlugs.includes(slug));
+  if (missingSlugs.length > 0) {
+    fail(`GET /catalog missing seeded slugs: ${missingSlugs.join(', ')}`);
+  }
+  log(`OK catalog contains ${expectedSlugs.length} seeded course slugs`);
+
   const registration = await postJson(
     'POST /auth/register',
     '/auth/register',

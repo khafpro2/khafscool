@@ -74,11 +74,24 @@ Parcours seedés :
 
 ## Web — pages MVP
 
-- `/auth` : inscription, connexion email et entrées OAuth de développement.
-- `/dashboard` : synthèse progression, points, streak et accès rapides.
-- `/courses` : catalogue privé et accès aux détails de parcours.
-- `/sprint` : Certification Sprint 7 ou 14 jours.
-- `/resources` : liens vers ressources officielles et documentation utile.
+| Route | Description |
+| ----- | ----------- |
+| `/` | Accueil Trailhead, parcours populaires et CTA |
+| `/auth` | Hero bleu, formulaire email, SSO dev (Apple, Google, Microsoft) |
+| `/dashboard` | Progression, points, streak, badges, quêtes et accès rapides |
+| `/courses` | Catalogue (3 parcours seedés × 3 modules chacun) |
+| `/courses/:slug` | Détail parcours, statuts unité (à faire / en cours / terminé), quiz et mini-scénario |
+| `/badges` | Collection de super-badges Apple, Jamf et Intune |
+| `/quests` | Quêtes hebdomadaires et récompenses |
+| `/leaderboard` | Classement communautaire par points |
+| `/sprint` | Certification Sprint 7 ou 14 jours |
+| `/pricing` | Tarifs et checkout MVP simulé |
+| `/resources` | Liens vers ressources officielles |
+| `/demo` | Guide de démonstration pas à pas pour testeurs |
+| `/diagnostics` | Santé API, DB Prisma, catalogue et session locale |
+| `/mvp` | Roadmap MVP (livré vs à venir) et checklist de revue |
+
+Parcours seedés (3 modules chacun) : `apple-cert-prep`, `jamf-pro-foundations`, `intune-ios-enrollment`.
 
 ## API — routes principales
 
@@ -137,7 +150,7 @@ API_URL=http://127.0.0.1:4000 pnpm smoke:api
 
 ### Smoke test web
 
-Quand le serveur web local est lancé, un smoke test sans navigateur vérifie rapidement les pages MVP principales : auth, dashboard, courses, sprint, pricing, diagnostics et mvp.
+Quand le serveur web local est lancé, un smoke test sans navigateur vérifie rapidement les pages MVP principales : auth, dashboard, courses, badges, quests, sprint, pricing, diagnostics, mvp et demo.
 
 ```bash
 pnpm --filter web dev
