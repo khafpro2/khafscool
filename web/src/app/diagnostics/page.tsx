@@ -1,9 +1,11 @@
 'use client';
 
-import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { API_URL } from '@/lib/api';
 import { getAuthTokenPresence } from '@/lib/auth';
+import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
 
 type CheckStatus = 'pending' | 'ok' | 'error' | 'warning';
 
@@ -12,16 +14,20 @@ type EndpointCheck = {
   status: CheckStatus;
 };
 
+const EXPECTED_CATALOG_SLUGS = ['apple-cert-prep', 'jamf-pro-foundations', 'intune-ios-enrollment'];
+
 const quickLinks = [
   { href: '/auth', label: 'Auth' },
-  { href: '/dashboard', label: 'Dashboard' },
+  { href: '/dashboard', label: 'Tableau de bord' },
   { href: '/courses', label: 'Parcours' },
+  { href: '/badges', label: 'Badges' },
+  { href: '/quests', label: 'Quêtes' },
   { href: '/sprint', label: 'Sprint' },
   { href: '/mvp', label: 'MVP' },
 ];
 
 const initialEndpointCheck: EndpointCheck = {
-  detail: 'Vérification en cours...',
+  detail: 'Vérification en cours…',
   status: 'pending',
 };
 
@@ -51,33 +57,25 @@ export default function DiagnosticsPage() {
   const hasAnyToken = Object.values(tokenPresence).some(Boolean);
   const hasAccessToken = tokenPresence.accessTokenCookie || tokenPresence.accessTokenLocal;
   const hasRefreshToken = tokenPresence.refreshTokenCookie || tokenPresence.refreshTokenLocal;
+  const sessionStatus: CheckStatus =
+    hasAccessToken && hasRefreshToken ? 'ok' : hasAnyToken ? 'warning' : 'error';
 
   return (
-    <section style={{ padding: '2rem 0' }}>
-      <div
-        className="card"
-        style={{
-          background: 'linear-gradient(135deg, #ffffff 0%, #eef6ff 58%, #fff8e6 100%)',
-          padding: '1.75rem',
-        }}
-      >
-        <p style={{ color: 'var(--accent)', fontSize: '0.85rem', fontWeight: 800, textTransform: 'uppercase' }}>
-          Diagnostics navigateur
-        </p>
-        <h1 style={{ fontSize: '2.35rem', fontWeight: 800, lineHeight: 1.12, marginTop: '0.35rem' }}>
-          Vérifier rapidement le MVP local
-        </h1>
-        <p style={{ color: 'var(--muted)', fontSize: '1.05rem', marginTop: '0.85rem', maxWidth: 820 }}>
-          Cette page aide les développeurs et testeurs à confirmer l’état de l’API, de la base Prisma, du catalogue
-          et de la session locale depuis le navigateur, sans afficher de token ni de secret.
+    <section style={{ padding: '1rem 0 2.5rem' }}>
+      <div className="hero">
+        <span className="hero-eyebrow">Diagnostics navigateur</span>
+        <h1>Vérifier rapidement le MVP local</h1>
+        <p style={{ marginTop: '0.75rem' }}>
+          Confirme l’état de l’API, de la base Prisma, du catalogue (3 parcours seedés) et de la session locale —
+          sans afficher de token ni de secret.
         </p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '1.25rem' }}>
-          <button className="btn" type="button" onClick={runEndpointChecks}>
+          <Button type="button" onClick={runEndpointChecks}>
             Relancer les vérifications
-          </button>
-          <Link className="btn" href="/auth" style={{ background: '#1d1d1f' }}>
+          </Button>
+          <Button href="/auth" variant="dark">
             Tester la connexion
-          </Link>
+          </Button>
         </div>
       </div>
 
@@ -89,12 +87,7 @@ export default function DiagnosticsPage() {
           marginTop: '1.5rem',
         }}
       >
-        <StatusCard
-          detail={healthCheck.detail}
-          label="API /health"
-          status={healthCheck.status}
-          title="Santé de l’API"
-        />
+        <StatusCard detail={healthCheck.detail} label="API /health" status={healthCheck.status} title="Santé de l’API" />
         <StatusCard
           detail={databaseCheck.detail}
           label="API /health/db"
@@ -114,30 +107,32 @@ export default function DiagnosticsPage() {
               : 'Aucun token local ou cookie détecté dans ce navigateur.'
           }
           label="Session locale"
-          status={hasAccessToken && hasRefreshToken ? 'ok' : hasAnyToken ? 'warning' : 'error'}
+          status={sessionStatus}
           title="Tokens navigateur"
         />
       </section>
 
-      <section className="card" style={{ marginTop: '1rem' }}>
-        <h2 style={{ fontSize: '1.25rem', fontWeight: 800 }}>Conseils DB/API locale</h2>
-        <p style={{ color: 'var(--muted)', marginTop: '0.35rem' }}>
-          Si la carte base de données reste en erreur, vérifie ces points sans partager la valeur de tes variables
-          d’environnement.
+      <Card style={{ marginTop: '1rem' }}>
+        <p className="section-eyebrow">Dépannage local</p>
+        <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginTop: '0.35rem' }}>Conseils Docker, migrate et seed</h2>
+        <p className="muted" style={{ marginTop: '0.35rem' }}>
+          Si la carte base de données reste en erreur, vérifie ces points sans partager tes variables d’environnement.
         </p>
         <ul style={{ color: 'var(--muted)', display: 'grid', gap: '0.45rem', marginTop: '0.85rem', paddingLeft: '1.25rem' }}>
-          <li>Docker Desktop est lancé si tu utilises le Postgres du projet.</li>
+          <li>Lance Docker Desktop si tu utilises le Postgres du projet (<code>pnpm db:up</code>).</li>
           <li>
-            <code>DATABASE_URL</code> existe côté backend et pointe vers la bonne base locale.
+            Vérifie que <code>DATABASE_URL</code> côté backend pointe vers la bonne base locale.
           </li>
-          <li>Les migrations Prisma ont été appliquées avec <code>pnpm db:migrate</code>.</li>
-          <li>Les données de démonstration ont été chargées avec <code>pnpm db:seed</code>.</li>
+          <li>Applique les migrations : <code>pnpm db:migrate</code>.</li>
+          <li>Charge les données de démo : <code>pnpm db:seed</code> (3 parcours × 3 modules).</li>
+          <li>Redémarre le backend : <code>pnpm --filter backend dev</code>.</li>
         </ul>
-      </section>
+      </Card>
 
-      <section className="card" style={{ marginTop: '1rem' }}>
-        <h2 style={{ fontSize: '1.25rem', fontWeight: 800 }}>Présence token local/cookie</h2>
-        <p style={{ color: 'var(--muted)', marginTop: '0.35rem' }}>
+      <Card style={{ marginTop: '1rem' }}>
+        <p className="section-eyebrow">Session</p>
+        <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginTop: '0.35rem' }}>Présence token local/cookie</h2>
+        <p className="muted" style={{ marginTop: '0.35rem' }}>
           Le diagnostic confirme uniquement la présence des clés d’authentification. Il n’affiche jamais leur contenu.
         </p>
         <div
@@ -153,22 +148,22 @@ export default function DiagnosticsPage() {
           <TokenPresence label="Refresh token localStorage" present={tokenPresence.refreshTokenLocal} />
           <TokenPresence label="Refresh token cookie" present={tokenPresence.refreshTokenCookie} />
         </div>
-      </section>
+      </Card>
 
-      <section className="card" style={{ marginTop: '1rem' }}>
-        <h2 style={{ fontSize: '1.25rem', fontWeight: 800 }}>Liens rapides</h2>
+      <Card style={{ marginTop: '1rem' }}>
+        <p className="section-eyebrow">Navigation</p>
+        <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginTop: '0.35rem' }}>Liens rapides</h2>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '1rem' }}>
           {quickLinks.map((link) => (
-            <Link className="btn" href={link.href} key={link.href} style={{ background: '#1d1d1f' }}>
+            <Button key={link.href} href={link.href} variant="dark" size="sm">
               {link.label}
-            </Link>
+            </Button>
           ))}
         </div>
-      </section>
+      </Card>
 
-      <p style={{ color: 'var(--muted)', fontSize: '0.9rem', marginTop: '1rem' }}>
-        API ciblée: <code>{API_URL}</code>. Si le backend est arrêté ou inaccessible, les cartes affichent une erreur
-        exploitable et les liens de navigation restent disponibles.
+      <p className="muted" style={{ fontSize: '0.9rem', marginTop: '1rem' }}>
+        API ciblée : <code>{API_URL}</code>. Si le backend est arrêté, les cartes affichent une erreur exploitable.
       </p>
     </section>
   );
@@ -187,12 +182,12 @@ async function checkHealth(): Promise<EndpointCheck> {
     }
 
     return {
-      detail: `OK - ${data.service ?? 'service API joignable'}.`,
+      detail: `OK — ${data.service ?? 'service API joignable'}.`,
       status: 'ok',
     };
   } catch {
     return {
-      detail: 'API indisponible depuis le navigateur. Vérifie que le backend écoute bien sur l’URL configurée.',
+      detail: 'API indisponible depuis le navigateur. Vérifie que le backend écoute sur l’URL configurée.',
       status: 'error',
     };
   }
@@ -213,7 +208,7 @@ async function checkDatabase(): Promise<EndpointCheck> {
 
     if (!res.ok || data?.status === 'error') {
       return {
-        detail: `${message} Vérifie Docker Desktop, DATABASE_URL, puis migrate/seed.`,
+        detail: `${message} Vérifie Docker, DATABASE_URL, puis migrate/seed.`,
         status: 'error',
       };
     }
@@ -226,7 +221,7 @@ async function checkDatabase(): Promise<EndpointCheck> {
     }
 
     return {
-      detail: `OK - ${message}`,
+      detail: `OK — ${message}`,
       status: 'ok',
     };
   } catch {
@@ -244,13 +239,23 @@ async function checkCatalog(): Promise<EndpointCheck> {
       return { detail: `Erreur HTTP ${res.status} sur /catalog.`, status: 'error' };
     }
 
-    const data = (await res.json()) as { courses?: unknown[] };
+    const data = (await res.json()) as { courses?: { slug?: string }[] };
     if (!Array.isArray(data.courses)) {
       return { detail: 'Réponse reçue, mais le catalogue ne contient pas de liste courses.', status: 'warning' };
     }
 
+    const slugs = data.courses.map((course) => course.slug).filter(Boolean) as string[];
+    const missing = EXPECTED_CATALOG_SLUGS.filter((slug) => !slugs.includes(slug));
+
+    if (missing.length > 0) {
+      return {
+        detail: `${data.courses.length} parcours détectés, mais slugs manquants : ${missing.join(', ')}. Relance le seed.`,
+        status: 'warning',
+      };
+    }
+
     return {
-      detail: `OK - ${data.courses.length} parcours détecté${data.courses.length > 1 ? 's' : ''}.`,
+      detail: `OK — ${data.courses.length} parcours dont les 3 slugs seedés (Apple, Jamf, Intune).`,
       status: 'ok',
     };
   } catch {
@@ -261,37 +266,39 @@ async function checkCatalog(): Promise<EndpointCheck> {
   }
 }
 
-function StatusCard({ detail, label, status, title }: { detail: string; label: string; status: CheckStatus; title: string }) {
+function StatusCard({
+  detail,
+  label,
+  status,
+  title,
+}: {
+  detail: string;
+  label: string;
+  status: CheckStatus;
+  title: string;
+}) {
   return (
-    <article className="card" style={{ borderColor: statusColor(status), display: 'grid', gap: '0.5rem' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem' }}>
-        <p style={{ color: 'var(--muted)', fontSize: '0.8rem', fontWeight: 800, textTransform: 'uppercase' }}>
+    <Card style={{ borderColor: statusColor(status) }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'center' }}>
+        <p className="muted" style={{ fontSize: '0.8rem', fontWeight: 800, textTransform: 'uppercase' }}>
           {label}
         </p>
-        <span
-          style={{
-            background: statusBackground(status),
-            borderRadius: 999,
-            color: statusColor(status),
-            fontSize: '0.8rem',
-            fontWeight: 800,
-            padding: '0.25rem 0.6rem',
-            whiteSpace: 'nowrap',
-          }}
-        >
+        <Badge tone={status === 'ok' ? 'success' : status === 'warning' ? 'warning' : 'neutral'}>
           {statusLabel(status)}
-        </span>
+        </Badge>
       </div>
-      <h2 style={{ fontSize: '1.2rem', fontWeight: 800 }}>{title}</h2>
-      <p style={{ color: 'var(--muted)' }}>{detail}</p>
-    </article>
+      <h2 style={{ fontSize: '1.2rem', fontWeight: 800, marginTop: '0.5rem' }}>{title}</h2>
+      <p className="muted" style={{ marginTop: '0.35rem' }}>{detail}</p>
+    </Card>
   );
 }
 
 function TokenPresence({ label, present }: { label: string; present: boolean }) {
   return (
     <div style={{ background: '#f5f5f7', borderRadius: 12, padding: '0.85rem' }}>
-      <p style={{ color: 'var(--muted)', fontSize: '0.85rem', fontWeight: 700 }}>{label}</p>
+      <p className="muted" style={{ fontSize: '0.85rem', fontWeight: 700 }}>
+        {label}
+      </p>
       <strong style={{ color: present ? '#0f7a3b' : '#b42318', display: 'block', marginTop: '0.2rem' }}>
         {present ? 'Présent' : 'Absent'}
       </strong>
@@ -311,11 +318,4 @@ function statusColor(status: CheckStatus) {
   if (status === 'warning') return '#a15c00';
   if (status === 'error') return '#b42318';
   return 'var(--accent)';
-}
-
-function statusBackground(status: CheckStatus) {
-  if (status === 'ok') return '#e7f7ee';
-  if (status === 'warning') return '#fff3d6';
-  if (status === 'error') return '#fee4e2';
-  return '#eef6ff';
 }

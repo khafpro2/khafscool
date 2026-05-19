@@ -1,173 +1,190 @@
-import Link from 'next/link';
+import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
 
-const MVP_SECTIONS = [
+const DELIVERED = [
   {
-    title: 'Auth web/mobile',
+    title: 'Auth web & mobile',
     description:
-      'Connexion locale, inscription, stockage du token MVP et reprise de session pour le dashboard web et les écrans mobile.',
+      'Connexion email, OAuth de développement, tokens MVP et reprise de session pour le tableau de bord et l’app mobile.',
     href: '/auth',
     cta: 'Tester la connexion',
   },
   {
-    title: 'Parcours et progression',
+    title: '3 parcours × 3 modules',
     description:
-      'Parcours Apple, Jamf et Intune avec progression, prochaine action recommandée, badges et quêtes côté dashboard.',
-    href: '/dashboard',
-    cta: 'Voir le dashboard',
+      'Apple Device Support, Jamf Pro et Intune iOS avec quiz, mini-scénarios et progression par unité.',
+    href: '/courses',
+    cta: 'Voir le catalogue',
   },
   {
-    title: 'Certification Sprint',
-    description:
-      'Sprint de 7 ou 14 jours pour transformer un objectif de certification en plan de révision mesurable.',
+    title: 'Tableau de bord Trailhead',
+    description: 'Progression, badges, quêtes hebdo, classement et actions rapides par piste.',
+    href: '/dashboard',
+    cta: 'Ouvrir le tableau de bord',
+  },
+  {
+    title: 'Badges & quêtes',
+    description: 'Super-badges par piste et quêtes hebdomadaires avec points de récompense.',
+    href: '/badges',
+    cta: 'Voir mes badges',
+  },
+  {
+    title: 'Sprint certification',
+    description: 'Plans de révision 7 ou 14 jours pour Apple, Jamf ou Intune.',
     href: '/sprint',
     cta: 'Lancer un sprint',
   },
   {
-    title: 'Billing demo',
-    description:
-      'Page tarifs et checkout MVP avec redirection de connexion, appel backend et réponse de démonstration quand Stripe est simulé.',
+    title: 'Billing démo',
+    description: 'Tarifs publics et checkout MVP simulé (mensuel, annuel, entreprise).',
     href: '/pricing',
     cta: 'Tester le billing',
   },
+];
+
+const UPCOMING = [
   {
-    title: 'Ressources officielles',
-    description:
-      'Liens de référence Apple, Jamf et Microsoft Intune pour vérifier les contenus avant une revue métier.',
-    href: '/resources',
-    cta: 'Ouvrir les sources',
+    title: 'Stripe Checkout réel',
+    description: 'Paiements production avec webhooks et gestion d’abonnement.',
+  },
+  {
+    title: 'Notifications push',
+    description: 'Rappels de sprint, quêtes et streak sur mobile.',
+  },
+  {
+    title: 'Parcours avancés',
+    description: 'Modules supplémentaires, labs guidés et scénarios multi-étapes.',
+  },
+  {
+    title: 'Équipes & entreprise',
+    description: 'Invitations, reporting manager et parcours assignés.',
   },
 ];
 
 const TEST_CHECKLIST = [
-  {
-    label: 'Créer un compte ou se connecter',
-    href: '/auth',
-    detail: 'Vérifie la création de session locale, puis la redirection vers le dashboard.',
-  },
-  {
-    label: 'Confirmer la progression',
-    href: '/dashboard',
-    detail: 'Contrôle les statistiques, badges, quêtes et accès rapides, connecté ou en fallback démo.',
-  },
-  {
-    label: 'Explorer un parcours',
-    href: '/courses',
-    detail: 'Ouvre la liste des cours, puis un module pour vérifier les liens internes.',
-  },
-  {
-    label: 'Démarrer un Certification Sprint',
-    href: '/sprint',
-    detail: 'Teste un sprint Apple, Jamf ou Intune en 7 ou 14 jours.',
-  },
-  {
-    label: 'Essayer le checkout démo',
-    href: '/pricing',
-    detail: 'Lance un plan mensuel, annuel ou entreprise et vérifie le message de démonstration.',
-  },
-  {
-    label: 'Comparer avec les ressources officielles',
-    href: '/resources',
-    detail: 'Valide que les liens externes de référence restent accessibles.',
-  },
+  { label: 'Créer un compte ou se connecter', href: '/auth', detail: 'Vérifie la session locale puis la redirection vers le tableau de bord.' },
+  { label: 'Confirmer la progression', href: '/dashboard', detail: 'Statistiques, badges, quêtes et accès rapides (connecté ou fallback démo).' },
+  { label: 'Explorer un parcours 3 modules', href: '/courses/apple-cert-prep', detail: 'Statuts à faire / en cours / terminé et validation d’unité.' },
+  { label: 'Démarrer un sprint', href: '/sprint', detail: 'Sprint Apple, Jamf ou Intune en 7 ou 14 jours.' },
+  { label: 'Essayer le checkout démo', href: '/pricing', detail: 'Plan mensuel, annuel ou entreprise avec message de démonstration.' },
+  { label: 'Vérifier API & DB', href: '/diagnostics', detail: 'Health, Prisma, catalogue 3 slugs et tokens masqués.' },
 ];
 
 const OFFICIAL_LINKS = [
   { label: 'Apple Training & Certifications', href: 'https://training.apple.com' },
   { label: 'Jamf Learning Hub', href: 'https://learn.jamf.com' },
-  { label: 'Microsoft Learn - Intune', href: 'https://learn.microsoft.com/mem/intune/' },
+  { label: 'Microsoft Learn — Intune', href: 'https://learn.microsoft.com/mem/intune/' },
 ];
 
 export default function MvpPage() {
   return (
-    <section style={{ padding: '2rem 0' }}>
-      <div
-        className="card"
-        style={{
-          background: 'linear-gradient(135deg, #ffffff 0%, #eef6ff 58%, #fff8e6 100%)',
-          padding: '1.75rem',
-        }}
-      >
-        <p style={{ color: 'var(--accent)', fontSize: '0.85rem', fontWeight: 800, textTransform: 'uppercase' }}>
-          MVP testable
-        </p>
-        <h1 style={{ fontSize: '2.35rem', fontWeight: 800, lineHeight: 1.12, marginTop: '0.35rem' }}>
-          Guide rapide pour reviewers et testeurs
-        </h1>
-        <p style={{ color: 'var(--muted)', fontSize: '1.05rem', marginTop: '0.85rem', maxWidth: 820 }}>
-          Cette page regroupe les surfaces principales à vérifier pour la release MVP: authentification,
-          apprentissage, sprint certification, billing de démonstration et sources officielles.
+    <section style={{ padding: '1rem 0 2.5rem' }}>
+      <div className="hero">
+        <span className="hero-eyebrow">MVP testable</span>
+        <h1>Roadmap MVP pour reviewers et testeurs</h1>
+        <p style={{ marginTop: '0.75rem' }}>
+          Vue d’ensemble des fonctionnalités livrées et des prochaines étapes — authentification, apprentissage
+          gamifié, sprint certification et billing de démonstration.
         </p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '1.25rem' }}>
-          <Link className="btn" href="/auth">
+          <Button href="/auth" variant="secondary">
             Commencer le test
-          </Link>
-          <Link className="btn" href="/dashboard" style={{ background: '#1d1d1f' }}>
-            Ouvrir le dashboard
-          </Link>
-          <Link href="/diagnostics" style={{ alignSelf: 'center', fontWeight: 800 }}>
-            Diagnostics navigateur
-          </Link>
+          </Button>
+          <Button href="/dashboard" variant="dark">
+            Tableau de bord
+          </Button>
+          <Button href="/diagnostics" variant="ghost" style={{ color: '#fff', borderColor: 'rgba(255,255,255,0.4)' }}>
+            Diagnostics
+          </Button>
         </div>
       </div>
 
-      <section style={{ marginTop: '2rem' }}>
-        <h2 style={{ fontSize: '1.5rem', fontWeight: 800 }}>Périmètre MVP</h2>
+      <section className="section">
+        <div className="section-head">
+          <div>
+            <span className="section-eyebrow">Livré</span>
+            <h2 style={{ fontSize: '1.5rem', fontWeight: 800, marginTop: '0.25rem' }}>Fonctionnalités disponibles</h2>
+          </div>
+          <Badge tone="success" icon="\u2705">
+            Release MVP
+          </Badge>
+        </div>
         <div
           style={{
             display: 'grid',
             gap: '1rem',
             gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
-            marginTop: '1rem',
           }}
         >
-          {MVP_SECTIONS.map((item) => (
-            <article className="card" key={item.title}>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: 800 }}>{item.title}</h3>
-              <p style={{ color: 'var(--muted)', marginTop: '0.5rem' }}>{item.description}</p>
-              <Link href={item.href} style={{ display: 'inline-block', fontWeight: 700, marginTop: '0.85rem' }}>
+          {DELIVERED.map((item) => (
+            <Card key={item.title} variant="soft">
+              <Badge tone="success" icon="\u2714\uFE0F">
+                Livré
+              </Badge>
+              <h3 style={{ fontSize: '1.1rem', fontWeight: 800, marginTop: '0.5rem' }}>{item.title}</h3>
+              <p className="muted" style={{ marginTop: '0.45rem', fontSize: '0.9rem' }}>{item.description}</p>
+              <Button href={item.href} size="sm" style={{ marginTop: '0.75rem' }}>
                 {item.cta}
-              </Link>
-            </article>
+              </Button>
+            </Card>
           ))}
         </div>
       </section>
 
-      <section
-        className="card"
-        style={{
-          background: '#ffffff',
-          marginTop: '2rem',
-        }}
-      >
-        <h2 style={{ fontSize: '1.5rem', fontWeight: 800 }}>Checklist de test</h2>
-        <p style={{ color: 'var(--muted)', marginTop: '0.5rem' }}>
-          Utilise ces liens dans l’ordre pour valider un scénario de revue court, puis répète les étapes clés sans
-          session afin de confirmer les fallbacks de démonstration.
+      <section className="section">
+        <div className="section-head">
+          <div>
+            <span className="section-eyebrow">Prochainement</span>
+            <h2 style={{ fontSize: '1.5rem', fontWeight: 800, marginTop: '0.25rem' }}>Sur la roadmap</h2>
+          </div>
+          <Badge tone="neutral" icon="\u{1F52E}">
+            Planifié
+          </Badge>
+        </div>
+        <div
+          style={{
+            display: 'grid',
+            gap: '1rem',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+          }}
+        >
+          {UPCOMING.map((item) => (
+            <Card key={item.title} variant="flat" style={{ background: '#f5f5f7' }}>
+              <Badge tone="outline" icon="\u{1F4C5}">
+                À venir
+              </Badge>
+              <h3 style={{ fontSize: '1.1rem', fontWeight: 800, marginTop: '0.5rem' }}>{item.title}</h3>
+              <p className="muted" style={{ marginTop: '0.45rem', fontSize: '0.9rem' }}>{item.description}</p>
+            </Card>
+          ))}
+        </div>
+      </section>
+
+      <Card style={{ marginTop: '2rem' }}>
+        <p className="section-eyebrow">Checklist</p>
+        <h2 style={{ fontSize: '1.5rem', fontWeight: 800, marginTop: '0.35rem' }}>Scénario de revue court</h2>
+        <p className="muted" style={{ marginTop: '0.5rem' }}>
+          Enchaîne ces étapes connecté, puis répète sans session pour valider les fallbacks démo.
         </p>
         <ol style={{ display: 'grid', gap: '0.85rem', marginTop: '1rem', paddingLeft: '1.25rem' }}>
           {TEST_CHECKLIST.map((item) => (
             <li key={item.href}>
-              <Link href={item.href} style={{ fontWeight: 800 }}>
+              <Button href={item.href} variant="ghost" size="sm" style={{ padding: 0, fontWeight: 800 }}>
                 {item.label}
-              </Link>
-              <p style={{ color: 'var(--muted)', marginTop: '0.2rem' }}>{item.detail}</p>
+              </Button>
+              <p className="muted" style={{ marginTop: '0.2rem', fontSize: '0.9rem' }}>{item.detail}</p>
             </li>
           ))}
         </ol>
-      </section>
+      </Card>
 
-      <section
-        className="card"
-        style={{
-          background: '#fff8e6',
-          borderColor: '#f0cf7a',
-          marginTop: '1.5rem',
-        }}
-      >
-        <h2 style={{ fontSize: '1.25rem', fontWeight: 800 }}>Sources de vérité externes</h2>
-        <p style={{ color: 'var(--muted)', marginTop: '0.45rem' }}>
-          Les contenus pédagogiques du MVP sont originaux. Pour une revue métier ou certification, vérifie toujours les
-          exigences à jour auprès des éditeurs.
+      <Card variant="soft" style={{ marginTop: '1.5rem', borderColor: '#f0cf7a', background: '#fff8e6' }}>
+        <p className="section-eyebrow">Références</p>
+        <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginTop: '0.35rem' }}>Sources de vérité externes</h2>
+        <p className="muted" style={{ marginTop: '0.45rem' }}>
+          Contenus pédagogiques originaux. Pour une revue métier ou certification, vérifie les exigences à jour
+          auprès des éditeurs.
         </p>
         <ul style={{ display: 'grid', gap: '0.5rem', listStyle: 'none', marginTop: '1rem' }}>
           {OFFICIAL_LINKS.map((link) => (
@@ -178,7 +195,7 @@ export default function MvpPage() {
             </li>
           ))}
         </ul>
-      </section>
+      </Card>
     </section>
   );
 }
