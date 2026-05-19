@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { fetchUserBadges, type UserBadge, type UserBadgesResult } from '@/lib/api';
+import { AuthConnectBanner } from '@/components/auth/AuthConnectBanner';
 import { getAccessToken } from '@/lib/auth';
 import {
   ALL_BADGE_SLUGS,
@@ -71,6 +72,7 @@ export default function BadgesPage() {
 
   return (
     <section style={{ padding: '1rem 0 2rem' }}>
+      {!hasToken ? <AuthConnectBanner redirectPath="/badges" /> : null}
       <div
         className="hero"
         style={{

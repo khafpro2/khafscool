@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { fetchLeaderboard, type LeaderboardEntry, type LeaderboardResponse } from '@/lib/api';
+import { AuthConnectBanner } from '@/components/auth/AuthConnectBanner';
 import { getAccessToken } from '@/lib/auth';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -59,6 +60,7 @@ export default function LeaderboardPage() {
 
   return (
     <section style={{ padding: '1rem 0 2rem' }}>
+      {!hasToken ? <AuthConnectBanner redirectPath="/leaderboard" /> : null}
       <div
         className="hero"
         style={{

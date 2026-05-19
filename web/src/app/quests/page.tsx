@@ -6,6 +6,7 @@ import {
   type WeeklyQuest,
   type WeeklyQuestsResponse,
 } from '@/lib/api';
+import { AuthConnectBanner } from '@/components/auth/AuthConnectBanner';
 import { getAccessToken } from '@/lib/auth';
 import { formatTrack } from '@/lib/tracks';
 import { Badge } from '@/components/ui/Badge';
@@ -71,6 +72,7 @@ export default function WeeklyQuestsPage() {
 
   return (
     <section style={{ padding: '1rem 0 2rem' }}>
+      {!hasToken ? <AuthConnectBanner redirectPath="/quests" /> : null}
       <div
         className="hero"
         style={{

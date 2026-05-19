@@ -8,6 +8,7 @@ import {
   type CertificationSprintSummary,
   type CertificationSprintTrack,
 } from '@/lib/api';
+import { AuthConnectBanner } from '@/components/auth/AuthConnectBanner';
 import { getAccessToken } from '@/lib/auth';
 import { formatTrack } from '@/lib/tracks';
 import { Badge } from '@/components/ui/Badge';
@@ -131,6 +132,7 @@ export default function SprintPage() {
 
   return (
     <section style={{ padding: '1rem 0 2rem' }}>
+      {!hasToken ? <AuthConnectBanner redirectPath="/sprint" /> : null}
       <div className="hero" style={{ background: SPRINT_GRADIENT, marginTop: 0 }}>
         <span className="hero-eyebrow">
           <span aria-hidden>{SPRINT_VISUAL.icon}</span> Certification Sprint
