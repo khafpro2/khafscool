@@ -41,9 +41,6 @@ export function CoursesCatalogScreen() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.header}>
-        <Pressable onPress={() => router.back()} style={styles.backButton}>
-          <Text style={styles.backText}>← Retour</Text>
-        </Pressable>
         <Text style={styles.eyebrow}>Catalogue MDM Academy</Text>
         <Text style={styles.title}>Tous les parcours</Text>
         <Text style={styles.subtitle}>
@@ -108,8 +105,6 @@ const styles = StyleSheet.create({
   loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#F5F5F7' },
   loadingText: { marginTop: 12, color: '#6E6E73', fontSize: 15 },
   header: { marginBottom: 20 },
-  backButton: { marginBottom: 12 },
-  backText: { color: '#0070D2', fontWeight: '700', fontSize: 15 },
   eyebrow: { color: '#0070D2', fontSize: 13, fontWeight: '700', marginBottom: 4, textTransform: 'uppercase' },
   title: { color: '#1D1D1F', fontSize: 28, fontWeight: '800' },
   subtitle: { color: '#6E6E73', marginTop: 8, lineHeight: 22 },

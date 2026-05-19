@@ -1,7 +1,7 @@
+import { Redirect } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { WelcomeScreen } from '../src/screens/auth/WelcomeScreen';
-import { LearnerDashboardScreen } from '../src/screens/dashboard/LearnerDashboardScreen';
 import { getAccessToken } from '../src/services/auth';
 
 export default function Index() {
@@ -28,7 +28,7 @@ export default function Index() {
   }
 
   if (isAuthenticated) {
-    return <LearnerDashboardScreen onSignOut={() => setIsAuthenticated(false)} />;
+    return <Redirect href="/(tabs)" />;
   }
 
   return <WelcomeScreen onAuthSuccess={() => setIsAuthenticated(true)} />;

@@ -196,7 +196,7 @@ export function LearnerDashboardScreen({ onSignOut }: LearnerDashboardScreenProp
       ) : (
         <Text style={styles.emptyText}>Aucun parcours actif. Explore le catalogue pour commencer.</Text>
       )}
-      <Pressable style={styles.catalogButton} onPress={() => router.push('/courses')}>
+      <Pressable style={styles.catalogButton} onPress={() => router.push('/(tabs)/courses')}>
         <Text style={styles.catalogButtonText}>Voir tous les parcours →</Text>
       </Pressable>
 
