@@ -85,7 +85,7 @@ export default function ProfilePage() {
     );
   }
 
-  const { user, stats, badges, quests, courses, certificationSprint } = data;
+  const { user, stats, badges, quests, courses, certificationSprint, completedCourses = [] } = data;
   const displayName = user.displayName ?? storedUser?.displayName ?? 'Trailblazer';
   const email = user.email ?? storedUser?.email ?? 'demo@ama.dev';
   const rank = getRankInfo(stats.points);
@@ -194,6 +194,45 @@ export default function ProfilePage() {
           </Card>
         )}
       </section>
+
+      {completedCourses.length > 0 ? (
+        <section className="section" style={{ marginTop: '1.5rem' }}>
+          <div className="section-head">
+            <div>
+              <span className="section-eyebrow">Victoires</span>
+              <h2>Parcours terminés</h2>
+            </div>
+            <Link href="/badges" style={{ fontWeight: 700 }}>
+              Badges →
+            </Link>
+          </div>
+          <div className="grid grid-cards-lg">
+            {completedCourses.map((course) => {
+              const level = inferLevelFromModules(
+                courses.find((item) => item.slug === course.slug)?.totalModules
+              );
+              const points = estimatePoints(
+                courses.find((item) => item.slug === course.slug)?.totalModules,
+                level
+              );
+              return (
+                <TrailCard
+                  key={course.slug}
+                  href={`/courses/${course.slug}/complete`}
+                  title={course.title}
+                  track={course.track}
+                  trackLabel={formatTrack(course.track)}
+                  progressPercent={100}
+                  level={level}
+                  points={points}
+                  cta="Revoir la victoire"
+                  status="completed"
+                />
+              );
+            })}
+          </div>
+        </section>
+      ) : null}
 
       <section
         style={{

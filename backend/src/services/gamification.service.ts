@@ -45,6 +45,46 @@ export function sumCoursePointsFromProgress(
   );
 }
 
+export type CompletedCourseSummary = {
+  slug: string;
+  title: string;
+  track: CourseTrack;
+  completedAt: string;
+};
+
+export function buildCompletedCourses(
+  courses: {
+    slug: string;
+    title: string;
+    track: CourseTrack;
+    modules: { progresses: { completedAt: Date | null }[] }[];
+  }[]
+): CompletedCourseSummary[] {
+  return courses
+    .filter((course) => {
+      const total = course.modules.length;
+      if (!total) return false;
+      return course.modules.every((module) =>
+        module.progresses.some((progress) => progress.completedAt)
+      );
+    })
+    .map((course) => {
+      const dates = course.modules
+        .flatMap((module) => module.progresses.map((progress) => progress.completedAt))
+        .filter((date): date is Date => date != null);
+      const completedAt =
+        dates.length > 0
+          ? new Date(Math.max(...dates.map((date) => date.getTime()))).toISOString()
+          : new Date().toISOString();
+      return {
+        slug: course.slug,
+        title: course.title,
+        track: course.track,
+        completedAt,
+      };
+    });
+}
+
 export function buildCourseCompletionResult(
   course: { slug: string; title: string; track: CourseTrack },
   completedModules: number,
@@ -729,6 +769,7 @@ export async function getDashboard(userId: string) {
     quests: user.quests,
     certificationSprint: await getCurrentCertificationSprint(userId),
     courses: coursesWithProgress,
+    completedCourses: buildCompletedCourses(courses),
     subscription: user.subscription,
   };
 }

@@ -16,6 +16,13 @@ export interface AuthResponse {
   user: AuthUser;
 }
 
+export interface CompletedCourseSummary {
+  slug: string;
+  title: string;
+  track: string;
+  completedAt: string;
+}
+
 export interface DashboardData {
   user: AuthUser;
   stats: {
@@ -30,6 +37,7 @@ export interface DashboardData {
   quests: { id: string; label: string; progress: number; target: number }[];
   certificationSprint?: CertificationSprintSummary | null;
   courses: CourseSummary[];
+  completedCourses?: CompletedCourseSummary[];
 }
 
 export type CertificationSprintTrack = 'APPLE' | 'JAMF' | 'INTUNE';
@@ -331,8 +339,40 @@ export async function fetchCurrentUser(token?: string): Promise<CurrentUserRespo
   }
 }
 
+interface DashboardApiResponse {
+  user: AuthUser;
+  stats: {
+    points: number;
+    level: string;
+    modulesCompleted: number;
+    timeSpentMinutes: number;
+    averageQuizScore: number;
+    preparationScore?: number;
+  };
+  badges: string[];
+  quests: { id: string; label: string; progress: number; target: number }[];
+  certificationSprint?: CertificationSprintSummary | null;
+  courses: CourseSummary[];
+  completedCourses?: CompletedCourseSummary[];
+}
+
 export async function fetchDashboard(token?: string): Promise<DashboardData> {
   try {
+    if (token) {
+      const data = await apiRequest<DashboardApiResponse>('/users/me/dashboard', {
+        headers: authHeader(token),
+      });
+      return {
+        user: data.user,
+        stats: data.stats,
+        badges: data.badges,
+        quests: data.quests,
+        certificationSprint: data.certificationSprint ?? null,
+        courses: data.courses,
+        completedCourses: data.completedCourses ?? [],
+      };
+    }
+
     const data = await apiRequest<UserProgressData>('/users/me/progress', { headers: authHeader(token) });
     return toDashboardData(data);
   } catch {
@@ -637,6 +677,14 @@ function mockDashboard(): DashboardData {
     courses: [
       { id: '1', slug: 'apple-cert-prep', title: 'Parcours Apple', track: 'APPLE', progressPercent: 100 },
       { id: '2', slug: 'jamf-pro-foundations', title: 'Fondamentaux Jamf Pro', track: 'JAMF', progressPercent: 0 },
+    ],
+    completedCourses: [
+      {
+        slug: 'apple-cert-prep',
+        title: 'Parcours Apple',
+        track: 'APPLE',
+        completedAt: '2026-03-12T10:30:00.000Z',
+      },
     ],
   };
 }
