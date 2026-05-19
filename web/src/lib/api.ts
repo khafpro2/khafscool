@@ -309,6 +309,28 @@ function mockUserBadges(): UserBadgesResult {
   };
 }
 
+export interface CurrentUserResponse {
+  user: AuthUser;
+  progress: {
+    points: number;
+    level: string;
+    badges: string[];
+    totalModules?: number;
+    completedModules?: number;
+  } | null;
+  subscription: { plan: string; status: string } | null;
+}
+
+export async function fetchCurrentUser(token?: string): Promise<CurrentUserResponse | null> {
+  if (!token) return null;
+
+  try {
+    return await apiRequest<CurrentUserResponse>('/auth/me', { headers: authHeader(token) });
+  } catch {
+    return null;
+  }
+}
+
 export async function fetchDashboard(token?: string): Promise<DashboardData> {
   try {
     const data = await apiRequest<UserProgressData>('/users/me/progress', { headers: authHeader(token) });

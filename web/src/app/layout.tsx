@@ -40,8 +40,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               ))}
             </nav>
             <div className="site-actions">
-              <Button href="/dashboard" variant="ghost" size="sm">
-                Mon profil
+              <Button href="/profile" variant="ghost" size="sm">
+                Profil
               </Button>
               <Button href="/auth" size="sm">
                 Se connecter
