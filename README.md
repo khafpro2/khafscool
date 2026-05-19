@@ -102,7 +102,7 @@ Parcours seedés :
 
 | Route | Description |
 | ----- | ----------- |
-| `/` | Accueil Trailhead, parcours populaires et CTA |
+| `/` | Accueil MDM Academy, parcours populaires et CTA |
 | `/auth` | Hero bleu, formulaire email, SSO dev (Apple, Google, Microsoft) |
 | `/dashboard` | Progression, points, streak, badges, quêtes et accès rapides |
 | `/courses` | Catalogue (3 parcours seedés × 3 modules chacun) |
@@ -227,11 +227,21 @@ pnpm build
 
 ## Contribution
 
-Les évolutions majeures de la branche `cursor/progress-dashboard-auth-v2` sont regroupées dans [PR #6](https://github.com/khafpro2/khafscool/pull/6) (catalogue Trailhead, complétion de parcours, mobile et auth gamification). Voir aussi [CHANGELOG.md](./CHANGELOG.md).
+Les évolutions majeures de la branche `cursor/progress-dashboard-auth-v2` sont regroupées dans [PR #6](https://github.com/khafpro2/khafscool/pull/6) (catalogue parcours gamifiés, complétion de parcours, mobile et auth gamification). Voir aussi [CHANGELOG.md](./CHANGELOG.md).
 
 ## Contenu et ressources
 
 Les contenus pédagogiques du MVP sont originaux et non affiliés à Apple, Jamf ou Microsoft. Les pages de ressources peuvent pointer vers les documentations officielles pour préparer les certifications et vérifier les pratiques produit.
+
+## Propositions de thème (Cursor Canvas)
+
+Un canvas interactif compare **trois thèmes alternatifs** au style Trailhead actuel (`web/src/app/globals.css`) : *Nuit Trailblazer*, *Apple Pro* et *Jamf Enterprise* (palettes, typo, aperçu header / TrailCard / badges).
+
+**Ouvrir dans Cursor** : panneau **Canvas** (icône à côté du chat) ou clic sur le fichier :
+
+`~/.cursor/projects/Users-khafpro-apple-mdm-academy/canvases/mdm-academy-theme-proposals.canvas.tsx`
+
+Ce fichier est géré par l’IDE (hors dépôt git) ; le README documente son emplacement pour l’équipe.
 
 ## Prochaines étapes
 
