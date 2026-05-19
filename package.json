@@ -3,6 +3,7 @@
   "private": true,
   "scripts": {
     "dev": "turbo run dev",
+    "dev:stack": "bash scripts/dev-stack.sh",
     "build": "turbo run build",
     "db:up": "docker compose up -d postgres",
     "db:down": "docker compose down",

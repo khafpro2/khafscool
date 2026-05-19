@@ -21,7 +21,9 @@ Plateforme de formation gamifiée pour techniciens Apple et administrateurs MDM 
 - pnpm 9+
 - PostgreSQL 15+ ou Docker pour lancer PostgreSQL localement
 
-## Installation
+## Démarrage rapide
+
+**Première fois** (base + dépendances) :
 
 ```bash
 cd apple-mdm-academy
@@ -33,21 +35,37 @@ pnpm db:up
 pnpm db:generate
 pnpm db:migrate
 pnpm db:seed
-pnpm dev
+```
+
+**Une commande** — Postgres + API + web (2 terminaux fusionnés, Ctrl+C pour tout arrêter) :
+
+```bash
+pnpm dev:stack
+```
+
+**Trois terminaux** (contrôle fin) :
+
+```bash
+# Terminal 1 — base
+pnpm db:up
+
+# Terminal 2 — API http://localhost:4000
+pnpm --filter backend dev
+
+# Terminal 3 — Web http://127.0.0.1:3000
+pnpm --filter web dev
+```
+
+Mobile (Expo, optionnel) :
+
+```bash
+pnpm --filter mobile dev
 ```
 
 La configuration Docker démarre PostgreSQL 16 sur `localhost:5432` avec la base `apple_mdm_academy` et l'utilisateur `postgres` / `postgres`, ce qui correspond au `DATABASE_URL` de `.env.example`. Pour arrêter la base locale :
 
 ```bash
 pnpm db:down
-```
-
-Commandes de lancement ciblées :
-
-```bash
-pnpm --filter backend dev
-pnpm --filter web dev
-pnpm --filter mobile dev
 ```
 
 Le backend écoute sur `http://localhost:4000`. Le web écoute sur [http://127.0.0.1:3000](http://127.0.0.1:3000) ; le script force ce hostname et active le polling Watchpack afin d'éviter les erreurs de découverte réseau et de watchers sur macOS. Pour tester le mobile sur appareil physique, définir `EXPO_PUBLIC_API_URL=http://<votre-ip-lan>:4000`.
