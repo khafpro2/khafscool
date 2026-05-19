@@ -9,7 +9,6 @@ Plateforme de formation gamifiée pour techniciens Apple et administrateurs MDM 
 
 | Package    | Technologie                   |
 | ---------- | ----------------------------- |
-| `shared/`  | Types & enums TypeScript      |
 | `backend/` | Fastify + Prisma + PostgreSQL |
 | `mobile/`  | Expo (React Native)           |
 | `web/`     | Next.js 15                    |
@@ -24,6 +23,13 @@ Plateforme de formation gamifiée pour techniciens Apple et administrateurs MDM 
 ## Démarrage rapide
 
 **Première fois** (base + dépendances) :
+
+```bash
+cd apple-mdm-academy
+pnpm setup
+```
+
+Ou manuellement :
 
 ```bash
 cd apple-mdm-academy

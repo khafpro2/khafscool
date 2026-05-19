@@ -1,14 +1,19 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
-import { env } from './config/env.js';
+import { assertProductionSecrets, env } from './config/env.js';
 import { authRoutes } from './routes/auth.routes.js';
 import { coursesRoutes } from './routes/courses.routes.js';
 import { billingRoutes } from './routes/billing.routes.js';
 import { healthRoutes } from './routes/health.routes.js';
 
+assertProductionSecrets();
+
 const app = Fastify({ logger: true });
 
-await app.register(cors, { origin: true, credentials: true });
+await app.register(cors, {
+  origin: env.corsOrigin ?? true,
+  credentials: true,
+});
 await app.register(healthRoutes);
 await app.register(authRoutes);
 await app.register(coursesRoutes);

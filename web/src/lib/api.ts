@@ -206,11 +206,22 @@ export interface WeeklyQuestsResponse {
 
 export type CheckoutPlan = 'monthly' | 'yearly' | 'enterprise';
 
+export interface BillingStatusResponse {
+  mode: 'demo' | 'live';
+  demo: boolean;
+  stripe: {
+    configured: boolean;
+    checkoutEnabled: boolean;
+  };
+}
+
 export interface BillingCheckoutResponse {
+  demo?: boolean;
   mode?: 'demo' | 'live';
   provider?: string;
   plan: CheckoutPlan;
   checkoutUrl?: string;
+  sessionId?: string;
   stripe?: {
     configured: boolean;
     checkoutEnabled: boolean;
@@ -274,6 +285,10 @@ export function register(email: string, password: string, displayName: string) {
     method: 'POST',
     body: JSON.stringify({ email, password, displayName }),
   });
+}
+
+export function fetchBillingStatus() {
+  return apiRequest<BillingStatusResponse>('/billing/status');
 }
 
 export function createBillingCheckout(token: string, plan: CheckoutPlan) {

@@ -1,8 +1,8 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-import { createBillingCheckout, type CheckoutPlan } from '@/lib/api';
+import { useEffect, useState } from 'react';
+import { createBillingCheckout, fetchBillingStatus, type CheckoutPlan } from '@/lib/api';
 import { getAccessToken } from '@/lib/auth';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -101,8 +101,15 @@ const PRICING_GRADIENT = getTrackVisual('DEFAULT').gradient;
 
 export default function PricingPage() {
   const router = useRouter();
+  const [billingMode, setBillingMode] = useState<'demo' | 'live' | 'loading'>('loading');
   const [status, setStatus] = useState<CheckoutStatus | null>(null);
   const [pendingPlan, setPendingPlan] = useState<CheckoutPlan | null>(null);
+
+  useEffect(() => {
+    fetchBillingStatus()
+      .then((billing) => setBillingMode(billing.mode))
+      .catch(() => setBillingMode('demo'));
+  }, []);
 
   async function handleCheckout(plan: CheckoutPlan) {
     const token = getAccessToken();
@@ -137,7 +144,8 @@ export default function PricingPage() {
         return;
       }
 
-      if (checkout.mode === 'demo') {
+      if (checkout.demo || checkout.mode === 'demo') {
+        setBillingMode('demo');
         setStatus({
           tone: 'warning',
           title: 'Checkout démo prêt',
@@ -148,6 +156,8 @@ export default function PricingPage() {
         });
         return;
       }
+
+      setBillingMode('live');
 
       setStatus({
         tone: checkout.checkoutUrl ? 'success' : 'warning',
@@ -181,7 +191,7 @@ export default function PricingPage() {
 
   return (
     <section style={{ padding: '1rem 0 2rem' }}>
-      <PricingHero />
+      <PricingHero billingMode={billingMode} />
 
       <div
         style={{
@@ -250,12 +260,20 @@ export default function PricingPage() {
   );
 }
 
-function PricingHero() {
+function PricingHero({ billingMode }: { billingMode: 'demo' | 'live' | 'loading' }) {
   return (
     <div className="hero" style={{ background: PRICING_GRADIENT, marginTop: 0 }}>
       <span className="hero-eyebrow">
         <span aria-hidden>{'\u{1F4B3}'}</span> Tarifs MDM Academy
       </span>
+      {billingMode !== 'loading' && (
+        <Badge
+          tone={billingMode === 'live' ? 'success' : 'warning'}
+          style={{ marginTop: '0.75rem', display: 'inline-flex' }}
+        >
+          {billingMode === 'live' ? 'Paiement Stripe' : 'Mode démo'}
+        </Badge>
+      )}
       <h1>Choisis le bon niveau pour apprendre Apple MDM</h1>
       <p style={{ marginTop: '0.85rem' }}>
         Parcours métier, sprint de certification et ressources officielles — commence gratuitement ou passe au

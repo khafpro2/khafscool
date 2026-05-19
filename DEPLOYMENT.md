@@ -37,10 +37,10 @@ Configurer dans **Project Settings → Environment Variables** (Production, Prev
 | Variable | Obligatoire | Description |
 | -------- | ----------- | ----------- |
 | `DATABASE_URL` | Oui | Chaîne PostgreSQL (`postgresql://...`) |
-| `JWT_ACCESS_SECRET` | Oui | Secret JWT accès (long, aléatoire) |
+| `JWT_SECRET` | Oui | Secret JWT accès (long, aléatoire) |
 | `JWT_REFRESH_SECRET` | Oui | Secret JWT refresh |
 | `PORT` | Non | Port d’écoute (souvent imposé par la plateforme, ex. `4000`) |
-| `CORS_ORIGIN` | Recommandé | Origines autorisées (ex. `https://app.votredomaine.com`) |
+| `CORS_ORIGIN` | Recommandé | Origines autorisées, séparées par des virgules (ex. `https://app.votredomaine.com`) |
 | `STRIPE_*` | Si billing live | Clés Stripe selon votre configuration billing |
 
 ### Mobile (`mobile/` — EAS)
