@@ -3,6 +3,12 @@ import { CourseTrack } from '@prisma/client';
 import { z } from 'zod';
 import { prisma } from '../lib/prisma.js';
 import * as gamification from '../services/gamification.service.js';
+import { sanitizeCourse } from '../utils/course-sanitize.js';
+
+const checkAnswerBodySchema = z.object({
+  questionId: z.string().min(1, 'questionId requis'),
+  selectedOption: z.string().min(1, 'selectedOption requis'),
+});
 
 const certificationSprintRequestSchema = z.object({
   track: z.nativeEnum(CourseTrack, {
@@ -59,7 +65,42 @@ export async function getCourse(
     },
   });
   if (!course) return reply.status(404).send({ error: 'NOT_FOUND' });
-  return reply.send({ course });
+  return reply.send({ course: sanitizeCourse(course) });
+}
+
+export async function checkAnswer(
+  req: FastifyRequest<{
+    Params: { id: string };
+    Body: { questionId: string; selectedOption: string };
+  }>,
+  reply: FastifyReply
+) {
+  const parsedBody = checkAnswerBodySchema.safeParse(req.body ?? {});
+  if (!parsedBody.success) {
+    return reply.status(400).send({
+      error: 'INVALID_CHECK_ANSWER_REQUEST',
+      details: parsedBody.error.issues.map((issue) => ({
+        field: issue.path.join('.') || 'body',
+        message: issue.message,
+      })),
+    });
+  }
+
+  try {
+    const result = await gamification.checkQuestionAnswer(
+      req.user.sub,
+      req.params.id,
+      parsedBody.data.questionId,
+      parsedBody.data.selectedOption
+    );
+    return reply.send(result);
+  } catch (e) {
+    const message = (e as Error).message;
+    if (message === 'MODULE_NOT_FOUND' || message === 'QUESTION_NOT_FOUND') {
+      return reply.status(404).send({ error: message });
+    }
+    throw e;
+  }
 }
 
 export async function getCourseProgress(

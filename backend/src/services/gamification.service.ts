@@ -335,6 +335,72 @@ function gradeGame(userOrder: number[], solution: { correctOrder: number[] }) {
   return Math.round((matches / expected.length) * 100);
 }
 
+export async function checkQuestionAnswer(
+  _userId: string,
+  moduleId: string,
+  questionId: string,
+  selectedOption: string
+) {
+  const module = await prisma.module.findUnique({ where: { id: moduleId } });
+  if (!module) throw new Error('MODULE_NOT_FOUND');
+
+  const question = await prisma.question.findFirst({
+    where: { id: questionId, moduleId },
+  });
+  if (!question) throw new Error('QUESTION_NOT_FOUND');
+
+  const correct = question.correctOption === selectedOption;
+  return {
+    correct,
+    explanation: question.explanation,
+  };
+}
+
+async function buildCompleteModuleResponse(
+  userId: string,
+  module: {
+    courseId: string;
+    course: { slug: string; title: string; track: CourseTrack };
+  },
+  quizScore: number,
+  gameScore: number,
+  pointsEarned: number,
+  badges: string[],
+  newLevel: UserLevel,
+  alreadyCompleted = false
+) {
+  const preparationScore = await computePreparationByTrack(userId, CourseTrack.APPLE);
+
+  const courseProgressRows = await prisma.moduleProgress.findMany({
+    where: { userId, module: { courseId: module.courseId }, completedAt: { not: null } },
+    select: { quizScore: true, gameScore: true },
+  });
+  const coursePointsEarned = sumCoursePointsFromProgress(courseProgressRows);
+  const { courseCompleted, courseCompletion } = buildCourseCompletionResult(
+    {
+      slug: module.course.slug,
+      title: module.course.title,
+      track: module.course.track,
+    },
+    courseProgressRows.length,
+    await prisma.module.count({ where: { courseId: module.courseId } }),
+    badges,
+    coursePointsEarned
+  );
+
+  return {
+    quizScore,
+    gameScore,
+    pointsEarned,
+    level: newLevel,
+    badges,
+    preparationScore,
+    courseCompleted,
+    alreadyCompleted,
+    ...(courseCompletion ? { courseCompletion } : {}),
+  };
+}
+
 export async function completeModule(
   userId: string,
   moduleId: string,
@@ -345,6 +411,26 @@ export async function completeModule(
     include: { questions: true, game: true, course: true },
   });
   if (!module) throw new Error('MODULE_NOT_FOUND');
+
+  const existingProgress = await prisma.moduleProgress.findUnique({
+    where: { userId_moduleId: { userId, moduleId } },
+  });
+
+  if (existingProgress?.completedAt) {
+    const progress = await prisma.userProgress.findUnique({ where: { userId } });
+    const quizScore = existingProgress.quizScore ?? 0;
+    const gameScore = existingProgress.gameScore ?? 0;
+    return buildCompleteModuleResponse(
+      userId,
+      module,
+      quizScore,
+      gameScore,
+      modulePointsFromScores(quizScore, gameScore),
+      progress?.badges ?? [],
+      progress?.level ?? UserLevel.NOVICE,
+      true
+    );
+  }
 
   const quizScore = gradeQuiz(
     payload.quizAnswers ?? {},
@@ -398,35 +484,16 @@ export async function completeModule(
   await incrementWeeklyQuest(userId, 'weekly-mdm-4');
   await refreshCertificationSprintProgress(userId, module.course.track);
 
-  const preparationScore = await computePreparationByTrack(userId, CourseTrack.APPLE);
-
-  const courseProgressRows = await prisma.moduleProgress.findMany({
-    where: { userId, module: { courseId: module.courseId }, completedAt: { not: null } },
-    select: { quizScore: true, gameScore: true },
-  });
-  const coursePointsEarned = sumCoursePointsFromProgress(courseProgressRows);
-  const { courseCompleted, courseCompletion } = buildCourseCompletionResult(
-    {
-      slug: module.course.slug,
-      title: module.course.title,
-      track: module.course.track,
-    },
-    courseProgressRows.length,
-    await prisma.module.count({ where: { courseId: module.courseId } }),
-    badges,
-    coursePointsEarned
-  );
-
-  return {
+  return buildCompleteModuleResponse(
+    userId,
+    module,
     quizScore,
     gameScore,
     pointsEarned,
-    level: newLevel,
     badges,
-    preparationScore,
-    courseCompleted,
-    ...(courseCompletion ? { courseCompletion } : {}),
-  };
+    newLevel,
+    false
+  );
 }
 
 async function incrementWeeklyQuest(userId: string, questKey: string) {

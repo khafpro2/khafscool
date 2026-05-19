@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { CourseDetail, CourseProgressData, CourseProgressModule } from '@/lib/api';
-import { completeModule, fetchCourse, fetchCourseProgress } from '@/lib/api';
+import { checkModuleAnswer, completeModule, fetchCourse, fetchCourseProgress } from '@/lib/api';
 import { buildAuthUrl, getAccessToken } from '@/lib/auth';
 import { formatTrack } from '@/lib/tracks';
 import {
@@ -12,6 +12,7 @@ import {
   countCorrectAnswers,
   QUIZ_PASS_PERCENT,
   QuizPanel,
+  type QuestionCheckResult,
 } from '@/components/courses/QuizPanel';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -36,6 +37,7 @@ export function CourseDetailClient({ slug }: { slug: string }) {
   const [progress, setProgress] = useState<CourseProgressData | null>(null);
   const [usesProgressFallback, setUsesProgressFallback] = useState(false);
   const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [questionResults, setQuestionResults] = useState<Record<string, QuestionCheckResult>>({});
   const [revealedQuestions, setRevealedQuestions] = useState<Set<string>>(() => new Set());
   const [result, setResult] = useState<string | null>(null);
   const [successNotice, setSuccessNotice] = useState<SuccessNotice | null>(null);
@@ -76,6 +78,13 @@ export function CourseDetailClient({ slug }: { slug: string }) {
     () => new Set([...revealedQuestions].filter((id) => activeQuestionIds.has(id))),
     [activeQuestionIds, revealedQuestions]
   );
+  const activeQuestionResults = useMemo(() => {
+    const next: Record<string, QuestionCheckResult> = {};
+    for (const questionId of activeQuestionIds) {
+      if (questionResults[questionId]) next[questionId] = questionResults[questionId];
+    }
+    return next;
+  }, [activeQuestionIds, questionResults]);
   const answeredActiveCount = useMemo(
     () => activeModule?.questions.filter((question) => answers[question.id]).length ?? 0,
     [activeModule, answers]
@@ -85,8 +94,11 @@ export function CourseDetailClient({ slug }: { slug: string }) {
     return activeModule.questions.every((question) => answers[question.id]);
   }, [activeModule, answers]);
   const estimatedActiveScore = useMemo(
-    () => (activeModule ? computeQuizScorePercent(activeModule.questions, answers) : 0),
-    [activeModule, answers]
+    () =>
+      activeModule
+        ? computeQuizScorePercent(activeModule.questions.length, activeQuestionResults)
+        : 0,
+    [activeModule, activeQuestionResults]
   );
 
   const resetActiveQuizState = useCallback(() => {
@@ -104,6 +116,13 @@ export function CourseDetailClient({ slug }: { slug: string }) {
       }
       return next;
     });
+    setQuestionResults((current) => {
+      const next = { ...current };
+      for (const questionId of activeQuestionIds) {
+        delete next[questionId];
+      }
+      return next;
+    });
   }, [activeQuestionIds]);
 
   function handleSelectAnswer(questionId: string, optionId: string) {
@@ -112,28 +131,54 @@ export function CourseDetailClient({ slug }: { slug: string }) {
     setResult(null);
   }
 
-  function handleRevealQuestion(questionId: string) {
-    if (!answers[questionId]) return;
-    setRevealedQuestions((current) => new Set(current).add(questionId));
+  async function resolveCheckAnswer(questionId: string, selectedOption: string): Promise<QuestionCheckResult> {
+    const token = getAccessToken();
+
+    if (token && activeModule && !activeModule.id.startsWith('demo-')) {
+      return checkModuleAnswer(activeModule.id, token, { questionId, selectedOption });
+    }
+
+    const question = activeModule?.questions.find((item) => item.id === questionId);
+    const correct = Boolean(question?.correctOption && question.correctOption === selectedOption);
+    return {
+      correct,
+      explanation: question?.explanation,
+    };
   }
 
-  function handleRevealAllQuestions() {
-    if (!activeModule) return;
-    setRevealedQuestions((current) => {
-      const next = new Set(current);
-      for (const question of activeModule.questions) {
-        if (answers[question.id]) next.add(question.id);
-      }
-      return next;
-    });
+  async function handleCheckAnswer(questionId: string, selectedOption: string): Promise<QuestionCheckResult> {
+    const result = await resolveCheckAnswer(questionId, selectedOption);
+    setQuestionResults((current) => ({ ...current, [questionId]: result }));
+    setRevealedQuestions((current) => new Set(current).add(questionId));
+    return result;
+  }
+
+  async function revealAllActiveQuestions(): Promise<Record<string, QuestionCheckResult>> {
+    if (!activeModule) return {};
+
+    const results = { ...activeQuestionResults };
+    for (const question of activeModule.questions) {
+      const selectedOption = answers[question.id];
+      if (!selectedOption || results[question.id]) continue;
+      const result = await resolveCheckAnswer(question.id, selectedOption);
+      results[question.id] = result;
+      setQuestionResults((current) => ({ ...current, [question.id]: result }));
+      setRevealedQuestions((current) => new Set(current).add(question.id));
+    }
+
+    return results;
+  }
+
+  async function handleRevealAllQuestions() {
+    await revealAllActiveQuestions();
   }
 
   async function handleSubmit() {
     if (!activeModule) return;
 
-    handleRevealAllQuestions();
-    const localScore = computeQuizScorePercent(activeModule.questions, answers);
-    const correctCount = countCorrectAnswers(activeModule.questions, answers);
+    const checkedResults = await revealAllActiveQuestions();
+    const localScore = computeQuizScorePercent(activeModule.questions.length, checkedResults);
+    const correctCount = countCorrectAnswers(checkedResults);
     const token = getAccessToken();
     setSuccessNotice(null);
 
@@ -449,10 +494,11 @@ export function CourseDetailClient({ slug }: { slug: string }) {
                     <QuizPanel
                       module={module}
                       answers={answers}
+                      questionResults={activeQuestionResults}
                       revealedQuestions={activeRevealedQuestions}
                       reviewMode={false}
                       onSelectAnswer={handleSelectAnswer}
-                      onRevealQuestion={handleRevealQuestion}
+                      onCheckAnswer={handleCheckAnswer}
                       onRevealAll={handleRevealAllQuestions}
                     />
                   ) : completed ? (

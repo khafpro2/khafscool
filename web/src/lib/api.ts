@@ -122,6 +122,7 @@ export interface CourseQuestion {
   type: string;
   prompt: string;
   options: { id: string; label: string }[];
+  /** Présent uniquement en mode démo hors-ligne */
   correctOption?: string;
   explanation?: string;
 }
@@ -471,13 +472,31 @@ export interface CompleteModuleResult {
   badges: string[];
   preparationScore: number;
   courseCompleted: boolean;
+  alreadyCompleted?: boolean;
   courseCompletion?: CourseCompletionResult;
+}
+
+export interface CheckAnswerResult {
+  correct: boolean;
+  explanation?: string;
 }
 
 export const NEXT_COURSE_BY_SLUG: Record<string, { slug: string; title: string }> = {
   'apple-cert-prep': { slug: 'jamf-pro-foundations', title: 'Fondamentaux Jamf Pro' },
   'jamf-pro-foundations': { slug: 'intune-ios-enrollment', title: 'Microsoft Intune pour Apple' },
 };
+
+export async function checkModuleAnswer(
+  moduleId: string,
+  token: string,
+  payload: { questionId: string; selectedOption: string }
+) {
+  return apiRequest<CheckAnswerResult>(`/modules/${moduleId}/check-answer`, {
+    method: 'POST',
+    headers: authHeader(token),
+    body: JSON.stringify(payload),
+  });
+}
 
 export async function completeModule(
   moduleId: string,

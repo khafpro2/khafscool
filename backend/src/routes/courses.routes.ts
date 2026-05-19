@@ -16,6 +16,10 @@ export async function coursesRoutes(app: FastifyInstance) {
     Params: { id: string };
     Body: { quizAnswers?: Record<string, string>; gameOrder?: number[] };
   }>('/modules/:id/complete', { preHandler: requireAuth }, courses.completeModule);
+  app.post<{
+    Params: { id: string };
+    Body: { questionId: string; selectedOption: string };
+  }>('/modules/:id/check-answer', { preHandler: requireAuth }, courses.checkAnswer);
   app.get('/users/me/progress', { preHandler: requireAuth }, courses.getUserProgress);
   app.get('/users/me/dashboard', { preHandler: requireAuth }, courses.getDashboard);
   app.get('/quests/weekly', { preHandler: requireAuth }, courses.getWeeklyQuests);

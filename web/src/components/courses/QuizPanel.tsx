@@ -1,30 +1,37 @@
 'use client';
 
-import { useMemo } from 'react';
-import type { CourseModule, CourseQuestion } from '@/lib/api';
+import { useMemo, useState } from 'react';
+import type { CourseModule } from '@/lib/api';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 
 export const QUIZ_PASS_PERCENT = 50;
 
+export type QuestionCheckResult = {
+  correct: boolean;
+  explanation?: string;
+};
+
 type QuizPanelProps = {
   module: CourseModule;
   answers: Record<string, string>;
+  questionResults: Record<string, QuestionCheckResult>;
   revealedQuestions: Set<string>;
   reviewMode: boolean;
   onSelectAnswer: (questionId: string, optionId: string) => void;
-  onRevealQuestion: (questionId: string) => void;
-  onRevealAll: () => void;
+  onCheckAnswer: (questionId: string, selectedOption: string) => Promise<QuestionCheckResult>;
+  onRevealAll: () => Promise<void>;
 };
 
 export function QuizPanel({
   module,
   answers,
+  questionResults,
   revealedQuestions,
   reviewMode,
   onSelectAnswer,
-  onRevealQuestion,
+  onCheckAnswer,
   onRevealAll,
 }: QuizPanelProps) {
   const questions = module.questions;
@@ -34,11 +41,34 @@ export function QuizPanel({
     [answers, questions]
   );
   const estimatedScore = useMemo(
-    () => computeQuizScorePercent(questions, answers),
-    [answers, questions]
+    () => computeQuizScorePercent(totalQuestions, questionResults),
+    [questionResults, totalQuestions]
   );
   const allAnswered = answeredCount === totalQuestions && totalQuestions > 0;
   const allRevealed = questions.every((question) => revealedQuestions.has(question.id));
+  const [checkingQuestionId, setCheckingQuestionId] = useState<string | null>(null);
+  const [isRevealingAll, setIsRevealingAll] = useState(false);
+
+  async function handleCheckAnswer(questionId: string) {
+    const selectedOption = answers[questionId];
+    if (!selectedOption || revealedQuestions.has(questionId)) return;
+
+    setCheckingQuestionId(questionId);
+    try {
+      await onCheckAnswer(questionId, selectedOption);
+    } finally {
+      setCheckingQuestionId(null);
+    }
+  }
+
+  async function handleRevealAll() {
+    setIsRevealingAll(true);
+    try {
+      await onRevealAll();
+    } finally {
+      setIsRevealingAll(false);
+    }
+  }
 
   if (!totalQuestions) {
     return (
@@ -69,7 +99,7 @@ export function QuizPanel({
           <p className="muted" style={{ marginTop: '0.25rem', fontSize: '0.85rem' }}>
             {answeredCount}/{totalQuestions} question{totalQuestions > 1 ? 's' : ''} répondue
             {answeredCount > 1 ? 's' : ''}
-            {answeredCount > 0 ? ` · score estimé ${estimatedScore}%` : ''}
+            {Object.keys(questionResults).length > 0 ? ` · score estimé ${estimatedScore}%` : ''}
           </p>
         </div>
         <Badge tone={allAnswered ? 'success' : 'warning'} icon={allAnswered ? '\u2705' : '\u{1F3AF}'}>
@@ -93,18 +123,20 @@ export function QuizPanel({
             index={index}
             total={totalQuestions}
             selectedOptionId={answers[question.id]}
+            checkResult={questionResults[question.id]}
             revealed={revealedQuestions.has(question.id) || reviewMode}
             disabled={reviewMode}
+            isChecking={checkingQuestionId === question.id}
             onSelect={(optionId) => onSelectAnswer(question.id, optionId)}
-            onReveal={() => onRevealQuestion(question.id)}
+            onCheck={() => handleCheckAnswer(question.id)}
           />
         ))}
       </div>
 
       {allAnswered && !allRevealed && !reviewMode && (
         <div style={{ marginTop: '0.85rem', display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-          <Button size="sm" variant="secondary" onClick={onRevealAll}>
-            Voir le corrigé du quiz
+          <Button size="sm" variant="secondary" onClick={handleRevealAll} disabled={isRevealingAll}>
+            {isRevealingAll ? 'Vérification…' : 'Voir le corrigé du quiz'}
           </Button>
         </div>
       )}
@@ -122,14 +154,16 @@ export function QuizPanel({
 }
 
 type QuizQuestionCardProps = {
-  question: CourseQuestion;
+  question: CourseModule['questions'][number];
   index: number;
   total: number;
   selectedOptionId?: string;
+  checkResult?: QuestionCheckResult;
   revealed: boolean;
   disabled: boolean;
+  isChecking: boolean;
   onSelect: (optionId: string) => void;
-  onReveal: () => void;
+  onCheck: () => void;
 };
 
 function QuizQuestionCard({
@@ -137,13 +171,15 @@ function QuizQuestionCard({
   index,
   total,
   selectedOptionId,
+  checkResult,
   revealed,
   disabled,
+  isChecking,
   onSelect,
-  onReveal,
+  onCheck,
 }: QuizQuestionCardProps) {
-  const isCorrect = revealed && selectedOptionId === question.correctOption;
-  const isIncorrect = revealed && selectedOptionId && selectedOptionId !== question.correctOption;
+  const isCorrect = revealed && checkResult?.correct === true;
+  const isIncorrect = revealed && checkResult?.correct === false;
   const canReveal = Boolean(selectedOptionId) && !revealed && !disabled;
 
   return (
@@ -167,7 +203,7 @@ function QuizQuestionCard({
           <span className="muted" style={{ fontWeight: 800, fontSize: '0.78rem', textTransform: 'uppercase' }}>
             Question {index + 1}/{total}
           </span>
-          {revealed && (
+          {revealed && checkResult && (
             <Badge tone={isCorrect ? 'success' : 'neutral'} icon={isCorrect ? '\u2705' : '\u274C'}>
               {isCorrect ? 'Bonne réponse' : 'Réponse incorrecte'}
             </Badge>
@@ -179,8 +215,8 @@ function QuizQuestionCard({
       <div style={{ display: 'grid', gap: '0.45rem', marginTop: '0.6rem' }} role="radiogroup" aria-label={question.prompt}>
         {question.options.map((option) => {
           const selected = selectedOptionId === option.id;
-          const isCorrectOption = revealed && option.id === question.correctOption;
-          const isWrongSelection = revealed && selected && option.id !== question.correctOption;
+          const isWrongSelection = revealed && selected && checkResult?.correct === false;
+          const isCorrectSelection = revealed && selected && checkResult?.correct === true;
 
           return (
             <button
@@ -188,7 +224,7 @@ function QuizQuestionCard({
               type="button"
               role="radio"
               aria-checked={selected}
-              disabled={disabled || (revealed && !selected && option.id !== question.correctOption)}
+              disabled={disabled || revealed}
               onClick={() => {
                 if (!disabled && !revealed) onSelect(option.id);
               }}
@@ -201,7 +237,7 @@ function QuizQuestionCard({
                 padding: '0.65rem 0.75rem',
                 borderRadius: 12,
                 border: `2px solid ${
-                  isCorrectOption
+                  isCorrectSelection
                     ? '#6fbf84'
                     : isWrongSelection
                       ? '#e08b8b'
@@ -209,7 +245,7 @@ function QuizQuestionCard({
                         ? 'var(--accent)'
                         : 'var(--border-soft)'
                 }`,
-                background: isCorrectOption
+                background: isCorrectSelection
                   ? '#e8f7ec'
                   : isWrongSelection
                     ? '#fdeeee'
@@ -247,7 +283,7 @@ function QuizQuestionCard({
                 )}
               </span>
               <span style={{ fontWeight: selected ? 700 : 500 }}>{option.label}</span>
-              {isCorrectOption && (
+              {isCorrectSelection && (
                 <span style={{ marginLeft: 'auto', fontWeight: 800, color: '#2f7a45' }} aria-hidden>
                   {'\u2705'}
                 </span>
@@ -263,12 +299,12 @@ function QuizQuestionCard({
       </div>
 
       {canReveal && (
-        <Button size="sm" variant="ghost" style={{ marginTop: '0.65rem' }} onClick={onReveal}>
-          Valider ma réponse
+        <Button size="sm" variant="ghost" style={{ marginTop: '0.65rem' }} onClick={onCheck} disabled={isChecking}>
+          {isChecking ? 'Vérification…' : 'Valider ma réponse'}
         </Button>
       )}
 
-      {revealed && question.explanation && (
+      {revealed && checkResult?.explanation && (
         <div
           style={{
             marginTop: '0.75rem',
@@ -282,7 +318,7 @@ function QuizQuestionCard({
             Explication
           </p>
           <p className="muted" style={{ marginTop: '0.35rem', lineHeight: 1.5 }}>
-            {question.explanation}
+            {checkResult.explanation}
           </p>
         </div>
       )}
@@ -333,16 +369,17 @@ function QuizRecap({
   );
 }
 
-export function computeQuizScorePercent(questions: CourseQuestion[], answers: Record<string, string>) {
-  if (!questions.length) return 0;
-  const correct = questions.filter(
-    (question) => question.correctOption && answers[question.id] === question.correctOption
-  ).length;
-  return Math.round((correct / questions.length) * 100);
+export function computeQuizScorePercent(
+  totalQuestions: number,
+  questionResults: Record<string, QuestionCheckResult>
+) {
+  if (!totalQuestions) return 0;
+  const checkedCount = Object.keys(questionResults).length;
+  if (!checkedCount) return 0;
+  const correct = Object.values(questionResults).filter((result) => result.correct).length;
+  return Math.round((correct / totalQuestions) * 100);
 }
 
-export function countCorrectAnswers(questions: CourseQuestion[], answers: Record<string, string>) {
-  return questions.filter(
-    (question) => question.correctOption && answers[question.id] === question.correctOption
-  ).length;
+export function countCorrectAnswers(questionResults: Record<string, QuestionCheckResult>) {
+  return Object.values(questionResults).filter((result) => result.correct).length;
 }
