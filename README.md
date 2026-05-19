@@ -163,7 +163,9 @@ Le script cible `http://127.0.0.1:3000` par défaut. Pour tester une autre origi
 WEB_URL=http://localhost:3000 pnpm smoke:web
 ```
 
-Pour enchaîner les smokes API puis web, avec les serveurs déjà lancés dans des terminaux séparés :
+### Smoke tests combinés
+
+Pour enchaîner les smokes API puis web (fail fast : `smoke:web` n’est pas lancé si `smoke:api` échoue), avec les serveurs déjà lancés dans des terminaux séparés :
 
 ```bash
 pnpm smoke:all
