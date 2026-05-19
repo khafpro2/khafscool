@@ -19,6 +19,7 @@ export default function CoursesPage() {
   const [courses, setCourses] = useState<CourseSummary[]>([]);
   const [selectedTrack, setSelectedTrack] = useState('TOUS');
   const [selectedLevel, setSelectedLevel] = useState<'TOUS' | TrailLevel>('TOUS');
+  const [searchQuery, setSearchQuery] = useState('');
   const [hasToken, setHasToken] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -44,13 +45,26 @@ export default function CoursesPage() {
     [courses]
   );
 
+  const normalizedSearch = searchQuery.trim().toLowerCase();
+
   const filteredCourses = useMemo(() => {
     return enrichedCourses.filter(({ course, level }) => {
       if (selectedTrack !== 'TOUS' && course.track !== selectedTrack) return false;
       if (selectedLevel !== 'TOUS' && level !== selectedLevel) return false;
-      return true;
+      if (!normalizedSearch) return true;
+
+      const haystack = [
+        course.title,
+        course.description ?? '',
+        formatTrack(course.track),
+        course.track,
+      ]
+        .join(' ')
+        .toLowerCase();
+
+      return haystack.includes(normalizedSearch);
     });
-  }, [enrichedCourses, selectedTrack, selectedLevel]);
+  }, [enrichedCourses, normalizedSearch, selectedTrack, selectedLevel]);
 
   const moduleCount = courses.reduce((total, course) => total + (course.totalModules ?? 0), 0);
   const inProgressCount = courses.filter(
@@ -95,6 +109,38 @@ export default function CoursesPage() {
           <CatalogHeroStat label="En cours" value={String(inProgressCount)} />
           <CatalogHeroStat label="Accès" value={hasToken ? 'Connecté' : 'Public'} />
         </div>
+        <label
+          htmlFor="courses-search"
+          style={{
+            display: 'block',
+            marginTop: '1.25rem',
+            fontWeight: 800,
+            fontSize: '0.8rem',
+            letterSpacing: '0.06em',
+            textTransform: 'uppercase',
+            opacity: 0.9,
+          }}
+        >
+          Rechercher
+        </label>
+        <input
+          id="courses-search"
+          type="search"
+          value={searchQuery}
+          onChange={(event) => setSearchQuery(event.target.value)}
+          placeholder="Titre, description ou piste (Apple, Jamf, Intune)…"
+          style={{
+            border: '1px solid rgba(255,255,255,0.35)',
+            borderRadius: 14,
+            background: 'rgba(255,255,255,0.14)',
+            color: '#fff',
+            font: 'inherit',
+            marginTop: '0.5rem',
+            padding: '0.85rem 1rem',
+            width: '100%',
+            maxWidth: 520,
+          }}
+        />
       </div>
 
       {!hasToken && (
@@ -143,9 +189,13 @@ export default function CoursesPage() {
           </p>
         ) : filteredCourses.length === 0 ? (
           <Card style={{ marginTop: '1.25rem', textAlign: 'center' }}>
-            <h2 style={{ fontSize: '1.2rem', fontWeight: 800 }}>Aucun parcours ne correspond aux filtres</h2>
+            <h2 style={{ fontSize: '1.2rem', fontWeight: 800 }}>
+              {normalizedSearch ? 'Aucun parcours ne correspond' : 'Aucun parcours ne correspond aux filtres'}
+            </h2>
             <p className="muted" style={{ marginTop: '0.5rem' }}>
-              Réinitialise les filtres ou explore un autre niveau pour découvrir le catalogue complet.
+              {normalizedSearch
+                ? 'Essaie un autre mot-clé ou réinitialise la recherche et les filtres.'
+                : 'Réinitialise les filtres ou explore un autre niveau pour découvrir le catalogue complet.'}
             </p>
             <div style={{ display: 'flex', justifyContent: 'center', gap: '0.6rem', marginTop: '1rem', flexWrap: 'wrap' }}>
               <Button
@@ -153,6 +203,7 @@ export default function CoursesPage() {
                 onClick={() => {
                   setSelectedTrack('TOUS');
                   setSelectedLevel('TOUS');
+                  setSearchQuery('');
                 }}
               >
                 Réinitialiser
