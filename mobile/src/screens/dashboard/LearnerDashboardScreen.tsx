@@ -2,12 +2,15 @@ import React, { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Linking,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
+import { WEB_URL } from '../../config';
+import { formatLevel, getBadgeVisual, getRankInfo } from '../../lib/design';
 import { clearTokens } from '../../services/auth';
 import {
   CourseSummary,
@@ -31,12 +34,6 @@ const trackLabels: Record<string, string> = {
   APPLE: 'Apple Device Support',
   JAMF: 'Jamf Pro',
   INTUNE: 'Microsoft Intune',
-};
-
-const badgeLabels: Record<string, string> = {
-  'apple-mdm-foundation': 'Fondamentaux Apple MDM',
-  'jamf-engineer': 'Ingénieur Jamf',
-  'intune-professional': 'Professionnel Intune',
 };
 
 type SprintMessage = {
@@ -73,6 +70,13 @@ export function LearnerDashboardScreen({ onSignOut }: LearnerDashboardScreenProp
     void loadDashboard();
   }, []);
 
+  const activeCourses = useMemo(() => {
+    if (!dashboard) return [];
+    return dashboard.data.courses.filter(
+      (course) => (course.progressPercent ?? 0) < 100 || course.nextModule
+    );
+  }, [dashboard]);
+
   const nextCourse = useMemo(() => {
     return dashboard?.data.courses.find((course) => course.nextModule) ?? dashboard?.data.courses[0] ?? null;
   }, [dashboard]);
@@ -105,23 +109,34 @@ export function LearnerDashboardScreen({ onSignOut }: LearnerDashboardScreenProp
     }
   }
 
+  function openWebPath(path: string) {
+    void Linking.openURL(`${WEB_URL}${path}`);
+  }
+
   if (loading || !dashboard) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator color="#007AFF" />
+        <ActivityIndicator color="#0070D2" />
         <Text style={styles.loadingText}>Chargement de votre progression…</Text>
       </View>
     );
   }
 
   const { data, source } = dashboard;
-  const displayName = data.user.displayName ?? 'Apprenant';
+  const displayName = data.user.displayName ?? 'Trailblazer';
+  const rank = getRankInfo(data.progress.points);
+  const previousFloor = rank.minPoints;
+  const ceiling = rank.nextPoints ?? Math.max(previousFloor + 100, data.progress.points + 100);
+  const span = Math.max(1, ceiling - previousFloor);
+  const progressInRank = Math.max(0, Math.min(span, data.progress.points - previousFloor));
+  const rankPercent = Math.round((progressInRank / span) * 100);
+  const remainingPoints = rank.nextPoints != null ? Math.max(0, rank.nextPoints - data.progress.points) : 0;
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.header}>
         <View>
-          <Text style={styles.eyebrow}>Tableau de bord</Text>
+          <Text style={styles.eyebrow}>Espace Trailblazer</Text>
           <Text style={styles.title}>Bonjour {displayName}</Text>
         </View>
         <Pressable onPress={handleSignOut} style={styles.signOutButton}>
@@ -135,18 +150,51 @@ export function LearnerDashboardScreen({ onSignOut }: LearnerDashboardScreenProp
         </View>
       ) : null}
 
-      <View style={styles.heroCard}>
-        <Text style={styles.cardLabel}>Progression globale</Text>
+      <View style={[styles.heroCard, { backgroundColor: rank.gradient[0] }]}>
+        <Text style={styles.heroEyebrow}>
+          {rank.icon} Rang Trailblazer · {rank.name}
+        </Text>
         <View style={styles.heroStats}>
           <Stat label="Points" value={String(data.progress.points)} />
           <Stat label="Niveau" value={formatLevel(data.progress.level)} />
         </View>
-        <ProgressBar progress={data.progress.progressPercent} />
+        <ProgressBar progress={rankPercent} fillColor="#FFCE5B" trackColor="rgba(255,255,255,0.22)" />
         <Text style={styles.progressCopy}>
-          {data.progress.completedModules}/{data.progress.totalModules} modules terminés · score moyen{' '}
+          {rank.nextName
+            ? `${remainingPoints} pts pour le rang ${rank.nextName}`
+            : 'Rang maximal atteint — bravo Champion·ne !'}
+        </Text>
+        <Text style={styles.progressMeta}>
+          {data.progress.completedModules}/{data.progress.totalModules} modules · score moyen{' '}
           {data.progress.averageScore} %
         </Text>
       </View>
+
+      <View style={styles.quickActions}>
+        <Pressable style={[styles.quickAction, styles.quickActionQuests]} onPress={() => openWebPath('/quests')}>
+          <Text style={styles.quickActionIcon}>{'\u{1F3AF}'}</Text>
+          <Text style={styles.quickActionTitle}>Quêtes hebdo</Text>
+          <Text style={styles.quickActionHint}>Défis de la semaine</Text>
+        </Pressable>
+        <Pressable
+          style={[styles.quickAction, styles.quickActionLeaderboard]}
+          onPress={() => openWebPath('/leaderboard')}
+        >
+          <Text style={styles.quickActionIcon}>{'\u{1F3C6}'}</Text>
+          <Text style={styles.quickActionTitle}>Classement</Text>
+          <Text style={styles.quickActionHint}>Top communauté</Text>
+        </Pressable>
+      </View>
+
+      <View style={styles.sectionHeader}>
+        <Text style={styles.sectionTitle}>Parcours en cours</Text>
+        <Text style={styles.sectionHint}>Continue là où tu t’es arrêté</Text>
+      </View>
+      {activeCourses.length > 0 ? (
+        activeCourses.map((course) => <CourseProgressCard key={course.id} course={course} />)
+      ) : (
+        <Text style={styles.emptyText}>Aucun parcours actif. Explore le catalogue pour commencer.</Text>
+      )}
 
       <SprintCard
         sprint={sprint}
@@ -156,26 +204,51 @@ export function LearnerDashboardScreen({ onSignOut }: LearnerDashboardScreenProp
       />
 
       <View style={styles.sectionHeader}>
+        <Text style={styles.sectionTitle}>Quêtes de la semaine</Text>
+      </View>
+      {data.quests.length > 0 ? (
+        data.quests.map((quest) => {
+          const target = Math.max(1, quest.target);
+          const questPercent = Math.min(100, Math.round((quest.progress / target) * 100));
+          return (
+            <View key={quest.id} style={styles.questCard}>
+              <View style={styles.questHeader}>
+                <Text style={styles.questLabel}>{quest.label}</Text>
+                <Text style={styles.questCount}>
+                  {quest.progress}/{quest.target}
+                </Text>
+              </View>
+              <ProgressBar progress={questPercent} fillColor="#0070D2" />
+            </View>
+          );
+        })
+      ) : (
+        <Text style={styles.emptyText}>
+          Aucune quête active. Termine un module ou démarre un sprint pour garder le rythme.
+        </Text>
+      )}
+      <Pressable style={styles.linkButton} onPress={() => openWebPath('/quests')}>
+        <Text style={styles.linkButtonText}>Voir toutes les quêtes →</Text>
+      </Pressable>
+
+      <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>Badges</Text>
       </View>
       <View style={styles.badgeRow}>
         {data.badges.length > 0 ? (
-          data.badges.map((badge) => (
-            <View key={badge} style={styles.badge}>
-              <Text style={styles.badgeText}>{formatBadge(badge)}</Text>
-            </View>
-          ))
+          data.badges.map((badge) => {
+            const visual = getBadgeVisual(badge);
+            return (
+              <View key={badge} style={[styles.badge, { backgroundColor: visual.bg }]}>
+                <Text style={styles.badgeIcon}>{visual.icon}</Text>
+                <Text style={[styles.badgeText, { color: visual.color }]}>{visual.label}</Text>
+              </View>
+            );
+          })
         ) : (
           <Text style={styles.emptyText}>Terminez un premier module pour débloquer un badge.</Text>
         )}
       </View>
-
-      <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Cours</Text>
-      </View>
-      {data.courses.map((course) => (
-        <CourseProgressCard key={course.id} course={course} />
-      ))}
 
       <View style={styles.ctaCard}>
         <Text style={styles.cardLabel}>Prochaine étape</Text>
@@ -188,7 +261,7 @@ export function LearnerDashboardScreen({ onSignOut }: LearnerDashboardScreenProp
             style={[styles.ctaButton, styles.primaryButton]}
             onPress={() => showNextModule(nextCourse)}
           >
-            <Text style={styles.primaryButtonText}>Continuer</Text>
+            <Text style={styles.primaryButtonText}>Continuer le parcours</Text>
           </Pressable>
         </View>
       </View>
@@ -218,7 +291,7 @@ function SprintCard({
     <View style={styles.sprintCard}>
       <View style={styles.sprintHeader}>
         <View style={styles.sprintText}>
-          <Text style={styles.cardLabel}>Certification Sprint</Text>
+          <Text style={styles.cardLabel}>Sprint certification</Text>
           <Text style={styles.sprintTitle}>
             {sprint ? `Sprint ${formatTrack(sprint.track)} en cours` : 'Lancez un sprint 7 jours'}
           </Text>
@@ -324,12 +397,12 @@ function CourseProgressCard({ course }: { course: CourseSummary }) {
     <View style={styles.courseCard}>
       <View style={styles.courseHeader}>
         <View style={styles.courseText}>
+          <Text style={styles.courseTrack}>{formatTrack(course.track)}</Text>
           <Text style={styles.courseTitle}>{course.title}</Text>
           <Text style={styles.courseMeta}>
-            {formatTrack(course.track)} · {course.completedModules ?? 0}/{course.totalModules ?? 0} modules
+            {course.completedModules ?? 0}/{course.totalModules ?? 0} modules · {progress} %
           </Text>
         </View>
-        <Text style={styles.coursePercent}>{progress} %</Text>
       </View>
       <ProgressBar progress={progress} />
       <Text style={styles.nextModule}>
@@ -339,12 +412,20 @@ function CourseProgressCard({ course }: { course: CourseSummary }) {
   );
 }
 
-function ProgressBar({ progress }: { progress: number }) {
+function ProgressBar({
+  progress,
+  fillColor = '#34C759',
+  trackColor = '#E5E5EA',
+}: {
+  progress: number;
+  fillColor?: string;
+  trackColor?: string;
+}) {
   const safeProgress = Math.max(0, Math.min(progress, 100));
 
   return (
-    <View style={styles.progressTrack}>
-      <View style={[styles.progressFill, { width: `${safeProgress}%` }]} />
+    <View style={[styles.progressTrack, { backgroundColor: trackColor }]}>
+      <View style={[styles.progressFill, { width: `${safeProgress}%`, backgroundColor: fillColor }]} />
     </View>
   );
 }
@@ -354,26 +435,7 @@ function showNextModule(course: CourseSummary | null) {
     'Prochain module',
     course?.nextModule
       ? `Continuez avec « ${course.nextModule.title} » dans le parcours ${course.title}.`
-      : 'Aucun module suivant disponible pour le moment.'
-  );
-}
-
-function formatLevel(level: string) {
-  return level
-    .toLowerCase()
-    .split('_')
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(' ');
-}
-
-function formatBadge(badge: string) {
-  return (
-    badgeLabels[badge] ??
-    badge
-      .split('-')
-      .filter(Boolean)
-      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-      .join(' ')
+      : 'Aucun module suivant disponible pour le moment. Ouvrez le catalogue web pour explorer les parcours.'
   );
 }
 
@@ -399,22 +461,41 @@ const styles = StyleSheet.create({
   loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#F5F5F7' },
   loadingText: { marginTop: 12, color: '#6E6E73', fontSize: 15 },
   header: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 18 },
-  eyebrow: { color: '#007AFF', fontSize: 13, fontWeight: '700', marginBottom: 4, textTransform: 'uppercase' },
+  eyebrow: { color: '#0070D2', fontSize: 13, fontWeight: '700', marginBottom: 4, textTransform: 'uppercase' },
   title: { color: '#1D1D1F', fontSize: 28, fontWeight: '800', maxWidth: 220 },
   signOutButton: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 999, backgroundColor: '#FFFFFF' },
   signOutText: { color: '#6E6E73', fontWeight: '600' },
   demoBanner: { backgroundColor: '#FFF7E6', borderRadius: 14, padding: 12, marginBottom: 14 },
   demoText: { color: '#8A5A00', lineHeight: 20 },
-  heroCard: { backgroundColor: '#1D1D1F', borderRadius: 24, padding: 20, marginBottom: 24 },
-  cardLabel: { color: '#8E8E93', fontSize: 13, fontWeight: '700', marginBottom: 10, textTransform: 'uppercase' },
+  heroCard: { borderRadius: 24, padding: 20, marginBottom: 16 },
+  heroEyebrow: { color: 'rgba(255,255,255,0.92)', fontSize: 13, fontWeight: '800', marginBottom: 12 },
   heroStats: { flexDirection: 'row', gap: 12, marginBottom: 18 },
   stat: { flex: 1 },
   statValue: { color: '#FFFFFF', fontSize: 28, fontWeight: '800' },
-  statLabel: { color: '#BDBDC2', marginTop: 4 },
-  progressTrack: { height: 8, backgroundColor: '#E5E5EA', borderRadius: 999, overflow: 'hidden' },
-  progressFill: { height: '100%', backgroundColor: '#34C759', borderRadius: 999 },
-  progressCopy: { color: '#D1D1D6', marginTop: 12, lineHeight: 20 },
+  statLabel: { color: 'rgba(255,255,255,0.82)', marginTop: 4 },
+  progressTrack: { height: 8, borderRadius: 999, overflow: 'hidden' },
+  progressFill: { height: '100%', borderRadius: 999 },
+  progressCopy: { color: 'rgba(255,255,255,0.92)', marginTop: 12, lineHeight: 20, fontWeight: '700' },
+  progressMeta: { color: 'rgba(255,255,255,0.78)', marginTop: 6, lineHeight: 18, fontSize: 13 },
+  quickActions: { flexDirection: 'row', gap: 10, marginBottom: 24 },
+  quickAction: { flex: 1, borderRadius: 18, padding: 14 },
+  quickActionQuests: { backgroundColor: '#FFF7D6', borderWidth: 1, borderColor: '#F0CF7A' },
+  quickActionLeaderboard: { backgroundColor: '#E3F0FF', borderWidth: 1, borderColor: '#C5DBF3' },
+  quickActionIcon: { fontSize: 22, marginBottom: 6 },
+  quickActionTitle: { color: '#1D1D1F', fontSize: 15, fontWeight: '800' },
+  quickActionHint: { color: '#6E6E73', fontSize: 12, marginTop: 2, fontWeight: '600' },
+  sectionHeader: { marginBottom: 10 },
+  sectionTitle: { color: '#1D1D1F', fontSize: 20, fontWeight: '800' },
+  sectionHint: { color: '#6E6E73', marginTop: 2, fontSize: 13 },
+  emptyText: { color: '#6E6E73', lineHeight: 20, marginBottom: 16 },
+  questCard: { backgroundColor: '#FFFFFF', borderRadius: 16, padding: 14, marginBottom: 10 },
+  questHeader: { flexDirection: 'row', justifyContent: 'space-between', gap: 12, marginBottom: 10 },
+  questLabel: { flex: 1, color: '#1D1D1F', fontWeight: '700', lineHeight: 20 },
+  questCount: { color: '#0070D2', fontWeight: '800' },
+  linkButton: { marginBottom: 24, paddingVertical: 4 },
+  linkButtonText: { color: '#0070D2', fontWeight: '700' },
   sprintCard: { backgroundColor: '#FFFFFF', borderRadius: 24, padding: 18, marginBottom: 24 },
+  cardLabel: { color: '#8E8E93', fontSize: 13, fontWeight: '700', marginBottom: 10, textTransform: 'uppercase' },
   sprintHeader: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 },
   sprintText: { flex: 1 },
   sprintTitle: { color: '#1D1D1F', fontSize: 21, fontWeight: '800' },
@@ -463,26 +544,37 @@ const styles = StyleSheet.create({
   trackButtonDisabled: { opacity: 0.6 },
   trackButtonContent: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   trackButtonText: { color: '#FFFFFF', fontWeight: '800' },
-  sectionHeader: { marginBottom: 10 },
-  sectionTitle: { color: '#1D1D1F', fontSize: 20, fontWeight: '800' },
   badgeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 24 },
-  badge: { backgroundColor: '#EAF3FF', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8 },
-  badgeText: { color: '#0066CC', fontWeight: '700' },
-  emptyText: { color: '#6E6E73', lineHeight: 20 },
+  badge: {
+    borderRadius: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  badgeIcon: { fontSize: 16 },
+  badgeText: { fontWeight: '700', fontSize: 13 },
   courseCard: { backgroundColor: '#FFFFFF', borderRadius: 20, padding: 16, marginBottom: 12 },
   courseHeader: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 },
   courseText: { flex: 1 },
-  courseTitle: { color: '#1D1D1F', fontSize: 17, fontWeight: '800' },
+  courseTrack: {
+    color: '#0070D2',
+    fontSize: 11,
+    fontWeight: '800',
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
+  },
+  courseTitle: { color: '#1D1D1F', fontSize: 17, fontWeight: '800', marginTop: 4 },
   courseMeta: { color: '#6E6E73', marginTop: 4, marginBottom: 12 },
-  coursePercent: { color: '#007AFF', fontSize: 18, fontWeight: '800' },
   nextModule: { color: '#6E6E73', marginTop: 12, lineHeight: 20 },
-  ctaCard: { backgroundColor: '#FFFFFF', borderRadius: 24, padding: 18, marginTop: 12 },
+  ctaCard: { backgroundColor: '#FFFFFF', borderRadius: 24, padding: 18, marginTop: 4 },
   ctaTitle: { color: '#1D1D1F', fontSize: 21, fontWeight: '800', marginBottom: 8 },
   ctaText: { color: '#6E6E73', lineHeight: 20, marginBottom: 14 },
   ctaButtons: { flexDirection: 'row', gap: 10 },
   ctaButton: { flex: 1, padding: 14, borderRadius: 14, alignItems: 'center' },
-  primaryButton: { backgroundColor: '#007AFF' },
+  primaryButton: { backgroundColor: '#0070D2' },
   primaryButtonText: { color: '#FFFFFF', fontWeight: '800' },
   refreshButton: { padding: 16, alignItems: 'center' },
-  refreshText: { color: '#007AFF', fontWeight: '700' },
+  refreshText: { color: '#0070D2', fontWeight: '700' },
 });
