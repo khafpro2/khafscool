@@ -24,5 +24,6 @@ export function assertProductionSecrets() {
   if (!env.isDev) {
     required('JWT_SECRET');
     required('JWT_REFRESH_SECRET');
+    required('CORS_ORIGIN');
   }
 }

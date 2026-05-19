@@ -4,6 +4,12 @@ import { AuthProvider } from '@prisma/client';
 import { oauthProviders, type OAuthProviderName } from '../config/oauth.js';
 import { prisma } from '../lib/prisma.js';
 import {
+  formatZodErrors,
+  loginSchema,
+  refreshSchema,
+  registerSchema,
+} from '../schemas/auth.schemas.js';
+import {
   buildAuthorizeUrl,
   consumePkce,
   exchangeCodeAndGetProfile,
@@ -120,11 +126,16 @@ export async function oauthCallback(
   return reply.send(tokens);
 }
 
-export async function registerLocal(
-  req: FastifyRequest<{ Body: { email: string; password: string; displayName: string } }>,
-  reply: FastifyReply
-) {
-  const { email, password, displayName } = req.body;
+export async function registerLocal(req: FastifyRequest<{ Body: unknown }>, reply: FastifyReply) {
+  const parsedBody = registerSchema.safeParse(req.body ?? {});
+  if (!parsedBody.success) {
+    return reply.status(400).send({
+      error: 'INVALID_REGISTER_REQUEST',
+      details: formatZodErrors(parsedBody.error),
+    });
+  }
+
+  const { email, password, displayName } = parsedBody.data;
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) return reply.status(409).send({ error: 'EMAIL_EXISTS' });
 
@@ -144,11 +155,16 @@ export async function registerLocal(
   return reply.status(201).send(tokenResponse(user, refresh));
 }
 
-export async function loginLocal(
-  req: FastifyRequest<{ Body: { email: string; password: string } }>,
-  reply: FastifyReply
-) {
-  const { email, password } = req.body;
+export async function loginLocal(req: FastifyRequest<{ Body: unknown }>, reply: FastifyReply) {
+  const parsedBody = loginSchema.safeParse(req.body ?? {});
+  if (!parsedBody.success) {
+    return reply.status(400).send({
+      error: 'INVALID_LOGIN_REQUEST',
+      details: formatZodErrors(parsedBody.error),
+    });
+  }
+
+  const { email, password } = parsedBody.data;
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user?.passwordHash) return reply.status(401).send({ error: 'INVALID_CREDENTIALS' });
 
@@ -159,12 +175,17 @@ export async function loginLocal(
   return reply.send(tokenResponse(user, refresh));
 }
 
-export async function refreshTokens(
-  req: FastifyRequest<{ Body: { refreshToken: string } }>,
-  reply: FastifyReply
-) {
+export async function refreshTokens(req: FastifyRequest<{ Body: unknown }>, reply: FastifyReply) {
+  const parsedBody = refreshSchema.safeParse(req.body ?? {});
+  if (!parsedBody.success) {
+    return reply.status(400).send({
+      error: 'INVALID_REFRESH_REQUEST',
+      details: formatZodErrors(parsedBody.error),
+    });
+  }
+
   try {
-    const rotated = await rotateRefreshToken(req.body.refreshToken);
+    const rotated = await rotateRefreshToken(parsedBody.data.refreshToken);
     const user = await prisma.user.findUniqueOrThrow({ where: { id: rotated.userId } });
     const accessToken = signAccessToken({ sub: user.id, email: user.email });
     return reply.send({ accessToken, refreshToken: rotated.plainToken });
