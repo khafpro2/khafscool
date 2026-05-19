@@ -16,6 +16,7 @@ const LEVEL_THRESHOLDS: { level: UserLevel; min: number }[] = [
 
 const TRACK_BADGES: Partial<Record<CourseTrack, string>> = {
   [CourseTrack.APPLE]: 'apple-mdm-foundation',
+  [CourseTrack.JAMF]: 'jamf-engineer',
   [CourseTrack.INTUNE]: 'intune-professional',
 };
 
@@ -24,6 +25,11 @@ const WEEKLY_QUESTS = [
     questKey: 'weekly-apple-3',
     label: 'Termine 3 modules Apple cette semaine',
     target: 3,
+  },
+  {
+    questKey: 'weekly-jamf-2',
+    label: 'Valide 2 modules Jamf Pro',
+    target: 2,
   },
   {
     questKey: 'weekly-mdm-4',
@@ -204,6 +210,9 @@ export async function completeModule(
 
   if (module.course.track === 'APPLE') {
     await incrementWeeklyQuest(userId, 'weekly-apple-3');
+  }
+  if (module.course.track === 'JAMF') {
+    await incrementWeeklyQuest(userId, 'weekly-jamf-2');
   }
   await incrementWeeklyQuest(userId, 'weekly-mdm-4');
   await refreshCertificationSprintProgress(userId, module.course.track);

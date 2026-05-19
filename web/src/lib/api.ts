@@ -812,7 +812,8 @@ const DEMO_COURSES: CourseDetail[] = [
         id: 'demo-jamf-module-1',
         slug: 'smart-groups-policies',
         title: 'Smart Groups et politiques',
-        summary: 'Comprendre comment cibler des Mac et déclencher une politique Jamf Pro.',
+        summary:
+          'Comprendre comment cibler des Mac et déclencher une politique Jamf Pro sur un périmètre pilote.',
         questions: [
           {
             id: 'demo-jamf-q1',
@@ -824,7 +825,20 @@ const DEMO_COURSES: CourseDetail[] = [
               { id: 'c', label: 'Remplacer le serveur MDM' },
             ],
             correctOption: 'b',
-            explanation: 'Un Smart Group regroupe automatiquement les appareils correspondant à des critères.',
+            explanation:
+              'Un Smart Group regroupe automatiquement les appareils correspondant à des critères.',
+          },
+          {
+            id: 'demo-jamf-q2',
+            type: 'TRUE_FALSE',
+            prompt:
+              'Une politique de configuration peut être limitée à un Smart Group sans toucher au reste de la flotte.',
+            options: [
+              { id: 'true', label: 'Vrai' },
+              { id: 'false', label: 'Faux' },
+            ],
+            correctOption: 'true',
+            explanation: 'Le scope par Smart Group permet de tester et déployer progressivement.',
           },
         ],
         game: {
@@ -834,6 +848,67 @@ const DEMO_COURSES: CourseDetail[] = [
             { id: 1, label: 'Créer ou vérifier le Smart Group pilote' },
             { id: 2, label: 'Associer la politique au paquet' },
             { id: 3, label: 'Limiter le scope puis tester sur un Mac' },
+          ],
+        },
+      },
+      {
+        id: 'demo-jamf-module-2',
+        slug: 'inventory-basics',
+        title: 'Inventaire et conformité',
+        summary:
+          'Lire l’inventaire Jamf, interpréter la conformité et prioriser les actions sur les appareils hors norme.',
+        questions: [
+          {
+            id: 'demo-jamf-q3',
+            type: 'MULTIPLE_CHOICE',
+            prompt: 'Où consultes-tu en priorité l’état d’un Mac dans Jamf Pro ?',
+            options: [
+              { id: 'a', label: 'Fiche inventaire de l’ordinateur' },
+              { id: 'b', label: 'Console Apple Business Manager uniquement' },
+              { id: 'c', label: 'Journal système local du Mac' },
+            ],
+            correctOption: 'a',
+            explanation: 'La fiche inventaire centralise hardware, OS et statut MDM.',
+          },
+        ],
+        game: {
+          type: 'INVENTORY_TRIAGE',
+          scenario: 'Prioriser les alertes inventaire sur un parc Mac.',
+          steps: [
+            { id: 1, label: 'Confirmer la gestion MDM et la dernière check-in' },
+            { id: 2, label: 'Vérifier version macOS et espace disque' },
+            { id: 3, label: 'Lancer une politique corrective' },
+          ],
+        },
+      },
+      {
+        id: 'demo-jamf-module-3',
+        slug: 'enrollment-apple-integration',
+        title: 'Enrôlement et intégration Apple',
+        summary:
+          'Relier Apple Business Manager, certificats Push et enrôlement automatisé pour une flotte supervisée.',
+        questions: [
+          {
+            id: 'demo-jamf-q4',
+            type: 'MULTIPLE_CHOICE',
+            prompt:
+              'Quel prérequis permet à Jamf Pro de recevoir les appareils assignés depuis Apple Business Manager ?',
+            options: [
+              { id: 'a', label: 'Un jeton serveur MDM Apple valide' },
+              { id: 'b', label: 'Un compte iCloud personnel partagé' },
+              { id: 'c', label: 'Un profil Wi-Fi installé manuellement' },
+            ],
+            correctOption: 'a',
+            explanation: 'Le jeton serveur MDM synchronise les appareils ABM avec Jamf Pro.',
+          },
+        ],
+        game: {
+          type: 'ENROLLMENT_RUNBOOK',
+          scenario: 'Mettre en service 20 Mac neufs via Jamf Pro et Apple Business Manager.',
+          steps: [
+            { id: 1, label: 'Vérifier le jeton MDM et le certificat Push' },
+            { id: 2, label: 'Assigner les appareils au serveur Jamf dans ABM' },
+            { id: 3, label: 'Activer un Mac et valider l’assistant d’enrôlement' },
           ],
         },
       },

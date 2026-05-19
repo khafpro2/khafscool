@@ -54,6 +54,14 @@ Le backend écoute sur `http://localhost:4000`. Le web écoute sur [http://127.0
 
 Le seed crée les parcours MVP, modules, quiz, mini-jeux et données de progression nécessaires pour explorer l'application localement.
 
+Parcours seedés :
+
+| Slug | Piste | Titre |
+| ---- | ----- | ----- |
+| `apple-cert-prep` | APPLE | Parcours Apple — Device Support & MDM |
+| `jamf-pro-foundations` | JAMF | Fondamentaux Jamf Pro |
+| `intune-ios-enrollment` | INTUNE | Microsoft Intune — Enrôlement iOS/iPadOS |
+
 ## URLs
 
 
@@ -183,7 +191,7 @@ Les contenus pédagogiques du MVP sont originaux et non affiliés à Apple, Jamf
 ## Prochaines étapes
 
 - Brancher SDK natifs SSO (Apple, Google, MSAL)
-- Parcours Jamf et contenus avancés Intune
+- Contenus avancés Intune et modules Apple supplémentaires
 - Stripe Checkout réel + webhooks
 - Finaliser l'expérience mobile complète
 

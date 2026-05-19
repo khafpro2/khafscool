@@ -16,7 +16,7 @@ const POPULAR_TRAILS = [
     title: 'Fondamentaux Jamf Pro',
     description: 'Maîtrise inventaire, smart groups, politiques et bonnes pratiques MDM.',
     track: 'JAMF',
-    totalModules: 5,
+    totalModules: 3,
   },
   {
     href: '/courses',
