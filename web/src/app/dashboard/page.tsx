@@ -7,6 +7,7 @@ import { fetchDashboard } from '@/lib/api';
 import { getAccessToken, logoutSession } from '@/lib/auth';
 import { formatTrack } from '@/lib/tracks';
 import { ProgressOverview } from '@/components/dashboard/ProgressOverview';
+import { BadgesCallout } from '@/components/dashboard/BadgesCallout';
 import { WeeklyQuestsCallout } from '@/components/dashboard/WeeklyQuestsCallout';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -134,6 +135,7 @@ export default function DashboardPage() {
 
         <RecommendedActionCard action={recommendedAction} />
         <WeeklyQuestsCallout />
+        <BadgesCallout />
         <QuickActionsGrid actions={fallbackQuickActions} />
       </section>
     );
@@ -164,6 +166,7 @@ export default function DashboardPage() {
       <RecommendedActionCard action={recommendedAction} />
       <SprintDashboardCard sprint={certificationSprint ?? null} />
       <WeeklyQuestsCallout />
+      <BadgesCallout />
       <LeaderboardCallout />
       <QuickActionsGrid actions={quickActions} />
 

@@ -13,6 +13,7 @@ const NAV_ITEMS = [
   { href: '/courses', label: 'Parcours' },
   { href: '/quests', label: 'Quêtes' },
   { href: '/leaderboard', label: 'Classement' },
+  { href: '/badges', label: 'Badges' },
   { href: '/sprint', label: 'Sprint' },
   { href: '/pricing', label: 'Tarifs' },
 ];

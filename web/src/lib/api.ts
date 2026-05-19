@@ -269,6 +269,46 @@ export function createBillingCheckout(token: string, plan: CheckoutPlan) {
   });
 }
 
+export interface UserBadge {
+  slug: string;
+  earnedAt?: string | null;
+}
+
+export interface UserBadgesResult {
+  badges: UserBadge[];
+  earnedSlugs: string[];
+  fromApi: boolean;
+}
+
+export async function fetchUserBadges(token?: string): Promise<UserBadgesResult> {
+  if (!token) return mockUserBadges();
+
+  try {
+    const data = await apiRequest<{ badges: string[] }>('/users/me/dashboard', {
+      headers: authHeader(token),
+    });
+    const slugs = Array.isArray(data.badges) ? data.badges : [];
+    return {
+      badges: slugs.map((slug) => ({ slug })),
+      earnedSlugs: slugs,
+      fromApi: true,
+    };
+  } catch {
+    return mockUserBadges();
+  }
+}
+
+function mockUserBadges(): UserBadgesResult {
+  const slugs = ['apple-mdm-foundation'];
+  return {
+    badges: [
+      { slug: 'apple-mdm-foundation', earnedAt: '2026-03-12T10:30:00.000Z' },
+    ],
+    earnedSlugs: slugs,
+    fromApi: false,
+  };
+}
+
 export async function fetchDashboard(token?: string): Promise<DashboardData> {
   try {
     const data = await apiRequest<UserProgressData>('/users/me/progress', { headers: authHeader(token) });

@@ -199,3 +199,31 @@ export function getRewardBadgeForTrack(track?: string | null): RewardBadgeForTra
   if (!track) return null;
   return REWARD_BY_TRACK[track.toUpperCase()] ?? null;
 }
+
+export const ALL_BADGE_SLUGS = [
+  'apple-mdm-foundation',
+  'jamf-engineer',
+  'intune-professional',
+] as const;
+
+export type BadgeSlug = (typeof ALL_BADGE_SLUGS)[number];
+
+const BADGE_TRACK: Record<string, string> = {
+  'apple-mdm-foundation': 'APPLE',
+  'jamf-engineer': 'JAMF',
+  'intune-professional': 'INTUNE',
+};
+
+const BADGE_CRITERIA: Record<string, string> = {
+  'apple-mdm-foundation': 'Termine au moins un module du parcours Apple Device Support.',
+  'jamf-engineer': 'Termine au moins un module du parcours Jamf Pro.',
+  'intune-professional': 'Termine au moins un module du parcours Microsoft Intune.',
+};
+
+export function getBadgeTrack(slug: string): string {
+  return BADGE_TRACK[slug] ?? 'DEFAULT';
+}
+
+export function getBadgeCriteria(slug: string): string {
+  return BADGE_CRITERIA[slug] ?? 'Complète le parcours associé pour débloquer ce super-badge.';
+}
