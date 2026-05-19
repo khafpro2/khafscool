@@ -106,8 +106,8 @@ export async function getUserProgress(req: FastifyRequest, reply: FastifyReply) 
 }
 
 export async function getWeeklyQuests(req: FastifyRequest, reply: FastifyReply) {
-  const quests = await gamification.ensureWeeklyQuests(req.user.sub);
-  return reply.send({ quests });
+  const data = await gamification.getWeeklyQuestsResponse(req.user.sub);
+  return reply.send(data);
 }
 
 export async function startCertificationSprint(

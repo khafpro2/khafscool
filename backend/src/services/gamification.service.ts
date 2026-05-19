@@ -157,6 +157,90 @@ function dateKey(d: Date) {
   return `${year}-${month}-${day}`;
 }
 
+export type LearningStreak = {
+  currentDays: number;
+  longestDays: number;
+  lastActivityDate: string | null;
+};
+
+export function buildLearningStreak(completedAts: Date[], now = new Date()): LearningStreak {
+  if (!completedAts.length) {
+    return { currentDays: 0, longestDays: 0, lastActivityDate: null };
+  }
+
+  const activityDays = new Set<string>();
+  for (const completedAt of completedAts) {
+    activityDays.add(dateKey(startOfDay(completedAt)));
+  }
+
+  const sortedDays = [...activityDays].sort();
+  const lastActivityDate = sortedDays[sortedDays.length - 1] ?? null;
+
+  let longestDays = 1;
+  let run = 1;
+  for (let index = 1; index < sortedDays.length; index += 1) {
+    const previous = new Date(`${sortedDays[index - 1]}T00:00:00`);
+    const current = new Date(`${sortedDays[index]}T00:00:00`);
+    const dayGap = Math.round((current.getTime() - previous.getTime()) / 86_400_000);
+    if (dayGap === 1) {
+      run += 1;
+      longestDays = Math.max(longestDays, run);
+    } else {
+      run = 1;
+    }
+  }
+
+  const todayKey = dateKey(startOfDay(now));
+  const yesterdayKey = dateKey(addDays(startOfDay(now), -1));
+  const anchorKey = activityDays.has(todayKey)
+    ? todayKey
+    : activityDays.has(yesterdayKey)
+      ? yesterdayKey
+      : null;
+
+  let currentDays = 0;
+  if (anchorKey) {
+    let cursor = new Date(`${anchorKey}T00:00:00`);
+    while (activityDays.has(dateKey(cursor))) {
+      currentDays += 1;
+      cursor = addDays(cursor, -1);
+    }
+  }
+
+  return { currentDays, longestDays, lastActivityDate };
+}
+
+async function computeLearningStreak(userId: string) {
+  const rows = await prisma.moduleProgress.findMany({
+    where: { userId, completedAt: { not: null } },
+    select: { completedAt: true },
+  });
+
+  return buildLearningStreak(
+    rows
+      .map((row) => row.completedAt)
+      .filter((completedAt): completedAt is Date => completedAt != null)
+  );
+}
+
+export const WEEKLY_QUEST_REWARD_POINTS: Record<string, number> = {
+  'weekly-apple-2': 40,
+  'weekly-jamf-2': 40,
+  'weekly-intune-2': 40,
+  'weekly-mdm-4': 80,
+};
+
+export function weeklyQuestTrack(questKey: string): CourseTrack | null {
+  if (questKey.startsWith('weekly-apple')) return CourseTrack.APPLE;
+  if (questKey.startsWith('weekly-jamf')) return CourseTrack.JAMF;
+  if (questKey.startsWith('weekly-intune')) return CourseTrack.INTUNE;
+  return null;
+}
+
+function endOfWeek(weekStart: Date) {
+  return addDays(weekStart, 7);
+}
+
 export function buildCertificationSprintQuestKey(
   track: CourseTrack,
   startDate: Date,
@@ -750,6 +834,8 @@ export async function getDashboard(userId: string) {
         )
       : 0;
 
+  const learningStreak = await computeLearningStreak(userId);
+
   return {
     user: {
       id: user.id,
@@ -765,12 +851,34 @@ export async function getDashboard(userId: string) {
       preparationScore: await computePreparationByTrack(userId, CourseTrack.APPLE),
       preparationByTrack,
     },
+    learningStreak,
     badges: user.progress?.badges ?? [],
     quests: user.quests,
     certificationSprint: await getCurrentCertificationSprint(userId),
     courses: coursesWithProgress,
     completedCourses: buildCompletedCourses(courses),
     subscription: user.subscription,
+  };
+}
+
+export async function getWeeklyQuestsResponse(userId: string) {
+  const weekStart = startOfWeek(new Date());
+  const quests = await ensureWeeklyQuests(userId);
+
+  return {
+    weekStart: weekStart.toISOString(),
+    weekEnd: endOfWeek(weekStart).toISOString(),
+    quests: quests.map((quest) => ({
+      id: quest.id,
+      questKey: quest.questKey,
+      label: quest.label,
+      target: quest.target,
+      progress: quest.progress,
+      completed: quest.completed,
+      weekStart: quest.weekStart.toISOString(),
+      rewardPoints: WEEKLY_QUEST_REWARD_POINTS[quest.questKey] ?? null,
+      track: weeklyQuestTrack(quest.questKey),
+    })),
   };
 }
 
