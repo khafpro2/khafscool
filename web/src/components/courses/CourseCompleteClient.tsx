@@ -147,7 +147,7 @@ export function CourseCompleteClient({
           Bravo ! Tu as complété « {completion.title} »
         </h1>
         <p style={{ marginTop: '0.65rem', maxWidth: 640, color: 'rgba(255,255,255,0.94)' }}>
-          Style Trailhead : tu viens de boucler les {course.modules.length} unités du parcours{' '}
+          Tu viens de boucler les {course.modules.length} unités du parcours{' '}
           {formatTrack(course.track)}. Continue sur la lancée !
         </p>
         {usesDemo && (

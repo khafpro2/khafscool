@@ -63,7 +63,7 @@ export interface RankInfo {
 }
 
 const RANK_LADDER: { name: string; icon: string; color: string; gradient: [string, string]; minPoints: number }[] = [
-  { name: 'Novice', icon: '\u{1F331}', color: '#5d6373', gradient: ['#94a1b8', '#c5cfdd'], minPoints: 0 },
+  { name: 'Débutant', icon: '\u{1F331}', color: '#5d6373', gradient: ['#94a1b8', '#c5cfdd'], minPoints: 0 },
   { name: 'Apprenti', icon: '\u{1F33F}', color: '#2e844a', gradient: ['#2e844a', '#4cd964'], minPoints: 100 },
   { name: 'Technicien', icon: '\u{1F527}', color: '#0070d2', gradient: ['#0070d2', '#16cdf1'], minPoints: 250 },
   { name: 'Ingénieur', icon: '\u{2699}\uFE0F', color: '#6c5ce7', gradient: ['#4834d4', '#a29bfe'], minPoints: 500 },

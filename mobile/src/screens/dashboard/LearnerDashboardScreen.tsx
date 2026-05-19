@@ -119,7 +119,7 @@ export function LearnerDashboardScreen({ onSignOut }: LearnerDashboardScreenProp
   }
 
   const { data, source } = dashboard;
-  const displayName = data.user.displayName ?? 'Trailblazer';
+  const displayName = data.user.displayName ?? 'Apprenant';
   const rank = getRankInfo(data.progress.points);
   const previousFloor = rank.minPoints;
   const ceiling = rank.nextPoints ?? Math.max(previousFloor + 100, data.progress.points + 100);
@@ -132,7 +132,7 @@ export function LearnerDashboardScreen({ onSignOut }: LearnerDashboardScreenProp
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.header}>
         <View>
-          <Text style={styles.eyebrow}>Espace Trailblazer</Text>
+          <Text style={styles.eyebrow}>Espace apprenant</Text>
           <Text style={styles.title}>Bonjour {displayName}</Text>
         </View>
         <Pressable onPress={handleSignOut} style={styles.signOutButton}>
@@ -148,7 +148,7 @@ export function LearnerDashboardScreen({ onSignOut }: LearnerDashboardScreenProp
 
       {data.learningStreak ? (
         <View style={styles.streakCard}>
-          <Text style={styles.streakEyebrow}>{'\u{1F525}'} Série Trailblazer</Text>
+          <Text style={styles.streakEyebrow}>{'\u{1F525}'} Série d'apprentissage</Text>
           <Text style={styles.streakValue}>
             {data.learningStreak.currentDays} jour{data.learningStreak.currentDays > 1 ? 's' : ''} consécutif{data.learningStreak.currentDays > 1 ? 's' : ''}
           </Text>
@@ -160,7 +160,7 @@ export function LearnerDashboardScreen({ onSignOut }: LearnerDashboardScreenProp
 
       <View style={[styles.heroCard, { backgroundColor: rank.gradient[0] }]}>
         <Text style={styles.heroEyebrow}>
-          {rank.icon} Rang Trailblazer · {rank.name}
+          {rank.icon} Rang MDM · {rank.name}
         </Text>
         <View style={styles.heroStats}>
           <Stat label="Points" value={String(data.progress.points)} />

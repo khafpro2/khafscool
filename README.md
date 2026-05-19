@@ -235,7 +235,7 @@ Les contenus pédagogiques du MVP sont originaux et non affiliés à Apple, Jamf
 
 ## Propositions de thème (Cursor Canvas)
 
-Un canvas interactif compare **trois thèmes alternatifs** au style Trailhead actuel (`web/src/app/globals.css`) : *Nuit Trailblazer*, *Apple Pro* et *Jamf Enterprise* (palettes, typo, aperçu header / TrailCard / badges).
+Un canvas interactif compare **trois thèmes alternatifs** au style MDM Academy actuel (`web/src/app/globals.css`) : *Nuit profonde*, *Apple Pro* et *Jamf Enterprise* (palettes, typo, aperçu header / TrailCard / badges).
 
 **Ouvrir dans Cursor** : panneau **Canvas** (icône à côté du chat) ou clic sur le fichier :
 

@@ -6,7 +6,7 @@ Ce document décrit une architecture de production recommandée pour le monorepo
 
 | Composant | Hébergement conseillé | Rôle |
 | --------- | --------------------- | ---- |
-| **Web** (Next.js) | [Vercel](https://vercel.com) | Interface Trailblazer, auth côté client, appels API |
+| **Web** (Next.js) | [Vercel](https://vercel.com) | Interface apprenant MDM Academy, auth côté client, appels API |
 | **API** (Fastify) | [Railway](https://railway.app), [Render](https://render.com) ou [Fly.io](https://fly.io) | REST, JWT, gamification, billing |
 | **Base** (PostgreSQL) | [Neon](https://neon.tech), [Supabase](https://supabase.com) ou Postgres managé | Données utilisateurs, parcours, progression |
 | **Mobile** (Expo) | [EAS Build](https://docs.expo.dev/build/introduction/) | Builds iOS/Android, OTA via EAS Update (optionnel) |

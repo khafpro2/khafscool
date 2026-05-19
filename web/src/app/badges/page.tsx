@@ -89,7 +89,7 @@ export default function BadgesPage() {
             color: '#3a2200',
           }}
         >
-          <span aria-hidden>{'\u{1F3C5}'}</span> Galerie Trailhead
+          <span aria-hidden>{'\u{1F3C5}'}</span> Galerie des badges
         </span>
         <h1 style={{ color: '#3a2200' }}>Tes super-badges MDM Academy</h1>
         <p style={{ marginTop: '0.75rem', color: '#3a2200', maxWidth: 640 }}>

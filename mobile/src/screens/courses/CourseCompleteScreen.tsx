@@ -38,7 +38,7 @@ export function CourseCompleteScreen() {
         <Text style={styles.heroEyebrow}>Parcours terminé</Text>
         <Text style={styles.heroTitle}>Bravo ! Tu as complété « {title} »</Text>
         <Text style={styles.heroText}>
-          Style Trailhead : toutes les unités du parcours {formatTrack(track)} sont validées.
+          Toutes les unités du parcours {formatTrack(track)} sont validées.
         </Text>
         {usesDemo ? (
           <Text style={styles.demoHint}>

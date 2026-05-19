@@ -118,7 +118,7 @@ export default function DashboardPage() {
             <span aria-hidden>{'\u{1F3AF}'}</span> Tableau de bord MDM Academy
           </span>
           <h1 style={{ fontSize: '2rem', fontWeight: 800, marginTop: '0.75rem' }}>
-            Connecte-toi pour suivre ta progression Trailblazer.
+            Connecte-toi pour suivre ta progression d’apprenant.
           </h1>
           <p style={{ marginTop: '0.5rem', maxWidth: 600 }}>
             Le tableau de bord utilise le token local pour appeler <code>/users/me/progress</code>. Sans
@@ -162,7 +162,7 @@ export default function DashboardPage() {
 
   return (
     <section style={{ padding: '1rem 0 2rem' }}>
-      <TrailblazerRankCard user={user.displayName ?? 'Technicien'} points={stats.points} level={stats.level} onLogout={handleLogout} />
+      <LearnerRankCard user={user.displayName ?? 'Technicien'} points={stats.points} level={stats.level} onLogout={handleLogout} />
 
       <RecommendedActionCard action={recommendedAction} />
       {learningStreak ? <LearningStreakCard streak={learningStreak} /> : null}
@@ -219,7 +219,7 @@ export default function DashboardPage() {
   );
 }
 
-function TrailblazerRankCard({
+function LearnerRankCard({
   user,
   points,
   level,
@@ -271,7 +271,7 @@ function TrailblazerRankCard({
               textTransform: 'uppercase',
             }}
           >
-            <span aria-hidden>{rank.icon}</span> Rang Trailblazer
+            <span aria-hidden>{rank.icon}</span> Rang MDM
           </span>
           <h1 style={{ fontSize: '2rem', fontWeight: 800, marginTop: '0.5rem' }}>
             Bonjour {user}

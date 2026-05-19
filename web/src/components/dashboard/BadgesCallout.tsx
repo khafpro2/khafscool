@@ -27,7 +27,7 @@ export function BadgesCallout() {
           Super-badges
         </span>
         <h2 style={{ fontSize: '1.2rem', fontWeight: 800, marginTop: '0.35rem' }}>
-          Collectionne tes récompenses Trailhead
+          Collectionne tes récompenses MDM Academy
         </h2>
         <p className="muted" style={{ marginTop: '0.35rem' }}>
           Consulte les badges gagnés et ceux à débloquer sur Apple, Jamf et Intune.

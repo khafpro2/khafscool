@@ -138,7 +138,7 @@ export interface RankInfo {
 }
 
 const RANK_LADDER: { name: string; icon: string; color: string; gradient: string; minPoints: number }[] = [
-  { name: 'Novice', icon: '\u{1F331}', color: '#5d6373', gradient: 'linear-gradient(135deg, #94a1b8 0%, #c5cfdd 100%)', minPoints: 0 },
+  { name: 'Débutant', icon: '\u{1F331}', color: '#5d6373', gradient: 'linear-gradient(135deg, #94a1b8 0%, #c5cfdd 100%)', minPoints: 0 },
   { name: 'Apprenti', icon: '\u{1F33F}', color: '#2e844a', gradient: 'linear-gradient(135deg, #2e844a 0%, #4cd964 100%)', minPoints: 100 },
   { name: 'Technicien', icon: '\u{1F527}', color: '#0070d2', gradient: 'linear-gradient(135deg, #0070d2 0%, #16cdf1 100%)', minPoints: 250 },
   { name: 'Ingénieur', icon: '\u{2699}\uFE0F', color: '#6c5ce7', gradient: 'linear-gradient(135deg, #4834d4 0%, #a29bfe 100%)', minPoints: 500 },

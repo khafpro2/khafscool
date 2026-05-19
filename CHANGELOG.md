@@ -2,7 +2,7 @@
 
 ## Unreleased — `cursor/progress-dashboard-auth-v2`
 
-- Catalogue web style Trailhead (cartes, hero, filtres par piste et niveau)
+- Catalogue web MDM Academy (cartes, hero, filtres par piste et niveau)
 - Recherche client sur le catalogue (titre, description, piste)
 - Trois parcours MDM (Apple, Jamf, Intune) avec progression et complétion
 - API tableau de bord : `completedCourses[]` pour les parcours terminés

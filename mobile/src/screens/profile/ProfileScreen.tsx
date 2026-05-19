@@ -50,7 +50,7 @@ export function ProfileScreen() {
   }
 
   const { data, source } = dashboard;
-  const displayName = data.user.displayName ?? 'Trailblazer';
+  const displayName = data.user.displayName ?? 'Apprenant';
   const rank = getRankInfo(data.progress.points);
   const completedCourses = data.completedCourses ?? [];
 
@@ -69,7 +69,7 @@ export function ProfileScreen() {
 
       {data.learningStreak ? (
         <View style={styles.streakCard}>
-          <Text style={styles.streakEyebrow}>{'\u{1F525}'} Série Trailblazer</Text>
+          <Text style={styles.streakEyebrow}>{'\u{1F525}'} Série d'apprentissage</Text>
           <Text style={styles.streakValue}>
             {data.learningStreak.currentDays} jour{data.learningStreak.currentDays > 1 ? 's' : ''} consécutif{data.learningStreak.currentDays > 1 ? 's' : ''}
           </Text>
@@ -122,7 +122,7 @@ export function ProfileScreen() {
       <Text style={styles.sectionHint}>Profil complet, badges et quêtes hebdomadaires</Text>
 
       <Pressable style={styles.linkCard} onPress={() => openWebPath('/profile')}>
-        <Text style={styles.linkTitle}>Profil Trailblazer</Text>
+        <Text style={styles.linkTitle}>Profil apprenant</Text>
         <Text style={styles.linkHint}>Parcours, sprint et statistiques détaillées</Text>
         <Text style={styles.linkCta}>Ouvrir sur le web →</Text>
       </Pressable>

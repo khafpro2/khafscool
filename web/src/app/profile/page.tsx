@@ -66,7 +66,7 @@ export default function ProfilePage() {
   if (isLoading) {
     return (
       <section style={{ padding: '2rem 0' }}>
-        <h1 style={{ fontSize: '2rem', fontWeight: 800 }}>Mon profil Trailblazer</h1>
+        <h1 style={{ fontSize: '2rem', fontWeight: 800 }}>Mon profil apprenant</h1>
         <p className="muted" style={{ marginTop: '0.5rem' }}>Chargement de ton profil…</p>
       </section>
     );
@@ -75,7 +75,7 @@ export default function ProfilePage() {
   if (!data) {
     return (
       <section style={{ padding: '2rem 0' }}>
-        <h1 style={{ fontSize: '2rem', fontWeight: 800 }}>Mon profil Trailblazer</h1>
+        <h1 style={{ fontSize: '2rem', fontWeight: 800 }}>Mon profil apprenant</h1>
         <p className="muted" style={{ marginTop: '0.5rem' }}>
           Impossible de charger le profil. Réessaie ou reconnecte-toi.
         </p>
@@ -87,7 +87,7 @@ export default function ProfilePage() {
   }
 
   const { user, stats, badges, quests, courses, certificationSprint, completedCourses = [], learningStreak } = data;
-  const displayName = user.displayName ?? storedUser?.displayName ?? 'Trailblazer';
+  const displayName = user.displayName ?? storedUser?.displayName ?? 'Apprenant';
   const email = user.email ?? storedUser?.email ?? 'demo@ama.dev';
   const rank = getRankInfo(stats.points);
   const previousFloor = rank.minPoints;
@@ -496,7 +496,7 @@ function SprintSection({ sprint }: { sprint: CertificationSprintSummary }) {
 
 function getInitials(name: string, email: string): string {
   const trimmed = name.trim();
-  if (trimmed && trimmed !== 'Trailblazer' && trimmed !== 'Technicien démo') {
+  if (trimmed && trimmed !== 'Apprenant' && trimmed !== 'Technicien démo') {
     const parts = trimmed.split(/\s+/).filter(Boolean);
     if (parts.length >= 2) {
       return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
@@ -506,5 +506,5 @@ function getInitials(name: string, email: string): string {
   if (email && email.includes('@')) {
     return email.slice(0, 2).toUpperCase();
   }
-  return 'TB';
+  return 'AP';
 }

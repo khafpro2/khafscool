@@ -18,7 +18,7 @@ const DELIVERED = [
     cta: 'Voir le catalogue',
   },
   {
-    title: 'Tableau de bord Trailhead',
+    title: 'Tableau de bord MDM Academy',
     description: 'Progression, badges, quêtes hebdo, classement et actions rapides par piste.',
     href: '/dashboard',
     cta: 'Ouvrir le tableau de bord',

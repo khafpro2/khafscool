@@ -19,7 +19,7 @@ export function LearningStreakCard({ streak }: { streak: LearningStreak }) {
       }}
     >
       <span style={{ color: '#b45309', fontSize: '0.8rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-        <span aria-hidden>{'\u{1F525}'}</span> Série Trailblazer
+        <span aria-hidden>{'\u{1F525}'}</span> Série d&apos;apprentissage
       </span>
       <div
         style={{

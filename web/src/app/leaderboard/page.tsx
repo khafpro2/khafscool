@@ -70,7 +70,7 @@ export default function LeaderboardPage() {
         <span className="hero-eyebrow">
           <span aria-hidden>{'\u{1F3C6}'}</span> Communauté MDM Academy
         </span>
-        <h1>Classement Trailblazer</h1>
+        <h1>Classement des apprenants</h1>
         <p style={{ marginTop: '0.75rem' }}>
           Le top 10 des apprenants MDM Academy, classés par points gagnés sur les parcours Apple, Jamf
           et Intune.
@@ -136,7 +136,7 @@ export default function LeaderboardPage() {
           <span>Rang</span>
           <span>Apprenant</span>
           <span>Points</span>
-          <span>Rang Trailblazer</span>
+          <span>Rang MDM</span>
           <span>Badges</span>
         </header>
         <ul style={{ listStyle: 'none' }}>
