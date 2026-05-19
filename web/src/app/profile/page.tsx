@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import type { CertificationSprintSummary, DashboardData } from '@/lib/api';
 import { fetchCurrentUser, fetchDashboard } from '@/lib/api';
-import { getAccessToken, getStoredUser, logoutSession } from '@/lib/auth';
+import { buildAuthUrl, getAccessToken, getStoredUser, logoutSession } from '@/lib/auth';
 import { formatTrack } from '@/lib/tracks';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -78,7 +78,7 @@ export default function ProfilePage() {
         <p className="muted" style={{ marginTop: '0.5rem' }}>
           Impossible de charger le profil. Réessaie ou reconnecte-toi.
         </p>
-        <Button href="/auth" style={{ marginTop: '1rem' }}>
+        <Button href={buildAuthUrl('/profile')} style={{ marginTop: '1rem' }}>
           Se connecter
         </Button>
       </section>
@@ -116,7 +116,7 @@ export default function ProfilePage() {
             Profil en mode démo — connecte-toi pour synchroniser ta progression réelle.
           </p>
           <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', marginTop: '0.85rem' }}>
-            <Button href="/auth" size="sm">
+            <Button href={buildAuthUrl('/profile')} size="sm">
               Se connecter ou s&apos;inscrire
             </Button>
             <Button href="/dashboard" variant="ghost" size="sm">
@@ -408,7 +408,7 @@ function ProfileHero({
             Déconnexion
           </button>
         ) : (
-          <Button href="/auth" variant="secondary" size="sm" style={{ background: 'rgba(255,255,255,0.16)', color: '#fff', borderColor: 'rgba(255,255,255,0.32)' }}>
+          <Button href={buildAuthUrl('/profile')} variant="secondary" size="sm" style={{ background: 'rgba(255,255,255,0.16)', color: '#fff', borderColor: 'rgba(255,255,255,0.32)' }}>
             Connexion
           </Button>
         )}

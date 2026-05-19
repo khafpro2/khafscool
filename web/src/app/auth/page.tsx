@@ -3,7 +3,12 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { API_URL, login, register } from '@/lib/api';
-import { getAccessToken, logoutSession, storeAuthTokens } from '@/lib/auth';
+import {
+  getAccessToken,
+  logoutSession,
+  sanitizeRedirectPath,
+  storeAuthTokens,
+} from '@/lib/auth';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -22,8 +27,15 @@ const inputStyle = {
   width: '100%',
 } as const;
 
+function readRedirectFromLocation(): string {
+  if (typeof window === 'undefined') return '/dashboard';
+  const value = new URLSearchParams(window.location.search).get('redirect');
+  return sanitizeRedirectPath(value) ?? '/dashboard';
+}
+
 export default function AuthPage() {
   const router = useRouter();
+  const [redirectPath, setRedirectPath] = useState('/dashboard');
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -33,6 +45,7 @@ export default function AuthPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
+    setRedirectPath(readRedirectFromLocation());
     setHasSession(Boolean(getAccessToken()));
   }, []);
 
@@ -48,7 +61,7 @@ export default function AuthPage() {
           : await register(email, password, displayName || email.split('@')[0]);
       storeAuthTokens(auth);
       setHasSession(true);
-      router.push('/dashboard');
+      router.push(redirectPath);
     } catch {
       setError(
         mode === 'login'
@@ -84,10 +97,10 @@ export default function AuthPage() {
             Session active
           </Badge>
           <p className="muted" style={{ marginTop: '0.5rem' }}>
-            Tu es connecté dans ce navigateur. Continue vers le tableau de bord ou déconnecte-toi pour changer de compte.
+            Tu es connecté dans ce navigateur. Continue vers ta destination ou déconnecte-toi pour changer de compte.
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '1rem' }}>
-            <Button href="/dashboard">Ouvrir le tableau de bord</Button>
+            <Button href={redirectPath}>Continuer</Button>
             <Button variant="dark" type="button" onClick={handleLogout} disabled={isSubmitting}>
               Se déconnecter
             </Button>
@@ -192,7 +205,7 @@ export default function AuthPage() {
               {SSO_PROVIDERS.map((provider) => (
                 <Button
                   key={provider.id}
-                  href={`${API_URL}/auth/${provider.id}/start?redirect=${encodeURIComponent('/dashboard')}`}
+                  href={`${API_URL}/auth/${provider.id}/start?redirect=${encodeURIComponent(redirectPath)}`}
                   variant={provider.variant}
                   fullWidth
                   icon={provider.icon}

@@ -138,3 +138,20 @@ function readCookie(name: string) {
     ?.split('=')[1];
   return value ? decodeURIComponent(value) : undefined;
 }
+
+/** Accepte uniquement un chemin relatif interne (ex. `/dashboard`). */
+export function sanitizeRedirectPath(path: string | null | undefined): string | null {
+  if (!path || typeof path !== 'string') return null;
+  const trimmed = path.trim();
+  if (!trimmed.startsWith('/')) return null;
+  if (trimmed.startsWith('//')) return null;
+  if (/^https?:/i.test(trimmed)) return null;
+  if (trimmed.includes('://')) return null;
+  return trimmed;
+}
+
+export function buildAuthUrl(redirectPath?: string): string {
+  const safe = sanitizeRedirectPath(redirectPath);
+  if (!safe || safe === '/auth') return '/auth';
+  return `/auth?redirect=${encodeURIComponent(safe)}`;
+}

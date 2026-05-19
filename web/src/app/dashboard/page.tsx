@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import type { CertificationSprintSummary, DashboardData } from '@/lib/api';
 import { fetchDashboard } from '@/lib/api';
-import { getAccessToken, logoutSession } from '@/lib/auth';
+import { buildAuthUrl, getAccessToken, logoutSession } from '@/lib/auth';
 import { formatTrack } from '@/lib/tracks';
 import { ProgressOverview } from '@/components/dashboard/ProgressOverview';
 import { BadgesCallout } from '@/components/dashboard/BadgesCallout';
@@ -124,7 +124,7 @@ export default function DashboardPage() {
             token, le MVP te laisse explorer les parcours en mode démo.
           </p>
           <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', marginTop: '1.25rem' }}>
-            <Button href="/auth" variant="secondary" size="lg">
+            <Button href={buildAuthUrl('/dashboard')} variant="secondary" size="lg">
               Se connecter ou s’inscrire
             </Button>
             <Button href="/courses" size="lg" variant="ghost" style={{ color: '#fff', borderColor: 'rgba(255,255,255,0.4)' }}>
@@ -148,7 +148,7 @@ export default function DashboardPage() {
         <p className="muted" style={{ marginTop: '0.5rem' }}>
           Impossible de charger les données. Essaie de te reconnecter.
         </p>
-        <Button href="/auth" style={{ marginTop: '1rem' }}>
+        <Button href={buildAuthUrl('/dashboard')} style={{ marginTop: '1rem' }}>
           Revenir à la connexion
         </Button>
       </section>

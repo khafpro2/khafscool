@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import type { CourseDetail, CourseProgressData, CourseProgressModule } from '@/lib/api';
 import { completeModule, fetchCourse, fetchCourseProgress } from '@/lib/api';
-import { getAccessToken } from '@/lib/auth';
+import { buildAuthUrl, getAccessToken } from '@/lib/auth';
 import { formatTrack } from '@/lib/tracks';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -188,6 +188,9 @@ export function CourseDetailClient({ slug }: { slug: string }) {
                 Les questions fonctionnent localement. Connecte-toi pour enregistrer les scores quand le
                 module vient de l’API.
               </p>
+              <Button href={buildAuthUrl(`/courses/${slug}`)} size="sm" style={{ marginTop: '0.85rem' }}>
+                Se connecter pour enregistrer
+              </Button>
             </Card>
           )}
 
