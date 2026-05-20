@@ -4,23 +4,19 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import type { CertificationSprintSummary, DashboardData } from '@/lib/api';
 import { fetchDashboard } from '@/lib/api';
-import { buildAuthUrl, getAccessToken, logoutSession } from '@/lib/auth';
+import { buildAuthUrl, getAccessToken } from '@/lib/auth';
 import { formatTrack } from '@/lib/tracks';
 import { ProgressOverview } from '@/components/dashboard/ProgressOverview';
 import { BadgesCallout } from '@/components/dashboard/BadgesCallout';
 import { LearningStreakCard } from '@/components/dashboard/LearningStreakCard';
 import { WeeklyQuestsCallout } from '@/components/dashboard/WeeklyQuestsCallout';
-import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { LevelPill } from '@/components/ui/LevelPill';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import { TrackIcon } from '@/components/ui/TrackIcon';
 import { MdmTracksSection } from '@/components/dashboard/MdmTracksSection';
 import { TrailCard } from '@/components/ui/TrailCard';
-import { estimatePoints, getBadgeVisual, getRankInfo, inferLevelFromModules } from '@/lib/design';
-
-type Quest = { id: string; label: string; progress: number; target: number };
+import { estimatePoints, getRankInfo, inferLevelFromModules } from '@/lib/design';
 type QuickAction = {
   label: string;
   description: string;
@@ -89,17 +85,11 @@ export default function DashboardPage() {
       .finally(() => setIsLoading(false));
   }, []);
 
-  async function handleLogout() {
-    await logoutSession();
-    setHasToken(false);
-    setData(null);
-  }
-
   if (isLoading) {
     return (
       <section style={{ padding: '2rem 0' }}>
-        <h1 style={{ fontSize: '2rem', fontWeight: 800 }}>Tableau de bord</h1>
-        <p className="muted" style={{ marginTop: '0.5rem' }}>Chargement du compte...</p>
+        <h1 style={{ fontSize: '2rem', fontWeight: 800 }}>Mon apprentissage</h1>
+        <p className="muted" style={{ marginTop: '0.5rem' }}>Chargement de ta progression…</p>
       </section>
     );
   }
@@ -111,14 +101,13 @@ export default function DashboardPage() {
       <section style={{ padding: '1rem 0 2rem' }}>
         <Card variant="gradient">
           <span className="hero-eyebrow" style={{ background: 'rgba(255,255,255,0.16)', borderColor: 'rgba(255,255,255,0.32)' }}>
-            <span aria-hidden>{'\u{1F3AF}'}</span> Tableau de bord MDM Academy
+            <span aria-hidden>{'\u{1F3AF}'}</span> Hub apprentissage
           </span>
           <h1 style={{ fontSize: '2rem', fontWeight: 800, marginTop: '0.75rem' }}>
-            Connecte-toi pour suivre ta progression d’apprenant.
+            Connecte-toi pour suivre ta progression.
           </h1>
           <p style={{ marginTop: '0.5rem', maxWidth: 600 }}>
-            Le tableau de bord utilise le token local pour appeler <code>/users/me/progress</code>. Sans
-            token, le MVP te laisse explorer les parcours en mode démo.
+            Pistes MDM, quêtes, streak et prochaine unité — synchronise ton parcours Apple, Jamf et Intune.
           </p>
           <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', marginTop: '1.25rem' }}>
             <Button href={buildAuthUrl('/dashboard')} variant="secondary" size="lg">
@@ -142,7 +131,7 @@ export default function DashboardPage() {
   if (!data) {
     return (
       <section style={{ padding: '2rem 0' }}>
-        <h1 style={{ fontSize: '2rem', fontWeight: 800 }}>Tableau de bord</h1>
+        <h1 style={{ fontSize: '2rem', fontWeight: 800 }}>Mon apprentissage</h1>
         <p className="muted" style={{ marginTop: '0.5rem' }}>
           Impossible de charger les données. Essaie de te reconnecter.
         </p>
@@ -153,13 +142,19 @@ export default function DashboardPage() {
     );
   }
 
-  const { user, stats, badges, quests, courses, certificationSprint, learningStreak } = data;
+  const { stats, courses, certificationSprint, learningStreak } = data;
   const recommendedAction = getRecommendedAction(data);
   const quickActions = getQuickActions(data);
+  const rank = getRankInfo(stats.points);
 
   return (
     <section style={{ padding: '1rem 0 2rem' }}>
-      <LearnerRankCard user={user.displayName ?? 'Technicien'} points={stats.points} level={stats.level} onLogout={handleLogout} />
+      <DashboardLearningHeader
+        displayName={data.user.displayName ?? 'Apprenant'}
+        rankName={rank.name}
+        points={stats.points}
+        level={stats.level}
+      />
 
       <RecommendedActionCard action={recommendedAction} />
       <MdmTracksSection courses={courses} />
@@ -174,7 +169,7 @@ export default function DashboardPage() {
         modulesCompleted={stats.modulesCompleted}
         timeSpentMinutes={stats.timeSpentMinutes}
         averageQuizScore={stats.averageQuizScore}
-        badges={badges}
+        badges={data.badges}
         preparationScore={stats.preparationScore}
       />
 
@@ -212,109 +207,46 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      <QuestsBadgesPanel quests={quests} badges={badges} />
     </section>
   );
 }
 
-function LearnerRankCard({
-  user,
+function DashboardLearningHeader({
+  displayName,
+  rankName,
   points,
   level,
-  onLogout,
 }: {
-  user: string;
+  displayName: string;
+  rankName: string;
   points: number;
   level: string;
-  onLogout: () => void;
 }) {
-  const rank = getRankInfo(points);
-  const previousFloor = rank.minPoints;
-  const ceiling = rank.nextPoints ?? Math.max(previousFloor + 100, points + 100);
-  const span = Math.max(1, ceiling - previousFloor);
-  const progressInRank = Math.max(0, Math.min(span, points - previousFloor));
-  const percent = Math.round((progressInRank / span) * 100);
-  const remaining = rank.nextPoints != null ? Math.max(0, rank.nextPoints - points) : 0;
-
   return (
-    <Card
-      style={{
-        background: rank.gradient,
-        color: '#fff',
-        borderColor: 'transparent',
-        boxShadow: 'var(--shadow-md)',
-      }}
-    >
+    <Card variant="soft" style={{ marginBottom: 0 }}>
       <div
         style={{
           display: 'grid',
-          gap: '1.25rem',
+          gap: '1rem',
           gridTemplateColumns: 'minmax(0, 1fr) auto',
           alignItems: 'center',
         }}
       >
         <div>
-          <span
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.4rem',
-              padding: '0.2rem 0.65rem',
-              borderRadius: 999,
-              background: 'rgba(255,255,255,0.18)',
-              border: '1px solid rgba(255,255,255,0.32)',
-              fontSize: '0.78rem',
-              fontWeight: 800,
-              letterSpacing: '0.08em',
-              textTransform: 'uppercase',
-            }}
-          >
-            <span aria-hidden>{rank.icon}</span> Rang MDM
-          </span>
-          <h1 style={{ fontSize: '2rem', fontWeight: 800, marginTop: '0.5rem' }}>
-            Bonjour {user}
+          <span className="section-eyebrow">Mon apprentissage</span>
+          <h1 style={{ fontSize: '2rem', fontWeight: 800, marginTop: '0.35rem' }}>
+            Bonjour {displayName}
           </h1>
-          <p style={{ marginTop: '0.35rem', color: 'rgba(255,255,255,0.92)' }}>
-            Rang <strong style={{ color: '#fff' }}>{rank.name}</strong> · niveau{' '}
-            <strong style={{ color: '#fff' }}>{level}</strong> · {points} points cumulés
+          <p className="muted" style={{ marginTop: '0.35rem' }}>
+            Rang {rankName} · niveau {level} · {points} pts —{' '}
+            <Link href="/profile" style={{ fontWeight: 700, color: 'var(--accent)' }}>
+              voir mon profil
+            </Link>
           </p>
-          <div style={{ marginTop: '1rem', maxWidth: 560 }}>
-            <div
-              role="progressbar"
-              aria-valuemin={0}
-              aria-valuemax={100}
-              aria-valuenow={percent}
-              style={{
-                background: 'rgba(255,255,255,0.22)',
-                borderRadius: 999,
-                height: 10,
-                overflow: 'hidden',
-              }}
-            >
-              <div
-                style={{
-                  background: 'linear-gradient(90deg, #ffffff 0%, #ffce5b 100%)',
-                  height: '100%',
-                  width: `${percent}%`,
-                  borderRadius: 999,
-                }}
-              />
-            </div>
-            <p style={{ marginTop: '0.5rem', fontSize: '0.9rem', color: 'rgba(255,255,255,0.92)' }}>
-              {rank.nextName
-                ? `${remaining} pts pour atteindre le rang ${rank.nextName}`
-                : 'Rang maximal atteint — bravo Champion·ne !'}
-            </p>
-          </div>
         </div>
-        <button
-          type="button"
-          onClick={onLogout}
-          className="btn btn-secondary btn-sm"
-          style={{ background: 'rgba(255,255,255,0.16)', color: '#fff', borderColor: 'rgba(255,255,255,0.32)' }}
-        >
-          Déconnexion locale
-        </button>
+        <Button href="/profile" variant="secondary" size="sm">
+          Mon profil
+        </Button>
       </div>
     </Card>
   );
@@ -422,7 +354,7 @@ function RecommendedActionCard({ action }: { action: RecommendedAction }) {
         borderColor: '#93c5fd',
       }}
     >
-      <span className="section-eyebrow">Prochaine action recommandée</span>
+      <span className="section-eyebrow">Prochaine unité</span>
       <div
         style={{
           display: 'grid',
@@ -491,80 +423,6 @@ function QuickActionsGrid({ actions }: { actions: QuickAction[] }) {
   );
 }
 
-function QuestsBadgesPanel({ quests, badges }: { quests: Quest[]; badges: string[] }) {
-  return (
-    <section
-      style={{
-        display: 'grid',
-        gap: '1rem',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-        marginTop: '2rem',
-      }}
-    >
-      <Card>
-        <h2 style={{ fontSize: '1.2rem', fontWeight: 800 }}>Quêtes de la semaine</h2>
-        {quests.length > 0 ? (
-          <ul style={{ display: 'grid', gap: '0.85rem', listStyle: 'none', marginTop: '1rem' }}>
-            {quests.map((quest) => {
-              const target = Math.max(1, quest.target);
-              const progressPercent = Math.min(100, Math.round((quest.progress / target) * 100));
-              return (
-                <li key={quest.id}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem' }}>
-                    <span>{quest.label}</span>
-                    <strong>
-                      {quest.progress}/{quest.target}
-                    </strong>
-                  </div>
-                  <ProgressBar
-                    value={progressPercent}
-                    tone={progressPercent >= 100 ? 'success' : 'accent'}
-                    size="sm"
-                    style={{ marginTop: '0.4rem' }}
-                  />
-                </li>
-              );
-            })}
-          </ul>
-        ) : (
-          <p className="muted" style={{ marginTop: '0.75rem' }}>
-            Aucune quête active pour le moment. Continue une unité ou démarre un sprint pour garder le
-            rythme.
-          </p>
-        )}
-      </Card>
-
-      <Card>
-        <h2 style={{ fontSize: '1.2rem', fontWeight: 800 }}>Badges</h2>
-        {badges.length > 0 ? (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '1rem' }}>
-            {badges.map((slug) => {
-              const visual = getBadgeVisual(slug);
-              return (
-                <Badge
-                  key={slug}
-                  brand={visual.brand}
-                  style={{ background: visual.bg, color: visual.color, border: `1px solid ${visual.color}22` }}
-                  tone="accent"
-                >
-                  {visual.label}
-                </Badge>
-              );
-            })}
-          </div>
-        ) : (
-          <p className="muted" style={{ marginTop: '0.75rem' }}>
-            Aucun badge débloqué. Termine une unité complète pour afficher tes premières récompenses.
-          </p>
-        )}
-        <p className="muted" style={{ marginTop: '0.85rem', fontSize: '0.85rem' }}>
-          <LevelPill level="Intermédiaire" /> ton niveau évolue avec tes points et tes super-badges.
-        </p>
-      </Card>
-    </section>
-  );
-}
-
 function getRecommendedAction(data: DashboardData): RecommendedAction {
   const nextCourse = data.courses.find((course) => course.nextModule);
 
@@ -573,7 +431,7 @@ function getRecommendedAction(data: DashboardData): RecommendedAction {
       title: nextCourse.nextModule.title,
       description: `Continue le parcours ${formatTrack(nextCourse.track)} là où tu t’es arrêté.`,
       href: `/courses/${nextCourse.slug}#module-${nextCourse.nextModule.slug}`,
-      cta: 'Reprendre',
+      cta: 'Continuer',
       meta: `${nextCourse.progressPercent ?? 0}% du parcours complété`,
     };
   }

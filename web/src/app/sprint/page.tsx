@@ -46,7 +46,7 @@ const TRACK_OPTIONS: {
   {
     value: 'INTUNE',
     description: 'Enrôlement mobile, conformité, profils et intégration Microsoft.',
-    courseHref: '/courses',
+    courseHref: '/courses/intune-ios-enrollment',
   },
 ];
 

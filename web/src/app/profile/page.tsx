@@ -2,15 +2,13 @@
 
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
-import type { CertificationSprintSummary, DashboardData } from '@/lib/api';
+import type { DashboardData } from '@/lib/api';
 import { fetchCurrentUser, fetchDashboard } from '@/lib/api';
 import { buildAuthUrl, getAccessToken, getStoredUser, logoutSession } from '@/lib/auth';
 import { formatTrack } from '@/lib/tracks';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { ProgressBar } from '@/components/ui/ProgressBar';
-import { LearningStreakCard } from '@/components/dashboard/LearningStreakCard';
 import { TrailCard } from '@/components/ui/TrailCard';
 import {
   estimatePoints,
@@ -66,8 +64,8 @@ export default function ProfilePage() {
   if (isLoading) {
     return (
       <section style={{ padding: '2rem 0' }}>
-        <h1 style={{ fontSize: '2rem', fontWeight: 800 }}>Mon profil apprenant</h1>
-        <p className="muted" style={{ marginTop: '0.5rem' }}>Chargement de ton profil…</p>
+        <h1 style={{ fontSize: '2rem', fontWeight: 800 }}>Mon profil</h1>
+        <p className="muted" style={{ marginTop: '0.5rem' }}>Chargement de ton compte…</p>
       </section>
     );
   }
@@ -75,7 +73,7 @@ export default function ProfilePage() {
   if (!data) {
     return (
       <section style={{ padding: '2rem 0' }}>
-        <h1 style={{ fontSize: '2rem', fontWeight: 800 }}>Mon profil apprenant</h1>
+        <h1 style={{ fontSize: '2rem', fontWeight: 800 }}>Mon profil</h1>
         <p className="muted" style={{ marginTop: '0.5rem' }}>
           Impossible de charger le profil. Réessaie ou reconnecte-toi.
         </p>
@@ -86,7 +84,7 @@ export default function ProfilePage() {
     );
   }
 
-  const { user, stats, badges, quests, courses, certificationSprint, completedCourses = [], learningStreak } = data;
+  const { user, stats, badges, courses, completedCourses = [] } = data;
   const displayName = user.displayName ?? storedUser?.displayName ?? 'Apprenant';
   const email = user.email ?? storedUser?.email ?? 'demo@ama.dev';
   const rank = getRankInfo(stats.points);
@@ -96,12 +94,7 @@ export default function ProfilePage() {
   const progressInRank = Math.max(0, Math.min(span, stats.points - previousFloor));
   const rankPercent = Math.round((progressInRank / span) * 100);
   const remainingPoints = rank.nextPoints != null ? Math.max(0, rank.nextPoints - stats.points) : 0;
-
-  const activeCourses = courses.filter(
-    (course) => (course.progressPercent ?? 0) < 100 || course.nextModule
-  );
-  const recentBadges = badges.slice(0, 4);
-  const activeQuests = quests.filter((quest) => quest.progress < quest.target);
+  const recentBadges = badges.slice(0, 6);
 
   return (
     <section style={{ padding: '1rem 0 2rem' }}>
@@ -114,14 +107,14 @@ export default function ProfilePage() {
           }}
         >
           <p style={{ margin: 0, color: '#8a5a00', fontWeight: 700 }}>
-            Profil en mode démo — connecte-toi pour synchroniser ta progression réelle.
+            Profil en mode démo — connecte-toi pour synchroniser ton compte réel.
           </p>
           <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', marginTop: '0.85rem' }}>
             <Button href={buildAuthUrl('/profile')} size="sm">
               Se connecter ou s&apos;inscrire
             </Button>
             <Button href="/dashboard" variant="ghost" size="sm">
-              Tableau de bord
+              Mon apprentissage
             </Button>
           </div>
         </Card>
@@ -139,8 +132,6 @@ export default function ProfilePage() {
         </Card>
       ) : null}
 
-      {learningStreak ? <LearningStreakCard streak={learningStreak} /> : null}
-
       <ProfileHero
         displayName={displayName}
         email={email}
@@ -153,56 +144,49 @@ export default function ProfilePage() {
         onLogout={handleLogout}
       />
 
-      <section className="section" style={{ marginTop: '1.5rem' }}>
-        <div className="section-head">
-          <div>
-            <span className="section-eyebrow">Parcours en cours</span>
-            <h2>Ta progression active</h2>
+      <AccountDetailsCard
+        displayName={displayName}
+        email={email}
+        rankName={rank.name}
+        level={stats.level}
+        points={stats.points}
+        provider={user.provider ?? storedUser?.provider}
+        hasToken={hasToken}
+      />
+
+      <QuickLinksCard />
+
+      {recentBadges.length > 0 ? (
+        <Card style={{ marginTop: '1.25rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem' }}>
+            <h2 style={{ fontSize: '1.2rem', fontWeight: 800 }}>Badges débloqués</h2>
+            <Link href="/badges" style={{ fontWeight: 700, fontSize: '0.9rem', whiteSpace: 'nowrap' }}>
+              Collection →
+            </Link>
           </div>
-          <Link href="/courses" style={{ fontWeight: 700 }}>
-            Catalogue →
-          </Link>
-        </div>
-        {activeCourses.length > 0 ? (
-          <div className="grid grid-cards-lg">
-            {activeCourses.map((course) => {
-              const level = inferLevelFromModules(course.totalModules);
-              const points = estimatePoints(course.totalModules, level);
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '1rem' }}>
+            {recentBadges.map((slug) => {
+              const visual = getBadgeVisual(slug);
               return (
-                <TrailCard
-                  key={course.id}
-                  href={`/courses/${course.slug}${course.nextModule ? `#module-${course.nextModule.slug}` : ''}`}
-                  title={course.title}
-                  description={course.description}
-                  track={course.track}
-                  trackLabel={formatTrack(course.track)}
-                  totalModules={course.totalModules}
-                  completedModules={course.completedModules}
-                  progressPercent={course.progressPercent}
-                  level={level}
-                  points={points}
-                  cta={course.nextModule ? 'Continuer' : 'Ouvrir'}
-                />
+                <Badge
+                  key={slug}
+                  brand={visual.brand}
+                  style={{ background: visual.bg, color: visual.color, border: `1px solid ${visual.color}22` }}
+                  tone="accent"
+                >
+                  {visual.label}
+                </Badge>
               );
             })}
           </div>
-        ) : (
-          <Card variant="soft">
-            <p className="muted" style={{ margin: 0 }}>
-              Aucun parcours en cours. Explore le catalogue pour démarrer.
-            </p>
-            <Button href="/courses" style={{ marginTop: '0.85rem' }}>
-              Voir les parcours
-            </Button>
-          </Card>
-        )}
-      </section>
+        </Card>
+      ) : null}
 
       {completedCourses.length > 0 ? (
         <section className="section" style={{ marginTop: '1.5rem' }}>
           <div className="section-head">
             <div>
-              <span className="section-eyebrow">Victoires</span>
+              <span className="section-eyebrow">Historique</span>
               <h2>Parcours terminés</h2>
             </div>
             <Link href="/badges" style={{ fontWeight: 700 }}>
@@ -235,95 +219,15 @@ export default function ProfilePage() {
             })}
           </div>
         </section>
-      ) : null}
-
-      <section
-        style={{
-          display: 'grid',
-          gap: '1rem',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-          marginTop: '2rem',
-        }}
-      >
-        <Card>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem' }}>
-            <h2 style={{ fontSize: '1.2rem', fontWeight: 800 }}>Badges récents</h2>
-            <Link href="/badges" style={{ fontWeight: 700, fontSize: '0.9rem', whiteSpace: 'nowrap' }}>
-              Tout voir →
-            </Link>
-          </div>
-          {recentBadges.length > 0 ? (
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '1rem' }}>
-              {recentBadges.map((slug) => {
-                const visual = getBadgeVisual(slug);
-                return (
-                  <Badge
-                    key={slug}
-                    brand={visual.brand}
-                    style={{ background: visual.bg, color: visual.color, border: `1px solid ${visual.color}22` }}
-                    tone="accent"
-                  >
-                    {visual.label}
-                  </Badge>
-                );
-              })}
-            </div>
-          ) : (
-            <p className="muted" style={{ marginTop: '0.75rem' }}>
-              Aucun badge débloqué. Termine une unité pour afficher tes premières récompenses.
-            </p>
-          )}
-        </Card>
-
-        <Card>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem' }}>
-            <h2 style={{ fontSize: '1.2rem', fontWeight: 800 }}>Quêtes actives</h2>
-            <Link href="/quests" style={{ fontWeight: 700, fontSize: '0.9rem', whiteSpace: 'nowrap' }}>
-              Toutes →
-            </Link>
-          </div>
-          {activeQuests.length > 0 ? (
-            <ul style={{ display: 'grid', gap: '0.85rem', listStyle: 'none', marginTop: '1rem' }}>
-              {activeQuests.map((quest) => {
-                const target = Math.max(1, quest.target);
-                const questPercent = Math.min(100, Math.round((quest.progress / target) * 100));
-                return (
-                  <li key={quest.id}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem' }}>
-                      <span>{quest.label}</span>
-                      <strong>
-                        {quest.progress}/{quest.target}
-                      </strong>
-                    </div>
-                    <ProgressBar
-                      value={questPercent}
-                      tone={questPercent >= 100 ? 'success' : 'accent'}
-                      size="sm"
-                      style={{ marginTop: '0.4rem' }}
-                    />
-                  </li>
-                );
-              })}
-            </ul>
-          ) : (
-            <p className="muted" style={{ marginTop: '0.75rem' }}>
-              Aucune quête en cours. Consulte les défis hebdomadaires pour gagner des points bonus.
-            </p>
-          )}
-        </Card>
-      </section>
-
-      {certificationSprint ? (
-        <SprintSection sprint={certificationSprint} />
       ) : (
-        <Card style={{ marginTop: '1.25rem' }}>
-          <span className="section-eyebrow">Sprint certification</span>
-          <h2 style={{ fontSize: '1.2rem', fontWeight: 800, marginTop: '0.35rem' }}>Aucun sprint actif</h2>
+        <Card variant="soft" style={{ marginTop: '1.25rem' }}>
+          <span className="section-eyebrow">Historique</span>
+          <h2 style={{ fontSize: '1.15rem', fontWeight: 800, marginTop: '0.35rem' }}>Aucun parcours terminé</h2>
           <p className="muted" style={{ marginTop: '0.35rem' }}>
-            Lance un cycle court de préparation Apple, Jamf ou Intune depuis la page Sprint.
+            Termine les 3 unités d&apos;une piste pour l&apos;afficher ici et débloquer le super-badge.
           </p>
-          <Button href="/sprint" style={{ marginTop: '0.85rem' }}>
-            Démarrer un sprint
+          <Button href="/dashboard" style={{ marginTop: '0.85rem' }}>
+            Reprendre l&apos;apprentissage
           </Button>
         </Card>
       )}
@@ -404,12 +308,13 @@ function ProfileHero({
               textTransform: 'uppercase',
             }}
           >
-            <span aria-hidden>{rank.icon}</span> Rang {rank.name}
+            <span aria-hidden>{rank.icon}</span> Compte apprenant
           </span>
           <h1 style={{ fontSize: '2rem', fontWeight: 800, marginTop: '0.5rem' }}>{displayName}</h1>
           <p style={{ marginTop: '0.25rem', color: 'rgba(255,255,255,0.88)', fontSize: '0.95rem' }}>{email}</p>
           <p style={{ marginTop: '0.5rem', color: 'rgba(255,255,255,0.92)' }}>
-            Niveau <strong style={{ color: '#fff' }}>{level}</strong> · {points} points cumulés
+            Rang <strong style={{ color: '#fff' }}>{rank.name}</strong> · niveau{' '}
+            <strong style={{ color: '#fff' }}>{level}</strong> · {points} points
           </p>
           <div style={{ marginTop: '1rem', maxWidth: 560 }}>
             <div
@@ -450,7 +355,12 @@ function ProfileHero({
             Déconnexion
           </button>
         ) : (
-          <Button href={buildAuthUrl('/profile')} variant="secondary" size="sm" style={{ background: 'rgba(255,255,255,0.16)', color: '#fff', borderColor: 'rgba(255,255,255,0.32)' }}>
+          <Button
+            href={buildAuthUrl('/profile')}
+            variant="secondary"
+            size="sm"
+            style={{ background: 'rgba(255,255,255,0.16)', color: '#fff', borderColor: 'rgba(255,255,255,0.32)' }}
+          >
             Connexion
           </Button>
         )}
@@ -459,39 +369,118 @@ function ProfileHero({
   );
 }
 
-function SprintSection({ sprint }: { sprint: CertificationSprintSummary }) {
-  const sprintStatus = sprint.completed ? 'Terminé' : sprint.expired ? 'Expiré' : 'Actif';
+function AccountDetailsCard({
+  displayName,
+  email,
+  rankName,
+  level,
+  points,
+  provider,
+  hasToken,
+}: {
+  displayName: string;
+  email: string;
+  rankName: string;
+  level: string;
+  points: number;
+  provider?: string;
+  hasToken: boolean;
+}) {
+  const memberSince = hasToken ? 'Synchronisé avec ton compte' : 'Mode démo local';
 
   return (
     <Card style={{ marginTop: '1.25rem' }}>
+      <span className="section-eyebrow">Informations du compte</span>
+      <dl
+        style={{
+          display: 'grid',
+          gap: '0.85rem',
+          marginTop: '1rem',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+        }}
+      >
+        <AccountField label="Nom affiché" value={displayName} />
+        <AccountField label="E-mail" value={email} />
+        <AccountField label="Rang MDM" value={rankName} />
+        <AccountField label="Niveau" value={level} />
+        <AccountField label="Points cumulés" value={String(points)} />
+        <AccountField label="Inscription" value={memberSince} />
+        {provider ? <AccountField label="Connexion" value={formatProvider(provider)} /> : null}
+      </dl>
+    </Card>
+  );
+}
+
+function AccountField({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <dt className="muted" style={{ fontSize: '0.78rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+        {label}
+      </dt>
+      <dd style={{ marginTop: '0.25rem', fontWeight: 700 }}>{value}</dd>
+    </div>
+  );
+}
+
+function QuickLinksCard() {
+  const links = [
+    { href: '/dashboard', label: 'Mon apprentissage', description: 'Progression, quêtes et prochaine unité' },
+    { href: '/badges', label: 'Mes badges', description: 'Collection et super-badges par piste' },
+    { href: '/quests', label: 'Quêtes hebdo', description: 'Défis bonus de la semaine' },
+    { href: '/leaderboard', label: 'Classement', description: 'Compare ta progression à la communauté' },
+  ];
+
+  return (
+    <section className="section" style={{ marginTop: '1.5rem' }}>
+      <div className="section-head">
+        <div>
+          <span className="section-eyebrow">Raccourcis</span>
+          <h2>Liens rapides</h2>
+        </div>
+      </div>
       <div
         style={{
           display: 'grid',
-          gap: '1.25rem',
-          gridTemplateColumns: 'minmax(0, 1fr) auto',
-          alignItems: 'center',
+          gap: '0.75rem',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
         }}
       >
-        <div>
-          <span className="section-eyebrow">Sprint en cours</span>
-          <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginTop: '0.4rem' }}>{sprint.label}</h2>
-          <p className="muted" style={{ marginTop: '0.35rem' }}>
-            {formatTrack(sprint.track)} · {sprint.days} jours · {sprintStatus}
-          </p>
-          <ProgressBar
-            value={Math.min(100, sprint.progressPercent)}
-            tone={sprint.completed ? 'success' : 'accent'}
-            style={{ marginTop: '0.85rem' }}
-          />
-          <p className="muted" style={{ marginTop: '0.5rem', fontSize: '0.9rem' }}>
-            {sprint.progress}/{sprint.target} modules · {sprint.remainingModules} restant
-            {sprint.remainingModules > 1 ? 's' : ''}
-          </p>
+        {links.map((link) => (
+          <Link
+            key={link.href}
+            href={link.href}
+            className="card card-soft"
+            style={{ display: 'grid', gap: '0.35rem', color: 'inherit' }}
+          >
+            <strong>{link.label}</strong>
+            <span className="muted" style={{ fontSize: '0.9rem' }}>
+              {link.description}
+            </span>
+          </Link>
+        ))}
+        <div
+          className="card card-soft"
+          style={{ display: 'grid', gap: '0.35rem', opacity: 0.72 }}
+          aria-disabled
+        >
+          <strong>Paramètres</strong>
+          <span className="muted" style={{ fontSize: '0.9rem' }}>
+            Notifications et préférences — bientôt disponible
+          </span>
         </div>
-        <Button href="/sprint">Voir le sprint</Button>
       </div>
-    </Card>
+    </section>
   );
+}
+
+function formatProvider(provider: string) {
+  const map: Record<string, string> = {
+    EMAIL: 'E-mail',
+    APPLE: 'Apple',
+    GOOGLE: 'Google',
+    MICROSOFT: 'Microsoft',
+  };
+  return map[provider] ?? provider;
 }
 
 function getInitials(name: string, email: string): string {

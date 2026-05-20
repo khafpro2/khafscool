@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { HomeOnboardingBanner } from '@/components/home/HomeOnboardingBanner';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { LearningPathCard } from '@/components/ui/LearningPathCard';
@@ -65,6 +66,8 @@ export default function HomePage() {
           <HeroStat label="Badges" value="3" hint="super-badges piste" />
         </div>
       </section>
+
+      <HomeOnboardingBanner />
 
       <section className="section container" style={{ marginTop: '2.5rem' }}>
         <div className="section-head">

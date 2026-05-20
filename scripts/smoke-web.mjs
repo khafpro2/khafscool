@@ -6,12 +6,13 @@ const REQUEST_TIMEOUT_MS = Number(process.env.SMOKE_TIMEOUT_MS ?? 10_000);
 
 const pages = [
   { path: '/auth', label: 'auth', marker: 'Authentification' },
-  { path: '/dashboard', label: 'dashboard', marker: 'Tableau de bord' },
+  { path: '/dashboard', label: 'dashboard', marker: 'Mon apprentissage' },
+  { path: '/profile', label: 'profile', marker: 'Mon profil' },
   { path: '/courses', label: 'courses', marker: 'Catalogue public' },
   { path: '/badges', label: 'badges', marker: 'Mes super-badges' },
   { path: '/quests', label: 'quests', marker: 'Quêtes hebdo' },
   { path: '/sprint', label: 'sprint', marker: 'Accélère ta préparation certification' },
-  { path: '/pricing', label: 'pricing', marker: 'Tarifs MVP' },
+  { path: '/pricing', label: 'pricing-redirect', marker: 'Catalogue public' },
   { path: '/diagnostics', label: 'diagnostics', marker: 'Diagnostics navigateur' },
   { path: '/mvp', label: 'mvp', marker: 'MVP testable' },
   { path: '/demo', label: 'demo', marker: 'Guide de démonstration' },
