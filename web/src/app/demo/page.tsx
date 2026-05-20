@@ -65,7 +65,10 @@ const PRIMARY_ROUTES = [
   { href: '/courses', label: 'Catalogue' },
   { href: '/leaderboard', label: 'Classement' },
   { href: '/resources', label: 'Ressources' },
-  { href: '/diagnostics', label: 'Diagnostics' },
+];
+
+const TOOL_ROUTES = [
+  { href: '/diagnostics', label: 'Diagnostics API' },
   { href: '/mvp', label: 'Résumé MVP' },
 ];
 
@@ -138,6 +141,16 @@ export default function DemoPage() {
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '1rem' }}>
           {PRIMARY_ROUTES.map((route) => (
             <Button key={route.href} href={route.href} variant="dark" size="sm">
+              {route.label}
+            </Button>
+          ))}
+        </div>
+        <p className="muted" style={{ marginTop: '1.25rem', fontSize: '0.85rem' }}>
+          Outils internes (revue technique)
+        </p>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '0.5rem' }}>
+          {TOOL_ROUTES.map((route) => (
+            <Button key={route.href} href={route.href} variant="ghost" size="sm">
               {route.label}
             </Button>
           ))}

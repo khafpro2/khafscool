@@ -72,8 +72,9 @@ export default function LeaderboardPage() {
         </span>
         <h1>Classement des apprenants</h1>
         <p style={{ marginTop: '0.75rem' }}>
-          Le top 10 des apprenants MDM Academy, classés par points gagnés sur les parcours Apple, Jamf
-          et Intune.
+          {hasToken
+            ? 'Le top 10 des apprenants MDM Academy, classés par points gagnés sur les parcours Apple, Jamf et Intune.'
+            : 'Aperçu du format de classement — connecte-toi pour voir le classement réel de la communauté.'}
         </p>
         <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', marginTop: '1.25rem' }}>
           <Button href="/dashboard" variant="secondary">

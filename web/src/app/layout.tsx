@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { SiteMobileNav } from '@/components/layout/SiteMobileNav';
 import { Button } from '@/components/ui/Button';
 import { LEARNING_PATHS } from '@/lib/learningPaths';
 import './globals.css';
@@ -53,11 +54,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 </Link>
               ))}
             </nav>
+            <SiteMobileNav />
             <div className="site-actions">
-              <Button href="/profile" variant="ghost" size="sm">
+              <Button href="/profile" variant="ghost" size="sm" className="site-action-profile">
                 Profil
               </Button>
-              <Button href="/auth" size="sm">
+              <Button href="/auth" size="sm" className="site-action-cta">
                 Commencer gratuitement
               </Button>
             </div>
@@ -71,11 +73,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <div>
               <strong>MDM Academy</strong> · Apple, Jamf Pro et Intune en mode jeu
             </div>
-            <div style={{ display: 'flex', gap: '1.25rem', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: '1.25rem', flexWrap: 'wrap', alignItems: 'center' }}>
               <Link href="/courses">Parcours</Link>
               <Link href="/demo">Démo</Link>
               <Link href="/resources">Ressources</Link>
-              <Link href="/diagnostics">Diagnostics</Link>
+              <Link href="/diagnostics" className="site-footer-tools">
+                Outils
+              </Link>
             </div>
             <div style={{ color: 'var(--muted)', fontSize: '0.8rem' }}>
               Non affilié à Apple Inc., Jamf ou Microsoft.

@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { WEB_URL } from '../../config';
 import { BrandIcon } from '../../components/BrandIcon';
-import { formatLevel, formatTrack, getBadgeVisual, getRankInfo } from '../../lib/design';
+import { formatLevel, formatTrack, getBadgeVisual, getRankInfo, theme } from '../../lib/design';
 import { clearTokens } from '../../services/auth';
 import {
   CourseSummary,
@@ -112,7 +112,7 @@ export function LearnerDashboardScreen({ onSignOut }: LearnerDashboardScreenProp
   if (loading || !dashboard) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator color="#0070D2" />
+        <ActivityIndicator color={theme.accent} />
         <Text style={styles.loadingText}>Chargement de votre progression…</Text>
       </View>
     );
@@ -127,6 +127,7 @@ export function LearnerDashboardScreen({ onSignOut }: LearnerDashboardScreenProp
   const progressInRank = Math.max(0, Math.min(span, data.progress.points - previousFloor));
   const rankPercent = Math.round((progressInRank / span) * 100);
   const remainingPoints = rank.nextPoints != null ? Math.max(0, rank.nextPoints - data.progress.points) : 0;
+  const primaryCtaLabel = nextCourse?.nextModule ? 'Continuer le parcours' : 'Commencer gratuitement';
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -235,7 +236,7 @@ export function LearnerDashboardScreen({ onSignOut }: LearnerDashboardScreenProp
                   {quest.progress}/{quest.target}
                 </Text>
               </View>
-              <ProgressBar progress={questPercent} fillColor="#0070D2" />
+              <ProgressBar progress={questPercent} fillColor={theme.accent} />
             </View>
           );
         })
@@ -284,7 +285,7 @@ export function LearnerDashboardScreen({ onSignOut }: LearnerDashboardScreenProp
               if (nextCourse?.slug) router.push(`/course/${nextCourse.slug}`);
             }}
           >
-            <Text style={styles.primaryButtonText}>Continuer le parcours</Text>
+            <Text style={styles.primaryButtonText}>{primaryCtaLabel}</Text>
           </Pressable>
         </View>
       </View>
@@ -467,15 +468,20 @@ function formatSprintDate(value: string) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F5F5F7' },
+  container: { flex: 1, backgroundColor: theme.bg },
   content: { padding: 24, paddingBottom: 40 },
-  loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#F5F5F7' },
-  loadingText: { marginTop: 12, color: '#6E6E73', fontSize: 15 },
+  loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: theme.bg },
+  loadingText: { marginTop: 12, color: theme.muted, fontSize: 15 },
   header: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 18 },
-  eyebrow: { color: '#0070D2', fontSize: 13, fontWeight: '700', marginBottom: 4, textTransform: 'uppercase' },
-  title: { color: '#1D1D1F', fontSize: 28, fontWeight: '800', maxWidth: 220 },
-  signOutButton: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 999, backgroundColor: '#FFFFFF' },
-  signOutText: { color: '#6E6E73', fontWeight: '600' },
+  eyebrow: { color: theme.accent, fontSize: 13, fontWeight: '800', marginBottom: 4, textTransform: 'uppercase' },
+  title: { color: theme.fg, fontSize: 28, fontWeight: '800', maxWidth: 220 },
+  signOutButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: theme.radiusPill,
+    backgroundColor: theme.bgSoft,
+  },
+  signOutText: { color: theme.muted, fontWeight: '600' },
   streakCard: {
     backgroundColor: '#FFF4E8',
     borderRadius: 18,
@@ -487,9 +493,16 @@ const styles = StyleSheet.create({
   streakEyebrow: { color: '#B45309', fontSize: 12, fontWeight: '800', textTransform: 'uppercase' },
   streakValue: { color: '#1D1D1F', fontSize: 22, fontWeight: '800', marginTop: 6 },
   streakMeta: { color: '#6E6E73', marginTop: 4, fontSize: 13, fontWeight: '600' },
-  demoBanner: { backgroundColor: '#FFF7E6', borderRadius: 14, padding: 12, marginBottom: 14 },
-  demoText: { color: '#8A5A00', lineHeight: 20 },
-  heroCard: { borderRadius: 24, padding: 20, marginBottom: 16 },
+  demoBanner: {
+    backgroundColor: theme.demoBannerBg,
+    borderRadius: theme.radiusLg,
+    padding: 12,
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: theme.demoBannerBorder,
+  },
+  demoText: { color: theme.demoBannerText, lineHeight: 20, fontWeight: '600' },
+  heroCard: { borderRadius: theme.radiusLg, padding: 20, marginBottom: 16 },
   heroEyebrow: { color: 'rgba(255,255,255,0.92)', fontSize: 13, fontWeight: '800', marginBottom: 12 },
   heroStats: { flexDirection: 'row', gap: 12, marginBottom: 18 },
   stat: { flex: 1 },
@@ -501,32 +514,32 @@ const styles = StyleSheet.create({
   progressMeta: { color: 'rgba(255,255,255,0.78)', marginTop: 6, lineHeight: 18, fontSize: 13 },
   quickActions: { flexDirection: 'row', gap: 10, marginBottom: 24 },
   quickAction: { flex: 1, borderRadius: 18, padding: 14 },
-  quickActionQuests: { backgroundColor: '#FFF7D6', borderWidth: 1, borderColor: '#F0CF7A' },
-  quickActionLeaderboard: { backgroundColor: '#E3F0FF', borderWidth: 1, borderColor: '#C5DBF3' },
+  quickActionQuests: { backgroundColor: theme.demoBannerBg, borderWidth: 1, borderColor: theme.demoBannerBorder },
+  quickActionLeaderboard: { backgroundColor: theme.accentSoft, borderWidth: 1, borderColor: '#bfdbfe' },
   quickActionIcon: { fontSize: 22, marginBottom: 6 },
-  quickActionTitle: { color: '#1D1D1F', fontSize: 15, fontWeight: '800' },
-  quickActionHint: { color: '#6E6E73', fontSize: 12, marginTop: 2, fontWeight: '600' },
+  quickActionTitle: { color: theme.fg, fontSize: 15, fontWeight: '800' },
+  quickActionHint: { color: theme.muted, fontSize: 12, marginTop: 2, fontWeight: '600' },
   sectionHeader: { marginBottom: 10 },
-  sectionTitle: { color: '#1D1D1F', fontSize: 20, fontWeight: '800' },
-  sectionHint: { color: '#6E6E73', marginTop: 2, fontSize: 13 },
-  emptyText: { color: '#6E6E73', lineHeight: 20, marginBottom: 16 },
+  sectionTitle: { color: theme.fg, fontSize: 20, fontWeight: '800' },
+  sectionHint: { color: theme.muted, marginTop: 2, fontSize: 13 },
+  emptyText: { color: theme.muted, lineHeight: 20, marginBottom: 16 },
   catalogButton: { marginBottom: 24, paddingVertical: 6 },
-  catalogButtonText: { color: '#0070D2', fontWeight: '800', fontSize: 15 },
-  questCard: { backgroundColor: '#FFFFFF', borderRadius: 16, padding: 14, marginBottom: 10 },
+  catalogButtonText: { color: theme.accent, fontWeight: '800', fontSize: 15 },
+  questCard: { backgroundColor: theme.bgSoft, borderRadius: theme.radiusLg, padding: 14, marginBottom: 10 },
   questHeader: { flexDirection: 'row', justifyContent: 'space-between', gap: 12, marginBottom: 10 },
-  questLabel: { flex: 1, color: '#1D1D1F', fontWeight: '700', lineHeight: 20 },
-  questCount: { color: '#0070D2', fontWeight: '800' },
+  questLabel: { flex: 1, color: theme.fg, fontWeight: '700', lineHeight: 20 },
+  questCount: { color: theme.accent, fontWeight: '800' },
   linkButton: { marginBottom: 24, paddingVertical: 4 },
-  linkButtonText: { color: '#0070D2', fontWeight: '700' },
-  sprintCard: { backgroundColor: '#FFFFFF', borderRadius: 24, padding: 18, marginBottom: 24 },
+  linkButtonText: { color: theme.accent, fontWeight: '700' },
+  sprintCard: { backgroundColor: theme.bgSoft, borderRadius: theme.radiusLg, padding: 18, marginBottom: 24 },
   cardLabel: { color: '#8E8E93', fontSize: 13, fontWeight: '700', marginBottom: 10, textTransform: 'uppercase' },
   sprintHeader: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 },
   sprintText: { flex: 1 },
-  sprintTitle: { color: '#1D1D1F', fontSize: 21, fontWeight: '800' },
+  sprintTitle: { color: theme.fg, fontSize: 21, fontWeight: '800' },
   sprintDuration: {
-    backgroundColor: '#EAF3FF',
-    borderRadius: 999,
-    color: '#0066CC',
+    backgroundColor: theme.accentSoft,
+    borderRadius: theme.radiusPill,
+    color: theme.accentStrong,
     fontWeight: '800',
     overflow: 'hidden',
     paddingHorizontal: 10,
@@ -543,7 +556,7 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     textTransform: 'uppercase',
   },
-  sprintStatusActive: { backgroundColor: '#EAF3FF', color: '#0066CC' },
+  sprintStatusActive: { backgroundColor: theme.accentSoft, color: theme.accentStrong },
   sprintStatusCompleted: { backgroundColor: '#E9F8EE', color: '#1F7A3A' },
   sprintStatusExpired: { backgroundColor: '#FFECEC', color: '#B3261E' },
   sprintDeadline: { color: '#6E6E73', fontWeight: '700' },
@@ -555,11 +568,11 @@ const styles = StyleSheet.create({
   sprintMessage: { borderRadius: 14, fontWeight: '700', lineHeight: 20, marginTop: 10, padding: 12 },
   sprintMessageSuccess: { backgroundColor: '#E9F8EE', color: '#1F7A3A' },
   sprintMessageError: { backgroundColor: '#FFECEC', color: '#B3261E' },
-  sprintMessageInfo: { backgroundColor: '#EAF3FF', color: '#0066CC' },
+  sprintMessageInfo: { backgroundColor: theme.accentSoft, color: theme.accentStrong },
   trackButtons: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginTop: 14 },
   trackButton: {
-    backgroundColor: '#1D1D1F',
-    borderRadius: 14,
+    backgroundColor: theme.accent,
+    borderRadius: theme.radiusMd,
     minWidth: 112,
     paddingHorizontal: 14,
     paddingVertical: 12,
@@ -579,27 +592,27 @@ const styles = StyleSheet.create({
   },
   badgeIcon: { fontSize: 16 },
   badgeText: { fontWeight: '700', fontSize: 13 },
-  courseCard: { backgroundColor: '#FFFFFF', borderRadius: 20, padding: 16, marginBottom: 12 },
+  courseCard: { backgroundColor: theme.bgSoft, borderRadius: theme.radiusLg, padding: 16, marginBottom: 12 },
   courseHeader: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 },
   courseText: { flex: 1 },
-  courseChevron: { color: '#0070D2', fontSize: 28, fontWeight: '300', marginTop: 8 },
+  courseChevron: { color: theme.accentTeal, fontSize: 28, fontWeight: '300', marginTop: 8 },
   courseTrack: {
-    color: '#0070D2',
+    color: theme.accent,
     fontSize: 11,
     fontWeight: '800',
     textTransform: 'uppercase',
     letterSpacing: 0.6,
   },
-  courseTitle: { color: '#1D1D1F', fontSize: 17, fontWeight: '800', marginTop: 4 },
-  courseMeta: { color: '#6E6E73', marginTop: 4, marginBottom: 12 },
-  nextModule: { color: '#6E6E73', marginTop: 12, lineHeight: 20 },
-  ctaCard: { backgroundColor: '#FFFFFF', borderRadius: 24, padding: 18, marginTop: 4 },
-  ctaTitle: { color: '#1D1D1F', fontSize: 21, fontWeight: '800', marginBottom: 8 },
-  ctaText: { color: '#6E6E73', lineHeight: 20, marginBottom: 14 },
+  courseTitle: { color: theme.fg, fontSize: 17, fontWeight: '800', marginTop: 4 },
+  courseMeta: { color: theme.muted, marginTop: 4, marginBottom: 12 },
+  nextModule: { color: theme.muted, marginTop: 12, lineHeight: 20 },
+  ctaCard: { backgroundColor: theme.bgSoft, borderRadius: theme.radiusLg, padding: 18, marginTop: 4 },
+  ctaTitle: { color: theme.fg, fontSize: 21, fontWeight: '800', marginBottom: 8 },
+  ctaText: { color: theme.muted, lineHeight: 20, marginBottom: 14 },
   ctaButtons: { flexDirection: 'row', gap: 10 },
-  ctaButton: { flex: 1, padding: 14, borderRadius: 14, alignItems: 'center' },
-  primaryButton: { backgroundColor: '#0070D2' },
+  ctaButton: { flex: 1, padding: 14, borderRadius: theme.radiusMd, alignItems: 'center' },
+  primaryButton: { backgroundColor: theme.accent },
   primaryButtonText: { color: '#FFFFFF', fontWeight: '800' },
   refreshButton: { padding: 16, alignItems: 'center' },
-  refreshText: { color: '#0070D2', fontWeight: '700' },
+  refreshText: { color: theme.accent, fontWeight: '700' },
 });

@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Pressable, ActivityIndicator, Alert } from 'rea
 import * as WebBrowser from 'expo-web-browser';
 import * as Linking from 'expo-linking';
 import { API_URL } from '../../config';
+import { theme } from '../../lib/design';
 import { saveTokens } from '../../services/auth';
 
 WebBrowser.maybeCompleteAuthSession();
@@ -33,7 +34,7 @@ export function WelcomeScreen({ onAuthSuccess }: WelcomeScreenProps) {
         const refresh = parsed.queryParams?.refreshToken;
         if (typeof access === 'string' && typeof refresh === 'string') {
           await saveTokens(access, refresh);
-          Alert.alert('Connexion réussie', 'Bienvenue sur Apple MDM Academy !');
+          Alert.alert('Connexion réussie', 'Bienvenue sur MDM Academy Pro !');
           onAuthSuccess?.();
         }
       }
@@ -46,10 +47,18 @@ export function WelcomeScreen({ onAuthSuccess }: WelcomeScreenProps) {
 
   return (
     <View style={styles.container}>
+      <Text style={styles.eyebrow}>MDM Academy Pro</Text>
       <Text style={styles.title}>Apple MDM Academy</Text>
       <Text style={styles.subtitle}>
-        Formation gamifiée pour techniciens Apple et administrateurs MDM
+        Formation gamifiée gratuite pour techniciens Apple et administrateurs MDM
       </Text>
+
+      <Pressable
+        style={styles.primaryCta}
+        onPress={() => Alert.alert('Gratuit', 'Tous les parcours sont accessibles sans abonnement. Connecte-toi pour synchroniser ta progression.')}
+      >
+        <Text style={styles.primaryCtaText}>Commencer gratuitement</Text>
+      </Pressable>
 
       {PROVIDERS.map((p) => (
         <Pressable
@@ -74,10 +83,27 @@ export function WelcomeScreen({ onAuthSuccess }: WelcomeScreenProps) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 24, justifyContent: 'center', backgroundColor: '#F5F5F7' },
-  title: { fontSize: 28, fontWeight: '700', marginBottom: 8, color: '#1D1D1F' },
-  subtitle: { fontSize: 16, color: '#6E6E73', marginBottom: 32, lineHeight: 22 },
-  button: { padding: 16, borderRadius: 12, marginBottom: 12, minHeight: 52, justifyContent: 'center' },
+  container: { flex: 1, padding: 24, justifyContent: 'center', backgroundColor: theme.bg },
+  eyebrow: {
+    color: theme.accent,
+    fontSize: 13,
+    fontWeight: '800',
+    marginBottom: 6,
+    textTransform: 'uppercase',
+    letterSpacing: 0.08,
+  },
+  title: { fontSize: 28, fontWeight: '800', marginBottom: 8, color: theme.fg },
+  subtitle: { fontSize: 16, color: theme.muted, marginBottom: 24, lineHeight: 22 },
+  primaryCta: {
+    backgroundColor: theme.accent,
+    padding: 16,
+    borderRadius: theme.radiusLg,
+    marginBottom: 20,
+    minHeight: 52,
+    justifyContent: 'center',
+  },
+  primaryCtaText: { color: '#FFFFFF', textAlign: 'center', fontWeight: '800', fontSize: 16 },
+  button: { padding: 16, borderRadius: theme.radiusMd, marginBottom: 12, minHeight: 52, justifyContent: 'center' },
   buttonText: { color: '#FFFFFF', textAlign: 'center', fontWeight: '600', fontSize: 16 },
-  link: { marginTop: 16, textAlign: 'center', color: '#007AFF', fontSize: 15 },
+  link: { marginTop: 16, textAlign: 'center', color: theme.accent, fontSize: 15, fontWeight: '600' },
 });

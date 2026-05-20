@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { BrandIcon } from '../../components/BrandIcon';
 import { LEARNING_PATHS } from '../../lib/learningPaths';
-import { formatTrack, getTrackVisual } from '../../lib/design';
+import { formatTrack, getTrackVisual, theme } from '../../lib/design';
 import { CourseSummary, fetchCourses } from '../../services/courses';
 
 export function CoursesCatalogScreen() {
@@ -42,7 +42,7 @@ export function CoursesCatalogScreen() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator color="#0070D2" />
+        <ActivityIndicator color={theme.accent} />
         <Text style={styles.loadingText}>Chargement du catalogue…</Text>
       </View>
     );
@@ -99,7 +99,11 @@ function CatalogCourseCard({
   const progress = course?.progressPercent ?? 0;
   const title = course?.title ?? path.title;
   const ctaLabel =
-    progress > 0 && progress < 100 ? 'Continuer ce parcours' : progress >= 100 ? 'Revoir' : 'Commencer ce parcours';
+    progress > 0 && progress < 100
+      ? 'Continuer ce parcours'
+      : progress >= 100
+        ? 'Revoir'
+        : 'Commencer gratuitement';
 
   return (
     <Pressable onPress={onPress} style={styles.card}>
@@ -130,19 +134,26 @@ function CatalogCourseCard({
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F5F5F7' },
+  container: { flex: 1, backgroundColor: theme.bg },
   content: { padding: 24, paddingBottom: 40 },
-  loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#F5F5F7' },
-  loadingText: { marginTop: 12, color: '#6E6E73', fontSize: 15 },
+  loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: theme.bg },
+  loadingText: { marginTop: 12, color: theme.muted, fontSize: 15 },
   header: { marginBottom: 20 },
-  eyebrow: { color: '#0070D2', fontSize: 13, fontWeight: '700', marginBottom: 4, textTransform: 'uppercase' },
-  title: { color: '#1D1D1F', fontSize: 26, fontWeight: '800', lineHeight: 32 },
-  subtitle: { color: '#6E6E73', marginTop: 8, lineHeight: 22, fontSize: 15 },
-  demoBanner: { backgroundColor: '#FFF7E6', borderRadius: 14, padding: 12, marginBottom: 16 },
-  demoText: { color: '#8A5A00', lineHeight: 20 },
+  eyebrow: { color: theme.accent, fontSize: 13, fontWeight: '800', marginBottom: 4, textTransform: 'uppercase' },
+  title: { color: theme.fg, fontSize: 26, fontWeight: '800', lineHeight: 32 },
+  subtitle: { color: theme.muted, marginTop: 8, lineHeight: 22, fontSize: 15 },
+  demoBanner: {
+    backgroundColor: theme.demoBannerBg,
+    borderRadius: theme.radiusLg,
+    padding: 12,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: theme.demoBannerBorder,
+  },
+  demoText: { color: theme.demoBannerText, lineHeight: 20, fontWeight: '600' },
   card: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
+    backgroundColor: theme.bgSoft,
+    borderRadius: theme.radiusLg,
     marginBottom: 14,
     overflow: 'hidden',
   },
@@ -162,13 +173,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   cardBody: { padding: 16 },
-  cardTitle: { color: '#1D1D1F', fontSize: 18, fontWeight: '800' },
-  cardMeta: { color: '#6E6E73', marginTop: 6, fontSize: 13, fontWeight: '600' },
+  cardTitle: { color: theme.fg, fontSize: 18, fontWeight: '800' },
+  cardMeta: { color: theme.muted, marginTop: 6, fontSize: 13, fontWeight: '600' },
   objectives: { marginTop: 10, gap: 4 },
-  objectiveItem: { color: '#6E6E73', fontSize: 13, lineHeight: 18 },
+  objectiveItem: { color: theme.muted, fontSize: 13, lineHeight: 18 },
   cardFooter: { flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 6, marginTop: 14 },
-  ctaLabel: { color: '#0070D2', fontWeight: '800', fontSize: 15 },
-  ctaArrow: { color: '#0070D2', fontSize: 18, fontWeight: '300' },
+  ctaLabel: { color: theme.accent, fontWeight: '800', fontSize: 15 },
+  ctaArrow: { color: theme.accentTeal, fontSize: 18, fontWeight: '300' },
   refreshButton: { padding: 16, alignItems: 'center' },
-  refreshText: { color: '#0070D2', fontWeight: '700' },
+  refreshText: { color: theme.accent, fontWeight: '700' },
 });

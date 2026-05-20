@@ -1,6 +1,27 @@
 import type { BrandId } from './brands';
 import { getBadgeBrand, getTrackBrand } from './brands';
 
+/** Tokens alignés sur MDM Academy Pro (web) */
+export const theme = {
+  accent: '#2563EB',
+  accentStrong: '#1d4ed8',
+  accentSoft: '#dbeafe',
+  accentTeal: '#0d9488',
+  accentTealSoft: '#ccfbf1',
+  bg: '#f0f4ff',
+  bgSoft: '#ffffff',
+  fg: '#0f172a',
+  muted: '#64748b',
+  success: '#059669',
+  warning: '#f59e0b',
+  demoBannerBg: '#fff8e6',
+  demoBannerBorder: '#f0cf7a',
+  demoBannerText: '#8a5a00',
+  radiusLg: 16,
+  radiusMd: 12,
+  radiusPill: 999,
+} as const;
+
 export type { BrandId } from './brands';
 export { getBadgeBrand, getTrackBrand } from './brands';
 
@@ -128,8 +149,8 @@ const TRACK_VISUALS: Record<string, TrackVisual> = {
   DEFAULT: {
     label: 'Parcours',
     icon: '\u{1F393}',
-    color: '#0070d2',
-    gradient: ['#032d60', '#16cdf1'],
+    color: theme.accent,
+    gradient: [theme.accentStrong, theme.accentTeal],
   },
 };
 
