@@ -3,8 +3,8 @@ import Svg, { Path } from 'react-native-svg';
 import {
   BRAND_ARIA_LABELS,
   BRAND_PATHS,
-  BRAND_SIZE_PX,
-  BRAND_VIEWBOX,
+  getBrandIconDimensions,
+  getBrandViewBox,
   resolveBrandPathFill,
   type BrandId,
   type BrandIconSize,
@@ -20,7 +20,8 @@ interface BrandIconProps {
 }
 
 export function BrandIcon({ brand, size = 'md', variant = 'default', style }: BrandIconProps) {
-  const px = BRAND_SIZE_PX[size];
+  const { width, height } = getBrandIconDimensions(brand, size);
+  const viewBox = getBrandViewBox(brand);
   const paths = BRAND_PATHS[brand];
 
   return (
@@ -28,12 +29,12 @@ export function BrandIcon({ brand, size = 'md', variant = 'default', style }: Br
       accessible
       accessibilityRole="image"
       accessibilityLabel={BRAND_ARIA_LABELS[brand]}
-      style={[{ width: px, height: px }, style]}
+      style={[{ width, height }, style]}
     >
       <Svg
-        width={px}
-        height={px}
-        viewBox={BRAND_VIEWBOX}
+        width={width}
+        height={height}
+        viewBox={viewBox}
         preserveAspectRatio="xMidYMid meet"
       >
         {paths.map((path, index) => (

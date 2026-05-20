@@ -2,8 +2,8 @@ import type { CSSProperties } from 'react';
 import {
   BRAND_ARIA_LABELS,
   BRAND_PATHS,
-  BRAND_SIZE_PX,
-  BRAND_VIEWBOX,
+  getBrandIconDimensions,
+  getBrandViewBox,
   resolveBrandPathFill,
   type BrandId,
   type BrandIconSize,
@@ -16,7 +16,7 @@ interface BrandIconProps {
   size?: BrandIconSize;
   className?: string;
   style?: CSSProperties;
-  /** Blanc sur fond coloré (Apple, Intune). Jamf reste vert #76B900. */
+  /** Blanc sur fond coloré (Apple, Intune, Jamf). */
   variant?: 'default' | 'onColor';
 }
 
@@ -27,18 +27,21 @@ export function BrandIcon({
   style,
   variant = 'default',
 }: BrandIconProps) {
-  const px = BRAND_SIZE_PX[size];
+  const { width, height } = getBrandIconDimensions(brand, size);
+  const viewBox = getBrandViewBox(brand);
   const paths = BRAND_PATHS[brand];
 
   return (
     <svg
-      width={px}
-      height={px}
-      viewBox={BRAND_VIEWBOX}
+      width={width}
+      height={height}
+      viewBox={viewBox}
       preserveAspectRatio="xMidYMid meet"
       role="img"
       aria-label={BRAND_ARIA_LABELS[brand]}
-      className={['brand-icon', className].filter(Boolean).join(' ')}
+      className={['brand-icon', brand === 'jamf' ? 'brand-icon-jamf' : null, className]
+        .filter(Boolean)
+        .join(' ')}
       style={{ display: 'block', flexShrink: 0, ...style }}
     >
       {paths.map((path, index) => (

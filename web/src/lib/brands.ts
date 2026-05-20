@@ -6,10 +6,16 @@ export const BRAND_ARIA_LABELS: Record<BrandId, string> = {
   microsoft: 'Microsoft Intune',
 };
 
+/**
+ * Vert Jamf officiel (media kit / guidelines partenaires).
+ * #69BE28 est une variante legacy — on standardise sur #76B900 (CSS `--brand-jamf`).
+ */
+export const JAMF_GREEN = '#76B900';
+
 /** Couleurs officielles (monochrome ou tuiles Microsoft). */
 export const BRAND_COLORS: Record<BrandId, string> = {
   apple: '#1d1d1f',
-  jamf: '#76B900',
+  jamf: JAMF_GREEN,
   microsoft: '#0078D4',
 };
 
@@ -31,7 +37,14 @@ export const BRAND_PATHS: Record<BrandId, BrandPath[]> = {
   ],
   jamf: [
     {
-      d: 'M10.658 0v23.997h2.632V12.63c0-5.976 4.703-10.812 10.527-10.812h.183V0H12.03C6.252 0 1.29 4.83.658 10.658H0v2.339h.658C1.29 18.825 6.252 23.655 12.03 23.655h11.97V21.04h-.183c-5.824 0-10.527-4.836-10.527-10.812V0H10.658z',
+      // Wordmark « jamf » — source: jamf.com/images/logos/jamf-one-color-dark-for-print-css.svg
+      d: 'M91.5 26.3c0-4.3-4.3-5.3-7.7-5.3-2.4 0-4.7.6-7.1 1.8L74.6 19c3.9-1.7 7-2 9.3-2 6.2 0 12 2.7 12 8.9v17.8h-4.2v-2.8c-2.3 2.4-4.8 3.4-8.2 3.4-6.3 0-11.3-3.6-11.3-9.4 0-4.8 4-9 11.2-9 2.7 0 5.6.8 8 3v-2.6zM84.3 30c-5.5 0-7.3 2.7-7.3 5.2 0 2.6 1.8 5.2 7.3 5.2s7.3-2.7 7.3-5.2c0-2.6-1.8-5.2-7.3-5.2zM138.6 27.8c0-4.5-2.6-6.5-5.7-6.5-3.7 0-6.5 2.4-6.5 6.7v15.8h-4.5v-16c0-4.5-2.6-6.5-5.7-6.5-3.7 0-6.5 2.4-6.5 6.7v15.8h-4.5V17.6h4.5v3.1h.1c1.2-2.7 4.4-3.7 7.1-3.7 2.6 0 5.5.7 7.6 4.5 1.6-3.3 5-4.5 8.4-4.5 5.6 0 9.9 3.4 9.9 10.2v16.5h-4.5V27.8zM154.1 13.7c0-5.5 3.7-8.1 8.9-8.3v4.5h-1c-2.3 0-3.5 1.9-3.5 4.2v3.6h4.2v4h-4.2v22.2H154V21.6h-3.9v-4h3.9v-3.9zM61 17.5h4.5l.1 29.5c0 6.8-4.4 9.1-9.3 9.1h-1.6v-4.2h1.7c4.4 0 4.8-2.4 4.8-4.7L61 17.5zm2.1-11.4c1.7 0 3.1 1.4 3.1 3.1 0 1.8-1.4 3.2-3.1 3.2-1.7 0-3.1-1.4-3.1-3.1s1.4-3.2 3.1-3.2z',
+    },
+    {
+      d: 'M3 .8C1.7.8.6 1.9.7 3.3v16.3c0 1.3 1.1 2.3 2.4 2.3h8.2c3.8 0 8.9-.8 10.3-7.5 0 0 1.4-6.7 2.2-10.7.3-1.5-.8-2.9-2.3-2.8H3z',
+    },
+    {
+      d: 'M34.5 8.4c-5.5 0-8.8 2.4-10.3 7.4l-3.8 12c-1.4 3.9-3.7 5.6-7.8 5.6H2.9c-1.2 0-2.2 1-2.2 2.2v6.1c0 1.2 1 2.1 2.1 2.1h38.9c1.2 0 2.2-1.2 2.2-2.4V10.5c0-1.2-1.1-2.1-2.3-2.1h-7.1z',
     },
   ],
   microsoft: [
@@ -51,6 +64,34 @@ export const BRAND_SIZE_PX: Record<BrandIconSize, number> = {
   md: 28,
   lg: 44,
 };
+
+export const BRAND_VIEWBOXES: Record<BrandId, string> = {
+  apple: BRAND_VIEWBOX,
+  jamf: '0 0 163.6 56.9',
+  microsoft: BRAND_VIEWBOX,
+};
+
+const BRAND_ASPECT_RATIO: Record<BrandId, number> = {
+  apple: 1,
+  jamf: 163.6 / 56.9,
+  microsoft: 1,
+};
+
+export function getBrandViewBox(brand: BrandId): string {
+  return BRAND_VIEWBOXES[brand];
+}
+
+export function getBrandIconDimensions(
+  brand: BrandId,
+  size: BrandIconSize,
+): { width: number; height: number } {
+  const px = BRAND_SIZE_PX[size];
+  const aspect = BRAND_ASPECT_RATIO[brand];
+  if (aspect <= 1) {
+    return { width: px, height: px };
+  }
+  return { width: Math.round(px * aspect), height: px };
+}
 
 const TRACK_BRAND: Record<string, BrandId> = {
   APPLE: 'apple',
@@ -73,14 +114,14 @@ export function getBadgeBrand(slug: string): BrandId | undefined {
   return BADGE_BRAND[slug];
 }
 
-/** Remplissage : tuiles Microsoft fixes ; Jamf toujours vert officiel. */
+/** Remplissage : tuiles Microsoft fixes ; Jamf vert sur fond clair, blanc sur fond coloré. */
 export function resolveBrandPathFill(
   brand: BrandId,
   path: BrandPath,
   variant: 'default' | 'onColor',
 ): string {
   if (path.fill) return path.fill;
-  if (brand === 'jamf') return 'var(--brand-jamf, #76B900)';
   if (variant === 'onColor') return '#ffffff';
+  if (brand === 'jamf') return 'var(--brand-jamf, #76B900)';
   return BRAND_COLORS[brand];
 }

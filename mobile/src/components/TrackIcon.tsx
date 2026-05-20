@@ -1,5 +1,6 @@
 import { StyleSheet, View, type ViewStyle } from 'react-native';
 import { BrandIcon, type BrandIconSize } from './BrandIcon';
+import { getBrandIconDimensions } from '../lib/brands';
 import { getTrackBrand, getTrackVisual } from '../lib/design';
 
 interface TrackIconProps {
@@ -18,14 +19,18 @@ export function TrackIcon({ track, size = 'md', style }: TrackIconProps) {
   const visual = getTrackVisual(track);
   const brand = visual.brand ?? getTrackBrand(track);
   const dimensions = SIZE_STYLES[size];
+  const isJamf = brand === 'jamf';
+  const iconDims = brand ? getBrandIconDimensions(brand, size) : null;
+  const boxHeight = dimensions.box;
+  const boxWidth = isJamf && iconDims ? Math.max(dimensions.box, iconDims.width + 8) : dimensions.box;
 
   return (
     <View
       style={[
         styles.base,
         {
-          width: dimensions.box,
-          height: dimensions.box,
+          width: boxWidth,
+          height: boxHeight,
           borderRadius: dimensions.radius,
           backgroundColor: visual.color,
         },
@@ -39,11 +44,6 @@ export function TrackIcon({ track, size = 'md', style }: TrackIconProps) {
 
 const styles = StyleSheet.create({
   base: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
-  },
-  iconWrap: {
     alignItems: 'center',
     justifyContent: 'center',
   },
