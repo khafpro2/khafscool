@@ -6,6 +6,9 @@ export const BRAND_ARIA_LABELS: Record<BrandId, string> = {
   microsoft: 'Microsoft Intune',
 };
 
+/** Noir Apple (Human Interface Guidelines). */
+export const APPLE_BLACK = '#1D1D1F';
+
 /**
  * Vert Jamf officiel (media kit / guidelines partenaires).
  * #69BE28 est une variante legacy — on standardise sur #76B900.
@@ -13,11 +16,12 @@ export const BRAND_ARIA_LABELS: Record<BrandId, string> = {
 export const JAMF_GREEN = '#76B900';
 
 export const BRAND_COLORS: Record<BrandId, string> = {
-  apple: '#1d1d1f',
+  apple: APPLE_BLACK,
   jamf: JAMF_GREEN,
   microsoft: '#0078D4',
 };
 
+/** Tuiles Microsoft (logo 4 carrés). */
 export const MICROSOFT_TILE_COLORS = {
   red: '#F25022',
   green: '#7FBA00',
@@ -27,10 +31,18 @@ export const MICROSOFT_TILE_COLORS = {
 
 export type BrandPath = { d: string; fill?: string };
 
+/** viewBox carré 24×24 (Apple, Microsoft). */
+export const BRAND_SQUARE_VIEWBOX = '0 0 24 24';
+
+/**
+ * Chemins SVG haute fidélité.
+ * Apple / Microsoft : Simple Icons v11 (simpleicons.org).
+ * Jamf : wordmark officiel (jamf.com media kit).
+ */
 export const BRAND_PATHS: Record<BrandId, BrandPath[]> = {
   apple: [
     {
-      d: 'M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.208.052-2.667.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701',
+      d: 'M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701',
     },
   ],
   jamf: [
@@ -45,14 +57,12 @@ export const BRAND_PATHS: Record<BrandId, BrandPath[]> = {
     },
   ],
   microsoft: [
-    { d: 'M0 0h11.377v11.372H0z', fill: MICROSOFT_TILE_COLORS.red },
-    { d: 'M12.623 0H24v11.372H12.623z', fill: MICROSOFT_TILE_COLORS.green },
-    { d: 'M0 12.628h11.377V24H0z', fill: MICROSOFT_TILE_COLORS.blue },
-    { d: 'M12.623 12.628H24V24H12.623z', fill: MICROSOFT_TILE_COLORS.yellow },
+    { d: 'M0 0h11.408v11.408H0z', fill: MICROSOFT_TILE_COLORS.red },
+    { d: 'M12.594 0H24v11.408H12.594z', fill: MICROSOFT_TILE_COLORS.green },
+    { d: 'M0 12.594h11.408V24H0z', fill: MICROSOFT_TILE_COLORS.blue },
+    { d: 'M12.594 12.594H24V24H12.594z', fill: MICROSOFT_TILE_COLORS.yellow },
   ],
 };
-
-export const BRAND_VIEWBOX = '0 0 24 24';
 
 export type BrandIconSize = 'sm' | 'md' | 'lg';
 
@@ -63,9 +73,9 @@ export const BRAND_SIZE_PX: Record<BrandIconSize, number> = {
 };
 
 export const BRAND_VIEWBOXES: Record<BrandId, string> = {
-  apple: BRAND_VIEWBOX,
+  apple: BRAND_SQUARE_VIEWBOX,
   jamf: '0 0 163.6 56.9',
-  microsoft: BRAND_VIEWBOX,
+  microsoft: BRAND_SQUARE_VIEWBOX,
 };
 
 const BRAND_ASPECT_RATIO: Record<BrandId, number> = {

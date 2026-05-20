@@ -39,9 +39,7 @@ export function BrandIcon({
       preserveAspectRatio="xMidYMid meet"
       role="img"
       aria-label={BRAND_ARIA_LABELS[brand]}
-      className={['brand-icon', brand === 'jamf' ? 'brand-icon-jamf' : null, className]
-        .filter(Boolean)
-        .join(' ')}
+      className={['brand-icon', `brand-icon-${brand}`, className].filter(Boolean).join(' ')}
       style={{ display: 'block', flexShrink: 0, ...style }}
     >
       {paths.map((path, index) => (

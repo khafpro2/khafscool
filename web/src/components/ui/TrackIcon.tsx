@@ -27,9 +27,15 @@ export function TrackIcon({
 }: TrackIconProps) {
   const visual = getTrackVisual(track);
   const brand = visual.brand ?? getTrackBrand(track);
-  const classes = [SIZE_CLASS[size], brand === 'jamf' ? 'track-icon-jamf' : null, className]
-    .filter(Boolean)
-    .join(' ');
+  const trackBrandClass =
+    brand === 'jamf'
+      ? 'track-icon-jamf'
+      : brand === 'apple'
+        ? 'track-icon-apple'
+        : brand === 'microsoft'
+          ? 'track-icon-microsoft'
+          : null;
+  const classes = [SIZE_CLASS[size], trackBrandClass, className].filter(Boolean).join(' ');
 
   return (
     <span

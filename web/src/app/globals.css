@@ -533,6 +533,7 @@ h1, h2, h3, h4 {
 .track-icon-lg { width: 56px; height: 56px; border-radius: 16px; font-size: 1.55rem; }
 .track-icon-sm { width: 28px; height: 28px; border-radius: 8px; font-size: 0.95rem; }
 .trail-card-icon.track-icon { width: 46px; height: 46px; border-radius: 14px; }
+/* Apple / Microsoft : carrés 1:1 via .track-icon ; Jamf wordmark élargi ci-dessous */
 .track-icon-jamf {
   width: auto;
   min-width: 40px;
