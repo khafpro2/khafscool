@@ -19,6 +19,8 @@ import { ProgressBar } from '@/components/ui/ProgressBar';
 import { BrandIcon } from '@/components/ui/BrandIcon';
 import { TrackIcon } from '@/components/ui/TrackIcon';
 
+const BADGES_VISUAL = getTrackVisual('DEFAULT');
+
 type Status = 'loading' | 'ready' | 'error';
 
 export default function BadgesPage() {
@@ -74,46 +76,34 @@ export default function BadgesPage() {
   return (
     <section style={{ padding: '1rem 0 2rem' }}>
       {!hasToken ? <AuthConnectBanner redirectPath="/badges" /> : null}
-      <div
-        className="hero"
-        style={{
-          background: 'linear-gradient(135deg, #ffb02e 0%, #ffce5b 45%, #ffe89e 100%)',
-          color: '#3a2200',
-        }}
-      >
-        <span
-          className="hero-eyebrow"
-          style={{
-            background: 'rgba(255,255,255,0.45)',
-            borderColor: 'rgba(0,0,0,0.08)',
-            color: '#3a2200',
-          }}
-        >
-          <span aria-hidden>{'\u{1F3C5}'}</span> Galerie des badges
+      <div className="hero" style={{ marginTop: 0 }}>
+        <span className="hero-eyebrow">
+          <span aria-hidden>{BADGES_VISUAL.icon ?? '\u{1F3C5}'}</span> Galerie des badges
         </span>
-        <h1 style={{ color: '#3a2200' }}>Tes super-badges MDM Academy</h1>
-        <p style={{ marginTop: '0.75rem', color: '#3a2200', maxWidth: 640 }}>
+        <h1>Tes super-badges MDM Academy</h1>
+        <p style={{ marginTop: '0.75rem', maxWidth: 640 }}>
           Chaque piste Apple, Jamf et Intune récompense ta progression avec un badge distinct. Collectionne-les
           tous pour montrer ton expertise multi-plateforme.
         </p>
         <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', marginTop: '1.25rem' }}>
-          <Button href="/dashboard" variant="dark">
+          <Button href="/dashboard" variant="secondary">
             Tableau de bord
           </Button>
-          <Button href="/courses" variant="secondary">
+          <Button href="/courses" variant="ghost" style={{ color: '#fff', borderColor: 'rgba(255,255,255,0.4)' }}>
             Parcours
           </Button>
-          <Button href="/sprint" variant="ghost" style={{ color: '#3a2200', borderColor: 'rgba(58,34,0,0.25)' }}>
+          <Button href="/sprint" variant="ghost" style={{ color: '#fff', borderColor: 'rgba(255,255,255,0.4)' }}>
             Sprint certification
           </Button>
         </div>
       </div>
 
       <Card
+        className={hasToken && data.fromApi ? undefined : 'notice-demo'}
         style={{
           marginTop: '1.5rem',
-          background: hasToken && data.fromApi ? '#ffffff' : '#fff8e6',
-          borderColor: hasToken && data.fromApi ? 'var(--border)' : '#f0cf7a',
+          background: hasToken && data.fromApi ? 'var(--surface)' : undefined,
+          borderColor: hasToken && data.fromApi ? 'var(--border)' : undefined,
         }}
       >
         <strong>{hasToken && data.fromApi ? 'Collection connectée' : 'Collection en mode démo'}</strong>

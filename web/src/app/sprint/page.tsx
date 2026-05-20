@@ -172,10 +172,11 @@ export default function SprintPage() {
       </div>
 
       <Card
+        className={hasToken ? undefined : 'notice-demo'}
         style={{
           marginTop: '1.5rem',
-          background: hasToken ? '#ffffff' : '#fff8e6',
-          borderColor: hasToken ? 'var(--border)' : '#f0cf7a',
+          background: hasToken ? 'var(--surface)' : undefined,
+          borderColor: hasToken ? 'var(--border)' : undefined,
         }}
       >
         <div

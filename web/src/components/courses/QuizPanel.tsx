@@ -488,7 +488,7 @@ function QuizRecap({
         )}
       </p>
       {!meetsMinimum && (
-        <p style={{ marginTop: '0.5rem', fontSize: '0.88rem', color: '#8a4a00' }}>
+        <p style={{ marginTop: '0.5rem', fontSize: '0.88rem', color: '#92400e' }}>
           Tu peux valider l&apos;unité, mais revoir les explications améliorera ton score et tes points.
         </p>
       )}

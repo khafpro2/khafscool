@@ -1,6 +1,42 @@
 import { API_URL } from '../config';
 import { clearTokens, getAccessToken, getRefreshToken, saveTokens } from './auth';
 
+export interface AuthUser {
+  id: string;
+  email: string;
+  displayName: string | null;
+}
+
+export interface AuthResponse {
+  accessToken: string;
+  refreshToken: string;
+  user: AuthUser;
+}
+
+export async function loginWithEmail(email: string, password: string): Promise<AuthResponse> {
+  const res = await fetch(`${API_URL}/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password }),
+  });
+  if (!res.ok) throw new Error(`Login failed ${res.status}`);
+  return res.json() as Promise<AuthResponse>;
+}
+
+export async function registerWithEmail(
+  email: string,
+  password: string,
+  displayName: string
+): Promise<AuthResponse> {
+  const res = await fetch(`${API_URL}/auth/register`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password, displayName }),
+  });
+  if (!res.ok) throw new Error(`Register failed ${res.status}`);
+  return res.json() as Promise<AuthResponse>;
+}
+
 type RefreshedSession = {
   accessToken: string;
   refreshToken: string;

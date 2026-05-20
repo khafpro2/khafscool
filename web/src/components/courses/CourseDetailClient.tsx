@@ -350,7 +350,7 @@ export function CourseDetailClient({ slug }: { slug: string }) {
       >
         <div style={{ minWidth: 0 }}>
           {!hasToken && (
-            <Card variant="soft" style={{ borderColor: '#f0cf7a', background: '#fff8e6' }}>
+            <Card variant="soft" className="notice-demo">
               <strong>Mode démo</strong>
               <p className="muted" style={{ marginTop: '0.35rem' }}>
                 Les questions fonctionnent localement. Connectez-vous pour enregistrer les scores quand le
@@ -400,13 +400,7 @@ export function CourseDetailClient({ slug }: { slug: string }) {
           )}
 
           {successNotice && (
-            <Card
-              style={{
-                marginTop: '1rem',
-                borderColor: '#a8d8b2',
-                background: 'linear-gradient(135deg, #f4fbf6 0%, #ffffff 100%)',
-              }}
-            >
+            <Card className="notice-success" style={{ marginTop: '1rem' }}>
               <Badge tone="success" icon="\u{1F389}">
                 Unité terminée
               </Badge>
@@ -451,9 +445,10 @@ export function CourseDetailClient({ slug }: { slug: string }) {
                   key={module.id}
                   id={`module-${module.slug}`}
                   as="article"
+                  className={completed ? 'card-completed' : undefined}
                   style={{
-                    borderColor: completed ? '#a8d8b2' : 'var(--border)',
-                    background: completed ? 'linear-gradient(135deg, #f4fbf6 0%, #ffffff 100%)' : 'var(--card)',
+                    borderColor: completed ? undefined : 'var(--border)',
+                    background: completed ? undefined : 'var(--surface)',
                   }}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.75rem', flexWrap: 'wrap' }}>
@@ -582,8 +577,8 @@ export function CourseDetailClient({ slug }: { slug: string }) {
         </div>
 
         <aside style={{ position: 'sticky', top: '5.5rem', display: 'grid', gap: '1rem' }}>
-          <Card style={{ background: 'linear-gradient(135deg, #fff8e6 0%, #ffffff 70%)', borderColor: '#f0cf7a' }}>
-            <p style={{ color: '#8a4a00', fontSize: '0.78rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+          <Card className="notice-demo">
+            <p style={{ color: '#92400e', fontSize: '0.78rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
               Récompense parcours
             </p>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', marginTop: '0.5rem' }}>
@@ -592,14 +587,14 @@ export function CourseDetailClient({ slug }: { slug: string }) {
                 style={{
                   width: 56,
                   height: 56,
-                  borderRadius: 18,
-                  background: 'linear-gradient(135deg, #ffb02e 0%, #ffce5b 100%)',
+                  borderRadius: 'var(--radius-lg)',
+                  background: 'var(--gradient-accent)',
                   display: 'inline-flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   fontSize: '1.55rem',
-                  color: '#4a2a00',
-                  boxShadow: '0 6px 14px rgba(255, 176, 46, 0.35)',
+                  color: '#fff',
+                  boxShadow: 'var(--shadow-md)',
                 }}
               >
                 {reward?.brand ? (
@@ -712,10 +707,15 @@ function ModuleStatusStrip({
           <div
             key={module.id}
             style={{
-              border: `1px solid ${status === 'completed' ? '#a8d8b2' : status === 'in_progress' ? '#f0cf7a' : 'var(--border-soft)'}`,
-              borderRadius: 12,
+              border: `1px solid ${status === 'completed' ? '#6ee7b7' : status === 'in_progress' ? '#fcd34d' : 'var(--border-soft)'}`,
+              borderRadius: 'var(--radius-md)',
               padding: '0.65rem 0.75rem',
-              background: status === 'completed' ? '#f4fbf6' : status === 'in_progress' ? '#fff8e6' : '#f8fafd',
+              background:
+                status === 'completed'
+                  ? 'var(--success-soft)'
+                  : status === 'in_progress'
+                    ? 'var(--warning-soft)'
+                    : 'var(--bg)',
             }}
           >
             <p className="muted" style={{ fontSize: '0.72rem', fontWeight: 800, textTransform: 'uppercase' }}>

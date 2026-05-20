@@ -86,7 +86,7 @@ export interface RankInfo {
 const RANK_LADDER: { name: string; icon: string; color: string; gradient: [string, string]; minPoints: number }[] = [
   { name: 'Débutant', icon: '\u{1F331}', color: '#5d6373', gradient: ['#94a1b8', '#c5cfdd'], minPoints: 0 },
   { name: 'Apprenti', icon: '\u{1F33F}', color: '#2e844a', gradient: ['#2e844a', '#4cd964'], minPoints: 100 },
-  { name: 'Technicien', icon: '\u{1F527}', color: '#0070d2', gradient: ['#0070d2', '#16cdf1'], minPoints: 250 },
+  { name: 'Technicien', icon: '\u{1F527}', color: '#2563eb', gradient: ['#2563eb', '#0d9488'], minPoints: 250 },
   { name: 'Ingénieur', icon: '\u{2699}\uFE0F', color: '#6c5ce7', gradient: ['#4834d4', '#a29bfe'], minPoints: 500 },
   { name: 'Expert', icon: '\u{1F3C5}', color: '#ff9e2c', gradient: ['#ff5b00', '#ffb02e'], minPoints: 900 },
   { name: 'Champion', icon: '\u{1F451}', color: '#c23934', gradient: ['#c23934', '#ff7a59'], minPoints: 1500 },
@@ -143,8 +143,8 @@ const TRACK_VISUALS: Record<string, TrackVisual> = {
   INTUNE: {
     label: 'Microsoft Intune',
     brand: 'microsoft',
-    color: '#0070d2',
-    gradient: ['#0070d2', '#16cdf1'],
+    color: '#2563eb',
+    gradient: ['#2563eb', '#0d9488'],
   },
   DEFAULT: {
     label: 'Parcours',

@@ -40,8 +40,8 @@ const TRACK_VISUALS: Record<string, TrackVisual> = {
   SPRINT: {
     label: 'Sprint certification',
     icon: '\u{1F3C1}',
-    color: '#6c5ce7',
-    gradient: 'linear-gradient(135deg, #4834d4 0%, #6c5ce7 60%, #a29bfe 100%)',
+    color: '#2563eb',
+    gradient: 'var(--gradient-hero)',
     defaultLevel: 'Avancé',
   },
   RESOURCES: {
@@ -54,15 +54,15 @@ const TRACK_VISUALS: Record<string, TrackVisual> = {
   QUESTS: {
     label: 'Quêtes hebdo',
     icon: '\u{1F3AF}',
-    color: '#ffb02e',
-    gradient: 'linear-gradient(135deg, #ffb02e 0%, #ffce5b 100%)',
+    color: '#2563eb',
+    gradient: 'var(--gradient-hero)',
     defaultLevel: 'Débutant',
   },
   LEADERBOARD: {
     label: 'Classement',
     icon: '\u{1F3C6}',
-    color: '#c23934',
-    gradient: 'linear-gradient(135deg, #c23934 0%, #ff7a59 100%)',
+    color: '#0d9488',
+    gradient: 'var(--gradient-hero)',
     defaultLevel: 'Intermédiaire',
   },
   DEFAULT: {

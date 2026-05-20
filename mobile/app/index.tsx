@@ -2,6 +2,7 @@ import { Redirect } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { WelcomeScreen } from '../src/screens/auth/WelcomeScreen';
+import { theme } from '../src/lib/design';
 import { getAccessToken } from '../src/services/auth';
 
 export default function Index() {
@@ -21,7 +22,7 @@ export default function Index() {
   if (checkingSession) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator color="#007AFF" />
+        <ActivityIndicator color={theme.accent} />
         <Text style={styles.loadingText}>Vérification de la session…</Text>
       </View>
     );
@@ -35,6 +36,6 @@ export default function Index() {
 }
 
 const styles = StyleSheet.create({
-  loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#F5F5F7' },
-  loadingText: { marginTop: 12, color: '#6E6E73', fontSize: 15 },
+  loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: theme.bg },
+  loadingText: { marginTop: 12, color: theme.muted, fontSize: 15 },
 });

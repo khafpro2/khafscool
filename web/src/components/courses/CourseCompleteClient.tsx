@@ -131,15 +131,7 @@ export function CourseCompleteClient({
     <section style={{ padding: '1rem 0 3rem', position: 'relative', overflow: 'hidden' }}>
       <ConfettiLayer />
 
-      <div
-        className="hero"
-        style={{
-          background: 'linear-gradient(135deg, #1f8f4a 0%, #3cb371 38%, #ffb02e 100%)',
-          color: '#fff',
-          position: 'relative',
-          zIndex: 1,
-        }}
-      >
+      <div className="hero" style={{ marginTop: 0, position: 'relative', zIndex: 1, background: visual.gradient }}>
         <Badge tone="success" icon="\u{1F389}" style={{ background: 'rgba(255,255,255,0.2)', color: '#fff' }}>
           Parcours terminé
         </Badge>
@@ -192,8 +184,8 @@ export function CourseCompleteClient({
           </p>
         </Card>
 
-        <Card style={{ background: 'linear-gradient(135deg, #fff8e6 0%, #ffffff 70%)', borderColor: '#f0cf7a' }}>
-          <p style={{ color: '#8a4a00', fontSize: '0.78rem', fontWeight: 800, textTransform: 'uppercase' }}>
+        <Card className="notice-demo">
+          <p style={{ color: '#92400e', fontSize: '0.78rem', fontWeight: 800, textTransform: 'uppercase' }}>
             Super-badge débloqué
           </p>
           {badgeVisual ? (
@@ -203,8 +195,9 @@ export function CourseCompleteClient({
                 style={{
                   width: 56,
                   height: 56,
-                  borderRadius: 18,
-                  background: 'linear-gradient(135deg, #ffb02e 0%, #ffce5b 100%)',
+                  borderRadius: 'var(--radius-lg)',
+                  background: badgeVisual.bg,
+                  border: `2px solid ${badgeVisual.color}33`,
                   display: 'inline-flex',
                   alignItems: 'center',
                   justifyContent: 'center',

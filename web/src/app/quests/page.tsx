@@ -15,6 +15,9 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import { TrackIcon } from '@/components/ui/TrackIcon';
+import { getTrackVisual } from '@/lib/design';
+
+const QUESTS_VISUAL = getTrackVisual('QUESTS');
 
 type Status = 'loading' | 'ready' | 'error';
 
@@ -81,30 +84,17 @@ export default function WeeklyQuestsPage() {
   return (
     <section style={{ padding: '1rem 0 2rem' }}>
       {!hasToken ? <AuthConnectBanner redirectPath="/quests" /> : null}
-      <div
-        className="hero"
-        style={{
-          background: 'linear-gradient(135deg, #ff9e2c 0%, #ffce5b 60%, #ffe89e 100%)',
-          color: '#3a2200',
-        }}
-      >
-        <span
-          className="hero-eyebrow"
-          style={{
-            background: 'rgba(255,255,255,0.45)',
-            borderColor: 'rgba(0,0,0,0.08)',
-            color: '#3a2200',
-          }}
-        >
-          <span aria-hidden>{'\u{1F3AF}'}</span> Quêtes hebdo
+      <div className="hero" style={{ marginTop: 0 }}>
+        <span className="hero-eyebrow">
+          <span aria-hidden>{QUESTS_VISUAL.icon}</span> Quêtes hebdo
         </span>
-        <h1 style={{ color: '#3a2200' }}>Renouvelle ton rythme chaque semaine</h1>
-        <p style={{ marginTop: '0.75rem', color: '#3a2200' }}>
+        <h1>Renouvelle ton rythme chaque semaine</h1>
+        <p style={{ marginTop: '0.75rem' }}>
           Des objectifs courts qui se renouvellent chaque semaine pour entretenir ta progression sur
           Apple, Jamf et Intune.
         </p>
         <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', marginTop: '1.25rem' }}>
-          <Button href="/dashboard" variant="dark">
+          <Button href="/dashboard" variant="secondary">
             Retour dashboard
           </Button>
           <Button type="button" variant="secondary" onClick={() => void loadQuests()}>
@@ -121,10 +111,11 @@ export default function WeeklyQuestsPage() {
       ) : null}
 
       <Card
+        className={hasToken && !usingFallback ? undefined : 'notice-demo'}
         style={{
           marginTop: '1.5rem',
-          background: hasToken && !usingFallback ? '#ffffff' : '#fff8e6',
-          borderColor: hasToken && !usingFallback ? 'var(--border)' : '#f0cf7a',
+          background: hasToken && !usingFallback ? 'var(--surface)' : undefined,
+          borderColor: hasToken && !usingFallback ? 'var(--border)' : undefined,
         }}
       >
         <strong>{hasToken ? 'Quêtes connectées' : 'Quêtes en mode démo'}</strong>
@@ -173,16 +164,10 @@ function QuestCompletionBanner({
   const earnedPoints = quests.reduce((sum, quest) => sum + (quest.rewardPoints ?? 0), 0);
 
   return (
-    <Card
-      style={{
-        marginTop: '1.5rem',
-        background: 'linear-gradient(135deg, #e8f5ec 0%, #ffffff 100%)',
-        borderColor: '#2e844a',
-      }}
-    >
+    <Card className="notice-success" style={{ marginTop: '1.5rem' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'flex-start' }}>
         <div>
-          <span style={{ color: '#2e844a', fontWeight: 800, textTransform: 'uppercase', fontSize: '0.8rem' }}>
+          <span style={{ color: 'var(--success)', fontWeight: 800, textTransform: 'uppercase', fontSize: '0.8rem' }}>
             Quête accomplie !
           </span>
           <h2 style={{ fontSize: '1.2rem', fontWeight: 800, marginTop: '0.35rem' }}>
@@ -210,9 +195,10 @@ function QuestCard({ quest }: { quest: WeeklyQuest }) {
 
   return (
     <Card
+      className={completed ? 'card-completed' : undefined}
       style={{
-        borderColor: completed ? '#a8d8b2' : 'var(--border)',
-        background: completed ? 'linear-gradient(135deg, #f4fbf6 0%, #ffffff 100%)' : 'var(--card)',
+        borderColor: completed ? undefined : 'var(--border)',
+        background: completed ? undefined : 'var(--surface)',
       }}
     >
       <div

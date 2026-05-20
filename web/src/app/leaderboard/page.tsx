@@ -7,7 +7,9 @@ import { getAccessToken } from '@/lib/auth';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { getBadgeVisual, getRankInfo } from '@/lib/design';
+import { getBadgeVisual, getRankInfo, getTrackVisual } from '@/lib/design';
+
+const LEADERBOARD_VISUAL = getTrackVisual('LEADERBOARD');
 
 type Status = 'loading' | 'ready' | 'error';
 
@@ -61,14 +63,9 @@ export default function LeaderboardPage() {
   return (
     <section style={{ padding: '1rem 0 2rem' }}>
       {!hasToken ? <AuthConnectBanner redirectPath="/leaderboard" /> : null}
-      <div
-        className="hero"
-        style={{
-          background: 'linear-gradient(135deg, #c23934 0%, #ff7a59 60%, #ffb02e 100%)',
-        }}
-      >
+      <div className="hero" style={{ marginTop: 0 }}>
         <span className="hero-eyebrow">
-          <span aria-hidden>{'\u{1F3C6}'}</span> Communauté MDM Academy
+          <span aria-hidden>{LEADERBOARD_VISUAL.icon}</span> Communauté MDM Academy
         </span>
         <h1>Classement des apprenants</h1>
         <p style={{ marginTop: '0.75rem' }}>
@@ -87,10 +84,11 @@ export default function LeaderboardPage() {
       </div>
 
       <Card
+        className={hasToken && !usingFallback ? undefined : 'notice-demo'}
         style={{
           marginTop: '1.5rem',
-          background: hasToken && !usingFallback ? '#ffffff' : '#fff8e6',
-          borderColor: hasToken && !usingFallback ? 'var(--border)' : '#f0cf7a',
+          background: hasToken && !usingFallback ? 'var(--surface)' : undefined,
+          borderColor: hasToken && !usingFallback ? 'var(--border)' : undefined,
         }}
       >
         <strong>{hasToken ? 'Classement connecté' : 'Classement en mode démo'}</strong>
@@ -121,7 +119,7 @@ export default function LeaderboardPage() {
       <Card style={{ marginTop: '1.5rem', padding: 0, overflow: 'hidden' }}>
         <header
           style={{
-            background: '#f4f6fb',
+            background: 'var(--accent-soft)',
             borderBottom: '1px solid var(--border)',
             display: 'grid',
             gap: '0.5rem',
@@ -169,13 +167,11 @@ function PodiumCard({ entry }: { entry: LeaderboardEntry }) {
     <Card
       style={{
         background: isCurrent
-          ? 'linear-gradient(135deg, #e3f0ff 0%, #ffffff 100%)'
+          ? 'linear-gradient(135deg, var(--accent-soft) 0%, var(--surface) 100%)'
           : entry.rank === 1
-            ? 'linear-gradient(135deg, #fff7d6 0%, #ffffff 100%)'
-            : entry.rank === 2
-              ? 'linear-gradient(135deg, #f0f0f3 0%, #ffffff 100%)'
-              : 'linear-gradient(135deg, #fde4cf 0%, #ffffff 100%)',
-        borderColor: isCurrent ? '#85bfff' : 'var(--border)',
+            ? 'linear-gradient(135deg, var(--warning-soft) 0%, var(--surface) 100%)'
+            : 'var(--surface)',
+        borderColor: isCurrent ? 'var(--accent)' : 'var(--border)',
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
