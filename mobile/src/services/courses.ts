@@ -1,5 +1,21 @@
+import {
+  appleCertPrepQuestions,
+  intuneIosEnrollmentQuestions,
+  jamfProFoundationsQuestions,
+  toDemoQuestions,
+} from '@shared/quiz-content';
 import { apiFetch } from './api';
 import { getAccessToken } from './auth';
+
+function demoModuleQuestions(moduleKey: string, questions: ReturnType<typeof toDemoQuestions>) {
+  return questions.map(({ id, type, prompt, options, explanation }) => ({
+    id,
+    type,
+    prompt,
+    options,
+    explanation,
+  }));
+}
 
 export interface CourseQuestion {
   id: string;
@@ -240,132 +256,132 @@ const DEMO_COURSES: Record<string, CourseDetail> = {
   'apple-cert-prep': {
     id: 'demo-apple',
     slug: 'apple-cert-prep',
-    title: 'Parcours Apple Device Support & MDM',
+    title: 'Parcours Apple — Device Support & MDM',
     track: 'APPLE',
-    description: 'Prépare la certification Apple et les fondamentaux MDM.',
+    description: 'Diagnostic, sécurité et préparation aux fondamentaux Apple Device Support.',
     totalModules: 3,
-    completedModules: 2,
-    progressPercent: 67,
+    completedModules: 0,
+    progressPercent: 0,
     modules: [
       {
         id: 'demo-apple-module-1',
-        slug: 'apple-hardware',
-        title: 'Matériel et dépannage Apple',
-        summary: 'Identifier les modèles, diagnostics et pièces.',
-        questions: [
-          {
-            id: 'q1',
-            type: 'single',
-            prompt: 'Quel outil Apple est recommandé pour le diagnostic matériel ?',
-            options: [
-              { id: 'a', label: 'Apple Diagnostics' },
-              { id: 'b', label: 'Jamf Remote' },
-              { id: 'c', label: 'Intune Portal' },
-            ],
-          },
-        ],
+        slug: 'device-support-basics',
+        title: 'Fondamentaux Device Support',
+        summary: 'Diagnostic matériel/logiciel, sauvegarde et réinitialisation sécurisée.',
+        questions: demoModuleQuestions(
+          'device-support-basics',
+          toDemoQuestions('device-support-basics', appleCertPrepQuestions['device-support-basics'])
+        ),
       },
       {
         id: 'demo-apple-module-2',
-        slug: 'apple-services',
-        title: 'Services Apple et comptes',
-        summary: 'Apple ID, ABM et configuration de base.',
-        questions: [
-          {
-            id: 'q2',
-            type: 'single',
-            prompt: 'Où gére-t-on les appareils d’entreprise Apple ?',
-            options: [
-              { id: 'a', label: 'Apple Business Manager' },
-              { id: 'b', label: 'Google Admin' },
-              { id: 'c', label: 'Azure AD uniquement' },
-            ],
-          },
-        ],
+        slug: 'ios-troubleshooting',
+        title: 'Dépannage iOS et iPadOS',
+        summary: 'Connectivité, batterie et blocages courants sur iPhone/iPad.',
+        questions: demoModuleQuestions(
+          'ios-troubleshooting',
+          toDemoQuestions('ios-troubleshooting', appleCertPrepQuestions['ios-troubleshooting'])
+        ),
       },
       {
         id: 'demo-apple-module-3',
-        slug: 'mdm-basics',
-        title: 'Bases MDM et enrôlement',
-        summary: 'Profils, supervision et flux d’enrôlement.',
-        questions: [
-          {
-            id: 'q3',
-            type: 'single',
-            prompt: 'Quel profil est requis pour la supervision iOS ?',
-            options: [
-              { id: 'a', label: 'Profil de supervision via MDM' },
-              { id: 'b', label: 'Profil Wi-Fi uniquement' },
-              { id: 'c', label: 'Certificat utilisateur' },
-            ],
-          },
-        ],
+        slug: 'acmt-exam-prep',
+        title: 'Préparation examen Device Support (ACMT)',
+        summary: 'Sécurité, sauvegarde, restauration et bonnes pratiques atelier.',
+        questions: demoModuleQuestions(
+          'acmt-exam-prep',
+          toDemoQuestions('acmt-exam-prep', appleCertPrepQuestions['acmt-exam-prep'])
+        ),
       },
     ],
   },
   'jamf-pro-foundations': {
     id: 'demo-jamf',
     slug: 'jamf-pro-foundations',
-    title: 'Fondations Jamf Pro',
+    title: 'Fondamentaux Jamf Pro',
     track: 'JAMF',
-    description: 'Découvrir Jamf Pro, les politiques et l’inventaire.',
+    description: 'Inventaire, smart groups, politiques et bonnes pratiques MDM.',
     totalModules: 3,
     completedModules: 0,
     progressPercent: 0,
     modules: [
       {
-        id: 'demo-jamf-1',
-        slug: 'jamf-console',
-        title: 'Console Jamf et inventaire',
-        summary: 'Navigation, groupes et recherche.',
-        questions: [],
+        id: 'demo-jamf-module-1',
+        slug: 'smart-groups-policies',
+        title: 'Smart Groups et politiques',
+        summary: 'Cibler des Mac et déployer une politique sur un périmètre pilote.',
+        questions: demoModuleQuestions(
+          'smart-groups-policies',
+          toDemoQuestions('smart-groups-policies', jamfProFoundationsQuestions['smart-groups-policies'])
+        ),
       },
       {
-        id: 'demo-jamf-2',
-        slug: 'jamf-policies',
-        title: 'Politiques et scripts',
-        summary: 'Déployer des configurations ciblées.',
-        questions: [],
+        id: 'demo-jamf-module-2',
+        slug: 'inventory-basics',
+        title: 'Inventaire et conformité',
+        summary: 'Lire l’inventaire Jamf et prioriser les appareils hors norme.',
+        questions: demoModuleQuestions(
+          'inventory-basics',
+          toDemoQuestions('inventory-basics', jamfProFoundationsQuestions['inventory-basics'])
+        ),
       },
       {
-        id: 'demo-jamf-3',
-        slug: 'jamf-enrollment',
-        title: 'Enrôlement Jamf',
-        summary: 'ADE, PreStage et flux utilisateur.',
-        questions: [],
+        id: 'demo-jamf-module-3',
+        slug: 'enrollment-apple-integration',
+        title: 'Enrôlement et intégration Apple',
+        summary: 'ABM, certificats Push et enrôlement automatisé.',
+        questions: demoModuleQuestions(
+          'enrollment-apple-integration',
+          toDemoQuestions(
+            'enrollment-apple-integration',
+            jamfProFoundationsQuestions['enrollment-apple-integration']
+          )
+        ),
       },
     ],
   },
   'intune-ios-enrollment': {
     id: 'demo-intune',
     slug: 'intune-ios-enrollment',
-    title: 'Intune — enrôlement iOS',
+    title: 'Microsoft Intune — Enrôlement iOS/iPadOS',
     track: 'INTUNE',
-    description: 'Company Portal, profils et conformité Intune.',
+    description: 'ADE, conformité et App Protection pour flottes Apple.',
     totalModules: 3,
     completedModules: 0,
     progressPercent: 0,
     modules: [
       {
-        id: 'demo-intune-1',
-        slug: 'intune-basics',
-        title: 'Portail Intune et apps',
-        summary: 'Découvrir le portail et les applications gérées.',
-        questions: [],
+        id: 'demo-intune-module-1',
+        slug: 'ade-enrollment-basics',
+        title: 'Préparer Automated Device Enrollment',
+        summary: 'Associer Apple Business Manager à Intune et valider Setup Assistant.',
+        questions: demoModuleQuestions(
+          'ade-enrollment-basics',
+          toDemoQuestions('ade-enrollment-basics', intuneIosEnrollmentQuestions['ade-enrollment-basics'])
+        ),
       },
       {
-        id: 'demo-intune-2',
-        slug: 'intune-compliance',
-        title: 'Conformité et conditions',
-        summary: 'Règles de conformité et accès conditionnel.',
-        questions: [],
+        id: 'demo-intune-module-2',
+        slug: 'compliance-policies',
+        title: 'Politiques de conformité iOS',
+        summary: 'OS, PIN, jailbreak et actions correctives.',
+        questions: demoModuleQuestions(
+          'compliance-policies',
+          toDemoQuestions('compliance-policies', intuneIosEnrollmentQuestions['compliance-policies'])
+        ),
       },
       {
-        id: 'demo-intune-3',
-        slug: 'intune-enrollment',
-        title: 'Enrôlement iOS',
-        summary: 'ABM, profils et expérience utilisateur.',
-        questions: [],
+        id: 'demo-intune-module-3',
+        slug: 'app-protection-conditional-access',
+        title: 'App Protection et Conditional Access',
+        summary: 'Protéger les données M365 sur iOS avec MAM et CA.',
+        questions: demoModuleQuestions(
+          'app-protection-conditional-access',
+          toDemoQuestions(
+            'app-protection-conditional-access',
+            intuneIosEnrollmentQuestions['app-protection-conditional-access']
+          )
+        ),
       },
     ],
   },

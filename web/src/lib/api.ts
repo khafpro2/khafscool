@@ -1,3 +1,9 @@
+import {
+  appleCertPrepQuestions,
+  intuneIosEnrollmentQuestions,
+  jamfProFoundationsQuestions,
+  toDemoQuestions,
+} from '@shared/quiz-content';
 import { refreshSession } from './auth';
 import { formatTrack } from './tracks';
 
@@ -719,8 +725,9 @@ function mockDashboard(): DashboardData {
     quests: [{ id: '1', label: 'Termine 3 unités Apple cette semaine', progress: 1, target: 3 }],
     certificationSprint: mockCertificationSprint(),
     courses: [
-      { id: '1', slug: 'apple-cert-prep', title: 'Parcours Apple', track: 'APPLE', progressPercent: 100 },
-      { id: '2', slug: 'jamf-pro-foundations', title: 'Fondamentaux Jamf Pro', track: 'JAMF', progressPercent: 0 },
+      { id: '1', slug: 'apple-cert-prep', title: 'Parcours Apple — Device Support & MDM', track: 'APPLE', progressPercent: 33, totalModules: 3, completedModules: 1 },
+      { id: '2', slug: 'jamf-pro-foundations', title: 'Fondamentaux Jamf Pro', track: 'JAMF', progressPercent: 0, totalModules: 3, completedModules: 0 },
+      { id: '3', slug: 'intune-ios-enrollment', title: 'Microsoft Intune — Enrôlement iOS/iPadOS', track: 'INTUNE', progressPercent: 0, totalModules: 3, completedModules: 0 },
     ],
     completedCourses: [
       {
@@ -902,31 +909,10 @@ const DEMO_COURSES: CourseDetail[] = [
         slug: 'device-support-basics',
         title: 'Fondamentaux Device Support',
         summary: 'Identifier une panne simple, sécuriser les données et choisir la bonne étape de support.',
-        questions: [
-          {
-            id: 'demo-apple-q1',
-            type: 'MULTIPLE_CHOICE',
-            prompt: "Un iPhone ne s'allume plus après une chute. Quelle est la première étape logique ?",
-            options: [
-              { id: 'a', label: 'Remplacer la batterie immédiatement' },
-              { id: 'b', label: 'Vérifier chargeur/câble et forcer le redémarrage' },
-              { id: 'c', label: 'Restaurer sans sauvegarde' },
-            ],
-            correctOption: 'b',
-            explanation: 'On élimine d’abord alimentation et redémarrage forcé avant toute réparation matérielle.',
-          },
-          {
-            id: 'demo-apple-q2',
-            type: 'TRUE_FALSE',
-            prompt: 'Avant une restauration, il est recommandé de vérifier les sauvegardes disponibles.',
-            options: [
-              { id: 'true', label: 'Vrai' },
-              { id: 'false', label: 'Faux' },
-            ],
-            correctOption: 'true',
-            explanation: 'La protection des données passe avant les opérations destructrices.',
-          },
-        ],
+        questions: toDemoQuestions(
+          'device-support-basics',
+          appleCertPrepQuestions['device-support-basics']
+        ),
         game: {
           type: 'SCENARIO_FIX',
           scenario: 'Un MacBook affiche une roue de chargement après une mise à jour macOS.',
@@ -942,31 +928,7 @@ const DEMO_COURSES: CourseDetail[] = [
         slug: 'ios-troubleshooting',
         title: 'Dépannage iOS et iPadOS',
         summary: 'Diagnostiquer connectivité, batterie et blocages courants sur iPhone/iPad.',
-        questions: [
-          {
-            id: 'demo-apple-q3',
-            type: 'MULTIPLE_CHOICE',
-            prompt: 'Un iPhone ne se connecte plus au Wi-Fi d’entreprise. Quelle étape privilégier en premier ?',
-            options: [
-              { id: 'a', label: 'Oublier le réseau puis se reconnecter avec les bons identifiants' },
-              { id: 'b', label: 'Restaurer l’appareil immédiatement' },
-              { id: 'c', label: 'Désactiver le chiffrement du disque' },
-            ],
-            correctOption: 'a',
-            explanation: 'Réinitialiser l’association Wi-Fi élimine souvent un profil ou mot de passe obsolète.',
-          },
-          {
-            id: 'demo-apple-q4',
-            type: 'TRUE_FALSE',
-            prompt: 'Un redémarrage forcé peut résoudre un écran figé sans effacer les données.',
-            options: [
-              { id: 'true', label: 'Vrai' },
-              { id: 'false', label: 'Faux' },
-            ],
-            correctOption: 'true',
-            explanation: 'Le redémarrage forcé interrompt les processus bloqués tout en préservant le contenu.',
-          },
-        ],
+        questions: toDemoQuestions('ios-troubleshooting', appleCertPrepQuestions['ios-troubleshooting']),
         game: {
           type: 'IOS_TRIAGE',
           scenario: 'Un iPad ne synchronise plus les apps MDM. Ordonne les vérifications.',
@@ -982,31 +944,7 @@ const DEMO_COURSES: CourseDetail[] = [
         slug: 'acmt-exam-prep',
         title: 'Préparation examen Device Support (ACMT)',
         summary: 'Réviser sécurité, sauvegarde, restauration et bonnes pratiques atelier.',
-        questions: [
-          {
-            id: 'demo-apple-q5',
-            type: 'MULTIPLE_CHOICE',
-            prompt: 'Avant de remettre un Mac réparé au client, quelle vérification est essentielle ?',
-            options: [
-              { id: 'a', label: 'Tests fonctionnels, mises à jour et effacement des données temporaires' },
-              { id: 'b', label: 'Laisser le compte technicien administrateur actif' },
-              { id: 'c', label: 'Désactiver FileVault pour accélérer le démarrage' },
-            ],
-            correctOption: 'a',
-            explanation: 'La remise en service inclut validation complète, OS à jour et respect de la confidentialité.',
-          },
-          {
-            id: 'demo-apple-q6',
-            type: 'TRUE_FALSE',
-            prompt: 'Apple Diagnostics aide à isoler une panne matérielle avant ouverture.',
-            options: [
-              { id: 'true', label: 'Vrai' },
-              { id: 'false', label: 'Faux' },
-            ],
-            correctOption: 'true',
-            explanation: 'Les tests intégrés orientent le diagnostic vers le composant défaillant.',
-          },
-        ],
+        questions: toDemoQuestions('acmt-exam-prep', appleCertPrepQuestions['acmt-exam-prep']),
         game: {
           type: 'EXAM_RUNBOOK',
           scenario: 'Un Mac ne démarre plus après une panne d’alimentation. Ordonne les étapes de diagnostic.',
@@ -1033,33 +971,10 @@ const DEMO_COURSES: CourseDetail[] = [
         title: 'Smart Groups et politiques',
         summary:
           'Comprendre comment cibler des Mac et déclencher une politique Jamf Pro sur un périmètre pilote.',
-        questions: [
-          {
-            id: 'demo-jamf-q1',
-            type: 'MULTIPLE_CHOICE',
-            prompt: 'À quoi sert principalement un Smart Group Jamf Pro ?',
-            options: [
-              { id: 'a', label: 'Créer un compte Apple Business Manager' },
-              { id: 'b', label: 'Cibler dynamiquement des appareils selon des critères' },
-              { id: 'c', label: 'Remplacer le serveur MDM' },
-            ],
-            correctOption: 'b',
-            explanation:
-              'Un Smart Group regroupe automatiquement les appareils correspondant à des critères.',
-          },
-          {
-            id: 'demo-jamf-q2',
-            type: 'TRUE_FALSE',
-            prompt:
-              'Une politique de configuration peut être limitée à un Smart Group sans toucher au reste de la flotte.',
-            options: [
-              { id: 'true', label: 'Vrai' },
-              { id: 'false', label: 'Faux' },
-            ],
-            correctOption: 'true',
-            explanation: 'Le scope par Smart Group permet de tester et déployer progressivement.',
-          },
-        ],
+        questions: toDemoQuestions(
+          'smart-groups-policies',
+          jamfProFoundationsQuestions['smart-groups-policies']
+        ),
         game: {
           type: 'POLICY_ORDER',
           scenario: 'Préparer le déploiement d’un paquet sur un groupe pilote de Mac.',
@@ -1076,20 +991,7 @@ const DEMO_COURSES: CourseDetail[] = [
         title: 'Inventaire et conformité',
         summary:
           'Lire l’inventaire Jamf, interpréter la conformité et prioriser les actions sur les appareils hors norme.',
-        questions: [
-          {
-            id: 'demo-jamf-q3',
-            type: 'MULTIPLE_CHOICE',
-            prompt: 'Où consultes-tu en priorité l’état d’un Mac dans Jamf Pro ?',
-            options: [
-              { id: 'a', label: 'Fiche inventaire de l’ordinateur' },
-              { id: 'b', label: 'Console Apple Business Manager uniquement' },
-              { id: 'c', label: 'Journal système local du Mac' },
-            ],
-            correctOption: 'a',
-            explanation: 'La fiche inventaire centralise hardware, OS et statut MDM.',
-          },
-        ],
+        questions: toDemoQuestions('inventory-basics', jamfProFoundationsQuestions['inventory-basics']),
         game: {
           type: 'INVENTORY_TRIAGE',
           scenario: 'Prioriser les alertes inventaire sur un parc Mac.',
@@ -1106,21 +1008,10 @@ const DEMO_COURSES: CourseDetail[] = [
         title: 'Enrôlement et intégration Apple',
         summary:
           'Relier Apple Business Manager, certificats Push et enrôlement automatisé pour une flotte supervisée.',
-        questions: [
-          {
-            id: 'demo-jamf-q4',
-            type: 'MULTIPLE_CHOICE',
-            prompt:
-              'Quel prérequis permet à Jamf Pro de recevoir les appareils assignés depuis Apple Business Manager ?',
-            options: [
-              { id: 'a', label: 'Un jeton serveur MDM Apple valide' },
-              { id: 'b', label: 'Un compte iCloud personnel partagé' },
-              { id: 'c', label: 'Un profil Wi-Fi installé manuellement' },
-            ],
-            correctOption: 'a',
-            explanation: 'Le jeton serveur MDM synchronise les appareils ABM avec Jamf Pro.',
-          },
-        ],
+        questions: toDemoQuestions(
+          'enrollment-apple-integration',
+          jamfProFoundationsQuestions['enrollment-apple-integration']
+        ),
         game: {
           type: 'ENROLLMENT_RUNBOOK',
           scenario: 'Mettre en service 20 Mac neufs via Jamf Pro et Apple Business Manager.',
@@ -1146,31 +1037,10 @@ const DEMO_COURSES: CourseDetail[] = [
         slug: 'ade-enrollment-basics',
         title: 'Préparer Automated Device Enrollment',
         summary: 'Associer Apple Business Manager à Intune et valider l’expérience Setup Assistant.',
-        questions: [
-          {
-            id: 'demo-intune-q1',
-            type: 'MULTIPLE_CHOICE',
-            prompt: 'Quel prérequis relie Apple Business Manager à Intune pour synchroniser les appareils supervisés ?',
-            options: [
-              { id: 'a', label: 'Un jeton serveur MDM Apple valide' },
-              { id: 'b', label: 'Un profil Wi-Fi installé manuellement' },
-              { id: 'c', label: 'Une sauvegarde iCloud partagée' },
-            ],
-            correctOption: 'a',
-            explanation: 'Le jeton serveur MDM permet à Intune de récupérer les appareils assignés depuis ABM.',
-          },
-          {
-            id: 'demo-intune-q2',
-            type: 'TRUE_FALSE',
-            prompt: 'Un profil ADE peut imposer la supervision et masquer certaines étapes de Setup Assistant.',
-            options: [
-              { id: 'true', label: 'Vrai' },
-              { id: 'false', label: 'Faux' },
-            ],
-            correctOption: 'true',
-            explanation: 'Les profils ADE contrôlent l’expérience initiale et la supervision des appareils Apple.',
-          },
-        ],
+        questions: toDemoQuestions(
+          'ade-enrollment-basics',
+          intuneIosEnrollmentQuestions['ade-enrollment-basics']
+        ),
         game: {
           type: 'ENROLLMENT_RUNBOOK',
           scenario: '30 iPad neufs dans Apple Business Manager. Ordonne les étapes pour les rendre prêts via Intune.',
@@ -1186,31 +1056,10 @@ const DEMO_COURSES: CourseDetail[] = [
         slug: 'compliance-policies',
         title: 'Politiques de conformité iOS',
         summary: 'Définir conformité OS, PIN, jailbreak et actions correctives dans Intune.',
-        questions: [
-          {
-            id: 'demo-intune-q3',
-            type: 'MULTIPLE_CHOICE',
-            prompt: 'À quoi sert une politique de conformité Intune pour iOS ?',
-            options: [
-              { id: 'a', label: 'Vérifier que l’appareil respecte des exigences avant l’accès aux ressources' },
-              { id: 'b', label: 'Remplacer Apple Business Manager' },
-              { id: 'c', label: 'Installer des apps depuis l’App Store personnel' },
-            ],
-            correctOption: 'a',
-            explanation: 'La conformité évalue version OS, code PIN et état de l’appareil.',
-          },
-          {
-            id: 'demo-intune-q4',
-            type: 'TRUE_FALSE',
-            prompt: 'Un appareil non conforme peut être bloqué de l’accès e-mail via Conditional Access.',
-            options: [
-              { id: 'true', label: 'Vrai' },
-              { id: 'false', label: 'Faux' },
-            ],
-            correctOption: 'true',
-            explanation: 'Intune signale l’état de conformité à Entra ID pour appliquer les restrictions.',
-          },
-        ],
+        questions: toDemoQuestions(
+          'compliance-policies',
+          intuneIosEnrollmentQuestions['compliance-policies']
+        ),
         game: {
           type: 'COMPLIANCE_TRIAGE',
           scenario: 'Prioriser OS obsolète, PIN absent et jailbreak détecté sur trois iPhone.',
@@ -1226,31 +1075,10 @@ const DEMO_COURSES: CourseDetail[] = [
         slug: 'app-protection-conditional-access',
         title: 'App Protection et Conditional Access',
         summary: 'Protéger les données M365 sur iOS avec MAM et Conditional Access.',
-        questions: [
-          {
-            id: 'demo-intune-q5',
-            type: 'MULTIPLE_CHOICE',
-            prompt: 'Quelle différence clé entre MAM et MDM complet sur iOS ?',
-            options: [
-              { id: 'a', label: 'MAM protège les données des apps sans enrôler entièrement l’appareil' },
-              { id: 'b', label: 'MAM remplace le certificat Push Apple' },
-              { id: 'c', label: 'MAM ne fonctionne que sur Android' },
-            ],
-            correctOption: 'a',
-            explanation: 'App Protection sécurise Outlook, Teams, etc. sans contrôle total de l’appareil.',
-          },
-          {
-            id: 'demo-intune-q6',
-            type: 'TRUE_FALSE',
-            prompt: 'Conditional Access peut exiger un appareil conforme avant d’autoriser l’accès à Exchange Online.',
-            options: [
-              { id: 'true', label: 'Vrai' },
-              { id: 'false', label: 'Faux' },
-            ],
-            correctOption: 'true',
-            explanation: 'Les stratégies CA combinent état Intune, localisation et risque utilisateur.',
-          },
-        ],
+        questions: toDemoQuestions(
+          'app-protection-conditional-access',
+          intuneIosEnrollmentQuestions['app-protection-conditional-access']
+        ),
         game: {
           type: 'MAM_POLICY_ORDER',
           scenario: 'Déployer Outlook et Teams protégés sur des iPhone BYOD.',

@@ -1,0 +1,805 @@
+export type QuizOption = { id: string; label: string };
+
+export type SeedQuestion = {
+  type: string;
+  prompt: string;
+  options: QuizOption[];
+  correctOption: string;
+  explanation: string;
+};
+
+export function toDemoQuestions(
+  moduleKey: string,
+  questions: SeedQuestion[]
+): Array<SeedQuestion & { id: string }> {
+  return questions.map((question, index) => ({
+    ...question,
+    id: `demo-${moduleKey}-q${index + 1}`,
+  }));
+}
+
+const opt = (a: string, b: string, c: string, d: string) => [
+  { id: 'a', label: a },
+  { id: 'b', label: b },
+  { id: 'c', label: c },
+  { id: 'd', label: d },
+];
+
+export const appleCertPrepQuestions: Record<string, SeedQuestion[]> = {
+  'device-support-basics': [
+    {
+      type: 'SCENARIO',
+      prompt:
+        "Un iPhone 14 ne s'allume plus après une chute. L'écran reste noir, aucune vibration au branchement. Quelle est la première étape conforme aux bonnes pratiques Device Support ?",
+      options: opt(
+        'Remplacer immédiatement la batterie en atelier',
+        'Vérifier câble/chargeur certifié, laisser charger 15 min puis forcer le redémarrage',
+        'Restaurer en DFU sans demander de sauvegarde',
+        'Désactiver Find My depuis le Mac du technicien'
+      ),
+      correctOption: 'b',
+      explanation:
+        'On élimine d’abord alimentation et redémarrage forcé (non destructif) avant toute ouverture ou restauration. Le DFU efface les données et n’est pertinent qu’après échec des étapes simples.',
+    },
+    {
+      type: 'KNOWLEDGE',
+      prompt:
+        'Avant toute restauration iOS sur un appareil client, quelle vérification est la plus critique pour la continuité des données ?',
+      options: opt(
+        'Confirmer l’existence d’une sauvegarde iCloud ou locale récente et chiffrée',
+        'Désinstaller toutes les apps tierces',
+        'Réinitialiser uniquement les réglages réseau',
+        'Activer le mode développeur'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Une sauvegarde complète chiffrée permet de restaurer apps, santé et paires de clés. Sans elle, la restauration est irréversible pour les données utilisateur.',
+    },
+    {
+      type: 'SCENARIO',
+      prompt:
+        'Un MacBook Air M2 est très lent : fan audible, apps qui rament. Espace disque : 4 Go libres sur 256 Go. Quelle action prioriser ?',
+      options: opt(
+        'Remplacer le SSD sous garantie',
+        'Libérer de l’espace disque et identifier les processus gourmands (Activité moniteur)',
+        'Réinstaller macOS sans sauvegarde',
+        'Désactiver FileVault pour « accélérer » le Mac'
+      ),
+      correctOption: 'b',
+      explanation:
+        'Un disque quasi plein provoque swap excessif et ralentissements. Libérer de l’espace et analyser l’activité sont des étapes de premier niveau avant réparation matérielle.',
+    },
+    {
+      type: 'KNOWLEDGE',
+      prompt:
+        'Activation Lock est activé sur un iPhone repris en SAV. Que doit faire le technicien avant toute réinitialisation ?',
+      options: opt(
+        'Vérifier la procédure de retrait Activation Lock avec le propriétaire ou l’organisation (ABM/MDM)',
+        'Contourner le verrouillage via un outil tiers',
+        'Remplacer la carte mère sans documentation',
+        'Effacer l’appareil depuis Réglages sans authentification'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Find My / Activation Lock protège l’appareil. Le retrait légitime passe par le compte propriétaire, le portail ABM ou le MDM — jamais par contournement non documenté.',
+    },
+    {
+      type: 'TROUBLESHOOTING',
+      prompt:
+        'Piège : un collègue propose un « redémarrage forcé » alors que l’iPhone affiche l’écran de récupération iTunes/Finder avec une erreur 4013. Quelle réponse est la plus juste ?',
+      options: opt(
+        'Le redémarrage forcé suffit toujours avant toute restauration',
+        'L’erreur 4013 indique souvent un problème USB/câble ou port ; vérifier câble certifié et port avant DFU/restauration',
+        'Il faut immédiatement changer la batterie',
+        '4013 signifie que Find My est désactivé — aucune action requise'
+      ),
+      correctOption: 'b',
+      explanation:
+        'Les codes 401x/9xx lors d’une restauration pointent fréquemment vers connectique ou port USB instable. Le redémarrage forcé ne résout pas un échec de restauration matérielle/logicielle en cours.',
+    },
+    {
+      type: 'SCENARIO',
+      prompt:
+        'Un technicien terrain doit documenter une intervention iPhone pour le SAV Apple. Quel élément doit figurer en priorité dans le ticket ?',
+      options: opt(
+        'Numéro de série, version iOS, symptômes, étapes déjà tentées et résultat des tests non destructifs',
+        'Uniquement la couleur de l’appareil',
+        'Le mot de passe iCloud du client en clair',
+        'La liste des apps TikTok installées'
+      ),
+      correctOption: 'a',
+      explanation:
+        'La traçabilité SAV repose sur l’identification précise de l’appareil, le contexte logiciel et les actions déjà réalisées — sans stocker de secrets d’authentification.',
+    },
+  ],
+  'ios-troubleshooting': [
+    {
+      type: 'SCENARIO',
+      prompt:
+        'Un iPhone d’entreprise ne joint plus le Wi-Fi 802.1X après changement de mot de passe AD. Que tester en premier sur l’appareil ?',
+      options: opt(
+        'Oublier le réseau, resaisir les identifiants 802.1X et vérifier date/heure automatiques',
+        'Restaurer l’iPhone immédiatement',
+        'Désactiver le chiffrement du disque',
+        'Supprimer le profil MDM manuellement'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Les profils Wi-Fi d’entreprise conservent souvent d’anciens identifiants. Oublier le réseau et resynchroniser l’heure règlent la majorité des échecs 802.1X sans effacer l’appareil.',
+    },
+    {
+      type: 'KNOWLEDGE',
+      prompt:
+        'Quel geste permet de redémarrer un iPhone bloqué sur l’écran Apple sans effacer les données utilisateur ?',
+      options: opt(
+        'Combinaison de redémarrage forcé adaptée au modèle (boutons volume/side)',
+        'Restauration DFU immédiate',
+        'Réinitialisation « Effacer contenu et réglages »',
+        'Retrait de la carte SIM uniquement'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Le redémarrage forcé interrompt les processus figés tout en préservant les données. DFU et effacement sont des étapes ultérieures si le blocage persiste.',
+    },
+    {
+      type: 'KNOWLEDGE',
+      prompt:
+        'Pour analyser les logs d’un iPhone supervisé connecté à un Mac, quels outils sont les plus appropriés ?',
+      options: opt(
+        'Console (macOS) et/ou Apple Configurator pour l’inventaire et les journaux',
+        'Time Machine uniquement',
+        'Boot Camp Assistant',
+        'Utilitaire de disque pour formater l’iPhone'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Console affiche les journaux système en temps réel ; Configurator aide à l’inventaire et au dépannage MDM sur flotte supervisée.',
+    },
+    {
+      type: 'SCENARIO',
+      prompt:
+        'Réglages > Batterie affiche « Service » sur un iPhone 11. Le client se plaint d’extinction soudaine à 30 %. Quelle recommandation professionnelle ?',
+      options: opt(
+        'Proposer diagnostic batterie officiel et remplacement si capacité/cycles hors seuil',
+        'Ignorer l’alerte si l’appareil s’allume encore',
+        'Réinitialiser uniquement les réglages réseau',
+        'Installer une app « calibrage batterie » du App Store'
+      ),
+      correctOption: 'a',
+      explanation:
+        'L’état Service signale une dégradation avancée. Un remplacement par pièce d’origine ou programme Apple évite gonflement et pannes thermiques.',
+    },
+    {
+      type: 'TROUBLESHOOTING',
+      prompt:
+        'Piège : après mise à jour iOS, plusieurs apps MDM restent « En attente ». Le Wi-Fi fonctionne pour Safari. Cause la plus plausible ?',
+      options: opt(
+        'Le MDM est désinstallé — aucune action',
+        'Restriction réseau, proxy ou pare-feu bloquant les domaines Apple/MDM ; vérifier connectivité vers gsp/appldnld',
+        'La batterie est à 100 % — normal',
+        'Il faut jailbreaker pour débloquer les apps'
+      ),
+      correctOption: 'b',
+      explanation:
+        'Les apps en attente lors d’un déploiement MDM pointent souvent vers filtrage réseau ou cache CDN Apple. Safari fonctionnel n’exclut pas un blocage des URLs de téléchargement gérées.',
+    },
+    {
+      type: 'SCENARIO',
+      prompt:
+        'Un iPad scolaire n’affiche plus le profil MDM dans Réglages mais les apps gérées fonctionnent. Que vérifier côté console MDM ?',
+      options: opt(
+        'Dernière date de check-in, commandes en attente et état de supervision',
+        'Uniquement la couleur de la coque',
+        'Le compte iCloud personnel de l’élève',
+        'La version de watchOS'
+      ),
+      correctOption: 'a',
+      explanation:
+        'L’absence visible du profil peut coexister avec une gestion partielle ; la console MDM confirme l’enrôlement, la supervision et les commandes en échec.',
+    },
+  ],
+  'acmt-exam-prep': [
+    {
+      type: 'SCENARIO',
+      prompt:
+        'Avant de rendre un MacBook Pro réparé (remplacement clavier) au client entreprise, quelle checklist est conforme aux attentes Device Support ?',
+      options: opt(
+        'Tests clavier/trackpad, OS à jour, comptes temporaires retirés, confidentialité respectée',
+        'Laisser le compte admin atelier actif pour « faciliter le SAV »',
+        'Désactiver FileVault pour accélérer les prochains démarrages',
+        'Installer un profil MDM personnel du technicien'
+      ),
+      correctOption: 'a',
+      explanation:
+        'La remise en service exige validation fonctionnelle, système à jour et aucune donnée/compte résiduel du technicien — base de la confiance client et conformité.',
+    },
+    {
+      type: 'KNOWLEDGE',
+      prompt:
+        'À quoi sert Apple Diagnostics (ou Apple Hardware Test sur modèles plus anciens) en atelier ?',
+      options: opt(
+        'Isoler une défaillance matérielle probable avant ouverture du châssis',
+        'Activer le mode développeur iOS',
+        'Créer un compte Apple Business Manager',
+        'Synchroniser les apps Jamf'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Les tests intégrés renvoient des codes erreur orientant RAM, stockage, capteurs ou alimentation — gain de temps et traçabilité SAV.',
+    },
+    {
+      type: 'KNOWLEDGE',
+      prompt:
+        'Quel type de sauvegarde iPhone permet une restauration complète sur un appareil neuf (apps, réglages, données Santé) ?',
+      options: opt(
+        'Sauvegarde iCloud ou locale chiffrée via Finder/iTunes',
+        'Export VCF des contacts seulement',
+        'Capture d’écran des réglages Wi-Fi',
+        'AirDrop des photos uniquement'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Seule une sauvegarde complète chiffrée inclut les données Santé et les paires de clés nécessaires à une migration fidèle.',
+    },
+    {
+      type: 'SCENARIO',
+      prompt:
+        'Un Mac Intel ne démarre plus : pas de son de démarrage, voyant chargeur orange fixe. Ordre de diagnostic recommandé ?',
+      options: opt(
+        'Vérifier alimentation/câble, test batterie/SMC si applicable, puis Apple Diagnostics',
+        'Remplacer la carte mère sans test',
+        'Réinstaller macOS en premier',
+        'Désactiver SIP avant toute mesure'
+      ),
+      correctOption: 'a',
+      explanation:
+        'L’alimentation et les contrôleurs de charge sont vérifiés avant toute hypothèse carte mère. Apple Diagnostics affine ensuite le composant suspect.',
+    },
+    {
+      type: 'TROUBLESHOOTING',
+      prompt:
+        'Piège : en préparation ACMT, on vous demande si « connaître la procédure exacte de chaque code erreur » est indispensable. Quelle affirmation est la plus exacte ?',
+      options: opt(
+        'Il faut mémoriser tous les codes par cœur sans documentation',
+        'Une démarche structurée (faits, tests non destructifs, documentation) prime sur le détail de chaque code',
+        'Les codes Diagnostics ne servent jamais en SAV',
+        'Seul le remplacement immédiat du SSD est accepté'
+      ),
+      correctOption: 'b',
+      explanation:
+        'Apple valorise la méthode : collecter les symptômes, appliquer des tests sûrs, documenter — les codes guident mais ne remplacent pas le raisonnement.',
+    },
+    {
+      type: 'KNOWLEDGE',
+      prompt:
+        'Quelle pratique respecte le cadre confidentialité / RGPD lors d’un diagnostic sur Mac client ?',
+      options: opt(
+        'Travailler sur copie ou compte invité, ne pas exporter de données personnelles sans accord',
+        'Copier le dossier Documents sur clé USB personnelle « pour analyse »',
+        'Publier les logs sur un forum public',
+        'Conserver le mot de passe session dans le ticket'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Le technicien limite l’accès aux données nécessaires et documente les actions sans exfiltration — aligné sur les standards atelier et réglementaires.',
+    },
+  ],
+};
+
+export const jamfProFoundationsQuestions: Record<string, SeedQuestion[]> = {
+  'smart-groups-policies': [
+    {
+      type: 'KNOWLEDGE',
+      prompt: 'À quoi sert principalement un Smart Group dans Jamf Pro ?',
+      options: opt(
+        'Créer un compte Apple ID consommateur',
+        'Cibler dynamiquement des appareils selon des critères d’inventaire ou de conformité',
+        'Remplacer le serveur APNs Apple',
+        'Héberger les sauvegardes Time Machine centralisées'
+      ),
+      correctOption: 'b',
+      explanation:
+        'Un Smart Group se recalcule automatiquement : version OS, apps, extension, statut MDM — base du ciblage sans listes manuelles statiques.',
+    },
+    {
+      type: 'SCENARIO',
+      prompt:
+        'Vous déployez Microsoft Teams sur 50 Mac pilotes avant la production. Quelle combinaison Jamf est la plus adaptée ?',
+      options: opt(
+        'Smart Group pilote + politique (policy) scoping le paquet ou le script d’installation',
+        'Profil Wi-Fi iOS envoyé à tous les Mac',
+        'Suppression de tous les Smart Groups existants',
+        'Enrollment manuel utilisateur sans MDM'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Le scope par Smart Group permet de tester, mesurer les échecs et étendre progressivement — pratique standard avant déploiement global.',
+    },
+    {
+      type: 'KNOWLEDGE',
+      prompt:
+        'Une politique Jamf Pro (policy) déclenchée « Ongoing » sert surtout à :',
+      options: opt(
+        'Réappliquer scripts/paquets/profils tant que l’appareil reste dans le scope',
+        'Remplacer Apple Business Manager',
+        'Désactiver FileVault sur tout le parc',
+        'Configurer uniquement les Apple Watch'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Les politiques ongoing corrigent la dérive de configuration (drift) : réinstallation manquante, script de maintenance, profil renouvelé.',
+    },
+    {
+      type: 'TROUBLESHOOTING',
+      prompt:
+        'Piège : un admin crée un Smart Group « Tous les Mac » avec critère OS ≥ 10.13 et s’étonne que des Mac Ventura y apparaissent. Pourquoi ?',
+      options: opt(
+        'Jamf a un bug — Ventura n’existe pas',
+        'Le critère « supérieur ou égal » inclut toutes les versions plus récentes que 10.13, dont Ventura',
+        'Les Smart Groups ne filtrent jamais par OS',
+        'Seuls les iPhone peuvent être dans un Smart Group Mac'
+      ),
+      correctOption: 'b',
+      explanation:
+        'Les critères de version sont inclusifs vers le haut. Pour cibler une version exacte, utiliser plage précise ou groupes composites.',
+    },
+    {
+      type: 'SCENARIO',
+      prompt:
+        'Un paquet .pkg échoue sur 3 Mac du Smart Group pilote. Quelle action d’admin Jamf est la plus pertinente ?',
+      options: opt(
+        'Consulter les logs de politique sur un Mac concerné, vérifier droits et dépendances, ajuster le script avant élargir le scope',
+        'Passer immédiatement le scope à « Tous les ordinateurs »',
+        'Révoquer le certificat Push',
+        'Désinscrire les 3 Mac d’ABM'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Les échecs de policy apparaissent dans l’historique Jamf et les logs macOS (install.log). Corriger sur pilote évite un incident de masse.',
+    },
+    {
+      type: 'KNOWLEDGE',
+      prompt:
+        'Quelle différence entre un groupe statique et un Smart Group ?',
+      options: opt(
+        'Le statique est une liste fixe ; le Smart Group se met à jour selon critères',
+        'Le Smart Group ne peut contenir que des iPhone',
+        'Le groupe statique se met à jour seul chaque nuit',
+        'Aucune différence en Jamf Pro'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Les groupes statiques conviennent aux exceptions nominales ; les Smart Groups automatisent le ciblage à grande échelle.',
+    },
+  ],
+  'inventory-basics': [
+    {
+      type: 'SCENARIO',
+      prompt:
+        'Un Mac signale « Non conforme » dans Jamf à cause d’une extension système manquante (agent sécurité). Où investiguer en premier ?',
+      options: opt(
+        'Fiche inventaire du Mac : extensions, politiques en échec, dernière check-in',
+        'Console ABM uniquement',
+        'App Réglages > Safari sur l’iPhone du même utilisateur',
+        'Portail Microsoft 365'
+      ),
+      correctOption: 'a',
+      explanation:
+        'L’inventaire Jamf agrège extensions, profils et statut de conformité — point central avant d’ouvrir un ticket ou relancer une policy.',
+    },
+    {
+      type: 'KNOWLEDGE',
+      prompt:
+        'Que signifie généralement un Mac « non géré » (unmanaged) dans Jamf Pro ?',
+      options: opt(
+        'L’appareil n’a plus d’enrôlement MDM actif ou a été retiré',
+        'Le Mac est neuf dans ABM mais pas encore assigné',
+        'FileVault est activé',
+        'Le Mac est en mode Recovery'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Unmanaged indique absence de canal MDM : retrait utilisateur, wipe, ou échec d’enrôlement — à distinguer d’un appareil ABM non assigné.',
+    },
+    {
+      type: 'SCENARIO',
+      prompt:
+        'Trois Mac ont alertes : disque >95 % plein, macOS 12 alors que la politique exige 14, agent MDM absent. Priorisation ?',
+      options: opt(
+        'Agent MDM d’abord (visibilité), puis OS, puis espace disque selon criticité métier',
+        'Ignorer jusqu’à la prochaine audit annuelle',
+        'Formater les trois Mac le même jour',
+        'Désactiver toutes les politiques de conformité'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Sans agent MDM, les corrections à distance sont limitées. Remettre sous gestion puis planifier mises à jour et nettoyage disque est la séquence la plus sûre.',
+    },
+    {
+      type: 'TROUBLESHOOTING',
+      prompt:
+        'Piège : l’inventaire Jamf affiche « Dernière check-in : il y a 2 minutes » mais la policy ne s’applique pas. Cause fréquente ?',
+      options: opt(
+        'Scope de politique incorrect, fenêtre de maintenance, ou politique en échec précédent bloquant',
+        'APNs toujours invalide si check-in récent',
+        'Le Mac n’est pas allumé',
+        'Jamf ne supporte pas les policies'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Un check-in récent prouve la connectivité Push. Vérifier scope, triggers (Enrollment Complete vs Ongoing) et logs d’exécution de la policy.',
+    },
+    {
+      type: 'KNOWLEDGE',
+      prompt:
+        'Quel champ inventaire Jamf aide à identifier rapidement les Mac sans FileVault activé ?',
+      options: opt(
+        'Statut FileVault / Personal Recovery Key dans la section Sécurité',
+        'Couleur du boîtier',
+        'Numéro de téléphone de l’utilisateur',
+        'Version watchOS'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Les critères de conformité et Smart Groups s’appuient sur ces champs pour cibler le chiffrement obligatoire.',
+    },
+    {
+      type: 'SCENARIO',
+      prompt:
+        'Direction demande un export des Mac hors conformité OS pour un comité sécurité. Quelle fonction Jamf utiliser ?',
+      options: opt(
+        'Recherche avancée ou Smart Group « Non conformes OS » + export CSV',
+        'Supprimer les Mac non conformes du MDM',
+        'Réinitialiser les mots de passe Apple ID',
+        'Exporter uniquement les iPhone'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Les recherches sauvegardées et exports CSV alimentent les revues de conformité sans action destructive sur le parc.',
+    },
+  ],
+  'enrollment-apple-integration': [
+    {
+      type: 'KNOWLEDGE',
+      prompt:
+        'Quel prérequis permet à Jamf Pro de synchroniser les appareils assignés depuis Apple Business Manager ?',
+      options: opt(
+        'Jeton serveur MDM Apple (MDM Server Token) valide dans Jamf Pro',
+        'Compte iCloud @gmail.com partagé',
+        'Profil Wi-Fi manuel sur chaque Mac',
+        'Licence Microsoft 365 Business Basic'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Le jeton MDM établit la confiance ABM ↔ Jamf. Sans lui, aucune synchronisation d’inventaire ni d’assignation automatique.',
+    },
+    {
+      type: 'KNOWLEDGE',
+      prompt:
+        'Pourquoi le certificat APNs (Apple Push Notification service) est-il indispensable dans Jamf Pro ?',
+      options: opt(
+        'Il permet au serveur d’envoyer les commandes MDM aux appareils gérés',
+        'Il remplace le chiffrement FileVault',
+        'Il installe automatiquement Xcode',
+        'Il sert uniquement aux notifications mail Outlook'
+      ),
+      correctOption: 'a',
+      explanation:
+        'MDM repose sur Push : sans certificat APNs valide, check-in et déploiements échouent même si l’enrôlement semble réussi.',
+    },
+    {
+      type: 'SCENARIO',
+      prompt:
+        '20 Mac neufs arrivent dans ABM. Quelle séquence d’enrôlement ADE est correcte ?',
+      options: opt(
+        'Vérifier jeton MDM + APNs → assigner appareils au serveur Jamf dans ABM → activer un Mac test → valider PreStage/ADE',
+        'Demander à chaque utilisateur d’installer Jamf Self Service depuis l’App Store sans ABM',
+        'Activer les Mac hors ligne sans Wi-Fi',
+        'Créer des comptes locaux admin « admin/admin »'
+      ),
+      correctOption: 'a',
+      explanation:
+        'L’ADE automatise supervision et MDM au Setup Assistant — à condition que l’assignation ABM et les profils PreStage soient prêts.',
+    },
+    {
+      type: 'KNOWLEDGE',
+      prompt:
+        'Quel objet Jamf configure l’expérience Setup Assistant et la supervision au premier démarrage ?',
+      options: opt(
+        'PreStage Enrollment / profil Automated Device Enrollment',
+        'Politique de fond d’écran uniquement',
+        'Extension Safari',
+        'Compte réseau Open Directory'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Le PreStage définit supervision, compte admin local, packages à l’installation et étapes masquées de l’assistant.',
+    },
+    {
+      type: 'TROUBLESHOOTING',
+      prompt:
+        'Piège : un Mac supervisé via Jamf peut-il recevoir des restrictions impossibles sur un appareil non supervisé ?',
+      options: opt(
+        'Non — supervision et non-supervision ont les mêmes capacités MDM',
+        'Oui — la supervision débloque des payloads et restrictions avancées (ex. pare-feu, certaines limites)',
+        'Oui, mais uniquement sur Android',
+        'Non — seul l’utilisateur peut tout configurer'
+      ),
+      correctOption: 'b',
+      explanation:
+        'La supervision Apple élargit le périmètre MDM (Kiosk, filtres, etc.). Un Mac user-approved enrollment a des limites par conception.',
+    },
+    {
+      type: 'SCENARIO',
+      prompt:
+        'Le certificat Push Jamf expire dans 14 jours. Quelle action évite une coupure de gestion ?',
+      options: opt(
+        'Renouveler le certificat APNs dans le portail Apple et l’importer dans Jamf avant expiration',
+        'Attendre l’expiration puis réenrôler manuellement 500 Mac',
+        'Désactiver le MDM sur tout le parc',
+        'Changer uniquement le mot de passe admin Jamf'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Un Push expiré stoppe les commandes. Le renouvellement proactif préserve le même topic APNs et évite une réenrôlement massif.',
+    },
+  ],
+};
+
+export const intuneIosEnrollmentQuestions: Record<string, SeedQuestion[]> = {
+  'ade-enrollment-basics': [
+    {
+      type: 'KNOWLEDGE',
+      prompt:
+        'Quel prérequis relie Apple Business Manager à Microsoft Intune pour les appareils supervisés ?',
+      options: opt(
+        'Jeton serveur MDM Apple téléchargé depuis ABM et uploadé dans Intune',
+        'Compte Gmail partagé par l’école',
+        'Profil Wi-Fi créé à la main sur chaque iPad',
+        'Licence Jamf Pro'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Le jeton MDM authentifie Intune auprès d’Apple et synchronise l’inventaire ABM pour l’ADE.',
+    },
+    {
+      type: 'KNOWLEDGE',
+      prompt:
+        'Un profil ADE (Enrollment Program) dans Intune permet notamment de :',
+      options: opt(
+        'Imposer la supervision et personnaliser les étapes du Setup Assistant',
+        'Installer des apps Android',
+        'Remplacer Entra ID',
+        'Désactiver le chiffrement BitLocker'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Les profils ADE contrôlent l’expérience première main : compte admin, skip d’écrans, rattachement MDM obligatoire.',
+    },
+    {
+      type: 'SCENARIO',
+      prompt:
+        'Où créer le profil d’inscription des appareils iOS pour l’ADE dans le centre d’administration Intune ?',
+      options: opt(
+        'Appareils > iOS/iPadOS > Profils d’inscription > Profils d’inscription des appareils',
+        'Applications > VPP uniquement',
+        'Rapports > Audit des connexions Entra',
+        'Endpoint security > Antivirus Mac'
+      ),
+      correctOption: 'a',
+      explanation:
+        'C’est le chemin standard pour lier un profil ADE aux appareils ABM synchronisés.',
+    },
+    {
+      type: 'SCENARIO',
+      prompt:
+        '30 iPad neufs sont dans ABM mais n’apparaissent pas dans Intune. Vérification prioritaire ?',
+      options: opt(
+        'Assignation des appareils au serveur MDM Intune dans ABM et validité du jeton MDM',
+        'Réinstallation de Teams sur le PC admin',
+        'Changement du fond d’écran',
+        'Création d’un groupe de sécurité Exchange on-prem'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Sans assignation MDM dans ABM, Intune ne « voit » pas les appareils. Le jeton expiré bloque aussi la synchronisation.',
+    },
+    {
+      type: 'TROUBLESHOOTING',
+      prompt:
+        'Piège : un collègue affirme que l’ADE « enrôle automatiquement sans Wi-Fi au premier démarrage ». Quelle nuance est correcte ?',
+      options: opt(
+        'L’ADE rattache au MDM au Setup Assistant, mais une connexion réseau est requise pour télécharger profils et apps',
+        'Aucun réseau n’est jamais nécessaire sur iOS',
+        'L’ADE fonctionne uniquement sur macOS',
+        'Il faut une carte SIM Android'
+      ),
+      correctOption: 'a',
+      explanation:
+        'L’automatisme porte sur l’enrôlement MDM et la supervision ; le téléchargement des ressources Intune exige toujours Internet.',
+    },
+    {
+      type: 'KNOWLEDGE',
+      prompt:
+        'Après assignation ABM → Intune, que se passe-t-il au premier allumage d’un iPad ?',
+      options: opt(
+        'Le Setup Assistant applique le profil ADE et inscrit l’appareil dans Intune',
+        'L’iPad reste non géré jusqu’à une inscription manuelle Company Portal obligatoire',
+        'Seul le compte Apple ID personnel est créé',
+        'Intune désinstalle automatiquement toutes les apps'
+      ),
+      correctOption: 'a',
+      explanation:
+        'L’ADE garantit un enrôlement zero-touch supervisé — distinct de l’inscription BYOD via Company Portal.',
+    },
+  ],
+  'compliance-policies': [
+    {
+      type: 'KNOWLEDGE',
+      prompt: 'À quoi sert une politique de conformité Intune pour iOS/iPadOS ?',
+      options: opt(
+        'Évaluer PIN, version OS, jailbreak, etc., avant d’accorder l’accès aux ressources',
+        'Remplacer Apple Business Manager',
+        'Publier des apps sur l’App Store public',
+        'Configurer un domaine DNS public'
+      ),
+      correctOption: 'a',
+      explanation:
+        'La conformité produit un état reporté à Entra ID pour Conditional Access et actions de remédiation.',
+    },
+    {
+      type: 'SCENARIO',
+      prompt:
+        'Un iPhone est « Non conforme » et perd l’accès Outlook. CA exige appareil conforme. Première étape admin ?',
+      options: opt(
+        'Ouvrir le rapport de conformité Intune pour l’appareil et identifier la règle en échec',
+        'Supprimer le tenant Entra ID',
+        'Révoquer toutes les licences Microsoft 365',
+        'Désactiver le Wi-Fi entreprise globalement'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Le détail par règle (OS min, PIN, jailbreak) oriente la remédiation ciblée plutôt qu’une action massive.',
+    },
+    {
+      type: 'KNOWLEDGE',
+      prompt: 'Quelle règle Intune détecte typiquement un appareil iOS jailbreaké ?',
+      options: opt(
+        'Compromission de l’appareil (Jailbroken)',
+        'Espace de stockage faible uniquement',
+        'Version du navigateur Safari',
+        'Langue du clavier'
+      ),
+      correctOption: 'a',
+      explanation:
+        'La compromission déclenche souvent blocage immédiat — politique courante en environnement réglementé.',
+    },
+    {
+      type: 'SCENARIO',
+      prompt:
+        'Un iPad n’a pas de code d’accès alors que la politique exige un PIN à 6 chiffres. Action Intune adaptée ?',
+      options: opt(
+        'Marquer non conforme, notification utilisateur, délai de grâce puis restriction via CA',
+        'Effacer le tenant',
+        'Désinscrire tous les appareils Android',
+        'Ignorer car l’iPad est supervisé'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Les délais de grâce laissent le temps de se conformer ; ensuite CA bloque l’accès aux données corporate.',
+    },
+    {
+      type: 'TROUBLESHOOTING',
+      prompt:
+        'Piège : la conformité affiche « En attente » depuis 48 h sur un iPhone. Cause probable ?',
+      options: opt(
+        'Appareil hors ligne, pas de check-in Intune, ou stratégie non assignée au bon groupe',
+        'Le PIN est trop long',
+        'L’utilisateur a trop de points sur le leaderboard',
+        'Le certificat APNs Jamf a expiré'
+      ),
+      correctOption: 'a',
+      explanation:
+        'L’évaluation repose sur le canal MDM Intune. Sans communication récente ou assignation, l’état reste indéterminé.',
+    },
+    {
+      type: 'KNOWLEDGE',
+      prompt:
+        'Quelle action destructive Intune peut appliquer après plusieurs jours de non-conformité (si configurée) ?',
+      options: opt(
+        'Effacement sélectif ou complet (retrait) selon les paramètres de la politique',
+        'Mise à jour automatique de macOS sur PC',
+        'Création d’un compte admin local sur le Mac',
+        'Installation de Chrome OS'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Les actions de non-conformité sont progressives : notification, blocage mail, puis retrait ou effacement si défini.',
+    },
+  ],
+  'app-protection-conditional-access': [
+    {
+      type: 'KNOWLEDGE',
+      prompt: 'Quelle différence clé entre MAM (App Protection) et MDM complet sur iOS ?',
+      options: opt(
+        'MAM protège les données dans les apps M365 sans contrôle total de l’appareil',
+        'MAM remplace le certificat Push Apple',
+        'MAM ne s’applique qu’aux PC Windows',
+        'MAM empêche toute connexion Internet'
+      ),
+      correctOption: 'a',
+      explanation:
+        'App Protection isole données corporate (conteneur) — idéal BYOD où l’utilisateur refuse un enrôlement complet.',
+    },
+    {
+      type: 'SCENARIO',
+      prompt:
+        'Direction exige que seuls Outlook/Teams « managés » accèdent à Exchange Online. Quel duo configurer ?',
+      options: opt(
+        'Politique App Protection iOS + Conditional Access « apps approuvées / exiger appareil conforme »',
+        'Profil Wi-Fi guest uniquement',
+        'Désactiver MFA',
+        'Partager le mot de passe service dans Teams'
+      ),
+      correctOption: 'a',
+      explanation:
+        'MAM sécurise l’app ; CA applique la politique d’accès au niveau Entra — combinaison standard M365.',
+    },
+    {
+      type: 'KNOWLEDGE',
+      prompt:
+        'Quel paramètre App Protection limite le copier-coller de données professionnelles vers Notes/WhatsApp personnels ?',
+      options: opt(
+        'Transfert de données restreint (Restrict cut/copy/paste between apps)',
+        'Mode avion obligatoire',
+        'Rotation d’écran forcée',
+        'Désactivation du Bluetooth'
+      ),
+      correctOption: 'a',
+      explanation:
+        'La restriction de transfert maintient les données dans le conteneur géré et réduit les fuites accidentelles.',
+    },
+    {
+      type: 'SCENARIO',
+      prompt:
+        'Un consultant BYOD ouvre Outlook après inscription MAM. Quelle exigence renforce l’accès au contenu ?',
+      options: opt(
+        'PIN ou biométrie au niveau application avant affichage des mails',
+        'Désinstallation de Safari',
+        'Compte Apple ID de l’entreprise sur l’App Store familial',
+        'Jailbreak obligatoire'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Le verrouillage applicatif complète le contrôle même lorsque l’appareil n’est pas entièrement supervisé par MDM.',
+    },
+    {
+      type: 'TROUBLESHOOTING',
+      prompt:
+        'Piège : Conditional Access bloque un iPhone « conforme Intune » mais MAM non appliqué à Outlook. Cause fréquente ?',
+      options: opt(
+        'Politique App Protection non assignée au utilisateur/app ou client Outlook non supporté',
+        'Le Wi-Fi 6 est trop rapide',
+        'L’iPhone est supervisé',
+        'Le certificat APNs est renouvelé'
+      ),
+      correctOption: 'a',
+      explanation:
+        'CA « exiger app protégée » nécessite qu’Outlook reçoive et applique la politique MAM — vérifier assignation et version d’app.',
+    },
+    {
+      type: 'KNOWLEDGE',
+      prompt:
+        'Quel signal Entra ID utilise Conditional Access pour un appareil iOS géré par Intune ?',
+      options: opt(
+        'État de conformité / inscription Intune remonté dans Entra',
+        'Couleur du boîtier',
+        'Nombre de photos iCloud',
+        'Version de Jamf Pro'
+      ),
+      correctOption: 'a',
+      explanation:
+        'L’appareil devient une « signal » dans CA : conforme, hybride Azure AD join, etc., pour autoriser ou bloquer les sessions.',
+    },
+  ],
+};
