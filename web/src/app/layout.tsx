@@ -1,16 +1,16 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
+import { LEARNING_PATHS } from '@/lib/learningPaths';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'MDM Academy — Formation Apple, Jamf et Intune',
+  title: 'MDM Academy — Apprendre Apple, Jamf Pro et Microsoft Intune',
   description:
-    'Plateforme gamifiée pour techniciens Apple et administrateurs MDM : parcours, unités, badges et préparation aux certifications.',
+    'Parcours gamifiés pour maîtriser Apple Device Support, Jamf Pro et l’enrôlement iOS/iPadOS avec Microsoft Intune : quiz, scénarios et badges.',
 };
 
 const NAV_ITEMS = [
-  { href: '/courses', label: 'Parcours' },
   { href: '/quests', label: 'Quêtes' },
   { href: '/leaderboard', label: 'Classement' },
   { href: '/badges', label: 'Badges' },
@@ -33,6 +33,21 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               </span>
             </Link>
             <nav className="site-nav" aria-label="Navigation principale">
+              <div className="nav-dropdown">
+                <Link href="/courses" className="nav-dropdown-trigger">
+                  Apprendre
+                </Link>
+                <div className="nav-dropdown-menu" role="menu">
+                  {LEARNING_PATHS.map((path) => (
+                    <Link key={path.slug} href={path.href} role="menuitem">
+                      {path.shortTitle}
+                    </Link>
+                  ))}
+                  <Link href="/courses" role="menuitem" className="nav-dropdown-all">
+                    Tous les parcours →
+                  </Link>
+                </div>
+              </div>
               {NAV_ITEMS.map((item) => (
                 <Link key={item.href} href={item.href}>
                   {item.label}
@@ -55,7 +70,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <footer className="site-footer">
           <div className="container site-footer-inner">
             <div>
-              <strong>MDM Academy</strong> · Apple, Jamf et Intune en mode jeu
+              <strong>MDM Academy</strong> · Apple, Jamf Pro et Intune en mode jeu
             </div>
             <div style={{ display: 'flex', gap: '1.25rem', flexWrap: 'wrap' }}>
               <Link href="/demo">Démo</Link>

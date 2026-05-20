@@ -12,6 +12,8 @@ import { Card } from '@/components/ui/Card';
 import { LevelPill } from '@/components/ui/LevelPill';
 import { TrailCard } from '@/components/ui/TrailCard';
 import { inferLevelFromModules, type TrailLevel } from '@/lib/design';
+import { getLearningPath, sortMvpCoursesFirst } from '@/lib/learningPaths';
+import { TracksComparisonTable } from '@/components/courses/TracksComparisonTable';
 
 const LEVELS: ('TOUS' | TrailLevel)[] = ['TOUS', 'Débutant', 'Intermédiaire', 'Avancé'];
 
@@ -47,8 +49,13 @@ export default function CoursesPage() {
 
   const normalizedSearch = searchQuery.trim().toLowerCase();
 
+  const sortedCourses = useMemo(() => sortMvpCoursesFirst(enrichedCourses.map((e) => e.course)).map((course) => {
+    const match = enrichedCourses.find((e) => e.course.slug === course.slug);
+    return match ?? { course, level: inferLevelFromModules(course.totalModules) };
+  }), [enrichedCourses]);
+
   const filteredCourses = useMemo(() => {
-    return enrichedCourses.filter(({ course, level }) => {
+    return sortedCourses.filter(({ course, level }) => {
       if (selectedTrack !== 'TOUS' && course.track !== selectedTrack) return false;
       if (selectedLevel !== 'TOUS' && level !== selectedLevel) return false;
       if (!normalizedSearch) return true;
@@ -64,7 +71,7 @@ export default function CoursesPage() {
 
       return haystack.includes(normalizedSearch);
     });
-  }, [enrichedCourses, normalizedSearch, selectedTrack, selectedLevel]);
+  }, [sortedCourses, normalizedSearch, selectedTrack, selectedLevel]);
 
   const moduleCount = courses.reduce((total, course) => total + (course.totalModules ?? 0), 0);
   const inProgressCount = courses.filter(
@@ -83,10 +90,10 @@ export default function CoursesPage() {
         <span className="hero-eyebrow">
           <span aria-hidden>{'\u{1F4DA}'}</span> Catalogue MDM Academy
         </span>
-        <h1>Choisis ton parcours Apple, Jamf ou Intune.</h1>
+        <h1>Trois parcours pour devenir expert MDM Apple, Jamf et Intune.</h1>
         <p style={{ marginTop: '0.85rem' }}>
-          Filtre par piste et par niveau pour repérer le bon parcours, valide tes unités, gagne des points
-          et débloque ton prochain badge.
+          Support Apple Device Support, administration Jamf Pro et enrôlement Microsoft Intune — 3 unités par
+          piste, quiz et scénarios pratiques.
         </p>
         <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', marginTop: '1.5rem' }}>
           <Button href={hasToken ? '/dashboard' : '/auth'} variant="secondary" size="lg">
@@ -167,6 +174,8 @@ export default function CoursesPage() {
         </Card>
       )}
 
+      <TracksComparisonTable />
+
       <div className="section" style={{ marginTop: '2rem' }}>
         <FilterRow
           label="Piste"
@@ -227,6 +236,7 @@ export default function CoursesPage() {
                 completedModules={course.completedModules}
                 progressPercent={course.progressPercent}
                 level={level}
+                recommended={getLearningPath(course.slug)?.recommended}
               />
             ))}
           </div>

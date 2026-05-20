@@ -16,6 +16,7 @@ import { Card } from '@/components/ui/Card';
 import { LevelPill } from '@/components/ui/LevelPill';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import { TrackIcon } from '@/components/ui/TrackIcon';
+import { MdmTracksSection } from '@/components/dashboard/MdmTracksSection';
 import { TrailCard } from '@/components/ui/TrailCard';
 import { estimatePoints, getBadgeVisual, getRankInfo, inferLevelFromModules } from '@/lib/design';
 
@@ -52,7 +53,7 @@ const fallbackQuickActions: QuickAction[] = [
   {
     label: 'Continuer Intune',
     description: 'Réviser l’enrôlement iOS et la conformité mobile.',
-    href: '/courses',
+    href: '/courses/intune-ios-enrollment',
     track: 'INTUNE',
   },
   {
@@ -135,6 +136,7 @@ export default function DashboardPage() {
         </Card>
 
         <RecommendedActionCard action={recommendedAction} />
+        <MdmTracksSection />
         <WeeklyQuestsCallout />
         <BadgesCallout />
         <QuickActionsGrid actions={fallbackQuickActions} />
@@ -165,6 +167,7 @@ export default function DashboardPage() {
       <LearnerRankCard user={user.displayName ?? 'Technicien'} points={stats.points} level={stats.level} onLogout={handleLogout} />
 
       <RecommendedActionCard action={recommendedAction} />
+      <MdmTracksSection courses={courses} />
       {learningStreak ? <LearningStreakCard streak={learningStreak} /> : null}
       <SprintDashboardCard sprint={certificationSprint ?? null} />
       <WeeklyQuestsCallout />

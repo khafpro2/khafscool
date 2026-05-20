@@ -31,6 +31,7 @@ export interface TrailCardProps {
   cta?: string;
   ctaSuffix?: React.ReactNode;
   status?: 'available' | 'in-progress' | 'completed';
+  recommended?: boolean;
 }
 
 export function TrailCard({
@@ -49,6 +50,7 @@ export function TrailCard({
   cta,
   ctaSuffix,
   status,
+  recommended,
 }: TrailCardProps) {
   const visual = getTrackVisual(track);
   const effectiveLevel = level ?? inferLevelFromModules(totalModules);
@@ -71,6 +73,22 @@ export function TrailCard({
             style={{ background: 'rgba(255,255,255,0.18)', border: '1px solid rgba(255,255,255,0.28)' }}
             ariaHidden
           />
+          {recommended && !isCompleted ? (
+            <span
+              style={{
+                background: 'rgba(255,255,255,0.95)',
+                color: '#0a5c2e',
+                borderRadius: 999,
+                padding: '0.18rem 0.55rem',
+                fontSize: '0.72rem',
+                fontWeight: 800,
+                textTransform: 'uppercase',
+                letterSpacing: '0.06em',
+              }}
+            >
+              Recommandé
+            </span>
+          ) : null}
           {isCompleted && (
             <span
               style={{

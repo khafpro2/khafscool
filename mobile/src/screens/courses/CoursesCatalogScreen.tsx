@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -8,7 +8,8 @@ import {
   Text,
   View,
 } from 'react-native';
-import { TrackIcon } from '../../components/TrackIcon';
+import { BrandIcon } from '../../components/BrandIcon';
+import { LEARNING_PATHS } from '../../lib/learningPaths';
 import { formatTrack, getTrackVisual } from '../../lib/design';
 import { CourseSummary, fetchCourses } from '../../services/courses';
 
@@ -30,6 +31,14 @@ export function CoursesCatalogScreen() {
     void loadCatalog();
   }, []);
 
+  const coursesBySlug = useMemo(() => {
+    const map = new Map<string, CourseSummary>();
+    for (const course of courses) {
+      map.set(course.slug, course);
+    }
+    return map;
+  }, [courses]);
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -42,10 +51,10 @@ export function CoursesCatalogScreen() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.header}>
-        <Text style={styles.eyebrow}>Catalogue MDM Academy</Text>
-        <Text style={styles.title}>Tous les parcours</Text>
+        <Text style={styles.eyebrow}>MDM Academy</Text>
+        <Text style={styles.title}>Apprends Apple, Jamf Pro et Intune</Text>
         <Text style={styles.subtitle}>
-          Apple, Jamf et Intune — choisis un parcours pour commencer ou continuer.
+          Trois parcours de 3 unités — support Apple, administration Jamf et enrôlement Microsoft Intune.
         </Text>
       </View>
 
@@ -57,13 +66,17 @@ export function CoursesCatalogScreen() {
         </View>
       ) : null}
 
-      {courses.map((course) => (
-        <CatalogCourseCard
-          key={course.id}
-          course={course}
-          onPress={() => router.push(`/course/${course.slug}`)}
-        />
-      ))}
+      {LEARNING_PATHS.map((path) => {
+        const course = coursesBySlug.get(path.slug);
+        return (
+          <CatalogCourseCard
+            key={path.slug}
+            path={path}
+            course={course}
+            onPress={() => router.push(`/course/${path.slug}`)}
+          />
+        );
+      })}
 
       <Pressable onPress={loadCatalog} style={styles.refreshButton}>
         <Text style={styles.refreshText}>Rafraîchir le catalogue</Text>
@@ -72,25 +85,41 @@ export function CoursesCatalogScreen() {
   );
 }
 
-function CatalogCourseCard({ course, onPress }: { course: CourseSummary; onPress: () => void }) {
-  const visual = getTrackVisual(course.track);
-  const moduleCount = course.totalModules ?? 0;
-  const progress = course.progressPercent ?? 0;
-  const ctaLabel = progress > 0 && progress < 100 ? 'Continuer' : progress >= 100 ? 'Revoir' : 'Ouvrir';
+function CatalogCourseCard({
+  path,
+  course,
+  onPress,
+}: {
+  path: (typeof LEARNING_PATHS)[number];
+  course?: CourseSummary;
+  onPress: () => void;
+}) {
+  const visual = getTrackVisual(path.track);
+  const moduleCount = course?.totalModules ?? path.totalModules;
+  const progress = course?.progressPercent ?? 0;
+  const title = course?.title ?? path.title;
+  const ctaLabel =
+    progress > 0 && progress < 100 ? 'Continuer ce parcours' : progress >= 100 ? 'Revoir' : 'Commencer ce parcours';
 
   return (
     <Pressable onPress={onPress} style={styles.card}>
       <View style={[styles.banner, { backgroundColor: visual.gradient[0] }]}>
-        <TrackIcon track={course.track} size="md" />
-        <Text style={styles.bannerTrack}>{formatTrack(course.track)}</Text>
+        <BrandIcon brand={path.brand} size="lg" variant="onColor" />
+        <Text style={styles.bannerTrack}>{formatTrack(path.track)}</Text>
       </View>
       <View style={styles.cardBody}>
-        <Text style={styles.cardTitle}>{course.title}</Text>
-        {course.description ? <Text style={styles.cardDesc}>{course.description}</Text> : null}
+        <Text style={styles.cardTitle}>{title}</Text>
         <Text style={styles.cardMeta}>
-          {moduleCount} unité{moduleCount > 1 ? 's' : ''}
+          ~{path.durationMinutes} min · {moduleCount} unités
           {progress > 0 ? ` · ${progress} % complété` : ''}
         </Text>
+        <View style={styles.objectives}>
+          {path.objectives.map((objective) => (
+            <Text key={objective} style={styles.objectiveItem}>
+              • {objective}
+            </Text>
+          ))}
+        </View>
         <View style={styles.cardFooter}>
           <Text style={styles.ctaLabel}>{ctaLabel}</Text>
           <Text style={styles.ctaArrow}>→</Text>
@@ -107,8 +136,8 @@ const styles = StyleSheet.create({
   loadingText: { marginTop: 12, color: '#6E6E73', fontSize: 15 },
   header: { marginBottom: 20 },
   eyebrow: { color: '#0070D2', fontSize: 13, fontWeight: '700', marginBottom: 4, textTransform: 'uppercase' },
-  title: { color: '#1D1D1F', fontSize: 28, fontWeight: '800' },
-  subtitle: { color: '#6E6E73', marginTop: 8, lineHeight: 22 },
+  title: { color: '#1D1D1F', fontSize: 26, fontWeight: '800', lineHeight: 32 },
+  subtitle: { color: '#6E6E73', marginTop: 8, lineHeight: 22, fontSize: 15 },
   demoBanner: { backgroundColor: '#FFF7E6', borderRadius: 14, padding: 12, marginBottom: 16 },
   demoText: { color: '#8A5A00', lineHeight: 20 },
   card: {
@@ -117,8 +146,13 @@ const styles = StyleSheet.create({
     marginBottom: 14,
     overflow: 'hidden',
   },
-  banner: { paddingHorizontal: 16, paddingVertical: 14, flexDirection: 'row', alignItems: 'center', gap: 10 },
-  bannerIcon: { fontSize: 24 },
+  banner: {
+    paddingHorizontal: 16,
+    paddingVertical: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
   bannerTrack: {
     color: '#FFFFFF',
     fontSize: 12,
@@ -129,9 +163,10 @@ const styles = StyleSheet.create({
   },
   cardBody: { padding: 16 },
   cardTitle: { color: '#1D1D1F', fontSize: 18, fontWeight: '800' },
-  cardDesc: { color: '#6E6E73', marginTop: 6, lineHeight: 20, fontSize: 14 },
-  cardMeta: { color: '#6E6E73', marginTop: 10, fontSize: 13, fontWeight: '600' },
-  cardFooter: { flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 6, marginTop: 12 },
+  cardMeta: { color: '#6E6E73', marginTop: 6, fontSize: 13, fontWeight: '600' },
+  objectives: { marginTop: 10, gap: 4 },
+  objectiveItem: { color: '#6E6E73', fontSize: 13, lineHeight: 18 },
+  cardFooter: { flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 6, marginTop: 14 },
   ctaLabel: { color: '#0070D2', fontWeight: '800', fontSize: 15 },
   ctaArrow: { color: '#0070D2', fontSize: 18, fontWeight: '300' },
   refreshButton: { padding: 16, alignItems: 'center' },

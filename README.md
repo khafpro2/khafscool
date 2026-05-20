@@ -80,13 +80,21 @@ Le seed crée les parcours MVP, modules, quiz, mini-jeux et données de progress
 
 Pour un déploiement production (Vercel, Railway/Render, Neon, EAS), voir [DEPLOYMENT.md](./DEPLOYMENT.md).
 
-Parcours seedés :
+## Parcours d'apprentissage
 
-| Slug | Piste | Titre | Modules |
-| ---- | ----- | ----- | ------- |
-| `apple-cert-prep` | APPLE | Parcours Apple — Device Support & MDM | 3 |
-| `jamf-pro-foundations` | JAMF | Fondamentaux Jamf Pro | 3 |
-| `intune-ios-enrollment` | INTUNE | Microsoft Intune — Enrôlement iOS/iPadOS | 3 |
+Trois parcours seedés (3 modules × 3 unités chacun) pour couvrir le socle Apple, Jamf et Intune :
+
+| Slug | Piste | Public cible | Certification visée |
+| ---- | ----- | ------------ | --------------------- |
+| `apple-cert-prep` | APPLE | Techniciens support, helpdesk Apple et débutants MDM | Apple Device Support (ACMT / fondamentaux) |
+| `jamf-pro-foundations` | JAMF | Administrateurs MDM Jamf et responsables flotte Apple | Jamf Certified Admin (fondations) |
+| `intune-ios-enrollment` | INTUNE | Admins Microsoft 365 / Entra et équipes endpoint hybrides | Microsoft Intune (MD-102 — partie mobile) |
+
+| Slug | Titre | Modules |
+| ---- | ----- | ------- |
+| `apple-cert-prep` | Parcours Apple — Device Support & MDM | 3 |
+| `jamf-pro-foundations` | Fondamentaux Jamf Pro | 3 |
+| `intune-ios-enrollment` | Microsoft Intune — Enrôlement iOS/iPadOS | 3 |
 
 ## URLs
 
@@ -117,7 +125,7 @@ Parcours seedés :
 | `/diagnostics` | Santé API, DB Prisma, catalogue et session locale |
 | `/mvp` | Roadmap MVP (livré vs à venir) et checklist de revue |
 
-Parcours seedés (3 modules chacun) : `apple-cert-prep`, `jamf-pro-foundations`, `intune-ios-enrollment`.
+Re-seed après modification du contenu : `pnpm db:seed` (depuis la racine du monorepo).
 
 ## API — routes principales
 
