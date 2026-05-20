@@ -40,6 +40,43 @@ export interface GamificationResult<T> {
   source: 'api' | 'demo';
 }
 
+export interface UserBadge {
+  slug: string;
+  earnedAt?: string | null;
+}
+
+export interface UserBadgesResult {
+  badges: UserBadge[];
+  earnedSlugs: string[];
+}
+
+export async function fetchUserBadges(): Promise<GamificationResult<UserBadgesResult>> {
+  const token = await getAccessToken();
+  if (!token) return { data: mockUserBadges(), source: 'demo' };
+
+  try {
+    const data = await apiFetch<{ badges: string[] }>('/users/me/dashboard');
+    const slugs = Array.isArray(data.badges) ? data.badges : [];
+    return {
+      data: {
+        badges: slugs.map((slug) => ({ slug })),
+        earnedSlugs: slugs,
+      },
+      source: 'api',
+    };
+  } catch {
+    return { data: mockUserBadges(), source: 'demo' };
+  }
+}
+
+function mockUserBadges(): UserBadgesResult {
+  const slugs = ['apple-mdm-foundation'];
+  return {
+    badges: [{ slug: 'apple-mdm-foundation', earnedAt: '2026-03-12T10:30:00.000Z' }],
+    earnedSlugs: slugs,
+  };
+}
+
 export async function fetchWeeklyQuests(): Promise<GamificationResult<WeeklyQuestsResponse>> {
   const token = await getAccessToken();
   if (!token) return { data: mockWeeklyQuests(), source: 'demo' };

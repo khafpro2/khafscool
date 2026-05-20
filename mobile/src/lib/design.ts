@@ -152,7 +152,39 @@ const TRACK_VISUALS: Record<string, TrackVisual> = {
     color: theme.accent,
     gradient: [theme.accentStrong, theme.accentTeal],
   },
+  SPRINT: {
+    label: 'Sprint certification',
+    icon: '\u{26A1}',
+    color: theme.accentStrong,
+    gradient: ['#4338ca', theme.accent],
+  },
 };
+
+export const ALL_BADGE_SLUGS = [
+  'apple-mdm-foundation',
+  'jamf-engineer',
+  'intune-professional',
+] as const;
+
+const BADGE_TRACK: Record<string, string> = {
+  'apple-mdm-foundation': 'APPLE',
+  'jamf-engineer': 'JAMF',
+  'intune-professional': 'INTUNE',
+};
+
+const BADGE_CRITERIA: Record<string, string> = {
+  'apple-mdm-foundation': 'Termine au moins une unité du parcours Apple Device Support.',
+  'jamf-engineer': 'Termine au moins une unité du parcours Jamf Pro.',
+  'intune-professional': 'Termine au moins une unité du parcours Microsoft Intune.',
+};
+
+export function getBadgeTrack(slug: string): string {
+  return BADGE_TRACK[slug] ?? 'DEFAULT';
+}
+
+export function getBadgeCriteria(slug: string): string {
+  return BADGE_CRITERIA[slug] ?? 'Complète le parcours associé pour débloquer ce super-badge.';
+}
 
 export function getTrackVisual(track?: string | null): TrackVisual {
   if (!track) return TRACK_VISUALS.DEFAULT;

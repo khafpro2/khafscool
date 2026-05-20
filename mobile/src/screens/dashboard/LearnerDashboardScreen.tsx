@@ -189,6 +189,19 @@ export function LearnerDashboardScreen({ onSignOut }: LearnerDashboardScreenProp
         </Pressable>
       </View>
 
+      <View style={styles.quickActions}>
+        <Pressable style={[styles.quickAction, styles.quickActionBadges]} onPress={() => router.push('/badges')}>
+          <Text style={styles.quickActionIcon}>{'\u{1F3C5}'}</Text>
+          <Text style={styles.quickActionTitle}>Mes badges</Text>
+          <Text style={styles.quickActionHint}>Collection Apple · Jamf · Intune</Text>
+        </Pressable>
+        <Pressable style={[styles.quickAction, styles.quickActionSprint]} onPress={() => router.push('/sprint')}>
+          <Text style={styles.quickActionIcon}>{'\u{26A1}'}</Text>
+          <Text style={styles.quickActionTitle}>Sprint certif</Text>
+          <Text style={styles.quickActionHint}>7 ou 14 jours</Text>
+        </Pressable>
+      </View>
+
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>Parcours en cours</Text>
         <Text style={styles.sectionHint}>Reprends là où tu t’es arrêté</Text>
@@ -213,6 +226,7 @@ export function LearnerDashboardScreen({ onSignOut }: LearnerDashboardScreenProp
         startingTrack={startingTrack}
         message={sprintMessage}
         onStart={handleStartSprint}
+        onOpenSprint={() => router.push('/sprint')}
       />
 
       <View style={styles.sectionHeader}>
@@ -265,6 +279,9 @@ export function LearnerDashboardScreen({ onSignOut }: LearnerDashboardScreenProp
           <Text style={styles.emptyText}>Terminez une première unité pour débloquer un badge.</Text>
         )}
       </View>
+      <Pressable style={styles.linkButton} onPress={() => router.push('/badges')}>
+        <Text style={styles.linkButtonText}>Voir toute la collection →</Text>
+      </Pressable>
 
       <View style={styles.ctaCard}>
         <Text style={styles.cardLabel}>Prochaine étape</Text>
@@ -296,11 +313,13 @@ function SprintCard({
   startingTrack,
   message,
   onStart,
+  onOpenSprint,
 }: {
   sprint: CertificationSprintSummary | null;
   startingTrack: CertificationSprintTrack | null;
   message: SprintMessage | null;
   onStart: (track: CertificationSprintTrack) => void;
+  onOpenSprint: () => void;
 }) {
   const sprintStatus = sprint ? formatSprintStatus(sprint) : null;
   const isStartingAnySprint = startingTrack !== null;
@@ -386,6 +405,9 @@ function SprintCard({
           );
         })}
       </View>
+      <Pressable onPress={onOpenSprint} style={styles.linkButton}>
+        <Text style={styles.linkButtonText}>Gérer le sprint (7 / 14 j) →</Text>
+      </Pressable>
     </View>
   );
 }
@@ -510,6 +532,8 @@ const styles = StyleSheet.create({
   quickAction: { flex: 1, borderRadius: 18, padding: 14 },
   quickActionQuests: { backgroundColor: theme.demoBannerBg, borderWidth: 1, borderColor: theme.demoBannerBorder },
   quickActionLeaderboard: { backgroundColor: theme.accentSoft, borderWidth: 1, borderColor: '#bfdbfe' },
+  quickActionBadges: { backgroundColor: '#f0fdf4', borderWidth: 1, borderColor: '#bbf7d0' },
+  quickActionSprint: { backgroundColor: '#eef2ff', borderWidth: 1, borderColor: '#c7d2fe' },
   quickActionIcon: { fontSize: 22, marginBottom: 6 },
   quickActionTitle: { color: theme.fg, fontSize: 15, fontWeight: '800' },
   quickActionHint: { color: theme.muted, fontSize: 12, marginTop: 2, fontWeight: '600' },

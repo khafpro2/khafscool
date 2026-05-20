@@ -118,25 +118,40 @@ export function ProfileScreen() {
         </View>
       )}
 
-      <Text style={styles.sectionTitle}>Sur le web</Text>
-      <Text style={styles.sectionHint}>Profil complet, badges et quêtes hebdomadaires</Text>
+      <Text style={styles.sectionTitle}>Gamification</Text>
+      <Text style={styles.sectionHint}>Badges, quêtes et sprint certification</Text>
 
-      <Pressable style={styles.linkCard} onPress={() => openWebPath('/profile')}>
-        <Text style={styles.linkTitle}>Profil apprenant</Text>
-        <Text style={styles.linkHint}>Parcours, sprint et statistiques détaillées</Text>
-        <Text style={styles.linkCta}>Ouvrir sur le web →</Text>
-      </Pressable>
-
-      <Pressable style={styles.linkCard} onPress={() => openWebPath('/badges')}>
+      <Pressable style={styles.linkCard} onPress={() => router.push('/badges')}>
         <Text style={styles.linkTitle}>Mes badges</Text>
         <Text style={styles.linkHint}>Collection Apple, Jamf et Intune</Text>
         <Text style={styles.linkCta}>Voir les badges →</Text>
+      </Pressable>
+
+      <Pressable style={styles.linkCard} onPress={() => router.push('/sprint')}>
+        <Text style={styles.linkTitle}>Sprint certification</Text>
+        <Text style={styles.linkHint}>Préparation 7 ou 14 jours par piste</Text>
+        <Text style={styles.linkCta}>Lancer un sprint →</Text>
       </Pressable>
 
       <Pressable style={styles.linkCard} onPress={() => router.push('/quests')}>
         <Text style={styles.linkTitle}>Quêtes hebdomadaires</Text>
         <Text style={styles.linkHint}>Défis de la semaine et récompenses bonus</Text>
         <Text style={styles.linkCta}>Voir les quêtes →</Text>
+      </Pressable>
+
+      <Pressable style={styles.linkCard} onPress={() => router.push('/leaderboard')}>
+        <Text style={styles.linkTitle}>Classement</Text>
+        <Text style={styles.linkHint}>Compare ta progression à la communauté</Text>
+        <Text style={styles.linkCta}>Voir le classement →</Text>
+      </Pressable>
+
+      <Text style={styles.sectionTitle}>Sur le web</Text>
+      <Text style={styles.sectionHint}>Profil complet et diagnostics</Text>
+
+      <Pressable style={styles.linkCard} onPress={() => openWebPath('/profile')}>
+        <Text style={styles.linkTitle}>Profil apprenant</Text>
+        <Text style={styles.linkHint}>Parcours, sprint et statistiques détaillées</Text>
+        <Text style={styles.linkCta}>Ouvrir sur le web →</Text>
       </Pressable>
 
       <Pressable onPress={loadProfile} style={styles.refreshButton}>
