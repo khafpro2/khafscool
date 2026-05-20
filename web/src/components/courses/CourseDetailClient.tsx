@@ -8,6 +8,10 @@ import { checkModuleAnswer, completeModule, fetchCourse, fetchCourseProgress } f
 import { buildAuthUrl, getAccessToken } from '@/lib/auth';
 import { formatTrack } from '@/lib/tracks';
 import {
+  InteractiveMiniGame,
+  shuffleGameOrder,
+} from '@/components/courses/InteractiveMiniGame';
+import {
   computeQuizScorePercent,
   countCorrectAnswers,
   QUIZ_PASS_PERCENT,
@@ -41,8 +45,25 @@ export function CourseDetailClient({ slug }: { slug: string }) {
   const [revealedQuestions, setRevealedQuestions] = useState<Set<string>>(() => new Set());
   const [result, setResult] = useState<string | null>(null);
   const [successNotice, setSuccessNotice] = useState<SuccessNotice | null>(null);
+  const [gameOrders, setGameOrders] = useState<Record<string, number[]>>({});
+  const [gameTouched, setGameTouched] = useState<Record<string, boolean>>({});
   const [hasToken, setHasToken] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (!course) return;
+    setGameOrders((current) => {
+      let changed = false;
+      const next = { ...current };
+      for (const module of course.modules) {
+        if (module.game?.steps.length && !next[module.id]) {
+          next[module.id] = shuffleGameOrder(module.game.steps.map((step) => step.id));
+          changed = true;
+        }
+      }
+      return changed ? next : current;
+    });
+  }, [course]);
 
   useEffect(() => {
     const token = getAccessToken();
@@ -89,10 +110,15 @@ export function CourseDetailClient({ slug }: { slug: string }) {
     () => activeModule?.questions.filter((question) => answers[question.id]).length ?? 0,
     [activeModule, answers]
   );
+  const activeGameOrder = activeModule ? gameOrders[activeModule.id] : undefined;
+  const activeGameReady = Boolean(!activeModule?.game || gameTouched[activeModule.id]);
+
   const canSubmit = useMemo(() => {
     if (!activeModule) return false;
-    return activeModule.questions.every((question) => answers[question.id]);
-  }, [activeModule, answers]);
+    const quizComplete = activeModule.questions.every((question) => answers[question.id]);
+    const gameComplete = !activeModule.game || Boolean(gameTouched[activeModule.id]);
+    return quizComplete && gameComplete;
+  }, [activeModule, answers, gameTouched]);
   const estimatedActiveScore = useMemo(
     () =>
       activeModule
@@ -184,10 +210,14 @@ export function CourseDetailClient({ slug }: { slug: string }) {
 
     if (token && !activeModule.id.startsWith('demo-')) {
       try {
-        const backendResult = await completeModule(activeModule.id, token, {
+        const payload: { quizAnswers: Record<string, string>; gameOrder?: number[] } = {
           quizAnswers: answers,
-          gameOrder: activeModule.game?.steps.map((step) => step.id),
-        });
+        };
+        if (activeModule.game && gameTouched[activeModule.id] && activeGameOrder?.length) {
+          payload.gameOrder = activeGameOrder;
+        }
+
+        const backendResult = await completeModule(activeModule.id, token, payload);
         const updatedProgress = await fetchCourseProgress(slug, token);
         const courseJustCompleted =
           backendResult.courseCompleted ||
@@ -451,38 +481,6 @@ export function CourseDetailClient({ slug }: { slug: string }) {
                     </p>
                   )}
 
-                  {module.game && (
-                    <div
-                      style={{
-                        marginTop: '1rem',
-                        padding: '1rem',
-                        border: '1px solid var(--border-soft)',
-                        borderRadius: 14,
-                        background: '#f8fafd',
-                      }}
-                    >
-                      <h3 style={{ fontWeight: 800, fontSize: '0.95rem' }}>
-                        <span aria-hidden style={{ marginRight: 6 }}>{'\u{1F9E9}'}</span>
-                        Mini-scénario MDM
-                      </h3>
-                      <p className="muted" style={{ marginTop: '0.45rem', fontSize: '0.9rem' }}>
-                        <strong>Comment jouer :</strong> lis le contexte ci-dessous, mémorise l’ordre logique des étapes
-                        (de haut en bas), puis réponds au quiz. La validation enregistre quiz + scénario quand tu es connecté.
-                      </p>
-                      <p style={{ marginTop: '0.65rem', fontWeight: 600 }}>{module.game.scenario}</p>
-                      <p className="muted" style={{ marginTop: '0.5rem', fontSize: '0.85rem' }}>
-                        Ordre attendu des actions :
-                      </p>
-                      <ol style={{ marginTop: '0.35rem', paddingLeft: '1.25rem' }}>
-                        {module.game.steps.map((step, stepIndex) => (
-                          <li key={step.id} style={{ marginTop: '0.15rem' }}>
-                            <strong>{stepIndex + 1}.</strong> {step.label}
-                          </li>
-                        ))}
-                      </ol>
-                    </div>
-                  )}
-
                   {isLockedModule ? (
                     <Card variant="soft" style={{ marginTop: '1rem' }}>
                       <p className="muted" style={{ fontSize: '0.9rem' }}>
@@ -491,6 +489,20 @@ export function CourseDetailClient({ slug }: { slug: string }) {
                       </p>
                     </Card>
                   ) : isActiveModule ? (
+                    <>
+                    {module.game && gameOrders[module.id] && (
+                      <InteractiveMiniGame
+                        game={module.game}
+                        track={course.track}
+                        order={gameOrders[module.id]}
+                        onOrderChange={(order) =>
+                          setGameOrders((current) => ({ ...current, [module.id]: order }))
+                        }
+                        onTouched={() =>
+                          setGameTouched((current) => ({ ...current, [module.id]: true }))
+                        }
+                      />
+                    )}
                     <QuizPanel
                       module={module}
                       track={course.track}
@@ -507,6 +519,7 @@ export function CourseDetailClient({ slug }: { slug: string }) {
                           ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                       }}
                     />
+                    </>
                   ) : completed ? (
                     <Card variant="soft" style={{ marginTop: '1rem' }}>
                       <Badge tone="success" icon="\u2705">
@@ -554,7 +567,11 @@ export function CourseDetailClient({ slug }: { slug: string }) {
               </div>
               {!canSubmit && activeModule.questions.length > 0 && (
                 <p className="muted" style={{ marginTop: '0.65rem', fontSize: '0.85rem' }}>
-                  Réponds à toutes les questions du quiz pour activer la validation.
+                  {!activeModule.questions.every((question) => answers[question.id])
+                    ? 'Réponds à toutes les questions du quiz pour activer la validation.'
+                    : activeModule.game && !activeGameReady
+                      ? 'Réordonne le mini-scénario (glisser ou flèches) puis clique « Vérifier mon ordre ».'
+                      : 'Complète le quiz et le mini-scénario pour valider l’unité.'}
                 </p>
               )}
               {result && (

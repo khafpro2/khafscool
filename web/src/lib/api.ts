@@ -144,6 +144,8 @@ export interface CourseModule {
     type: string;
     scenario: string;
     steps: { id: number; label: string }[];
+    /** Présent en mode démo pour le feedback local du mini-jeu */
+    correctOrder?: number[];
   } | null;
 }
 
@@ -921,6 +923,7 @@ const DEMO_COURSES: CourseDetail[] = [
             { id: 2, label: 'Vérifier l’espace disque disponible' },
             { id: 3, label: 'Réinstaller macOS en conservant les données' },
           ],
+          correctOrder: [2, 1, 3],
         },
       },
       {
@@ -937,6 +940,7 @@ const DEMO_COURSES: CourseDetail[] = [
             { id: 2, label: 'Vérifier profil MDM et dernière check-in dans la console' },
             { id: 3, label: 'Forcer une synchronisation ou réinstaller le profil si nécessaire' },
           ],
+          correctOrder: [1, 2, 3],
         },
       },
       {
@@ -953,6 +957,7 @@ const DEMO_COURSES: CourseDetail[] = [
             { id: 2, label: 'Lancer Apple Diagnostics et noter les codes erreur' },
             { id: 3, label: 'Documenter les résultats avant toute réparation matérielle' },
           ],
+          correctOrder: [1, 2, 3],
         },
       },
     ],
@@ -983,6 +988,7 @@ const DEMO_COURSES: CourseDetail[] = [
             { id: 2, label: 'Associer la politique au paquet' },
             { id: 3, label: 'Limiter le scope puis tester sur un Mac' },
           ],
+          correctOrder: [1, 2, 3],
         },
       },
       {
@@ -1000,6 +1006,7 @@ const DEMO_COURSES: CourseDetail[] = [
             { id: 2, label: 'Vérifier version macOS et espace disque' },
             { id: 3, label: 'Lancer une politique corrective' },
           ],
+          correctOrder: [1, 2, 3],
         },
       },
       {
@@ -1020,6 +1027,7 @@ const DEMO_COURSES: CourseDetail[] = [
             { id: 2, label: 'Assigner les appareils au serveur Jamf dans ABM' },
             { id: 3, label: 'Activer un Mac et valider l’assistant d’enrôlement' },
           ],
+          correctOrder: [1, 2, 3],
         },
       },
     ],
@@ -1049,6 +1057,7 @@ const DEMO_COURSES: CourseDetail[] = [
             { id: 2, label: 'Créer et assigner un profil ADE dans Intune' },
             { id: 3, label: 'Démarrer un iPad et vérifier l’assistant d’enrôlement' },
           ],
+          correctOrder: [1, 2, 3],
         },
       },
       {
@@ -1068,6 +1077,7 @@ const DEMO_COURSES: CourseDetail[] = [
             { id: 2, label: 'Prioriser jailbreak et appliquer blocage ou retrait du parc' },
             { id: 3, label: 'Envoyer notification de mise à jour OS ou exigence PIN' },
           ],
+          correctOrder: [1, 2, 3],
         },
       },
       {
@@ -1087,6 +1097,7 @@ const DEMO_COURSES: CourseDetail[] = [
             { id: 2, label: 'Configurer Conditional Access exigeant apps approuvées ou appareil conforme' },
             { id: 3, label: 'Valider l’accès et le conteneur de données sur un iPhone pilote' },
           ],
+          correctOrder: [1, 2, 3],
         },
       },
     ],

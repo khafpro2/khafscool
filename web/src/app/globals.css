@@ -966,6 +966,184 @@ h1, h2, h3, h4 {
   }
 }
 
+/* ---- Interactive mini-games (course units) ---- */
+.mini-game-panel {
+  margin-top: 1rem;
+  border: 1px solid var(--border-soft);
+  border-radius: 16px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: var(--shadow-sm);
+  animation: quiz-card-in 280ms ease;
+}
+
+.mini-game-header {
+  padding: 1rem 1.1rem;
+  color: #fff;
+}
+
+.mini-game-header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.mini-game-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.mini-game-emoji {
+  font-size: 1.35rem;
+}
+
+.mini-game-eyebrow {
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  opacity: 0.9;
+}
+
+.mini-game-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  margin-top: 0.1rem;
+}
+
+.mini-game-body {
+  padding: 1rem 1.1rem 1.15rem;
+}
+
+.mini-game-scenario {
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.mini-game-hint {
+  margin-top: 0.45rem;
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+
+.mini-game-steps {
+  list-style: none;
+  margin: 0.85rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.mini-game-step {
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 0.75rem;
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  background: #f8fafd;
+  cursor: grab;
+  transition: border-color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+  animation: quiz-option-in 300ms ease backwards;
+}
+
+.mini-game-step:hover {
+  border-color: color-mix(in srgb, var(--quiz-accent, var(--accent)) 45%, var(--border-soft));
+}
+
+.mini-game-step-dragging {
+  opacity: 0.85;
+  transform: scale(1.01);
+  box-shadow: 0 8px 20px rgba(15, 35, 70, 0.12);
+  border-color: var(--quiz-accent, var(--accent));
+}
+
+.mini-game-step-correct {
+  border-color: #6fbf84;
+  background: #f4fbf6;
+  animation: quiz-pulse-success 520ms ease;
+}
+
+.mini-game-step-incorrect {
+  border-color: #e08b8b;
+  background: #fff6f6;
+}
+
+.mini-game-step-rank {
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.82rem;
+  background: var(--quiz-accent, var(--accent));
+  color: #fff;
+}
+
+.mini-game-step-grip {
+  color: var(--muted);
+  font-size: 0.85rem;
+  letter-spacing: -0.15em;
+  user-select: none;
+}
+
+.mini-game-step-label {
+  font-size: 0.92rem;
+  line-height: 1.35;
+}
+
+.mini-game-step-actions {
+  display: inline-flex;
+  gap: 0.25rem;
+}
+
+.mini-game-step-btn {
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-soft);
+  background: #fff;
+  color: var(--fg);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.mini-game-step-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.mini-game-step-icon {
+  font-weight: 800;
+  font-size: 1rem;
+}
+
+.mini-game-step-icon-ok { color: #2f7a45; }
+.mini-game-step-icon-ko { color: #b44; }
+
+.mini-game-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.85rem;
+}
+
+.mini-game-feedback {
+  margin-top: 0.75rem;
+  font-weight: 700;
+  color: #a23d3d;
+}
+
+.mini-game-feedback-success {
+  color: #2f7a45;
+}
+
 /* ---- Learning paths (home / dashboard) ---- */
 .grid-learning-paths {
   display: grid;
