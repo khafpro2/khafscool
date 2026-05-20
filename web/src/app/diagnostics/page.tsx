@@ -62,18 +62,17 @@ export default function DiagnosticsPage() {
 
   return (
     <section style={{ padding: '1rem 0 2.5rem' }}>
-      <div className="hero">
-        <span className="hero-eyebrow">Diagnostics navigateur</span>
-        <h1>Vérifier rapidement le MVP local</h1>
-        <p style={{ marginTop: '0.75rem' }}>
-          Confirme l’état de l’API, de la base Prisma, du catalogue (3 parcours seedés) et de la session locale —
-          sans afficher de token ni de secret.
+      <div className="hero" style={{ marginTop: 0, padding: '2rem 1.75rem' }}>
+        <span className="hero-eyebrow">Outils internes</span>
+        <h1>Diagnostics MVP</h1>
+        <p style={{ marginTop: '0.75rem', fontSize: '0.98rem' }}>
+          Vérifie l’API, Prisma, le catalogue seedé et la session locale — page réservée aux testeurs.
         </p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '1.25rem' }}>
           <Button type="button" onClick={runEndpointChecks}>
             Relancer les vérifications
           </Button>
-          <Button href="/auth" variant="dark">
+          <Button href="/auth" variant="secondary">
             Tester la connexion
           </Button>
         </div>
@@ -150,20 +149,20 @@ export default function DiagnosticsPage() {
         </div>
       </Card>
 
-      <Card style={{ marginTop: '1rem' }}>
+      <Card variant="soft" style={{ marginTop: '1rem' }}>
         <p className="section-eyebrow">Navigation</p>
         <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginTop: '0.35rem' }}>Liens rapides</h2>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '1rem' }}>
           {quickLinks.map((link) => (
-            <Button key={link.href} href={link.href} variant="dark" size="sm">
+            <Button key={link.href} href={link.href} variant="secondary" size="sm">
               {link.label}
             </Button>
           ))}
         </div>
       </Card>
 
-      <p className="muted" style={{ fontSize: '0.9rem', marginTop: '1rem' }}>
-        API ciblée : <code>{API_URL}</code>. Si le backend est arrêté, les cartes affichent une erreur exploitable.
+      <p className="muted" style={{ fontSize: '0.85rem', marginTop: '1rem' }}>
+        API ciblée : <code>{API_URL}</code>. Page interne — aucun token ni secret n’est affiché.
       </p>
     </section>
   );
@@ -295,11 +294,11 @@ function StatusCard({
 
 function TokenPresence({ label, present }: { label: string; present: boolean }) {
   return (
-    <div style={{ background: '#f5f5f7', borderRadius: 12, padding: '0.85rem' }}>
+    <div style={{ background: 'var(--accent-soft)', borderRadius: 12, padding: '0.85rem' }}>
       <p className="muted" style={{ fontSize: '0.85rem', fontWeight: 700 }}>
         {label}
       </p>
-      <strong style={{ color: present ? '#0f7a3b' : '#b42318', display: 'block', marginTop: '0.2rem' }}>
+      <strong style={{ color: present ? 'var(--success)' : 'var(--danger)', display: 'block', marginTop: '0.2rem' }}>
         {present ? 'Présent' : 'Absent'}
       </strong>
     </div>
@@ -314,8 +313,8 @@ function statusLabel(status: CheckStatus) {
 }
 
 function statusColor(status: CheckStatus) {
-  if (status === 'ok') return '#0f7a3b';
-  if (status === 'warning') return '#a15c00';
-  if (status === 'error') return '#b42318';
+  if (status === 'ok') return 'var(--success)';
+  if (status === 'warning') return 'var(--warning)';
+  if (status === 'error') return 'var(--danger)';
   return 'var(--accent)';
 }

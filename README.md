@@ -4,6 +4,15 @@ Plateforme de formation gamifiée pour techniciens Apple et administrateurs MDM 
 
 > **Non affilié** à Apple Inc., Jamf ou Microsoft. Contenus pédagogiques originaux.
 
+## Fonctionnalités
+
+- **100 % gratuit** — pas de paywall sur le MVP ; checkout billing simulé sans Stripe obligatoire
+- **3 pistes seedées** — Apple Device Support, Jamf Pro et Microsoft Intune (3 modules × 3 unités chacun)
+- **Gamification** — points, rangs, badges, quêtes hebdo, sprint certification et classement communautaire
+- **Web Next.js** — auth email + SSO dev, dashboard, parcours, quiz et mini-scénarios
+- **Mobile Expo** — auth par email, dashboard apprenant, quêtes et classement natifs (fallback démo FR sans token)
+- **Thème MDM Academy Pro** — palette bleu `#2563EB`, sans page pricing bloquante
+
 ## Stack
 
 

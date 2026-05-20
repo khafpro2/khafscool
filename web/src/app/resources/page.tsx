@@ -137,11 +137,11 @@ export default function ResourcesPage() {
         variant="soft"
         style={{
           marginTop: '1.5rem',
-          background: 'linear-gradient(135deg, #fff8e6 0%, #ffffff 100%)',
-          borderColor: '#f0cf7a',
+          background: 'linear-gradient(135deg, var(--accent-soft) 0%, #ffffff 100%)',
+          borderColor: 'var(--border)',
         }}
       >
-        <Badge tone="warning" icon="\u26A0\uFE0F">
+        <Badge tone="outline" icon="\u26A0\uFE0F">
           Note de conformité
         </Badge>
         <p className="muted" style={{ marginTop: '0.65rem' }}>

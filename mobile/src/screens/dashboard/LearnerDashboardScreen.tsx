@@ -2,14 +2,12 @@ import { useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
-  Linking,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
-import { WEB_URL } from '../../config';
 import { BrandIcon } from '../../components/BrandIcon';
 import { formatLevel, formatTrack, getBadgeVisual, getRankInfo, theme } from '../../lib/design';
 import { clearTokens } from '../../services/auth';
@@ -105,10 +103,6 @@ export function LearnerDashboardScreen({ onSignOut }: LearnerDashboardScreenProp
     }
   }
 
-  function openWebPath(path: string) {
-    void Linking.openURL(`${WEB_URL}${path}`);
-  }
-
   if (loading || !dashboard) {
     return (
       <View style={styles.loadingContainer}>
@@ -180,14 +174,14 @@ export function LearnerDashboardScreen({ onSignOut }: LearnerDashboardScreenProp
       </View>
 
       <View style={styles.quickActions}>
-        <Pressable style={[styles.quickAction, styles.quickActionQuests]} onPress={() => openWebPath('/quests')}>
+        <Pressable style={[styles.quickAction, styles.quickActionQuests]} onPress={() => router.push('/quests')}>
           <Text style={styles.quickActionIcon}>{'\u{1F3AF}'}</Text>
           <Text style={styles.quickActionTitle}>Quêtes hebdo</Text>
           <Text style={styles.quickActionHint}>Défis de la semaine</Text>
         </Pressable>
         <Pressable
           style={[styles.quickAction, styles.quickActionLeaderboard]}
-          onPress={() => openWebPath('/leaderboard')}
+          onPress={() => router.push('/leaderboard')}
         >
           <Text style={styles.quickActionIcon}>{'\u{1F3C6}'}</Text>
           <Text style={styles.quickActionTitle}>Classement</Text>
@@ -245,8 +239,8 @@ export function LearnerDashboardScreen({ onSignOut }: LearnerDashboardScreenProp
           Aucune quête active. Termine une unité ou démarre un sprint pour garder le rythme.
         </Text>
       )}
-      <Pressable style={styles.linkButton} onPress={() => openWebPath('/quests')}>
-        <Text style={styles.linkButtonText}>Voir toutes les quêtes →</Text>
+      <Pressable style={styles.linkButton} onPress={() => router.push('/quests')}>
+        <Text style={styles.linkButtonText}>Voir les quêtes →</Text>
       </Pressable>
 
       <View style={styles.sectionHeader}>

@@ -133,7 +133,7 @@ export function ProfileScreen() {
         <Text style={styles.linkCta}>Voir les badges →</Text>
       </Pressable>
 
-      <Pressable style={styles.linkCard} onPress={() => openWebPath('/quests')}>
+      <Pressable style={styles.linkCard} onPress={() => router.push('/quests')}>
         <Text style={styles.linkTitle}>Quêtes hebdomadaires</Text>
         <Text style={styles.linkHint}>Défis de la semaine et récompenses bonus</Text>
         <Text style={styles.linkCta}>Voir les quêtes →</Text>

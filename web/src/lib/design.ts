@@ -47,8 +47,8 @@ const TRACK_VISUALS: Record<string, TrackVisual> = {
   RESOURCES: {
     label: 'Ressources officielles',
     icon: '\u{1F4DA}',
-    color: '#0f7a3b',
-    gradient: 'linear-gradient(135deg, #0f7a3b 0%, #4cd964 100%)',
+    color: '#2563eb',
+    gradient: 'var(--gradient-hero)',
     defaultLevel: 'Débutant',
   },
   QUESTS: {
