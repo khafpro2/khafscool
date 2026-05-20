@@ -1246,6 +1246,12 @@ h1, h2, h3, h4 {
   }
 }
 
+@keyframes ama-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /* ---- Interactive mini-games (course units) ---- */
 .mini-game-panel {
   margin-top: 1rem;

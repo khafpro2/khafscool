@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { DemoModeBanner } from '@/components/layout/DemoModeBanner';
 import { SiteMobileNav } from '@/components/layout/SiteMobileNav';
 import { Button } from '@/components/ui/Button';
 import { LEARNING_PATHS } from '@/lib/learningPaths';
@@ -65,6 +66,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </div>
           </div>
         </header>
+        <DemoModeBanner />
         <main className="container" style={{ paddingTop: '1.5rem' }}>
           {children}
         </main>

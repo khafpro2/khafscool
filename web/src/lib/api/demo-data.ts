@@ -4,580 +4,24 @@ import {
   jamfProFoundationsQuestions,
   toDemoQuestions,
 } from '@shared/quiz-content';
-import { refreshSession } from './auth';
-import { formatTrack } from './tracks';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
-
-export interface AuthUser {
-  id: string;
-  email: string | null;
-  displayName: string | null;
-  provider?: string;
-}
-
-export interface AuthResponse {
-  accessToken: string;
-  refreshToken: string;
-  user: AuthUser;
-}
-
-export interface CompletedCourseSummary {
-  slug: string;
-  title: string;
-  track: string;
-  completedAt: string;
-}
-
-export interface LearningStreak {
-  currentDays: number;
-  longestDays: number;
-  lastActivityDate: string | null;
-}
-
-export interface DashboardData {
-  user: AuthUser;
-  stats: {
-    points: number;
-    level: string;
-    modulesCompleted: number;
-    timeSpentMinutes: number;
-    averageQuizScore: number;
-    preparationScore?: number;
-  };
-  badges: string[];
-  quests: { id: string; questKey?: string; label: string; progress: number; target: number; completed?: boolean }[];
-  certificationSprint?: CertificationSprintSummary | null;
-  courses: CourseSummary[];
-  completedCourses?: CompletedCourseSummary[];
-  learningStreak?: LearningStreak;
-}
-
-export type CertificationSprintTrack = 'APPLE' | 'JAMF' | 'INTUNE';
-export type CertificationSprintDays = 7 | 14;
-
-export interface CertificationSprintSummary {
-  id: string;
-  questKey: string;
-  track: CertificationSprintTrack;
-  label: string;
-  days: CertificationSprintDays;
-  startedAt: string;
-  endsAt: string;
-  target: number;
-  progress: number;
-  progressPercent: number;
-  remainingModules: number;
-  completed: boolean;
-  expired: boolean;
-}
-
-export interface CourseNextModule {
-  id: string;
-  slug: string;
-  title: string;
-  courseSlug?: string | null;
-}
-
-export interface UserProgressData {
-  user: AuthUser;
-  progress: {
-    totalModules: number;
-    completedModules: number;
-    progressPercent: number;
-    averageScore: number;
-    points: number;
-    level: string;
-  };
-  badges: string[];
-  quests: { id: string; label: string; progress: number; target: number }[];
-  certificationSprint?: CertificationSprintSummary | null;
-  courses: CourseSummary[];
-  tracks: {
-    track: string;
-    totalModules: number;
-    completedModules: number;
-    progressPercent: number;
-    averageScore: number;
-    nextModule?: CourseNextModule | null;
-  }[];
-}
-
-export interface CourseSummary {
-  id: string;
-  slug: string;
-  title: string;
-  track: string;
-  description?: string;
-  progressPercent?: number;
-  totalModules?: number;
-  completedModules?: number;
-  nextModule?: CourseNextModule | null;
-}
-
-export interface PublicCourseCatalogItem {
-  slug: string;
-  track: string;
-  title: string;
-  description: string;
-  moduleCount: number;
-}
-
-export interface CourseQuestion {
-  id: string;
-  type: string;
-  prompt: string;
-  options: { id: string; label: string }[];
-  /** Présent uniquement en mode démo hors-ligne */
-  correctOption?: string;
-  explanation?: string;
-}
-
-export interface CourseModule {
-  id: string;
-  slug: string;
-  title: string;
-  summary: string;
-  questions: CourseQuestion[];
-  game?: {
-    id?: string;
-    type: string;
-    scenario: string;
-    steps: { id: number; label: string }[];
-    /** Présent en mode démo pour le feedback local du mini-jeu */
-    correctOrder?: number[];
-  } | null;
-}
-
-export interface CourseDetail extends CourseSummary {
-  modules: CourseModule[];
-}
-
-export interface CourseProgressModule {
-  id: string;
-  slug: string;
-  title: string;
-  summary: string;
-  sortOrder?: number;
-  completed: boolean;
-  completedAt: string | null;
-  quizScore: number | null;
-  gameScore: number | null;
-  score: number | null;
-}
-
-export interface CourseProgressData {
-  course: CourseSummary;
-  progress: {
-    totalModules: number;
-    completedModules: number;
-    progressPercent: number;
-    averageScore: number;
-    nextModule: CourseNextModule | null;
-  };
-  modules: CourseProgressModule[];
-}
-
-export interface LeaderboardEntry {
-  rank: number;
-  userId?: string;
-  displayName: string;
-  email?: string | null;
-  points: number;
-  level: string;
-  badges: string[];
-  isCurrentUser: boolean;
-}
-
-export interface LeaderboardResponse {
-  leaderboard: LeaderboardEntry[];
-  currentUserRank: number | null;
-}
-
-export interface WeeklyQuest {
-  id: string;
-  questKey: string;
-  label: string;
-  description?: string | null;
-  target: number;
-  progress: number;
-  completed: boolean;
-  weekStart?: string | null;
-  rewardPoints?: number | null;
-  rewardClaimed?: boolean;
-  track?: string | null;
-}
-
-export interface WeeklyQuestsResponse {
-  quests: WeeklyQuest[];
-  weekStart?: string | null;
-  weekEnd?: string | null;
-}
-
-export type CheckoutPlan = 'monthly' | 'yearly' | 'enterprise';
-
-export interface BillingStatusResponse {
-  mode: 'demo' | 'live';
-  demo: boolean;
-  stripe: {
-    configured: boolean;
-    checkoutEnabled: boolean;
-  };
-}
-
-export interface BillingCheckoutResponse {
-  demo?: boolean;
-  mode?: 'demo' | 'live';
-  provider?: string;
-  plan: CheckoutPlan;
-  checkoutUrl?: string;
-  sessionId?: string;
-  stripe?: {
-    configured: boolean;
-    checkoutEnabled: boolean;
-  };
-  message?: string;
-}
-
-async function apiRequest<T>(path: string, init: RequestInit = {}) {
-  const requestInit = withJsonHeaders(init);
-  let res = await fetch(`${API_URL}${path}`, requestInit);
-
-  if (res.status === 401 && hasAuthorizationHeader(requestInit.headers)) {
-    const refreshed = await refreshSession();
-    if (refreshed) {
-      res = await fetch(`${API_URL}${path}`, withAuthorizationHeader(requestInit, refreshed.accessToken));
-    }
-  }
-
-  if (!res.ok) throw new Error(`Erreur API ${res.status}`);
-  return res.json() as Promise<T>;
-}
-
-function withJsonHeaders(init: RequestInit): RequestInit {
-  return {
-    ...init,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(init.headers ?? {}),
-    },
-    cache: 'no-store',
-  };
-}
-
-function hasAuthorizationHeader(headers: RequestInit['headers']) {
-  return Boolean(headers && 'Authorization' in headers && headers.Authorization);
-}
-
-function withAuthorizationHeader(init: RequestInit, token: string): RequestInit {
-  return {
-    ...init,
-    headers: {
-      ...(init.headers as Record<string, string>),
-      Authorization: `Bearer ${token}`,
-    },
-  };
-}
-
-function authHeader(token?: string): Record<string, string> {
-  return token ? { Authorization: `Bearer ${token}` } : {};
-}
-
-export function login(email: string, password: string) {
-  return apiRequest<AuthResponse>('/auth/login', {
-    method: 'POST',
-    body: JSON.stringify({ email, password }),
-  });
-}
-
-export function register(email: string, password: string, displayName: string) {
-  return apiRequest<AuthResponse>('/auth/register', {
-    method: 'POST',
-    body: JSON.stringify({ email, password, displayName }),
-  });
-}
-
-export function fetchBillingStatus() {
-  return apiRequest<BillingStatusResponse>('/billing/status');
-}
-
-export function createBillingCheckout(token: string, plan: CheckoutPlan) {
-  return apiRequest<BillingCheckoutResponse>('/billing/checkout', {
-    method: 'POST',
-    headers: authHeader(token),
-    body: JSON.stringify({ plan }),
-  });
-}
-
-export interface UserBadge {
-  slug: string;
-  earnedAt?: string | null;
-}
-
-export interface UserBadgesResult {
-  badges: UserBadge[];
-  earnedSlugs: string[];
-  fromApi: boolean;
-}
-
-export async function fetchUserBadges(token?: string): Promise<UserBadgesResult> {
-  if (!token) return mockUserBadges();
-
-  try {
-    const data = await apiRequest<{ badges: string[] }>('/users/me/dashboard', {
-      headers: authHeader(token),
-    });
-    const slugs = Array.isArray(data.badges) ? data.badges : [];
-    return {
-      badges: slugs.map((slug) => ({ slug })),
-      earnedSlugs: slugs,
-      fromApi: true,
-    };
-  } catch {
-    return mockUserBadges();
-  }
-}
-
-function mockUserBadges(): UserBadgesResult {
-  const slugs = ['apple-mdm-foundation'];
-  return {
-    badges: [
-      { slug: 'apple-mdm-foundation', earnedAt: '2026-03-12T10:30:00.000Z' },
-    ],
-    earnedSlugs: slugs,
-    fromApi: false,
-  };
-}
-
-export interface CurrentUserResponse {
-  user: AuthUser;
-  progress: {
-    points: number;
-    level: string;
-    badges: string[];
-    totalModules?: number;
-    completedModules?: number;
-  } | null;
-  subscription: { plan: string; status: string } | null;
-}
-
-export async function fetchCurrentUser(token?: string): Promise<CurrentUserResponse | null> {
-  if (!token) return null;
-
-  try {
-    return await apiRequest<CurrentUserResponse>('/auth/me', { headers: authHeader(token) });
-  } catch {
-    return null;
-  }
-}
-
-interface DashboardApiResponse {
-  user: AuthUser;
-  stats: {
-    points: number;
-    level: string;
-    modulesCompleted: number;
-    timeSpentMinutes: number;
-    averageQuizScore: number;
-    preparationScore?: number;
-  };
-  learningStreak?: LearningStreak;
-  badges: string[];
-  quests: { id: string; label: string; progress: number; target: number; completed?: boolean }[];
-  certificationSprint?: CertificationSprintSummary | null;
-  courses: CourseSummary[];
-  completedCourses?: CompletedCourseSummary[];
-}
-
-export async function fetchDashboard(token?: string): Promise<DashboardData> {
-  try {
-    if (token) {
-      const data = await apiRequest<DashboardApiResponse>('/users/me/dashboard', {
-        headers: authHeader(token),
-      });
-      return {
-        user: data.user,
-        stats: data.stats,
-        badges: data.badges,
-        quests: data.quests,
-        certificationSprint: data.certificationSprint ?? null,
-        courses: data.courses,
-        completedCourses: data.completedCourses ?? [],
-        learningStreak: data.learningStreak ?? defaultLearningStreak(),
-      };
-    }
-
-    const data = await apiRequest<UserProgressData>('/users/me/progress', { headers: authHeader(token) });
-    return toDashboardData(data);
-  } catch {
-    return mockDashboard();
-  }
-}
-
-export async function fetchCourses(token?: string): Promise<CourseSummary[]> {
-  try {
-    if (token) {
-      const progressData = await apiRequest<UserProgressData>('/users/me/progress', { headers: authHeader(token) });
-      return mergeMvpCourses(progressData.courses);
-    }
-
-    const data = await apiRequest<{ courses: PublicCourseCatalogItem[] }>('/catalog');
-    return mergeMvpCourses(
-      data.courses.map((course) => ({
-        id: course.slug,
-        slug: course.slug,
-        title: course.title,
-        track: course.track,
-        description: course.description,
-        totalModules: course.moduleCount,
-        completedModules: 0,
-        progressPercent: 0,
-      }))
-    );
-  } catch {
-    return DEMO_COURSES.map(courseToSummary);
-  }
-}
-
-export async function fetchCourse(slug: string, token?: string): Promise<CourseDetail> {
-  try {
-    const data = await apiRequest<{ course: CourseDetail }>(`/courses/${slug}`, { headers: authHeader(token) });
-    return normalizeCourse(data.course);
-  } catch {
-    const fallback = DEMO_COURSES.find((course) => course.slug === slug);
-    if (!fallback) throw new Error('Parcours introuvable');
-    return fallback;
-  }
-}
-
-export async function fetchCourseProgress(slug: string, token?: string): Promise<CourseProgressData> {
-  if (!token) {
-    const fallback = DEMO_COURSES.find((course) => course.slug === slug);
-    if (!fallback) throw new Error('Parcours introuvable');
-    return courseToProgress(fallback);
-  }
-
-  try {
-    return apiRequest<CourseProgressData>(`/courses/${slug}/progress`, { headers: authHeader(token) });
-  } catch {
-    const fallback = DEMO_COURSES.find((course) => course.slug === slug);
-    if (!fallback) throw new Error('Progression du parcours introuvable');
-    return courseToProgress(fallback);
-  }
-}
-
-export interface CourseCompletionResult {
-  slug: string;
-  title: string;
-  pointsEarned: number;
-  badgeEarned?: string;
-}
-
-export interface CompleteModuleResult {
-  quizScore: number;
-  gameScore: number;
-  pointsEarned: number;
-  level: string;
-  badges: string[];
-  preparationScore: number;
-  courseCompleted: boolean;
-  alreadyCompleted?: boolean;
-  courseCompletion?: CourseCompletionResult;
-}
-
-export interface CheckAnswerResult {
-  correct: boolean;
-  explanation?: string;
-}
-
-export const NEXT_COURSE_BY_SLUG: Record<string, { slug: string; title: string }> = {
-  'apple-cert-prep': { slug: 'jamf-pro-foundations', title: 'Fondamentaux Jamf Pro' },
-  'jamf-pro-foundations': { slug: 'intune-ios-enrollment', title: 'Microsoft Intune pour Apple' },
-};
-
-export async function checkModuleAnswer(
-  moduleId: string,
-  token: string,
-  payload: { questionId: string; selectedOption: string }
-) {
-  return apiRequest<CheckAnswerResult>(`/modules/${moduleId}/check-answer`, {
-    method: 'POST',
-    headers: authHeader(token),
-    body: JSON.stringify(payload),
-  });
-}
-
-export async function completeModule(
-  moduleId: string,
-  token: string,
-  payload: { quizAnswers?: Record<string, string>; gameOrder?: number[] }
-) {
-  return apiRequest<CompleteModuleResult>(`/modules/${moduleId}/complete`, {
-    method: 'POST',
-    headers: authHeader(token),
-    body: JSON.stringify(payload),
-  });
-}
-
-export async function fetchLeaderboard(token?: string): Promise<LeaderboardResponse> {
-  if (!token) return mockLeaderboard();
-
-  try {
-    return await apiRequest<LeaderboardResponse>('/leaderboard', { headers: authHeader(token) });
-  } catch {
-    return mockLeaderboard();
-  }
-}
-
-export async function fetchWeeklyQuests(token?: string): Promise<WeeklyQuestsResponse> {
-  if (!token) return mockWeeklyQuests();
-
-  try {
-    const data = await apiRequest<WeeklyQuestsResponse>('/quests/weekly', {
-      headers: authHeader(token),
-    });
-    return normalizeWeeklyQuests(data);
-  } catch {
-    return mockWeeklyQuests();
-  }
-}
-
-export async function fetchCurrentCertificationSprint(token?: string): Promise<CertificationSprintSummary | null> {
-  if (!token) return mockCertificationSprint();
-
-  try {
-    const data = await apiRequest<{ certificationSprint: CertificationSprintSummary | null }>(
-      '/sprints/certification/current',
-      { headers: authHeader(token) }
-    );
-    return data.certificationSprint;
-  } catch {
-    return mockCertificationSprint();
-  }
-}
-
-export async function startCertificationSprint(
-  token: string | undefined,
-  payload: { track: CertificationSprintTrack; days: CertificationSprintDays }
-): Promise<CertificationSprintSummary> {
-  if (!token) return mockCertificationSprint(payload.track, payload.days);
-
-  try {
-    const data = await apiRequest<{ certificationSprint: CertificationSprintSummary }>(
-      '/sprints/certification/start',
-      {
-        method: 'POST',
-        headers: authHeader(token),
-        body: JSON.stringify(payload),
-      }
-    );
-    return data.certificationSprint;
-  } catch {
-    return mockCertificationSprint(payload.track, payload.days);
-  }
-}
-
-function startOfIsoWeek(date: Date): Date {
+import { formatTrack } from '../tracks';
+import type {
+  CertificationSprintDays,
+  CertificationSprintSummary,
+  CertificationSprintTrack,
+  CourseDetail,
+  CourseNextModule,
+  CourseProgressData,
+  CourseSummary,
+  DashboardData,
+  LeaderboardResponse,
+  LearningStreak,
+  UserBadgesResult,
+  UserProgressData,
+  WeeklyQuestsResponse,
+} from './types';
+
+export function startOfIsoWeek(date: Date): Date {
   const copy = new Date(date);
   copy.setHours(0, 0, 0, 0);
   const day = copy.getDay();
@@ -586,14 +30,14 @@ function startOfIsoWeek(date: Date): Date {
   return copy;
 }
 
-function endOfIsoWeek(date: Date): Date {
+export function endOfIsoWeek(date: Date): Date {
   const start = startOfIsoWeek(date);
   const end = new Date(start);
   end.setDate(start.getDate() + 7);
   return end;
 }
 
-function normalizeWeeklyQuests(data: WeeklyQuestsResponse): WeeklyQuestsResponse {
+export function normalizeWeeklyQuests(data: WeeklyQuestsResponse): WeeklyQuestsResponse {
   const quests = Array.isArray(data?.quests) ? data.quests : [];
   const firstWeekStart = data?.weekStart ?? quests.find((quest) => quest.weekStart)?.weekStart ?? null;
   const computedStart = firstWeekStart ? new Date(firstWeekStart) : startOfIsoWeek(new Date());
@@ -612,7 +56,16 @@ function normalizeWeeklyQuests(data: WeeklyQuestsResponse): WeeklyQuestsResponse
   };
 }
 
-function mockWeeklyQuests(): WeeklyQuestsResponse {
+export function mockUserBadges(): UserBadgesResult {
+  const slugs = ['apple-mdm-foundation'];
+  return {
+    badges: [{ slug: 'apple-mdm-foundation', earnedAt: '2026-03-12T10:30:00.000Z' }],
+    earnedSlugs: slugs,
+    fromApi: false,
+  };
+}
+
+export function mockWeeklyQuests(): WeeklyQuestsResponse {
   const weekStart = startOfIsoWeek(new Date()).toISOString();
   const weekEnd = endOfIsoWeek(new Date()).toISOString();
 
@@ -672,7 +125,7 @@ function mockWeeklyQuests(): WeeklyQuestsResponse {
   };
 }
 
-function mockLeaderboard(): LeaderboardResponse {
+export function mockLeaderboard(): LeaderboardResponse {
   return {
     leaderboard: [
       {
@@ -712,7 +165,7 @@ function mockLeaderboard(): LeaderboardResponse {
   };
 }
 
-function mockDashboard(): DashboardData {
+export function mockDashboard(): DashboardData {
   return {
     user: { id: 'demo', displayName: 'Technicien démo', email: 'demo@ama.dev' },
     stats: {
@@ -747,11 +200,11 @@ function mockDashboard(): DashboardData {
   };
 }
 
-function defaultLearningStreak(): LearningStreak {
+export function defaultLearningStreak(): LearningStreak {
   return { currentDays: 0, longestDays: 0, lastActivityDate: null };
 }
 
-function toDashboardData(data: UserProgressData): DashboardData {
+export function toDashboardData(data: UserProgressData): DashboardData {
   const appleTrack = data.tracks.find((track) => track.track === 'APPLE');
 
   return {
@@ -771,7 +224,7 @@ function toDashboardData(data: UserProgressData): DashboardData {
   };
 }
 
-function mockCertificationSprint(
+export function mockCertificationSprint(
   track: CertificationSprintTrack = 'APPLE',
   days: CertificationSprintDays = 7
 ): CertificationSprintSummary {
@@ -798,7 +251,7 @@ function mockCertificationSprint(
   };
 }
 
-function mergeMvpCourses(courses: CourseSummary[]) {
+export function mergeMvpCourses(courses: CourseSummary[]) {
   const tracks = new Set(courses.map((course) => course.track));
   const merged = [...courses];
   for (const demo of DEMO_COURSES) {
@@ -809,7 +262,7 @@ function mergeMvpCourses(courses: CourseSummary[]) {
   return merged;
 }
 
-function courseToSummary(course: CourseDetail): CourseSummary {
+export function courseToSummary(course: CourseDetail): CourseSummary {
   const completedModules = course.completedModules ?? 0;
   const nextModule = course.modules[completedModules] ?? course.modules.find((module) => module);
 
@@ -833,7 +286,7 @@ function courseToSummary(course: CourseDetail): CourseSummary {
   };
 }
 
-function normalizeCourse(course: CourseDetail): CourseDetail {
+export function normalizeCourse(course: CourseDetail): CourseDetail {
   return {
     ...course,
     modules: course.modules.map((module) => ({
@@ -852,7 +305,7 @@ function normalizeCourse(course: CourseDetail): CourseDetail {
   };
 }
 
-function courseToProgress(course: CourseDetail): CourseProgressData {
+export function courseToProgress(course: CourseDetail): CourseProgressData {
   const completedModules = course.completedModules ?? 0;
   const progressPercent =
     course.progressPercent ?? (course.modules.length ? Math.round((completedModules / course.modules.length) * 100) : 0);
@@ -896,8 +349,7 @@ function courseToProgress(course: CourseDetail): CourseProgressData {
     modules,
   };
 }
-
-const DEMO_COURSES: CourseDetail[] = [
+export const DEMO_COURSES: CourseDetail[] = [
   {
     id: 'demo-apple',
     slug: 'apple-cert-prep',
@@ -1102,6 +554,4 @@ const DEMO_COURSES: CourseDetail[] = [
       },
     ],
   },
-];
-
-export { API_URL };
+];
