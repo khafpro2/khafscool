@@ -1,9 +1,11 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type RefObject } from 'react';
 import type { CourseModule } from '@/lib/api';
+import { getTrackVisual } from '@/lib/design';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
+import { BrandIcon } from '@/components/ui/BrandIcon';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 
 export const QUIZ_PASS_PERCENT = 50;
@@ -15,6 +17,7 @@ export type QuestionCheckResult = {
 
 type QuizPanelProps = {
   module: CourseModule;
+  track?: string | null;
   answers: Record<string, string>;
   questionResults: Record<string, QuestionCheckResult>;
   revealedQuestions: Set<string>;
@@ -22,52 +25,140 @@ type QuizPanelProps = {
   onSelectAnswer: (questionId: string, optionId: string) => void;
   onCheckAnswer: (questionId: string, selectedOption: string) => Promise<QuestionCheckResult>;
   onRevealAll: () => Promise<void>;
+  onFinishQuiz?: () => void;
 };
+
+const CORRECT_MESSAGES = [
+  'Bien joué !',
+  'Excellent choix !',
+  'Tu maîtrises ce point.',
+  'C’est la bonne réponse !',
+  'Bravo, continue comme ça.',
+];
+
+const INCORRECT_MESSAGES = [
+  'Presque — relis l’explication.',
+  'Pas tout à fait, mais tu progresses.',
+  'Ce n’est pas la bonne piste, étudie le détail ci-dessous.',
+  'À revoir : l’explication t’aidera à mémoriser.',
+  'Raté cette fois — le corrigé t’éclaire.',
+];
+
+function pickRandomMessage(messages: string[]) {
+  return messages[Math.floor(Math.random() * messages.length)] ?? messages[0];
+}
+
+function computeStreak(
+  questions: CourseModule['questions'],
+  questionResults: Record<string, QuestionCheckResult>,
+  upToIndex: number
+) {
+  let streak = 0;
+  for (let index = 0; index <= upToIndex; index += 1) {
+    const question = questions[index];
+    const result = questionResults[question?.id ?? ''];
+    if (!result) break;
+    if (result.correct) streak += 1;
+    else streak = 0;
+  }
+  return streak;
+}
 
 export function QuizPanel({
   module,
+  track,
   answers,
   questionResults,
   revealedQuestions,
   reviewMode,
   onSelectAnswer,
   onCheckAnswer,
-  onRevealAll,
+  onFinishQuiz,
 }: QuizPanelProps) {
   const questions = module.questions;
   const totalQuestions = questions.length;
-  const answeredCount = useMemo(
-    () => questions.filter((question) => Boolean(answers[question.id])).length,
-    [answers, questions]
+  const trackVisual = getTrackVisual(track);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [checkingQuestionId, setCheckingQuestionId] = useState<string | null>(null);
+  const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const feedbackRef = useRef<HTMLDivElement>(null);
+
+  const correctCount = useMemo(
+    () => countCorrectAnswers(questionResults),
+    [questionResults]
   );
   const estimatedScore = useMemo(
     () => computeQuizScorePercent(totalQuestions, questionResults),
     [questionResults, totalQuestions]
   );
-  const allAnswered = answeredCount === totalQuestions && totalQuestions > 0;
-  const allRevealed = questions.every((question) => revealedQuestions.has(question.id));
-  const [checkingQuestionId, setCheckingQuestionId] = useState<string | null>(null);
-  const [isRevealingAll, setIsRevealingAll] = useState(false);
+  const revealedCount = useMemo(
+    () => questions.filter((question) => revealedQuestions.has(question.id)).length,
+    [questions, revealedQuestions]
+  );
+  const allRevealed =
+    reviewMode || (totalQuestions > 0 && revealedCount === totalQuestions);
+  const progressStep = allRevealed ? totalQuestions : Math.max(revealedCount, currentIndex + 1);
 
-  async function handleCheckAnswer(questionId: string) {
-    const selectedOption = answers[questionId];
-    if (!selectedOption || revealedQuestions.has(questionId)) return;
+  const currentQuestion = questions[currentIndex];
+  const currentQuestionId = currentQuestion?.id;
+  const selectedOptionId = currentQuestionId ? answers[currentQuestionId] : undefined;
+  const checkResult = currentQuestionId ? questionResults[currentQuestionId] : undefined;
+  const currentRevealed = currentQuestionId
+    ? revealedQuestions.has(currentQuestionId) || reviewMode
+    : false;
+  const isChecking = checkingQuestionId === currentQuestionId;
+  const streak = useMemo(
+    () => computeStreak(questions, questionResults, currentIndex),
+    [questions, questionResults, currentIndex]
+  );
+  const showStreakBadge = streak >= 3 && currentRevealed && checkResult?.correct;
 
-    setCheckingQuestionId(questionId);
+  useEffect(() => {
+    if (currentIndex > totalQuestions - 1 && totalQuestions > 0) {
+      setCurrentIndex(totalQuestions - 1);
+    }
+  }, [currentIndex, totalQuestions]);
+
+  const goToQuestion = useCallback(
+    (index: number) => {
+      if (index < 0 || index >= totalQuestions) return;
+      setCurrentIndex(index);
+      setFeedbackMessage(null);
+      setShowConfetti(false);
+    },
+    [totalQuestions]
+  );
+
+  async function handleCheckAnswer() {
+    if (!currentQuestionId || !selectedOptionId || currentRevealed) return;
+
+    setCheckingQuestionId(currentQuestionId);
+    setFeedbackMessage(null);
+    setShowConfetti(false);
+
     try {
-      await onCheckAnswer(questionId, selectedOption);
+      const result = await onCheckAnswer(currentQuestionId, selectedOptionId);
+      const message = result.correct
+        ? pickRandomMessage(CORRECT_MESSAGES)
+        : pickRandomMessage(INCORRECT_MESSAGES);
+      setFeedbackMessage(message);
+      if (result.correct) {
+        setShowConfetti(true);
+        window.setTimeout(() => setShowConfetti(false), 1200);
+      }
+      feedbackRef.current?.focus({ preventScroll: true });
     } finally {
       setCheckingQuestionId(null);
     }
   }
 
-  async function handleRevealAll() {
-    setIsRevealingAll(true);
-    try {
-      await onRevealAll();
-    } finally {
-      setIsRevealingAll(false);
+  function handleFinishQuiz() {
+    if (onFinishQuiz) {
+      onFinishQuiz();
+      return;
     }
+    document.getElementById('course-unit-submit')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 
   if (!totalQuestions) {
@@ -78,261 +169,304 @@ export function QuizPanel({
     );
   }
 
+  const panelStyle = { '--quiz-accent': trackVisual.color } as CSSProperties;
+
   return (
-    <div style={{ marginTop: '1rem' }}>
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          gap: '0.75rem',
-          flexWrap: 'wrap',
-          alignItems: 'center',
-        }}
-      >
-        <div>
-          <h3 style={{ fontWeight: 800, fontSize: '0.95rem' }}>
-            <span aria-hidden style={{ marginRight: 6 }}>
-              {'\u{1F4DD}'}
+    <section
+      className="quiz-panel"
+      aria-label="Quiz de l'unité"
+      style={{ marginTop: '1rem', ...panelStyle }}
+    >
+      <header className="quiz-panel-header" style={{ background: trackVisual.gradient }}>
+        <div className="quiz-panel-header-inner">
+          <div className="quiz-panel-brand">
+            {trackVisual.brand ? (
+              <BrandIcon brand={trackVisual.brand} size="sm" variant="onColor" />
+            ) : (
+              <span aria-hidden className="quiz-panel-emoji">
+                {trackVisual.icon ?? '\u{1F4DD}'}
+              </span>
+            )}
+            <div>
+              <p className="quiz-panel-eyebrow">Quiz · {trackVisual.label}</p>
+              <h3 className="quiz-panel-title">Teste tes connaissances</h3>
+            </div>
+          </div>
+          <div className="quiz-panel-stats" aria-live="polite" aria-atomic="true">
+            <span className="quiz-score-pill">
+              <strong>{correctCount}</strong>/{totalQuestions} bonnes réponses
             </span>
-            Quiz de l&apos;unité
-          </h3>
-          <p className="muted" style={{ marginTop: '0.25rem', fontSize: '0.85rem' }}>
-            {answeredCount}/{totalQuestions} question{totalQuestions > 1 ? 's' : ''} répondue
-            {answeredCount > 1 ? 's' : ''}
-            {Object.keys(questionResults).length > 0 ? ` · score estimé ${estimatedScore}%` : ''}
-          </p>
+            {revealedCount > 0 && (
+              <span className="quiz-score-estimate">{estimatedScore}%</span>
+            )}
+          </div>
         </div>
-        <Badge tone={allAnswered ? 'success' : 'warning'} icon={allAnswered ? '\u2705' : '\u{1F3AF}'}>
-          {allAnswered ? 'Quiz complet' : 'En cours'}
-        </Badge>
-      </div>
+      </header>
 
-      <ProgressBar
-        value={answeredCount}
-        max={totalQuestions}
-        tone={allAnswered ? 'success' : 'accent'}
-        label="Progression du quiz"
-        style={{ marginTop: '0.75rem' }}
-      />
-
-      <div style={{ display: 'grid', gap: '0.85rem', marginTop: '1rem' }}>
-        {questions.map((question, index) => (
-          <QuizQuestionCard
-            key={question.id}
-            question={question}
-            index={index}
-            total={totalQuestions}
-            selectedOptionId={answers[question.id]}
-            checkResult={questionResults[question.id]}
-            revealed={revealedQuestions.has(question.id) || reviewMode}
-            disabled={reviewMode}
-            isChecking={checkingQuestionId === question.id}
-            onSelect={(optionId) => onSelectAnswer(question.id, optionId)}
-            onCheck={() => handleCheckAnswer(question.id)}
-          />
-        ))}
-      </div>
-
-      {allAnswered && !allRevealed && !reviewMode && (
-        <div style={{ marginTop: '0.85rem', display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-          <Button size="sm" variant="secondary" onClick={handleRevealAll} disabled={isRevealingAll}>
-            {isRevealingAll ? 'Vérification…' : 'Voir le corrigé du quiz'}
-          </Button>
-        </div>
-      )}
-
-      {(allRevealed || reviewMode) && (
-        <QuizRecap
-          answeredCount={answeredCount}
-          totalQuestions={totalQuestions}
-          estimatedScore={estimatedScore}
-          passPercent={QUIZ_PASS_PERCENT}
+      <div className="quiz-panel-body">
+        <ProgressBar
+          value={progressStep}
+          max={totalQuestions}
+          tone={allRevealed ? 'success' : 'accent'}
+          label={`Question ${Math.min(currentIndex + 1, totalQuestions)} sur ${totalQuestions}`}
+          showValueLabel
+          className="quiz-progress"
         />
-      )}
-    </div>
+
+        {showStreakBadge && (
+          <p className="quiz-streak-badge" role="status">
+            <span aria-hidden>{'\u{1F525}'}</span> Série de {streak} bonnes réponses
+          </p>
+        )}
+
+        {currentQuestion && (
+          <QuizQuestionStep
+            key={currentQuestion.id}
+            question={currentQuestion}
+            index={currentIndex}
+            total={totalQuestions}
+            trackColor={trackVisual.color}
+            selectedOptionId={selectedOptionId}
+            checkResult={checkResult}
+            revealed={currentRevealed}
+            disabled={reviewMode}
+            isChecking={isChecking}
+            showConfetti={showConfetti}
+            feedbackMessage={feedbackMessage}
+            feedbackRef={feedbackRef}
+            onSelect={(optionId) => {
+              if (!currentRevealed) onSelectAnswer(currentQuestion.id, optionId);
+            }}
+            onCheck={() => void handleCheckAnswer()}
+          />
+        )}
+
+        <nav className="quiz-nav" aria-label="Navigation du quiz">
+          <Button
+            type="button"
+            size="sm"
+            variant="secondary"
+            onClick={() => goToQuestion(currentIndex - 1)}
+            disabled={currentIndex === 0}
+          >
+            Précédent
+          </Button>
+
+          <span className="quiz-nav-dots" aria-hidden>
+            {questions.map((question, index) => {
+              const answered = Boolean(answers[question.id]);
+              const revealed = revealedQuestions.has(question.id);
+              const correct = questionResults[question.id]?.correct;
+              let dotClass = 'quiz-dot';
+              if (index === currentIndex) dotClass += ' quiz-dot-active';
+              if (revealed && correct) dotClass += ' quiz-dot-correct';
+              else if (revealed && !correct) dotClass += ' quiz-dot-incorrect';
+              else if (answered) dotClass += ' quiz-dot-answered';
+
+              return <span key={question.id} className={dotClass} />;
+            })}
+          </span>
+
+          {currentIndex < totalQuestions - 1 ? (
+            <Button
+              type="button"
+              size="sm"
+              onClick={() => goToQuestion(currentIndex + 1)}
+              disabled={!currentRevealed}
+            >
+              Suivant
+            </Button>
+          ) : currentRevealed ? (
+            <Button type="button" size="sm" onClick={handleFinishQuiz}>
+              Terminer le quiz
+            </Button>
+          ) : (
+            <Button type="button" size="sm" disabled>
+              Suivant
+            </Button>
+          )}
+        </nav>
+
+        {allRevealed && (
+          <QuizRecap
+            correctCount={correctCount}
+            totalQuestions={totalQuestions}
+            estimatedScore={estimatedScore}
+            passPercent={QUIZ_PASS_PERCENT}
+          />
+        )}
+
+        {!reviewMode && revealedCount > 0 && revealedCount < totalQuestions && (
+          <p className="quiz-hint muted">
+            Valide chaque réponse pour débloquer la question suivante.
+          </p>
+        )}
+      </div>
+    </section>
   );
 }
 
-type QuizQuestionCardProps = {
+type QuizQuestionStepProps = {
   question: CourseModule['questions'][number];
   index: number;
   total: number;
+  trackColor: string;
   selectedOptionId?: string;
   checkResult?: QuestionCheckResult;
   revealed: boolean;
   disabled: boolean;
   isChecking: boolean;
+  showConfetti: boolean;
+  feedbackMessage: string | null;
+  feedbackRef: RefObject<HTMLDivElement | null>;
   onSelect: (optionId: string) => void;
   onCheck: () => void;
 };
 
-function QuizQuestionCard({
+function QuizQuestionStep({
   question,
   index,
   total,
+  trackColor,
   selectedOptionId,
   checkResult,
   revealed,
   disabled,
   isChecking,
+  showConfetti,
+  feedbackMessage,
+  feedbackRef,
   onSelect,
   onCheck,
-}: QuizQuestionCardProps) {
+}: QuizQuestionStepProps) {
   const isCorrect = revealed && checkResult?.correct === true;
   const isIncorrect = revealed && checkResult?.correct === false;
-  const canReveal = Boolean(selectedOptionId) && !revealed && !disabled;
+  const canValidate = Boolean(selectedOptionId) && !revealed && !disabled;
 
   return (
-    <fieldset
-      style={{
-        border: `1px solid ${revealed ? (isCorrect ? '#a8d8b2' : isIncorrect ? '#f0b4b4' : 'var(--border-soft)') : 'var(--border-soft)'}`,
-        borderRadius: 14,
-        padding: '0.9rem 1rem',
-        background: revealed
-          ? isCorrect
-            ? '#f4fbf6'
-            : isIncorrect
-              ? '#fff5f5'
-              : '#ffffff'
-          : '#ffffff',
-        margin: 0,
-      }}
+    <article
+      className={`quiz-question-card${revealed ? (isCorrect ? ' quiz-question-correct' : isIncorrect ? ' quiz-question-incorrect' : '') : ''}`}
     >
-      <legend style={{ padding: '0 0.4rem', width: '100%' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.5rem', flexWrap: 'wrap' }}>
-          <span className="muted" style={{ fontWeight: 800, fontSize: '0.78rem', textTransform: 'uppercase' }}>
+      {showConfetti && isCorrect && (
+        <div className="quiz-confetti" aria-hidden>
+          {CONFETTI_PIECES.map((piece) => (
+            <span
+              key={piece.id}
+              className="quiz-confetti-piece"
+              style={
+                {
+                  '--x': piece.x,
+                  '--delay': piece.delay,
+                  '--hue': piece.hue,
+                } as CSSProperties
+              }
+            />
+          ))}
+        </div>
+      )}
+
+      <fieldset className="quiz-fieldset">
+        <legend className="quiz-legend">
+          <span className="quiz-question-index" style={{ color: trackColor }}>
             Question {index + 1}/{total}
           </span>
-          {revealed && checkResult && (
+          <h4 className="quiz-question-prompt">{question.prompt}</h4>
+        </legend>
+
+        <div className="quiz-options" role="radiogroup" aria-label={question.prompt}>
+          {question.options.map((option, optionIndex) => {
+            const selected = selectedOptionId === option.id;
+            const isWrongSelection = revealed && selected && checkResult?.correct === false;
+            const isCorrectSelection = revealed && selected && checkResult?.correct === true;
+
+            let stateClass = 'quiz-option';
+            if (isCorrectSelection) stateClass += ' quiz-option-correct';
+            else if (isWrongSelection) stateClass += ' quiz-option-incorrect';
+            else if (selected) stateClass += ' quiz-option-selected';
+
+            return (
+              <button
+                key={option.id}
+                type="button"
+                role="radio"
+                aria-checked={selected}
+                disabled={disabled || revealed}
+                className={stateClass}
+                style={{ animationDelay: `${optionIndex * 40}ms` }}
+                onClick={() => onSelect(option.id)}
+              >
+                <span className="quiz-option-letter" aria-hidden>
+                  {String.fromCharCode(65 + optionIndex)}
+                </span>
+                <span className="quiz-option-label">{option.label}</span>
+                {isCorrectSelection && (
+                  <span className="quiz-option-icon quiz-option-icon-correct" aria-hidden>
+                    {'\u2713'}
+                  </span>
+                )}
+                {isWrongSelection && (
+                  <span className="quiz-option-icon quiz-option-icon-incorrect" aria-hidden>
+                    {'\u2717'}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+
+        {canValidate && (
+          <Button
+            type="button"
+            size="sm"
+            className="quiz-validate-btn"
+            onClick={onCheck}
+            disabled={isChecking}
+          >
+            {isChecking ? 'Vérification…' : 'Valider ma réponse'}
+          </Button>
+        )}
+
+        {revealed && (
+          <div
+            ref={feedbackRef}
+            tabIndex={-1}
+            className="quiz-feedback-region"
+            aria-live="polite"
+            aria-atomic="true"
+          >
+            {feedbackMessage && (
+              <p
+                className={`quiz-feedback-message${isCorrect ? ' quiz-feedback-success' : ' quiz-feedback-error'}`}
+              >
+                {feedbackMessage}
+              </p>
+            )}
             <Badge tone={isCorrect ? 'success' : 'neutral'} icon={isCorrect ? '\u2705' : '\u274C'}>
               {isCorrect ? 'Bonne réponse' : 'Réponse incorrecte'}
             </Badge>
-          )}
-        </div>
-        <p style={{ fontWeight: 700, marginTop: '0.35rem', lineHeight: 1.45 }}>{question.prompt}</p>
-      </legend>
+          </div>
+        )}
 
-      <div style={{ display: 'grid', gap: '0.45rem', marginTop: '0.6rem' }} role="radiogroup" aria-label={question.prompt}>
-        {question.options.map((option) => {
-          const selected = selectedOptionId === option.id;
-          const isWrongSelection = revealed && selected && checkResult?.correct === false;
-          const isCorrectSelection = revealed && selected && checkResult?.correct === true;
-
-          return (
-            <button
-              key={option.id}
-              type="button"
-              role="radio"
-              aria-checked={selected}
-              disabled={disabled || revealed}
-              onClick={() => {
-                if (!disabled && !revealed) onSelect(option.id);
-              }}
-              style={{
-                display: 'flex',
-                gap: '0.65rem',
-                alignItems: 'center',
-                textAlign: 'left',
-                width: '100%',
-                padding: '0.65rem 0.75rem',
-                borderRadius: 12,
-                border: `2px solid ${
-                  isCorrectSelection
-                    ? '#6fbf84'
-                    : isWrongSelection
-                      ? '#e08b8b'
-                      : selected
-                        ? 'var(--accent)'
-                        : 'var(--border-soft)'
-                }`,
-                background: isCorrectSelection
-                  ? '#e8f7ec'
-                  : isWrongSelection
-                    ? '#fdeeee'
-                    : selected
-                      ? '#f0f7ff'
-                      : '#fafbfd',
-                cursor: disabled || revealed ? 'default' : 'pointer',
-                font: 'inherit',
-                color: 'inherit',
-              }}
-            >
-              <span
-                aria-hidden
-                style={{
-                  width: 18,
-                  height: 18,
-                  borderRadius: '50%',
-                  border: `2px solid ${selected ? 'var(--accent-strong)' : 'var(--border)'}`,
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0,
-                  background: selected ? 'var(--accent-strong)' : '#fff',
-                }}
-              >
-                {selected && (
-                  <span
-                    style={{
-                      width: 8,
-                      height: 8,
-                      borderRadius: '50%',
-                      background: '#fff',
-                    }}
-                  />
-                )}
-              </span>
-              <span style={{ fontWeight: selected ? 700 : 500 }}>{option.label}</span>
-              {isCorrectSelection && (
-                <span style={{ marginLeft: 'auto', fontWeight: 800, color: '#2f7a45' }} aria-hidden>
-                  {'\u2705'}
-                </span>
-              )}
-              {isWrongSelection && (
-                <span style={{ marginLeft: 'auto', fontWeight: 800, color: '#b44' }} aria-hidden>
-                  {'\u274C'}
-                </span>
-              )}
-            </button>
-          );
-        })}
-      </div>
-
-      {canReveal && (
-        <Button size="sm" variant="ghost" style={{ marginTop: '0.65rem' }} onClick={onCheck} disabled={isChecking}>
-          {isChecking ? 'Vérification…' : 'Valider ma réponse'}
-        </Button>
-      )}
-
-      {revealed && checkResult?.explanation && (
-        <div
-          style={{
-            marginTop: '0.75rem',
-            padding: '0.75rem 0.85rem',
-            borderRadius: 12,
-            background: '#f8fafd',
-            border: '1px solid var(--border-soft)',
-          }}
-        >
-          <p style={{ fontWeight: 800, fontSize: '0.82rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-            Explication
-          </p>
-          <p className="muted" style={{ marginTop: '0.35rem', lineHeight: 1.5 }}>
-            {checkResult.explanation}
-          </p>
-        </div>
-      )}
-    </fieldset>
+        {revealed && checkResult?.explanation && (
+          <aside className="quiz-explanation">
+            <p className="quiz-explanation-title">
+              <span aria-hidden>{'\u{1F4A1}'}</span> Explication
+            </p>
+            <p className="quiz-explanation-text">{checkResult.explanation}</p>
+          </aside>
+        )}
+      </fieldset>
+    </article>
   );
 }
 
 function QuizRecap({
-  answeredCount,
+  correctCount,
   totalQuestions,
   estimatedScore,
   passPercent,
 }: {
-  answeredCount: number;
+  correctCount: number;
   totalQuestions: number;
   estimatedScore: number;
   passPercent: number;
@@ -341,18 +475,11 @@ function QuizRecap({
   const meetsMinimum = estimatedScore >= passPercent;
 
   return (
-    <div
-      style={{
-        marginTop: '1rem',
-        padding: '0.9rem 1rem',
-        borderRadius: 14,
-        border: `1px solid ${meetsMinimum ? '#a8d8b2' : '#f0cf7a'}`,
-        background: meetsMinimum ? '#f4fbf6' : '#fff8e6',
-      }}
-    >
+    <div className={`quiz-recap${meetsMinimum ? ' quiz-recap-success' : ' quiz-recap-warning'}`}>
       <p style={{ fontWeight: 800 }}>Récapitulatif avant validation de l&apos;unité</p>
       <p className="muted" style={{ marginTop: '0.35rem', fontSize: '0.9rem', lineHeight: 1.5 }}>
-        {answeredCount}/{totalQuestions} réponses · score quiz estimé <strong>{estimatedScore}%</strong>
+        {correctCount}/{totalQuestions} bonnes réponses · score quiz estimé{' '}
+        <strong>{estimatedScore}%</strong>
         {totalQuestions > 0 && (
           <>
             {' '}
@@ -368,6 +495,13 @@ function QuizRecap({
     </div>
   );
 }
+
+const CONFETTI_PIECES = Array.from({ length: 12 }, (_, index) => ({
+  id: index,
+  x: `${(index % 6) * 16 - 40}%`,
+  delay: `${index * 45}ms`,
+  hue: `${(index * 37) % 360}`,
+}));
 
 export function computeQuizScorePercent(
   totalQuestions: number,

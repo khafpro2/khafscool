@@ -50,6 +50,8 @@ export function CourseDetailScreen() {
   const [questionResults, setQuestionResults] = useState<Record<string, CheckAnswerResult>>({});
   const [revealedQuestions, setRevealedQuestions] = useState<Set<string>>(new Set());
   const [checkingQuestionId, setCheckingQuestionId] = useState<string | null>(null);
+  const [quizQuestionIndex, setQuizQuestionIndex] = useState(0);
+  const [quizFeedback, setQuizFeedback] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [successNotice, setSuccessNotice] = useState<SuccessNotice | null>(null);
   const [localResult, setLocalResult] = useState<string | null>(null);
@@ -103,7 +105,19 @@ export function CourseDetailScreen() {
     );
   }, [activeModule, answers, revealedQuestions]);
 
+  const CORRECT_MESSAGES = [
+    'Bien joué !',
+    'Excellent choix !',
+    'Tu maîtrises ce point.',
+  ];
+  const INCORRECT_MESSAGES = [
+    'Presque — relis l’explication.',
+    'Pas tout à fait, mais tu progresses.',
+  ];
+
   function resetQuizState(module: CourseModule) {
+    setQuizQuestionIndex(0);
+    setQuizFeedback(null);
     const questionIds = module.questions.map((question) => question.id);
     setAnswers((current) => {
       const next = { ...current };
@@ -143,6 +157,11 @@ export function CourseDetailScreen() {
       }
       setQuestionResults((current) => ({ ...current, [questionId]: result }));
       setRevealedQuestions((current) => new Set(current).add(questionId));
+      setQuizFeedback(
+        result.correct
+          ? CORRECT_MESSAGES[Math.floor(Math.random() * CORRECT_MESSAGES.length)]
+          : INCORRECT_MESSAGES[Math.floor(Math.random() * INCORRECT_MESSAGES.length)]
+      );
       setLocalResult(null);
     } catch {
       setLocalResult('Impossible de vérifier cette réponse. Réessaie ou continue sur le web.');
@@ -387,76 +406,141 @@ export function CourseDetailScreen() {
               <View style={styles.moduleBody}>
                 {canPlayHere ? (
                   <>
-                    {module.questions.map((question) => {
+                    {(() => {
+                      const total = module.questions.length;
+                      const safeIndex = Math.min(quizQuestionIndex, Math.max(0, total - 1));
+                      const question = module.questions[safeIndex];
+                      if (!question) return null;
+
                       const selectedOption = answers[question.id];
                       const checkResult = questionResults[question.id];
                       const revealed = revealedQuestions.has(question.id);
-                      const isCorrect = revealed && checkResult?.correct === true;
-                      const isIncorrect = revealed && checkResult?.correct === false;
+                      const correctCount = Object.values(questionResults).filter((r) => r.correct).length;
+                      const isLast = safeIndex >= total - 1;
 
                       return (
-                        <View key={question.id} style={styles.questionBlock}>
-                          <Text style={styles.questionPrompt}>{question.prompt}</Text>
-                          {question.options.map((option) => {
-                            const selected = selectedOption === option.id;
-                            const isWrongSelection = revealed && selected && checkResult?.correct === false;
-                            const isCorrectSelection = revealed && selected && checkResult?.correct === true;
+                        <View style={styles.quizStepper}>
+                          <View style={styles.quizHeaderRow}>
+                            <Text style={styles.quizScoreLive}>
+                              {correctCount}/{total} bonnes réponses
+                            </Text>
+                            <Text style={styles.quizStepLabel}>
+                              Question {safeIndex + 1}/{total}
+                            </Text>
+                          </View>
+                          <ProgressBar
+                            progress={Math.round(((safeIndex + 1) / total) * 100)}
+                            fillColor={visual.color}
+                          />
+                          <View style={styles.questionBlock}>
+                            <Text style={styles.questionPrompt}>{question.prompt}</Text>
+                            {question.options.map((option, optionIndex) => {
+                              const selected = selectedOption === option.id;
+                              const isWrongSelection =
+                                revealed && selected && checkResult?.correct === false;
+                              const isCorrectSelection =
+                                revealed && selected && checkResult?.correct === true;
 
-                            return (
-                              <Pressable
-                                key={option.id}
-                                disabled={revealed}
-                                onPress={() => {
-                                  if (revealed) return;
-                                  setAnswers((current) => ({ ...current, [question.id]: option.id }));
-                                  setLocalResult(null);
-                                }}
-                                style={[
-                                  styles.option,
-                                  isCorrectSelection
-                                    ? styles.optionCorrect
-                                    : isWrongSelection
-                                      ? styles.optionIncorrect
-                                      : selected
-                                        ? styles.optionSelected
-                                        : null,
-                                ]}
-                              >
-                                <Text
+                              return (
+                                <Pressable
+                                  key={option.id}
+                                  disabled={revealed}
+                                  onPress={() => {
+                                    if (revealed) return;
+                                    setAnswers((current) => ({ ...current, [question.id]: option.id }));
+                                    setLocalResult(null);
+                                    setQuizFeedback(null);
+                                  }}
                                   style={[
-                                    styles.optionText,
-                                    selected ? styles.optionTextSelected : null,
-                                    isCorrect ? styles.optionTextSuccess : null,
-                                    isIncorrect && selected ? styles.optionTextError : null,
+                                    styles.option,
+                                    isCorrectSelection
+                                      ? styles.optionCorrect
+                                      : isWrongSelection
+                                        ? styles.optionIncorrect
+                                        : selected
+                                          ? styles.optionSelected
+                                          : null,
                                   ]}
                                 >
-                                  {option.label}
-                                </Text>
+                                  <Text style={styles.optionLetter}>
+                                    {String.fromCharCode(65 + optionIndex)}
+                                  </Text>
+                                  <Text
+                                    style={[
+                                      styles.optionText,
+                                      selected ? styles.optionTextSelected : null,
+                                      isCorrectSelection ? styles.optionTextSuccess : null,
+                                      isWrongSelection ? styles.optionTextError : null,
+                                    ]}
+                                  >
+                                    {option.label}
+                                  </Text>
+                                </Pressable>
+                              );
+                            })}
+                            {selectedOption && !revealed ? (
+                              <Pressable
+                                disabled={checkingQuestionId === question.id}
+                                onPress={() => void handleCheckAnswer(module, question.id)}
+                                style={styles.checkButton}
+                              >
+                                {checkingQuestionId === question.id ? (
+                                  <ActivityIndicator color="#0070D2" size="small" />
+                                ) : (
+                                  <Text style={styles.checkButtonText}>Valider ma réponse</Text>
+                                )}
                               </Pressable>
-                            );
-                          })}
-                          {selectedOption && !revealed ? (
+                            ) : null}
+                            {revealed && quizFeedback ? (
+                              <Text
+                                style={[
+                                  styles.quizFeedback,
+                                  checkResult?.correct ? styles.quizFeedbackSuccess : styles.quizFeedbackError,
+                                ]}
+                              >
+                                {quizFeedback}
+                              </Text>
+                            ) : null}
+                            {revealed && checkResult?.explanation ? (
+                              <View style={styles.explanationBox}>
+                                <Text style={styles.explanationTitle}>💡 Explication</Text>
+                                <Text style={styles.explanationText}>{checkResult.explanation}</Text>
+                              </View>
+                            ) : null}
+                          </View>
+                          <View style={styles.quizNavRow}>
                             <Pressable
-                              disabled={checkingQuestionId === question.id}
-                              onPress={() => void handleCheckAnswer(module, question.id)}
-                              style={styles.checkButton}
+                              disabled={safeIndex === 0}
+                              onPress={() => {
+                                setQuizQuestionIndex(safeIndex - 1);
+                                setQuizFeedback(null);
+                              }}
+                              style={[styles.quizNavBtn, safeIndex === 0 ? styles.buttonDisabled : null]}
                             >
-                              {checkingQuestionId === question.id ? (
-                                <ActivityIndicator color="#0070D2" size="small" />
-                              ) : (
-                                <Text style={styles.checkButtonText}>Valider ma réponse</Text>
-                              )}
+                              <Text style={styles.quizNavBtnText}>Précédent</Text>
                             </Pressable>
-                          ) : null}
-                          {revealed && checkResult?.explanation ? (
-                            <View style={styles.explanationBox}>
-                              <Text style={styles.explanationTitle}>Explication</Text>
-                              <Text style={styles.explanationText}>{checkResult.explanation}</Text>
-                            </View>
-                          ) : null}
+                            {!isLast ? (
+                              <Pressable
+                                disabled={!revealed}
+                                onPress={() => {
+                                  setQuizQuestionIndex(safeIndex + 1);
+                                  setQuizFeedback(null);
+                                }}
+                                style={[styles.quizNavBtnPrimary, !revealed ? styles.buttonDisabled : null]}
+                              >
+                                <Text style={styles.quizNavBtnPrimaryText}>Suivant</Text>
+                              </Pressable>
+                            ) : revealed ? (
+                              <Text style={styles.quizFinishHint}>Quiz terminé — valide l’unité ci-dessous</Text>
+                            ) : (
+                              <Pressable disabled style={styles.quizNavBtnPrimary}>
+                                <Text style={styles.quizNavBtnPrimaryText}>Suivant</Text>
+                              </Pressable>
+                            )}
+                          </View>
                         </View>
                       );
-                    })}
+                    })()}
                     {localResult ? <Text style={styles.localResult}>{localResult}</Text> : null}
                     <Pressable
                       disabled={!canSubmit || submitting}
@@ -634,7 +718,47 @@ const styles = StyleSheet.create({
   moduleBody: { marginTop: 14, paddingTop: 14, borderTopWidth: 1, borderTopColor: '#F0F0F5' },
   questionBlock: { marginBottom: 14 },
   questionPrompt: { color: '#1D1D1F', fontWeight: '700', lineHeight: 22, marginBottom: 8 },
+  quizStepper: { gap: 10 },
+  quizHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  quizScoreLive: { fontWeight: '800', color: '#1D1D1F', fontSize: 13 },
+  quizStepLabel: { color: '#6E6E73', fontWeight: '700', fontSize: 12 },
+  quizNavRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 10,
+    marginTop: 4,
+    marginBottom: 8,
+  },
+  quizNavBtn: {
+    borderWidth: 1,
+    borderColor: '#C5DBF3',
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    backgroundColor: '#FFFFFF',
+  },
+  quizNavBtnText: { color: '#0070D2', fontWeight: '700' },
+  quizNavBtnPrimary: {
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    backgroundColor: '#0070D2',
+  },
+  quizNavBtnPrimaryText: { color: '#FFFFFF', fontWeight: '800' },
+  quizFinishHint: { flex: 1, textAlign: 'right', color: '#6E6E73', fontSize: 12, fontWeight: '600' },
+  quizFeedback: { marginTop: 8, fontWeight: '700', fontSize: 14 },
+  quizFeedbackSuccess: { color: '#2F7A45' },
+  quizFeedbackError: { color: '#A23D3D' },
   option: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
     borderWidth: 1,
     borderColor: '#E5E5EA',
     borderRadius: 12,
@@ -642,10 +766,21 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     backgroundColor: '#FAFAFC',
   },
-  optionSelected: { borderColor: '#0070D2', backgroundColor: '#EAF3FF' },
+  optionLetter: {
+    width: 26,
+    height: 26,
+    borderRadius: 8,
+    backgroundColor: '#EEF0F5',
+    textAlign: 'center',
+    lineHeight: 26,
+    fontWeight: '800',
+    fontSize: 12,
+    color: '#6E6E73',
+  },
+  optionSelected: { borderColor: '#0070D2', backgroundColor: '#EAF3FF', borderWidth: 2 },
   optionCorrect: { borderColor: '#6FBF84', backgroundColor: '#E8F7EC' },
   optionIncorrect: { borderColor: '#E08B8B', backgroundColor: '#FDEEEE' },
-  optionText: { color: '#1D1D1F', lineHeight: 20 },
+  optionText: { flex: 1, color: '#1D1D1F', lineHeight: 20 },
   optionTextSelected: { color: '#0066CC', fontWeight: '700' },
   optionTextSuccess: { color: '#2F7A45', fontWeight: '700' },
   optionTextError: { color: '#B44', fontWeight: '700' },
@@ -661,9 +796,9 @@ const styles = StyleSheet.create({
     marginTop: 8,
     padding: 12,
     borderRadius: 12,
-    backgroundColor: '#F8FAFD',
+    backgroundColor: '#EEF6FF',
     borderWidth: 1,
-    borderColor: '#E5E5EA',
+    borderColor: '#C5DBF3',
   },
   explanationTitle: {
     color: '#6E6E73',

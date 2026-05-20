@@ -493,6 +493,7 @@ export function CourseDetailClient({ slug }: { slug: string }) {
                   ) : isActiveModule ? (
                     <QuizPanel
                       module={module}
+                      track={course.track}
                       answers={answers}
                       questionResults={activeQuestionResults}
                       revealedQuestions={activeRevealedQuestions}
@@ -500,6 +501,11 @@ export function CourseDetailClient({ slug }: { slug: string }) {
                       onSelectAnswer={handleSelectAnswer}
                       onCheckAnswer={handleCheckAnswer}
                       onRevealAll={handleRevealAllQuestions}
+                      onFinishQuiz={() => {
+                        document
+                          .getElementById('course-unit-submit')
+                          ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                      }}
                     />
                   ) : completed ? (
                     <Card variant="soft" style={{ marginTop: '1rem' }}>
@@ -521,7 +527,7 @@ export function CourseDetailClient({ slug }: { slug: string }) {
           </div>
 
           {activeModule && (
-            <Card style={{ marginTop: '1.25rem' }}>
+            <Card id="course-unit-submit" style={{ marginTop: '1.25rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
                 <div>
                   <p className="muted" style={{ fontWeight: 800, fontSize: '0.8rem', textTransform: 'uppercase' }}>
