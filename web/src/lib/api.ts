@@ -196,6 +196,7 @@ export interface WeeklyQuest {
   completed: boolean;
   weekStart?: string | null;
   rewardPoints?: number | null;
+  rewardClaimed?: boolean;
   track?: string | null;
 }
 

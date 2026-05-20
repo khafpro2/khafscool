@@ -14,10 +14,12 @@ import { BrandIcon } from '../../components/BrandIcon';
 import { TrackIcon } from '../../components/TrackIcon';
 import { formatTrack, getBadgeVisual, getTrackVisual } from '../../lib/design';
 import {
+  CheckAnswerResult,
   CourseDetail,
   CourseModule,
   CourseProgressData,
   CourseProgressModule,
+  checkModuleAnswer,
   completeModule,
   fetchCourse,
   fetchCourseProgress,
@@ -45,6 +47,9 @@ export function CourseDetailScreen() {
   const [error, setError] = useState<string | null>(null);
   const [expandedModuleId, setExpandedModuleId] = useState<string | null>(null);
   const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [questionResults, setQuestionResults] = useState<Record<string, CheckAnswerResult>>({});
+  const [revealedQuestions, setRevealedQuestions] = useState<Set<string>>(new Set());
+  const [checkingQuestionId, setCheckingQuestionId] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [successNotice, setSuccessNotice] = useState<SuccessNotice | null>(null);
   const [localResult, setLocalResult] = useState<string | null>(null);
@@ -86,12 +91,65 @@ export function CourseDetailScreen() {
     return new Map(progress?.modules.map((module) => [module.id, module]) ?? []);
   }, [progress]);
 
+  const activeModule = useMemo(() => {
+    if (!expandedModuleId || !course) return null;
+    return course.modules.find((item) => item.id === expandedModuleId) ?? null;
+  }, [course, expandedModuleId]);
+
   const canSubmit = useMemo(() => {
-    if (!expandedModuleId || !course) return false;
-    const module = course.modules.find((item) => item.id === expandedModuleId);
-    if (!module?.questions.length) return false;
-    return module.questions.every((question) => answers[question.id]);
-  }, [answers, course, expandedModuleId]);
+    if (!activeModule?.questions.length) return false;
+    return activeModule.questions.every(
+      (question) => answers[question.id] && revealedQuestions.has(question.id)
+    );
+  }, [activeModule, answers, revealedQuestions]);
+
+  function resetQuizState(module: CourseModule) {
+    const questionIds = module.questions.map((question) => question.id);
+    setAnswers((current) => {
+      const next = { ...current };
+      for (const questionId of questionIds) {
+        delete next[questionId];
+      }
+      return next;
+    });
+    setQuestionResults((current) => {
+      const next = { ...current };
+      for (const questionId of questionIds) {
+        delete next[questionId];
+      }
+      return next;
+    });
+    setRevealedQuestions((current) => {
+      const next = new Set(current);
+      for (const questionId of questionIds) {
+        next.delete(questionId);
+      }
+      return next;
+    });
+  }
+
+  async function handleCheckAnswer(module: CourseModule, questionId: string) {
+    const selectedOption = answers[questionId];
+    if (!selectedOption || revealedQuestions.has(questionId)) return;
+
+    setCheckingQuestionId(questionId);
+    try {
+      let result: CheckAnswerResult;
+      if (source === 'api' && !module.id.startsWith('demo-')) {
+        result = await checkModuleAnswer(module.id, { questionId, selectedOption });
+      } else {
+        setLocalResult('Connecte-toi pour valider tes réponses avec l’API.');
+        return;
+      }
+      setQuestionResults((current) => ({ ...current, [questionId]: result }));
+      setRevealedQuestions((current) => new Set(current).add(questionId));
+      setLocalResult(null);
+    } catch {
+      setLocalResult('Impossible de vérifier cette réponse. Réessaie ou continue sur le web.');
+    } finally {
+      setCheckingQuestionId(null);
+    }
+  }
 
   async function handleSubmit(module: CourseModule) {
     if (!module.questions.length) return;
@@ -100,7 +158,7 @@ export function CourseDetailScreen() {
     setSuccessNotice(null);
     setLocalResult(null);
 
-    const localScore = computeLocalScore(module.questions, answers);
+    const estimatedQuizScore = computeQuizScorePercent(module.questions.length, questionResults);
 
     if (source === 'api' && !module.id.startsWith('demo-')) {
       try {
@@ -144,14 +202,14 @@ export function CourseDetailScreen() {
           pointsEarned: result.pointsEarned,
           quizScore: result.quizScore,
         });
-        setAnswers({});
+        resetQuizState(module);
         setProgress(refreshed.data);
         setExpandedModuleId(refreshed.data.progress.nextModule?.id ?? null);
         setSubmitting(false);
         return;
       } catch {
         setLocalResult(
-          `Score local : ${localScore} %. L’enregistrement a échoué — réessayez ou continuez sur le web.`
+          `Score quiz estimé : ${estimatedQuizScore} %. L’enregistrement a échoué — réessayez ou continuez sur le web.`
         );
         setSubmitting(false);
         return;
@@ -159,7 +217,7 @@ export function CourseDetailScreen() {
     }
 
     setLocalResult(
-      `Score local : ${localScore} %. Connecte-toi avec l’API pour enregistrer la progression.`
+      `Score quiz estimé : ${estimatedQuizScore} %. Connecte-toi avec l’API pour enregistrer la progression.`
     );
     setSubmitting(false);
   }
@@ -296,7 +354,14 @@ export function CourseDetailScreen() {
             ]}
           >
             <Pressable
-              onPress={() => setExpandedModuleId(isExpanded ? null : module.id)}
+              onPress={() => {
+                if (isExpanded) {
+                  setExpandedModuleId(null);
+                  return;
+                }
+                resetQuizState(module);
+                setExpandedModuleId(module.id);
+              }}
               style={styles.moduleHeader}
             >
               <View style={styles.moduleHeaderText}>
@@ -322,29 +387,76 @@ export function CourseDetailScreen() {
               <View style={styles.moduleBody}>
                 {canPlayHere ? (
                   <>
-                    {module.questions.map((question) => (
-                      <View key={question.id} style={styles.questionBlock}>
-                        <Text style={styles.questionPrompt}>{question.prompt}</Text>
-                        {question.options.map((option) => {
-                          const selected = answers[question.id] === option.id;
-                          return (
-                            <Pressable
-                              key={option.id}
-                              onPress={() =>
-                                setAnswers((current) => ({ ...current, [question.id]: option.id }))
-                              }
-                              style={[styles.option, selected ? styles.optionSelected : null]}
-                            >
-                              <Text
-                                style={[styles.optionText, selected ? styles.optionTextSelected : null]}
+                    {module.questions.map((question) => {
+                      const selectedOption = answers[question.id];
+                      const checkResult = questionResults[question.id];
+                      const revealed = revealedQuestions.has(question.id);
+                      const isCorrect = revealed && checkResult?.correct === true;
+                      const isIncorrect = revealed && checkResult?.correct === false;
+
+                      return (
+                        <View key={question.id} style={styles.questionBlock}>
+                          <Text style={styles.questionPrompt}>{question.prompt}</Text>
+                          {question.options.map((option) => {
+                            const selected = selectedOption === option.id;
+                            const isWrongSelection = revealed && selected && checkResult?.correct === false;
+                            const isCorrectSelection = revealed && selected && checkResult?.correct === true;
+
+                            return (
+                              <Pressable
+                                key={option.id}
+                                disabled={revealed}
+                                onPress={() => {
+                                  if (revealed) return;
+                                  setAnswers((current) => ({ ...current, [question.id]: option.id }));
+                                  setLocalResult(null);
+                                }}
+                                style={[
+                                  styles.option,
+                                  isCorrectSelection
+                                    ? styles.optionCorrect
+                                    : isWrongSelection
+                                      ? styles.optionIncorrect
+                                      : selected
+                                        ? styles.optionSelected
+                                        : null,
+                                ]}
                               >
-                                {option.label}
-                              </Text>
+                                <Text
+                                  style={[
+                                    styles.optionText,
+                                    selected ? styles.optionTextSelected : null,
+                                    isCorrect ? styles.optionTextSuccess : null,
+                                    isIncorrect && selected ? styles.optionTextError : null,
+                                  ]}
+                                >
+                                  {option.label}
+                                </Text>
+                              </Pressable>
+                            );
+                          })}
+                          {selectedOption && !revealed ? (
+                            <Pressable
+                              disabled={checkingQuestionId === question.id}
+                              onPress={() => void handleCheckAnswer(module, question.id)}
+                              style={styles.checkButton}
+                            >
+                              {checkingQuestionId === question.id ? (
+                                <ActivityIndicator color="#0070D2" size="small" />
+                              ) : (
+                                <Text style={styles.checkButtonText}>Valider ma réponse</Text>
+                              )}
                             </Pressable>
-                          );
-                        })}
-                      </View>
-                    ))}
+                          ) : null}
+                          {revealed && checkResult?.explanation ? (
+                            <View style={styles.explanationBox}>
+                              <Text style={styles.explanationTitle}>Explication</Text>
+                              <Text style={styles.explanationText}>{checkResult.explanation}</Text>
+                            </View>
+                          ) : null}
+                        </View>
+                      );
+                    })}
                     {localResult ? <Text style={styles.localResult}>{localResult}</Text> : null}
                     <Pressable
                       disabled={!canSubmit || submitting}
@@ -421,12 +533,13 @@ function sumModuleProgressPoints(
     );
 }
 
-function computeLocalScore(questions: CourseModule['questions'], answers: Record<string, string>) {
-  if (!questions.length) return 0;
-  const correct = questions.filter(
-    (question) => question.correctOption && answers[question.id] === question.correctOption
-  );
-  return Math.round((correct.length / questions.length) * 100);
+function computeQuizScorePercent(
+  totalQuestions: number,
+  results: Record<string, CheckAnswerResult>
+) {
+  if (!totalQuestions) return 0;
+  const correct = Object.values(results).filter((result) => result.correct).length;
+  return Math.round((correct / totalQuestions) * 100);
 }
 
 function ProgressBar({
@@ -530,8 +643,36 @@ const styles = StyleSheet.create({
     backgroundColor: '#FAFAFC',
   },
   optionSelected: { borderColor: '#0070D2', backgroundColor: '#EAF3FF' },
+  optionCorrect: { borderColor: '#6FBF84', backgroundColor: '#E8F7EC' },
+  optionIncorrect: { borderColor: '#E08B8B', backgroundColor: '#FDEEEE' },
   optionText: { color: '#1D1D1F', lineHeight: 20 },
   optionTextSelected: { color: '#0066CC', fontWeight: '700' },
+  optionTextSuccess: { color: '#2F7A45', fontWeight: '700' },
+  optionTextError: { color: '#B44', fontWeight: '700' },
+  checkButton: {
+    alignSelf: 'flex-start',
+    marginTop: 4,
+    marginBottom: 4,
+    paddingVertical: 8,
+    paddingHorizontal: 4,
+  },
+  checkButtonText: { color: '#0070D2', fontWeight: '700' },
+  explanationBox: {
+    marginTop: 8,
+    padding: 12,
+    borderRadius: 12,
+    backgroundColor: '#F8FAFD',
+    borderWidth: 1,
+    borderColor: '#E5E5EA',
+  },
+  explanationTitle: {
+    color: '#6E6E73',
+    fontSize: 12,
+    fontWeight: '800',
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+  },
+  explanationText: { color: '#1D1D1F', marginTop: 4, lineHeight: 20 },
   localResult: { color: '#8A5A00', marginBottom: 10, lineHeight: 20 },
   primaryButton: {
     backgroundColor: '#0070D2',

@@ -124,15 +124,16 @@ model ModuleProgress {
 }
 
 model UserQuest {
-  id        String   @id @default(uuid())
-  userId    String
-  questKey  String
-  label     String
-  target    Int
-  progress  Int      @default(0)
-  completed Boolean  @default(false)
-  weekStart DateTime
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id            String   @id @default(uuid())
+  userId        String
+  questKey      String
+  label         String
+  target        Int
+  progress      Int      @default(0)
+  completed     Boolean  @default(false)
+  rewardClaimed Boolean  @default(false)
+  weekStart     DateTime
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, questKey, weekStart])
 }

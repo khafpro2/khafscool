@@ -104,7 +104,7 @@ Configurer `EXPO_PUBLIC_*` dans le profil EAS. Tester la connexion API sur appar
 ## Checklist avant mise en production
 
 - [ ] `DATABASE_URL` pointe vers Postgres managé (SSL activé)
-- [ ] `JWT_ACCESS_SECRET` et `JWT_REFRESH_SECRET` uniques et robustes
+- [ ] `JWT_SECRET` et `JWT_REFRESH_SECRET` uniques et robustes
 - [ ] `prisma migrate deploy` exécuté sur l’environnement cible
 - [ ] `NEXT_PUBLIC_API_URL` et `EXPO_PUBLIC_API_URL` alignés sur la même API
 - [ ] CORS API autorise le domaine Vercel

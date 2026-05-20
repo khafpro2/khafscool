@@ -6,7 +6,11 @@ export interface CourseQuestion {
   type: string;
   prompt: string;
   options: { id: string; label: string }[];
-  correctOption?: string;
+  explanation?: string;
+}
+
+export interface CheckAnswerResult {
+  correct: boolean;
   explanation?: string;
 }
 
@@ -123,6 +127,16 @@ export async function fetchCourseProgress(
     if (!demo) throw new Error('COURSE_NOT_FOUND');
     return { data: courseToProgress(demo), source: 'demo' };
   }
+}
+
+export async function checkModuleAnswer(
+  moduleId: string,
+  payload: { questionId: string; selectedOption: string }
+): Promise<CheckAnswerResult> {
+  return apiFetch<CheckAnswerResult>(`/modules/${moduleId}/check-answer`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
 }
 
 export async function completeModule(
@@ -248,7 +262,6 @@ const DEMO_COURSES: Record<string, CourseDetail> = {
               { id: 'b', label: 'Jamf Remote' },
               { id: 'c', label: 'Intune Portal' },
             ],
-            correctOption: 'a',
           },
         ],
       },
@@ -267,7 +280,6 @@ const DEMO_COURSES: Record<string, CourseDetail> = {
               { id: 'b', label: 'Google Admin' },
               { id: 'c', label: 'Azure AD uniquement' },
             ],
-            correctOption: 'a',
           },
         ],
       },
@@ -286,7 +298,6 @@ const DEMO_COURSES: Record<string, CourseDetail> = {
               { id: 'b', label: 'Profil Wi-Fi uniquement' },
               { id: 'c', label: 'Certificat utilisateur' },
             ],
-            correctOption: 'a',
           },
         ],
       },

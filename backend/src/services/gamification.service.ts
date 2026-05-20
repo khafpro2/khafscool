@@ -304,6 +304,39 @@ function computeLevel(points: number): UserLevel {
   return UserLevel.NOVICE;
 }
 
+export async function isTrackFullyCompleted(userId: string, track: CourseTrack) {
+  const totalModules = await prisma.module.count({ where: { course: { track } } });
+  if (!totalModules) return false;
+
+  const completedOnTrack = await prisma.moduleProgress.count({
+    where: { userId, completedAt: { not: null }, module: { course: { track } } },
+  });
+
+  return completedOnTrack >= totalModules;
+}
+
+async function claimWeeklyQuestReward(userId: string, questId: string, questKey: string) {
+  const rewardPoints = WEEKLY_QUEST_REWARD_POINTS[questKey];
+  if (!rewardPoints) return;
+
+  const claimed = await prisma.userQuest.updateMany({
+    where: { id: questId, rewardClaimed: false },
+    data: { rewardClaimed: true },
+  });
+  if (!claimed.count) return;
+
+  const progress = await prisma.userProgress.upsert({
+    where: { userId },
+    create: { userId, points: rewardPoints, level: computeLevel(rewardPoints) },
+    update: { points: { increment: rewardPoints } },
+  });
+
+  await prisma.userProgress.update({
+    where: { userId },
+    data: { level: computeLevel(progress.points) },
+  });
+}
+
 function maskEmail(email: string | null) {
   if (!email) return null;
   const [name, domain] = email.split('@');
@@ -458,11 +491,9 @@ export async function completeModule(
   const badges = [...new Set(progress.badges)];
 
   const trackBadge = TRACK_BADGES[module.course.track];
-  if (trackBadge) {
-    const completedOnTrack = await prisma.moduleProgress.count({
-      where: { userId, completedAt: { not: null }, module: { course: { track: module.course.track } } },
-    });
-    if (completedOnTrack >= 1 && !badges.includes(trackBadge)) {
+  if (trackBadge && !badges.includes(trackBadge)) {
+    const trackComplete = await isTrackFullyCompleted(userId, module.course.track);
+    if (trackComplete) {
       badges.push(trackBadge);
     }
   }
@@ -500,13 +531,19 @@ async function incrementWeeklyQuest(userId: string, questKey: string) {
   await ensureWeeklyQuests(userId);
   const weekStart = startOfWeek(new Date());
   const quest = await prisma.userQuest.findFirst({ where: { userId, questKey, weekStart } });
-  if (!quest) return;
+  if (!quest || quest.completed) return;
 
   const progress = quest.progress + 1;
+  const completed = progress >= quest.target;
+
   await prisma.userQuest.update({
     where: { id: quest.id },
-    data: { progress, completed: progress >= quest.target },
+    data: { progress, completed },
   });
+
+  if (completed) {
+    await claimWeeklyQuestReward(userId, quest.id, questKey);
+  }
 }
 
 async function computePreparationByTrack(userId: string, track: CourseTrack) {
@@ -942,6 +979,7 @@ export async function getWeeklyQuestsResponse(userId: string) {
       target: quest.target,
       progress: quest.progress,
       completed: quest.completed,
+      rewardClaimed: quest.rewardClaimed,
       weekStart: quest.weekStart.toISOString(),
       rewardPoints: WEEKLY_QUEST_REWARD_POINTS[quest.questKey] ?? null,
       track: weeklyQuestTrack(quest.questKey),
