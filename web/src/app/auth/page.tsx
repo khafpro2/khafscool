@@ -29,10 +29,11 @@ const SSO_PROVIDERS: {
 
 const inputStyle = {
   border: '1px solid var(--border)',
-  borderRadius: 10,
+  borderRadius: 12,
   font: 'inherit',
-  padding: '0.75rem 0.9rem',
+  padding: '0.8rem 1rem',
   width: '100%',
+  background: '#fff',
 } as const;
 
 function readRedirectFromLocation(): string {
@@ -89,18 +90,18 @@ export default function AuthPage() {
   }
 
   return (
-    <section style={{ padding: '1rem 0 2.5rem' }}>
-      <div className="hero">
-        <span className="hero-eyebrow">Authentification</span>
-        <h1>Connecte-toi pour débloquer ta progression</h1>
-        <p style={{ marginTop: '0.75rem' }}>
-          Compte email local, connexion OAuth de développement et reprise de session pour le tableau de bord,
-          les badges et les quêtes hebdo.
+    <section className="auth-shell" style={{ padding: '1rem 0 2.5rem' }}>
+      <div className="hero auth-hero-compact">
+        <span className="hero-eyebrow">Accès gratuit</span>
+        <h1 style={{ fontSize: 'clamp(1.75rem, 3vw, 2.25rem)' }}>Connecte-toi en quelques secondes</h1>
+        <p style={{ marginTop: '0.65rem', maxWidth: 520 }}>
+          Tous les parcours Apple, Jamf et Intune sont gratuits. Crée un compte pour sauvegarder ta progression,
+          tes badges et tes quêtes.
         </p>
       </div>
 
       {hasSession && (
-        <Card variant="soft" style={{ marginTop: '1.25rem', borderColor: '#85bfff', background: '#eef6ff' }}>
+        <Card variant="soft" className="auth-card-glass" style={{ borderColor: '#93c5fd', marginBottom: '1.25rem' }}>
           <Badge tone="success" icon="\u2705">
             Session active
           </Badge>
@@ -118,15 +119,14 @@ export default function AuthPage() {
 
       <div
         style={{
-          marginTop: '1.5rem',
           display: 'grid',
           gap: '1.25rem',
-          gridTemplateColumns: 'minmax(0, 1fr) minmax(280px, 380px)',
+          gridTemplateColumns: 'minmax(0, 1fr) minmax(280px, 360px)',
           alignItems: 'start',
         }}
       >
-        <Card as="article">
-          <p className="section-eyebrow">Compte local MVP</p>
+        <Card as="article" className="auth-card-glass">
+          <p className="section-eyebrow">Compte gratuit</p>
           <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: '0.75rem' }}>
             <Button
               type="button"
@@ -147,12 +147,12 @@ export default function AuthPage() {
           </div>
 
           <h2 style={{ fontSize: '1.35rem', fontWeight: 800, marginTop: '1rem' }}>
-            {mode === 'login' ? 'Se connecter par email' : 'Créer un compte'}
+            {mode === 'login' ? 'Se connecter par email' : 'Créer un compte gratuit'}
           </h2>
           <p className="muted" style={{ marginTop: '0.35rem' }}>
             {mode === 'login'
               ? 'Utilise les identifiants créés localement après le seed ou une inscription.'
-              : 'Crée un compte pour enregistrer ta progression, tes badges et tes quêtes.'}
+              : 'Aucune carte bancaire — accès immédiat au catalogue complet.'}
           </p>
 
           <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '1rem', marginTop: '1.25rem' }}>
@@ -192,19 +192,27 @@ export default function AuthPage() {
             </label>
 
             {error && (
-              <p style={{ color: '#b42318', fontWeight: 600, background: '#fee4e2', padding: '0.75rem', borderRadius: 10 }}>
+              <p
+                style={{
+                  color: '#b42318',
+                  fontWeight: 600,
+                  background: '#fee4e2',
+                  padding: '0.75rem',
+                  borderRadius: 12,
+                }}
+              >
                 {error}
               </p>
             )}
 
-            <Button type="submit" disabled={isSubmitting} fullWidth>
-              {isSubmitting ? 'Envoi en cours…' : mode === 'login' ? 'Se connecter' : 'Créer mon compte'}
+            <Button type="submit" disabled={isSubmitting} fullWidth size="lg">
+              {isSubmitting ? 'Envoi en cours…' : mode === 'login' ? 'Se connecter' : 'Créer mon compte gratuit'}
             </Button>
           </form>
         </Card>
 
         <aside style={{ display: 'grid', gap: '1rem' }}>
-          <Card variant="soft">
+          <Card variant="soft" className="auth-card-glass">
             <p className="section-eyebrow">Connexion rapide (dev)</p>
             <p className="muted" style={{ marginTop: '0.35rem', fontSize: '0.9rem' }}>
               En développement, les fournisseurs OAuth simulent un profil sans appeler les API réelles.
@@ -236,13 +244,13 @@ export default function AuthPage() {
             </div>
           </Card>
 
-          <Card>
+          <Card className="auth-card-glass">
             <p className="section-eyebrow">Sans compte ?</p>
             <p className="muted" style={{ marginTop: '0.35rem', fontSize: '0.9rem' }}>
               Explore les parcours Apple, Jamf et Intune en mode démo depuis le catalogue public.
             </p>
-            <Button href="/courses" variant="ghost" size="sm" style={{ marginTop: '0.75rem' }}>
-              Voir les parcours
+            <Button href="/courses" variant="secondary" size="sm" style={{ marginTop: '0.75rem' }}>
+              Voir les parcours gratuits
             </Button>
           </Card>
         </aside>

@@ -36,18 +36,14 @@ const DELIVERED = [
     cta: 'Lancer un sprint',
   },
   {
-    title: 'Paiement démo',
-    description: 'Tarifs publics et paiement MVP simulé (mensuel, annuel, entreprise).',
-    href: '/pricing',
-    cta: 'Tester le paiement',
+    title: 'Classement communautaire',
+    description: 'Top apprenants, rangs et points pour garder la motivation.',
+    href: '/leaderboard',
+    cta: 'Voir le classement',
   },
 ];
 
 const UPCOMING = [
-  {
-    title: 'Paiement Stripe réel',
-    description: 'Paiements production avec webhooks et gestion d’abonnement.',
-  },
   {
     title: 'Notifications push',
     description: 'Rappels de sprint, quêtes et streak sur mobile.',
@@ -67,7 +63,7 @@ const TEST_CHECKLIST = [
   { label: 'Confirmer la progression', href: '/dashboard', detail: 'Statistiques, badges, quêtes et accès rapides (connecté ou fallback démo).' },
   { label: 'Explorer un parcours 3 modules', href: '/courses/apple-cert-prep', detail: 'Statuts à faire / en cours / terminé et validation d’unité.' },
   { label: 'Démarrer un sprint', href: '/sprint', detail: 'Sprint Apple, Jamf ou Intune en 7 ou 14 jours.' },
-  { label: 'Essayer le paiement démo', href: '/pricing', detail: 'Plan mensuel, annuel ou entreprise avec message de démonstration.' },
+  { label: 'Explorer le classement', href: '/leaderboard', detail: 'Top 10 et rang personnel avec points cumulés.' },
   { label: 'Vérifier API & DB', href: '/diagnostics', detail: 'Health, Prisma, catalogue 3 slugs et tokens masqués.' },
 ];
 
@@ -85,7 +81,7 @@ export default function MvpPage() {
         <h1>Roadmap MVP pour reviewers et testeurs</h1>
         <p style={{ marginTop: '0.75rem' }}>
           Vue d’ensemble des fonctionnalités livrées et des prochaines étapes — authentification, apprentissage
-          gamifié, sprint certification et paiement de démonstration.
+          gamifié et sprint certification — 100 % gratuit.
         </p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '1.25rem' }}>
           <Button href="/auth" variant="secondary">

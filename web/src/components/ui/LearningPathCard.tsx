@@ -15,6 +15,7 @@ export interface LearningPathCardProps {
   title?: string;
   progressPercent?: number;
   cta?: string;
+  size?: 'default' | 'hero';
 }
 
 export function LearningPathCard({
@@ -22,6 +23,7 @@ export function LearningPathCard({
   title,
   progressPercent = 0,
   cta = 'Commencer ce parcours',
+  size = 'default',
 }: LearningPathCardProps) {
   const visual = getTrackVisual(path.track);
   const displayTitle = title ?? path.title;
@@ -31,9 +33,11 @@ export function LearningPathCard({
   const isCompleted = percent >= 100;
   const ctaLabel = isCompleted ? 'Revoir le parcours' : inProgress ? 'Continuer le parcours' : cta;
 
+  const cardClass = size === 'hero' ? 'learning-path-card learning-path-card-hero' : 'learning-path-card';
+
   return (
-    <article className="learning-path-card">
-      <PathBanner gradient={visual.gradient} brand={path.brand} recommended={path.recommended} />
+    <article className={cardClass}>
+      <PathBanner gradient={visual.gradient} brand={path.brand} recommended={path.recommended} large={size === 'hero'} />
       <PathBody
         path={path}
         title={displayTitle}
@@ -51,14 +55,16 @@ function PathBanner({
   gradient,
   brand,
   recommended,
+  large,
 }: {
   gradient: string;
   brand: LearningPathMeta['brand'];
   recommended?: boolean;
+  large?: boolean;
 }) {
   return (
     <div className="learning-path-card-banner" style={{ background: gradient }}>
-      <BrandIcon brand={brand} size="lg" variant="onColor" />
+      <BrandIcon brand={brand} size={large ? 'lg' : 'md'} variant="onColor" />
       {recommended ? (
         <Badge
           tone="success"

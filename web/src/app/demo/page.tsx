@@ -16,10 +16,10 @@ const WITHOUT_ACCOUNT_STEPS = [
     cta: 'Ouvrir les ressources',
   },
   {
-    title: 'Tarifs',
-    description: 'Page tarifs visible publiquement, avec redirection vers la connexion au moment du paiement.',
-    href: '/pricing',
-    cta: 'Voir les tarifs',
+    title: 'Commencer gratuitement',
+    description: 'Créer un compte ou explorer le catalogue sans engagement — tous les parcours sont accessibles.',
+    href: '/auth',
+    cta: 'Créer un compte',
   },
 ];
 
@@ -49,10 +49,10 @@ const WITH_ACCOUNT_STEPS = [
     cta: 'Continuer un parcours',
   },
   {
-    title: 'Paiement démo',
-    description: 'Depuis une session active, déclencher un paiement MVP et vérifier la réponse Stripe simulée.',
-    href: '/pricing',
-    cta: 'Tester le paiement',
+    title: 'Classement',
+    description: 'Comparer ta progression à la communauté et vérifier ton rang.',
+    href: '/leaderboard',
+    cta: 'Voir le classement',
   },
 ];
 
@@ -63,7 +63,7 @@ const PRIMARY_ROUTES = [
   { href: '/quests', label: 'Quêtes' },
   { href: '/sprint', label: 'Sprint' },
   { href: '/courses', label: 'Catalogue' },
-  { href: '/pricing', label: 'Tarifs' },
+  { href: '/leaderboard', label: 'Classement' },
   { href: '/resources', label: 'Ressources' },
   { href: '/diagnostics', label: 'Diagnostics' },
   { href: '/mvp', label: 'Résumé MVP' },
@@ -118,8 +118,8 @@ export default function DemoPage() {
         </Badge>
         <h2 style={{ fontSize: '1.35rem', fontWeight: 800, marginTop: '0.75rem' }}>Statut requis avant revue</h2>
         <p className="muted" style={{ marginTop: '0.5rem' }}>
-          Le backend et la base doivent répondre pour tester inscription, tableau de bord, sprint connecté et paiement
-          démo. La page diagnostics vérifie API, Prisma, catalogue (3 parcours) et tokens locaux sans afficher de secret.
+          Le backend et la base doivent répondre pour tester inscription, tableau de bord et sprint connecté.
+          La page diagnostics vérifie API, Prisma, catalogue (3 parcours) et tokens locaux sans afficher de secret.
         </p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '1rem' }}>
           <Button href="/diagnostics">Ouvrir les diagnostics</Button>

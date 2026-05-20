@@ -109,12 +109,7 @@ export default function DashboardPage() {
 
     return (
       <section style={{ padding: '1rem 0 2rem' }}>
-        <Card
-          variant="gradient"
-          style={{
-            background: 'linear-gradient(135deg, #032d60 0%, #0070d2 60%, #16cdf1 100%)',
-          }}
-        >
+        <Card variant="gradient">
           <span className="hero-eyebrow" style={{ background: 'rgba(255,255,255,0.16)', borderColor: 'rgba(255,255,255,0.32)' }}>
             <span aria-hidden>{'\u{1F3AF}'}</span> Tableau de bord MDM Academy
           </span>
@@ -423,8 +418,8 @@ function RecommendedActionCard({ action }: { action: RecommendedAction }) {
     <Card
       style={{
         marginTop: '1.25rem',
-        background: 'linear-gradient(135deg, #ffffff 0%, #e3f0ff 100%)',
-        borderColor: '#c5dbf3',
+        background: 'linear-gradient(135deg, #ffffff 0%, #dbeafe 100%)',
+        borderColor: '#93c5fd',
       }}
     >
       <span className="section-eyebrow">Prochaine action recommandée</span>

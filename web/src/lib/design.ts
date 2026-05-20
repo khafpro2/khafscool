@@ -19,22 +19,22 @@ const TRACK_VISUALS: Record<string, TrackVisual> = {
   APPLE: {
     label: 'Apple Device Support',
     brand: 'apple',
-    color: '#16191f',
-    gradient: 'linear-gradient(135deg, #1d1d1f 0%, #4b4d57 60%, #7a7d8a 100%)',
+    color: '#1d1d1f',
+    gradient: 'var(--track-apple)',
     defaultLevel: 'Débutant',
   },
   JAMF: {
     label: 'Jamf Pro',
     brand: 'jamf',
-    color: '#ff5b00',
-    gradient: 'linear-gradient(135deg, #ff5b00 0%, #ff9e2c 100%)',
+    color: '#ea580c',
+    gradient: 'var(--track-jamf)',
     defaultLevel: 'Intermédiaire',
   },
   INTUNE: {
     label: 'Microsoft Intune',
     brand: 'microsoft',
-    color: '#0070d2',
-    gradient: 'linear-gradient(135deg, #0070d2 0%, #16cdf1 100%)',
+    color: '#2563eb',
+    gradient: 'var(--track-intune)',
     defaultLevel: 'Intermédiaire',
   },
   SPRINT: {
@@ -68,8 +68,8 @@ const TRACK_VISUALS: Record<string, TrackVisual> = {
   DEFAULT: {
     label: 'Parcours',
     icon: '\u{1F393}',
-    color: '#0070d2',
-    gradient: 'linear-gradient(135deg, #032d60 0%, #0070d2 60%, #16cdf1 100%)',
+    color: '#2563eb',
+    gradient: 'var(--gradient-hero)',
     defaultLevel: 'Débutant',
   },
 };
@@ -140,7 +140,7 @@ export interface RankInfo {
 const RANK_LADDER: { name: string; icon: string; color: string; gradient: string; minPoints: number }[] = [
   { name: 'Débutant', icon: '\u{1F331}', color: '#5d6373', gradient: 'linear-gradient(135deg, #94a1b8 0%, #c5cfdd 100%)', minPoints: 0 },
   { name: 'Apprenti', icon: '\u{1F33F}', color: '#2e844a', gradient: 'linear-gradient(135deg, #2e844a 0%, #4cd964 100%)', minPoints: 100 },
-  { name: 'Technicien', icon: '\u{1F527}', color: '#0070d2', gradient: 'linear-gradient(135deg, #0070d2 0%, #16cdf1 100%)', minPoints: 250 },
+  { name: 'Technicien', icon: '\u{1F527}', color: '#2563eb', gradient: 'var(--gradient-accent)', minPoints: 250 },
   { name: 'Ingénieur', icon: '\u{2699}\uFE0F', color: '#6c5ce7', gradient: 'linear-gradient(135deg, #4834d4 0%, #a29bfe 100%)', minPoints: 500 },
   { name: 'Expert', icon: '\u{1F3C5}', color: '#ff9e2c', gradient: 'linear-gradient(135deg, #ff5b00 0%, #ffb02e 100%)', minPoints: 900 },
   { name: 'Champion', icon: '\u{1F451}', color: '#c23934', gradient: 'linear-gradient(135deg, #c23934 0%, #ff7a59 100%)', minPoints: 1500 },

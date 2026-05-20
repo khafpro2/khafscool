@@ -80,24 +80,18 @@ export default function CoursesPage() {
 
   return (
     <section style={{ padding: '1rem 0' }}>
-      <div
-        className="hero"
-        style={{
-          background: 'linear-gradient(135deg, #032d60 0%, #0070d2 55%, #16cdf1 100%)',
-          marginTop: 0,
-        }}
-      >
+      <div className="hero" style={{ marginTop: 0 }}>
         <span className="hero-eyebrow">
-          <span aria-hidden>{'\u{1F4DA}'}</span> Catalogue MDM Academy
+          <span aria-hidden>{'\u{1F4DA}'}</span> Catalogue · 100 % gratuit
         </span>
         <h1>Trois parcours pour devenir expert MDM Apple, Jamf et Intune.</h1>
         <p style={{ marginTop: '0.85rem' }}>
           Support Apple Device Support, administration Jamf Pro et enrôlement Microsoft Intune — 3 unités par
-          piste, quiz et scénarios pratiques.
+          piste, quiz et scénarios pratiques. Aucun abonnement requis.
         </p>
         <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', marginTop: '1.5rem' }}>
           <Button href={hasToken ? '/dashboard' : '/auth'} variant="secondary" size="lg">
-            {hasToken ? 'Voir mon tableau de bord' : 'Créer un compte'}
+            {hasToken ? 'Voir mon tableau de bord' : 'Commencer gratuitement'}
           </Button>
           <Button href="/sprint" size="lg" variant="ghost" style={{ color: '#fff', borderColor: 'rgba(255,255,255,0.4)' }}>
             Lancer un sprint

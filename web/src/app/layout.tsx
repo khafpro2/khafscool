@@ -5,9 +5,9 @@ import { LEARNING_PATHS } from '@/lib/learningPaths';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'MDM Academy — Apprendre Apple, Jamf Pro et Microsoft Intune',
+  title: 'MDM Academy Pro — Apple, Jamf Pro et Intune gratuits',
   description:
-    'Parcours gamifiés pour maîtriser Apple Device Support, Jamf Pro et l’enrôlement iOS/iPadOS avec Microsoft Intune : quiz, scénarios et badges.',
+    'Formation gamifiée gratuite : Apple Device Support, Jamf Pro et Microsoft Intune. Quiz, mini-jeux, badges et sprints certification.',
 };
 
 const NAV_ITEMS = [
@@ -15,7 +15,6 @@ const NAV_ITEMS = [
   { href: '/leaderboard', label: 'Classement' },
   { href: '/badges', label: 'Badges' },
   { href: '/sprint', label: 'Sprint' },
-  { href: '/pricing', label: 'Tarifs' },
 ];
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -59,7 +58,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 Profil
               </Button>
               <Button href="/auth" size="sm">
-                Se connecter
+                Commencer gratuitement
               </Button>
             </div>
           </div>
@@ -73,10 +72,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <strong>MDM Academy</strong> · Apple, Jamf Pro et Intune en mode jeu
             </div>
             <div style={{ display: 'flex', gap: '1.25rem', flexWrap: 'wrap' }}>
+              <Link href="/courses">Parcours</Link>
               <Link href="/demo">Démo</Link>
               <Link href="/resources">Ressources</Link>
               <Link href="/diagnostics">Diagnostics</Link>
-              <Link href="/mvp">MVP</Link>
             </div>
             <div style={{ color: 'var(--muted)', fontSize: '0.8rem' }}>
               Non affilié à Apple Inc., Jamf ou Microsoft.
