@@ -242,6 +242,8 @@ pnpm --filter web build
 pnpm build
 ```
 
+Tests E2E Playwright (web déjà lancé ou démarré automatiquement) : `pnpm --filter web test:e2e`.
+
 ## Contribution
 
 Les évolutions majeures de la branche `cursor/progress-dashboard-auth-v2` sont regroupées dans [PR #6](https://github.com/khafpro2/khafscool/pull/6) (catalogue parcours gamifiés, complétion de parcours, mobile et auth gamification). Voir aussi [CHANGELOG.md](./CHANGELOG.md).

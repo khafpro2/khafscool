@@ -8,3 +8,5 @@ dist
 .pnpm-store
 .DS_Store
 *.tsbuildinfo
+web/test-results
+web/playwright-report
