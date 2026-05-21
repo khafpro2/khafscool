@@ -27,7 +27,7 @@ Workflow : `.github/workflows/ci.yml`
 | --- | --- |
 | **build-test** | install, syntaxe smoke scripts, tests backend, typecheck mobile, build backend + web |
 | **integration** | Postgres service, `db:migrate` + `db:seed`, démarrage API, `pnpm smoke:api` |
-| **e2e-web** | Playwright Chromium, `pnpm --filter web test:e2e` |
+| **e2e-web** | Playwright Chromium, `pnpm --filter web test:e2e` (11 scénarios) |
 
 - [ ] Job **build-test** — vert
 - [ ] Job **integration** — vert
@@ -64,7 +64,20 @@ pnpm smoke:web
 - [ ] `pnpm smoke:api` (API + DB)
 - [ ] `pnpm smoke:web` (web accessible)
 - [ ] `pnpm --filter web build`
-- [ ] `pnpm --filter web test:e2e`
+- [ ] `pnpm --filter web test:e2e` (11 scénarios : auth, classement, catalogue, certificat…)
+- [ ] `pnpm --filter mobile typecheck`
+
+---
+
+## Fonctionnalités récentes (PR #6)
+
+- [ ] **Thème sombre** — bascule clair/sombre sur web (chips, cartes, quiz, certificat) ; mobile thème système
+- [ ] **PWA** — `manifest.webmanifest`, icônes et métadonnées installables (web)
+- [ ] **Toasts gamification** — points, badge et quête (web + mobile, FR)
+- [ ] **Bannière API** — alerte si le backend est indisponible (`ApiStatusBanner` web, équivalent mobile)
+- [ ] **Filtres piste** — `/courses?track=` et `/leaderboard?track=` (chips Toutes / Apple / Jamf / Intune) ; parité mobile catalogue + classement
+- [ ] **Page `/resources`** — liens officiels Apple MDM, Jamf, Microsoft Intune (BrandIcon, layout Pro)
+- [ ] **Compte démo** — exploration sans inscription (`demo@ama.dev`, mode local `/demo`)
 
 ---
 
@@ -108,13 +121,16 @@ pnpm db:seed
 
 - [ ] `/` — accueil et CTA « Commencer gratuitement »
 - [ ] `/about` — page mission et piliers
-- [ ] `/courses` — catalogue des 3 parcours
+- [ ] `/courses` — catalogue des 3 parcours + filtre piste (`?track=APPLE|JAMF|INTUNE`) et recherche
+- [ ] `/leaderboard` — classement + filtre piste (`?track=`)
+- [ ] `/resources` — liens officiels Apple, Jamf, Intune (pas de ServiceNow)
 - [ ] `/auth` — inscription / connexion email
 - [ ] `/dashboard` — progression après connexion ou démo
 - [ ] `/diagnostics` — santé API et tokens (outil mainteneur)
 - [ ] `/courses/apple-cert-prep/complete` — partage et lien certificat
 - [ ] `/courses/apple-cert-prep/certificate` — certificat imprimable (mode démo OK)
 - [ ] Mobile : écran victoire → certificat web + partage natif (`EXPO_PUBLIC_WEB_URL` pointant vers le web local)
+- [ ] Mobile : filtres piste sur catalogue parcours et écran classement
 
 ---
 

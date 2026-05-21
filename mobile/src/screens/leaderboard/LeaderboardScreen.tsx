@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -9,6 +9,8 @@ import {
   View,
 } from 'react-native';
 import { BrandIcon } from '../../components/BrandIcon';
+import { TrackFilterChips } from '../../components/TrackFilterChips';
+import { filterLeaderboardByTrack, type TrackFilter } from '../../lib/track-filters';
 import { useAppTheme } from '../../context/ThemeContext';
 import type { AppThemeColors } from '../../lib/design';
 import { formatLevel, getBadgeVisual, getRankInfo } from '../../lib/design';
@@ -26,6 +28,7 @@ export function LeaderboardScreen() {
   const [data, setData] = useState<LeaderboardResponse | null>(null);
   const [source, setSource] = useState<'api' | 'demo'>('demo');
   const [loading, setLoading] = useState(true);
+  const [selectedTrack, setSelectedTrack] = useState<TrackFilter>('TOUS');
 
   const loadLeaderboard = useCallback(async () => {
     setLoading(true);
@@ -48,7 +51,22 @@ export function LeaderboardScreen() {
     );
   }
 
-  const topThree = data.leaderboard.slice(0, 3);
+  const filteredLeaderboard = useMemo(
+    () => filterLeaderboardByTrack(data.leaderboard, selectedTrack),
+    [data.leaderboard, selectedTrack]
+  );
+
+  const filteredCurrentUserRank = useMemo(() => {
+    const currentEntry = data.leaderboard.find((entry) => entry.isCurrentUser);
+    if (!currentEntry) return null;
+    if (selectedTrack !== 'TOUS' && !filteredLeaderboard.some((entry) => entry.isCurrentUser)) {
+      return null;
+    }
+    const index = filteredLeaderboard.findIndex((entry) => entry.isCurrentUser);
+    return index >= 0 ? index + 1 : data.currentUserRank;
+  }, [data, filteredLeaderboard, selectedTrack]);
+
+  const topThree = filteredLeaderboard.slice(0, 3);
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -62,8 +80,10 @@ export function LeaderboardScreen() {
         <Text style={styles.heroCopy}>
           Compare ta progression aux autres apprenants Apple, Jamf et Intune.
         </Text>
-        {data.currentUserRank != null ? (
-          <Text style={styles.heroMeta}>Ton rang : #{data.currentUserRank}</Text>
+        {filteredCurrentUserRank != null ? (
+          <Text style={styles.heroMeta}>Ton rang : #{filteredCurrentUserRank}</Text>
+        ) : selectedTrack !== 'TOUS' ? (
+          <Text style={styles.heroMeta}>Aucun rang sur cette piste pour le moment.</Text>
         ) : null}
       </View>
 
@@ -74,6 +94,8 @@ export function LeaderboardScreen() {
           </Text>
         </View>
       ) : null}
+
+      <TrackFilterChips selected={selectedTrack} onSelect={setSelectedTrack} />
 
       {topThree.length > 0 ? (
         <View style={styles.podiumRow}>
@@ -87,10 +109,14 @@ export function LeaderboardScreen() {
         <Text style={styles.sectionTitle}>Top apprenants</Text>
       </View>
 
-      {data.leaderboard.length > 0 ? (
-        data.leaderboard.map((entry) => <LeaderboardRow key={entry.rank} entry={entry} styles={styles} />)
+      {filteredLeaderboard.length > 0 ? (
+        filteredLeaderboard.map((entry) => <LeaderboardRow key={entry.rank} entry={entry} styles={styles} />)
       ) : (
-        <Text style={styles.emptyText}>Aucun classement disponible pour le moment.</Text>
+        <Text style={styles.emptyText}>
+          {selectedTrack === 'TOUS'
+            ? 'Aucun classement disponible pour le moment.'
+            : 'Aucun apprenant classé sur cette piste pour le moment.'}
+        </Text>
       )}
 
       <Pressable onPress={loadLeaderboard} style={styles.refreshButton}>

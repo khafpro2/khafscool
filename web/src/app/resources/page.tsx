@@ -1,11 +1,12 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import type { BrandId } from '@/lib/brands';
 import { formatTrack } from '@/lib/tracks';
 import { Badge } from '@/components/ui/Badge';
+import { BrandIcon } from '@/components/ui/BrandIcon';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { TrackIcon } from '@/components/ui/TrackIcon';
 import { getTrackVisual } from '@/lib/design';
 
 type ResourceTrack = 'APPLE' | 'JAMF' | 'INTUNE';
@@ -18,6 +19,7 @@ type OfficialResource = {
 
 type TrackSection = {
   id: ResourceTrack;
+  brand: BrandId;
   label: string;
   focus: string;
   certification: string;
@@ -29,53 +31,76 @@ type TrackSection = {
 const TRACK_SECTIONS: TrackSection[] = [
   {
     id: 'APPLE',
-    label: 'Apple Device Support',
-    focus: 'Support des appareils, sécurité, diagnostic et fondamentaux de gestion Apple.',
-    certification: 'À utiliser comme source de vérité pour préparer les objectifs Apple.',
+    brand: 'apple',
+    label: 'Apple Device Support & MDM',
+    focus: 'Support des appareils, sécurité, diagnostic et fondamentaux de gestion Apple pour flottes iOS et macOS.',
+    certification: 'Référence officielle pour préparer Apple Device Support et valider les exigences MDM Apple.',
     courseHint: 'Relie ces lectures aux unités Device Support et MDM du parcours Apple.',
-    courseHref: '/courses/apple-cert-prep',
+    courseHref: '/courses/apple-cert-prep?track=APPLE',
     resources: [
       {
         label: 'Apple Training & Certifications',
         url: 'https://training.apple.com',
-        description: 'Portail officiel Apple pour les formations, objectifs et certifications.',
+        description: 'Portail officiel Apple pour les formations, objectifs d’examen et certifications.',
+      },
+      {
+        label: 'Guide de déploiement Apple (Platform Deployment)',
+        url: 'https://support.apple.com/guide/deployment/welcome/web',
+        description: 'Documentation Apple sur l’enrôlement, ABM/ASM, supervision et politiques MDM.',
+      },
+      {
+        label: 'Documentation Device Management (Apple Developer)',
+        url: 'https://developer.apple.com/documentation/devicemanagement',
+        description: 'Référence technique MDM : profils, commandes, restrictions et protocoles Apple.',
       },
     ],
   },
   {
     id: 'JAMF',
+    brand: 'jamf',
     label: 'Jamf Pro',
-    focus: 'Administration Jamf Pro, inventaire, smart groups, politiques et bonnes pratiques MDM.',
+    focus: 'Administration Jamf Pro, inventaire, smart groups, politiques et bonnes pratiques MDM en entreprise.',
     certification: 'À consulter avant les révisions Jamf Pro et les exercices de configuration.',
     courseHint: 'Relie ces lectures aux unités Jamf Pro Foundations et aux quêtes de pratique.',
-    courseHref: '/courses/jamf-pro-foundations',
+    courseHref: '/courses/jamf-pro-foundations?track=JAMF',
     resources: [
       {
         label: 'Jamf Learning Hub',
         url: 'https://learn.jamf.com',
-        description: 'Documentation et contenus de formation officiels publiés par Jamf.',
+        description: 'Cours, parcours et contenus de formation officiels publiés par Jamf.',
+      },
+      {
+        label: 'Documentation Jamf Pro',
+        url: 'https://docs.jamf.com',
+        description: 'Guides administrateur Jamf Pro : enrôlement, politiques, inventaire et dépannage.',
       },
     ],
   },
   {
     id: 'INTUNE',
+    brand: 'microsoft',
     label: 'Microsoft Intune',
-    focus: 'Enrôlement, conformité, profils et gestion des appareils Apple avec Microsoft Intune.',
+    focus: 'Enrôlement Apple via Intune, conformité, profils et gestion des appareils avec Microsoft Endpoint Manager.',
     certification: 'À utiliser pour valider les détails Microsoft Learn et les prérequis de conformité.',
     courseHint: 'Relie ces lectures aux unités Microsoft Intune et aux sprints de révision.',
-    courseHref: '/courses',
+    courseHref: '/courses/intune-ios-enrollment?track=INTUNE',
     resources: [
       {
-        label: 'Microsoft Learn - Intune',
+        label: 'Microsoft Learn — Intune',
         url: 'https://learn.microsoft.com/mem/intune/',
         description: 'Documentation officielle Microsoft pour Intune et Microsoft Endpoint Manager.',
+      },
+      {
+        label: 'Enrôlement Apple avec Intune (ADE / ABM)',
+        url: 'https://learn.microsoft.com/mem/intune/enrollment/apple-enrollment-program',
+        description: 'Guide Microsoft pour configurer l’enrôlement automatisé des appareils Apple.',
       },
     ],
   },
 ];
 
 const TRACK_FILTERS: Array<{ label: string; value: ResourceTrack | 'ALL' }> = [
-  { label: 'Tous', value: 'ALL' },
+  { label: 'Toutes', value: 'ALL' },
   ...TRACK_SECTIONS.map((section) => ({ label: formatTrack(section.id), value: section.id })),
 ];
 
@@ -112,13 +137,13 @@ export default function ResourcesPage() {
   }, [query, selectedTrack]);
 
   return (
-    <section style={{ padding: '1rem 0 2rem' }}>
+    <section className="resources-page" style={{ padding: '1rem 0 2rem' }}>
       <div className="hero" style={{ background: RESOURCES_GRADIENT, marginTop: 0 }}>
         <span className="hero-eyebrow">
-          <span aria-hidden>{'\u{1F4DA}'}</span> Sources de référence
+          <span aria-hidden>{'\u{1F4DA}'}</span> MDM Academy Pro · Sources de référence
         </span>
-        <h1>Ressources officielles</h1>
-        <p style={{ marginTop: '0.85rem' }}>
+        <h1>Ressources officielles Apple, Jamf et Intune</h1>
+        <p style={{ marginTop: '0.85rem', maxWidth: 680 }}>
           Les contenus pédagogiques de cette plateforme sont des synthèses, quiz et exercices originaux.
           Utilise les sources officielles pour vérifier les informations à jour avant un examen, un sprint
           de révision ou une décision de conformité.
@@ -133,14 +158,7 @@ export default function ResourcesPage() {
         </div>
       </div>
 
-      <Card
-        variant="soft"
-        style={{
-          marginTop: '1.5rem',
-          background: 'linear-gradient(135deg, var(--accent-soft) 0%, #ffffff 100%)',
-          borderColor: 'var(--border)',
-        }}
-      >
+      <Card variant="soft" className="resources-notice" style={{ marginTop: '1.5rem' }}>
         <Badge tone="outline" icon="\u26A0\uFE0F">
           Note de conformité
         </Badge>
@@ -158,31 +176,13 @@ export default function ResourcesPage() {
         <input
           id="resources-search"
           type="search"
+          className="resources-search-input"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          placeholder="Apple, Jamf, Intune, conformité…"
-          style={{
-            border: '1px solid var(--border)',
-            borderRadius: 12,
-            font: 'inherit',
-            marginTop: '0.6rem',
-            padding: '0.75rem 0.9rem',
-            width: '100%',
-          }}
+          placeholder="Apple MDM, Jamf Pro, Intune, conformité…"
         />
-        <p
-          className="muted"
-          style={{
-            fontSize: '0.8rem',
-            fontWeight: 800,
-            marginTop: '1rem',
-            textTransform: 'uppercase',
-            letterSpacing: '0.06em',
-          }}
-        >
-          Filtrer par piste
-        </p>
-        <div className="chip-row" style={{ marginTop: '0.65rem' }}>
+        <p className="resources-filter-label">Filtrer par piste</p>
+        <div className="chip-row" style={{ marginTop: '0.65rem' }} role="group" aria-label="Filtrer les ressources par piste">
           {TRACK_FILTERS.map((filter) => (
             <button
               key={filter.value}
@@ -198,7 +198,7 @@ export default function ResourcesPage() {
       </Card>
 
       {visibleSections.length > 0 ? (
-        <div style={{ display: 'grid', gap: '1rem', marginTop: '1.5rem' }}>
+        <div className="resources-grid">
           {visibleSections.map((section) => (
             <ResourceSectionCard key={section.id} section={section} />
           ))}
@@ -206,7 +206,7 @@ export default function ResourcesPage() {
       ) : (
         <Card style={{ marginTop: '1.5rem', textAlign: 'center' }}>
           <p className="muted">
-            Aucune ressource ne correspond à ce filtre. Essaie un autre track ou un mot-clé plus large.
+            Aucune ressource ne correspond à ce filtre. Essaie une autre piste ou un mot-clé plus large.
           </p>
           <Button
             variant="secondary"
@@ -245,9 +245,9 @@ function ResourceSectionCard({ section }: { section: TrackSection }) {
   const visual = getTrackVisual(section.id);
 
   return (
-    <Card>
+    <Card className="resource-section-card">
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-        <TrackIcon track={section.id} size="sm" />
+        <BrandIcon brand={section.brand} size="md" />
         <Badge tone="outline">{formatTrack(section.id)}</Badge>
       </div>
       <h2 style={{ fontSize: '1.35rem', fontWeight: 800, marginTop: '0.75rem' }}>{section.label}</h2>
@@ -255,21 +255,14 @@ function ResourceSectionCard({ section }: { section: TrackSection }) {
         {section.focus}
       </p>
 
-      <div
-        style={{
-          display: 'grid',
-          gap: '0.75rem',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-          marginTop: '1rem',
-        }}
-      >
-        <Card variant="flat" as="div" style={{ background: '#f5f5f7', border: 'none' }}>
+      <div className="resource-meta-grid">
+        <Card variant="flat" as="div" className="resource-meta-card">
           <strong>Certification</strong>
           <p className="muted" style={{ marginTop: '0.35rem' }}>
             {section.certification}
           </p>
         </Card>
-        <Card variant="flat" as="div" style={{ background: '#f5f5f7', border: 'none' }}>
+        <Card variant="flat" as="div" className="resource-meta-card">
           <strong>Parcours lié</strong>
           <p className="muted" style={{ marginTop: '0.35rem' }}>
             {section.courseHint}
@@ -277,20 +270,26 @@ function ResourceSectionCard({ section }: { section: TrackSection }) {
         </Card>
       </div>
 
-      <ul style={{ display: 'grid', gap: '0.75rem', listStyle: 'none', marginTop: '1rem', padding: 0 }}>
+      <ul className="resource-link-list">
         {section.resources.map((resource) => (
-          <li key={resource.url} style={{ borderTop: '1px solid var(--border)', paddingTop: '0.85rem' }}>
-            <a
-              href={resource.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ fontSize: '1.05rem', fontWeight: 800, color: visual.color }}
-            >
-              {resource.label} ↗
-            </a>
-            <p className="muted" style={{ marginTop: '0.35rem' }}>
-              {resource.description}
-            </p>
+          <li key={resource.url} className="resource-link-item">
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.65rem' }}>
+              <BrandIcon brand={section.brand} size="sm" />
+              <div style={{ minWidth: 0 }}>
+                <a
+                  href={resource.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="resource-external-link"
+                  style={{ color: visual.color }}
+                >
+                  {resource.label} ↗
+                </a>
+                <p className="muted" style={{ marginTop: '0.35rem' }}>
+                  {resource.description}
+                </p>
+              </div>
+            </div>
           </li>
         ))}
       </ul>
@@ -301,4 +300,3 @@ function ResourceSectionCard({ section }: { section: TrackSection }) {
     </Card>
   );
 }
-

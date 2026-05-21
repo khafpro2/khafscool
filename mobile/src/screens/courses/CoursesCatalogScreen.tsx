@@ -9,6 +9,8 @@ import {
   View,
 } from 'react-native';
 import { BrandIcon } from '../../components/BrandIcon';
+import { TrackFilterChips } from '../../components/TrackFilterChips';
+import { type TrackFilter } from '../../lib/track-filters';
 import { LEARNING_PATHS } from '../../lib/learningPaths';
 import { useAppTheme } from '../../context/ThemeContext';
 import type { AppThemeColors } from '../../lib/design';
@@ -23,6 +25,7 @@ export function CoursesCatalogScreen() {
   const [courses, setCourses] = useState<CourseSummary[]>([]);
   const [source, setSource] = useState<'api' | 'demo'>('api');
   const [loading, setLoading] = useState(true);
+  const [selectedTrack, setSelectedTrack] = useState<TrackFilter>('TOUS');
 
   async function loadCatalog() {
     setLoading(true);
@@ -43,6 +46,14 @@ export function CoursesCatalogScreen() {
     }
     return map;
   }, [courses]);
+
+  const visiblePaths = useMemo(
+    () =>
+      selectedTrack === 'TOUS'
+        ? LEARNING_PATHS
+        : LEARNING_PATHS.filter((path) => path.track === selectedTrack),
+    [selectedTrack]
+  );
 
   if (loading) {
     return (
@@ -71,7 +82,9 @@ export function CoursesCatalogScreen() {
         </View>
       ) : null}
 
-      {LEARNING_PATHS.map((path) => {
+      <TrackFilterChips selected={selectedTrack} onSelect={setSelectedTrack} />
+
+      {visiblePaths.map((path) => {
         const course = coursesBySlug.get(path.slug);
         return (
           <CatalogCourseCard

@@ -21,6 +21,21 @@ test.describe('Parcours d’apprentissage — smoke', () => {
     await expect(page.getByRole('heading', { name: /Aucun parcours ne correspond/i })).not.toBeVisible();
   });
 
+  test('filtre piste Jamf masque Apple et Intune', async ({ page }) => {
+    await page.goto('/courses');
+    await expect(page.getByRole('link', { name: /Fondamentaux Jamf Pro — ouvrir le parcours/i })).toBeVisible({
+      timeout: 15_000,
+    });
+    await expect(page.getByRole('link', { name: /Parcours Apple.*ouvrir le parcours/i })).toBeVisible();
+
+    await page.getByRole('button', { name: 'Jamf Pro', exact: true }).click();
+    await expect(page).toHaveURL(/track=JAMF/);
+
+    await expect(page.getByRole('link', { name: /Fondamentaux Jamf Pro — ouvrir le parcours/i })).toBeVisible();
+    await expect(page.getByRole('link', { name: /Parcours Apple.*ouvrir le parcours/i })).not.toBeVisible();
+    await expect(page.getByRole('link', { name: /Microsoft Intune.*ouvrir le parcours/i })).not.toBeVisible();
+  });
+
   test('/pricing redirige vers /courses', async ({ page }) => {
     await page.goto('/pricing');
     await expect(page).toHaveURL(/\/courses$/);
