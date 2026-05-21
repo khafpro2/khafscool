@@ -27,6 +27,10 @@ export const metadata: Metadata = {
     'enrôlement iOS',
   ],
   authors: [{ name: 'MDM Academy' }],
+  icons: {
+    icon: [{ url: '/icon', type: 'image/png' }],
+    apple: [{ url: '/icon', type: 'image/png' }],
+  },
   openGraph: {
     type: 'website',
     locale: 'fr_FR',
@@ -35,12 +39,21 @@ export const metadata: Metadata = {
     title: 'MDM Academy Pro — Apple, Jamf Pro et Intune gratuits',
     description:
       'Formation gamifiée gratuite : Apple Device Support, Jamf Pro et Microsoft Intune. Quiz, mini-jeux, badges et sprints certification.',
+    images: [
+      {
+        url: '/opengraph-image',
+        width: 1200,
+        height: 630,
+        alt: 'MDM Academy Pro — Apple, Jamf Pro et Intune gratuits',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'MDM Academy Pro — Apple, Jamf Pro et Intune gratuits',
     description:
       'Formation gamifiée gratuite : Apple Device Support, Jamf Pro et Microsoft Intune.',
+    images: ['/opengraph-image'],
   },
   robots: {
     index: true,
@@ -116,6 +129,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </div>
             <div style={{ display: 'flex', gap: '1.25rem', flexWrap: 'wrap', alignItems: 'center' }}>
               <Link href="/courses">Parcours</Link>
+              <Link href="/about">À propos</Link>
               <Link href="/demo">Démo</Link>
               <Link href="/resources">Ressources</Link>
               <Link href="/diagnostics" className="site-footer-tools">
