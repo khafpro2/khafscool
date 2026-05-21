@@ -11,29 +11,16 @@ export function LearningStreakCard({ streak }: { streak: LearningStreak }) {
     : 'aucune activité récente';
 
   return (
-    <Card
-      style={{
-        marginTop: '1.25rem',
-        background: 'linear-gradient(135deg, #fff4e8 0%, #ffffff 100%)',
-        borderColor: '#f5b87a',
-      }}
-    >
-      <span style={{ color: '#b45309', fontSize: '0.8rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+    <Card className="dashboard-callout dashboard-callout-streak dashboard-fade-in">
+      <span className="dashboard-callout-eyebrow">
         <span aria-hidden>{'\u{1F525}'}</span> Série d&apos;apprentissage
       </span>
-      <div
-        style={{
-          display: 'grid',
-          gap: '1rem',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
-          marginTop: '0.85rem',
-        }}
-      >
+      <div className="stat-grid dashboard-streak-grid">
         <StreakMetric label="Jours consécutifs" value={String(streak.currentDays)} highlight />
         <StreakMetric label="Meilleure série" value={String(streak.longestDays)} />
         <StreakMetric label="Dernière activité" value={lastActivityLabel} compact />
       </div>
-      <p className="muted" style={{ marginTop: '0.85rem', fontSize: '0.9rem' }}>
+      <p className="muted dashboard-callout-caption">
         {streak.currentDays > 0
           ? 'Continue ta série en validant au moins une unité par jour.'
           : 'Valide une unité aujourd’hui pour démarrer ou relancer ta série.'}
@@ -54,15 +41,10 @@ function StreakMetric({
   compact?: boolean;
 }) {
   return (
-    <div className="stat">
+    <div className={`stat${highlight ? ' dashboard-streak-highlight' : ''}`}>
       <p className="stat-label">{label}</p>
       <p
-        className="stat-value"
-        style={{
-          color: highlight ? '#b45309' : undefined,
-          fontSize: compact ? '1rem' : undefined,
-          lineHeight: compact ? 1.35 : undefined,
-        }}
+        className={`stat-value${compact ? ' dashboard-streak-compact' : ''}${highlight ? ' dashboard-stat-pulse' : ''}`}
       >
         {value}
       </p>

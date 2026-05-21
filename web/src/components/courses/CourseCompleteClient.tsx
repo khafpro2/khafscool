@@ -17,6 +17,7 @@ import { Button } from '@/components/ui/Button';
 import { ShareSuccessButton } from '@/components/courses/ShareSuccessButton';
 import { Card } from '@/components/ui/Card';
 import { BrandIcon } from '@/components/ui/BrandIcon';
+import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { TrackIcon } from '@/components/ui/TrackIcon';
 import {
   estimatePoints,
@@ -134,6 +135,13 @@ export function CourseCompleteClient({
 
   return (
     <section style={{ padding: '1rem 0 3rem', position: 'relative', overflow: 'hidden' }}>
+      <Breadcrumbs
+        items={[
+          { label: 'Accueil', href: '/' },
+          { label: 'Parcours', href: '/courses' },
+          { label: course.title },
+        ]}
+      />
       <ConfettiLayer />
 
       <div className="hero" style={{ marginTop: 0, position: 'relative', zIndex: 1, background: visual.gradient }}>

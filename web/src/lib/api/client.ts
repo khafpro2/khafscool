@@ -1,4 +1,5 @@
 import { refreshSession } from '../auth';
+import { recordApiFailure, recordApiSuccess } from '../api-status-store';
 import { clearDemoMode, markDemoFallback } from '../demo-mode-store';
 import {
   courseToProgress,
@@ -42,17 +43,34 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
 
 async function apiRequest<T>(path: string, init: RequestInit = {}) {
   const requestInit = withJsonHeaders(init);
-  let res = await fetch(`${API_URL}${path}`, requestInit);
 
-  if (res.status === 401 && hasAuthorizationHeader(requestInit.headers)) {
-    const refreshed = await refreshSession();
-    if (refreshed) {
-      res = await fetch(`${API_URL}${path}`, withAuthorizationHeader(requestInit, refreshed.accessToken));
+  try {
+    let res = await fetch(`${API_URL}${path}`, requestInit);
+
+    if (res.status === 401 && hasAuthorizationHeader(requestInit.headers)) {
+      const refreshed = await refreshSession();
+      if (refreshed) {
+        res = await fetch(`${API_URL}${path}`, withAuthorizationHeader(requestInit, refreshed.accessToken));
+      }
     }
-  }
 
-  if (!res.ok) throw new Error(`Erreur API ${res.status}`);
-  return res.json() as Promise<T>;
+    if (!res.ok) {
+      recordApiFailure();
+      throw new Error(`Erreur API ${res.status}`);
+    }
+
+    recordApiSuccess();
+    return (await res.json()) as T;
+  } catch (error) {
+    if (isNetworkError(error)) {
+      recordApiFailure();
+    }
+    throw error;
+  }
+}
+
+function isNetworkError(error: unknown) {
+  return error instanceof TypeError || (error instanceof Error && error.name === 'AbortError');
 }
 
 function withJsonHeaders(init: RequestInit): RequestInit {

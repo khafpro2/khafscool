@@ -24,6 +24,7 @@ import { Card } from '@/components/ui/Card';
 import { LevelPill } from '@/components/ui/LevelPill';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import { BrandIcon } from '@/components/ui/BrandIcon';
+import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { CourseDetailPageSkeleton } from '@/components/ui/Skeleton';
 import { TrackIcon } from '@/components/ui/TrackIcon';
 import {
@@ -292,9 +293,13 @@ export function CourseDetailClient({ slug }: { slug: string }) {
 
   return (
     <section style={{ padding: '1rem 0 3rem' }}>
-      <Link href="/courses" style={{ fontWeight: 700 }}>
-        ← Tous les parcours
-      </Link>
+      <Breadcrumbs
+        items={[
+          { label: 'Accueil', href: '/' },
+          { label: 'Parcours', href: '/courses' },
+          { label: course.title },
+        ]}
+      />
 
       <div
         className="card card-gradient"

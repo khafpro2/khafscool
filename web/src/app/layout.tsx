@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from 'next';
 import Link from 'next/link';
 import { AppErrorBoundary } from '@/components/ErrorBoundary';
+import { ApiHealthPoller } from '@/components/layout/ApiHealthPoller';
+import { ApiStatusBanner } from '@/components/layout/ApiStatusBanner';
 import { DemoModeBanner } from '@/components/layout/DemoModeBanner';
 import { SiteMobileNav } from '@/components/layout/SiteMobileNav';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
@@ -138,6 +140,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </div>
           </div>
         </header>
+        <ApiHealthPoller />
+        <ApiStatusBanner />
         <DemoModeBanner />
         <main className="container" style={{ paddingTop: '1.5rem' }}>
           <AppErrorBoundary>{children}</AppErrorBoundary>

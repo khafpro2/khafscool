@@ -26,6 +26,14 @@ test.describe('Parcours d’apprentissage — smoke', () => {
     await expect(page).toHaveURL(/\/courses$/);
   });
 
+  test('fil d\'Ariane visible sur page cours', async ({ page }) => {
+    await page.goto('/courses/apple-cert-prep');
+    const breadcrumb = page.getByRole('navigation', { name: /fil d'Ariane/i });
+    await expect(breadcrumb).toBeVisible({ timeout: 15_000 });
+    await expect(breadcrumb.getByRole('link', { name: 'Accueil' })).toBeVisible();
+    await expect(breadcrumb.getByRole('link', { name: 'Parcours' })).toBeVisible();
+  });
+
   test('page complétion parcours affiche le partage', async ({ page }) => {
     await page.goto('/courses/apple-cert-prep/complete');
     await expect(page.getByRole('heading', { name: /Bravo !/i })).toBeVisible({ timeout: 15_000 });

@@ -8,6 +8,7 @@ import { buildAuthUrl, getAccessToken } from '@/lib/auth';
 import { formatTrack } from '@/lib/tracks';
 import { ProgressOverview } from '@/components/dashboard/ProgressOverview';
 import { BadgesCallout } from '@/components/dashboard/BadgesCallout';
+import { DashboardStatsHighlight } from '@/components/dashboard/DashboardStatsHighlight';
 import { LearningStreakCard } from '@/components/dashboard/LearningStreakCard';
 import { WeeklyQuestsCallout } from '@/components/dashboard/WeeklyQuestsCallout';
 import { Button } from '@/components/ui/Button';
@@ -155,6 +156,12 @@ export default function DashboardPage() {
         rankName={rank.name}
         points={stats.points}
         level={stats.level}
+      />
+
+      <DashboardStatsHighlight
+        badges={data.badges}
+        courses={courses}
+        learningStreak={learningStreak}
       />
 
       <RecommendedActionCard action={recommendedAction} />
@@ -319,29 +326,17 @@ function SprintMetric({ label, value }: { label: string; value: string }) {
 
 function LeaderboardCallout() {
   return (
-    <Card
-      style={{
-        marginTop: '1.25rem',
-        background: 'linear-gradient(135deg, #fff7d6 0%, #ffffff 100%)',
-        borderColor: '#f0cf7a',
-        display: 'grid',
-        gap: '1rem',
-        gridTemplateColumns: 'minmax(0, 1fr) auto',
-        alignItems: 'center',
-      }}
-    >
-      <div>
-        <span style={{ color: '#8a6d00', fontSize: '0.8rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-          Classement
-        </span>
-        <h2 style={{ fontSize: '1.2rem', fontWeight: 800, marginTop: '0.35rem' }}>
-          Compare ta progression à la communauté
-        </h2>
-        <p className="muted" style={{ marginTop: '0.35rem' }}>
-          Découvre le top 10 des apprenants MDM Academy et ton rang actuel.
-        </p>
+    <Card className="dashboard-callout dashboard-callout-leaderboard dashboard-fade-in">
+      <div className="dashboard-callout-inner">
+        <div>
+          <span className="dashboard-callout-eyebrow">Classement</span>
+          <h2 className="dashboard-callout-title">Compare ta progression à la communauté</h2>
+          <p className="muted dashboard-callout-caption">
+            Découvre le top 10 des apprenants MDM Academy et ton rang actuel.
+          </p>
+        </div>
+        <Button href="/leaderboard">Voir le classement</Button>
       </div>
-      <Button href="/leaderboard">Voir le classement</Button>
     </Card>
   );
 }
