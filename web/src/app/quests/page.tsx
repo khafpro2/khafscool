@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
   fetchWeeklyQuests,
   type WeeklyQuest,
@@ -10,6 +11,13 @@ import { AuthConnectBanner } from '@/components/auth/AuthConnectBanner';
 import { getAccessToken } from '@/lib/auth';
 import { toastQuestsCompleted } from '@/lib/gamification-toasts';
 import { detectNewlyCompletedQuests, isQuestCompleted } from '@/lib/quest-feedback';
+import {
+  formatLeaderboardTrackFilter,
+  LEADERBOARD_TRACK_FILTERS,
+  parseLeaderboardTrackParam,
+  type LeaderboardTrackFilter,
+} from '@/lib/leaderboard-tracks';
+import { filterQuestsByTrack } from '@/lib/quest-track-filter';
 import { formatTrack } from '@/lib/tracks';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -24,11 +32,16 @@ const QUESTS_VISUAL = getTrackVisual('QUESTS');
 type Status = 'loading' | 'ready' | 'error';
 
 export default function WeeklyQuestsPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [data, setData] = useState<WeeklyQuestsResponse | null>(null);
   const [hasToken, setHasToken] = useState(false);
   const [usingFallback, setUsingFallback] = useState(false);
   const [status, setStatus] = useState<Status>('loading');
   const [completionBanner, setCompletionBanner] = useState<WeeklyQuest[]>([]);
+  const [selectedTrack, setSelectedTrack] = useState<LeaderboardTrackFilter>(() =>
+    parseLeaderboardTrackParam(searchParams.get('track'))
+  );
 
   const loadQuests = useCallback(async () => {
     const token = getAccessToken();
@@ -54,7 +67,25 @@ export default function WeeklyQuestsPage() {
     void loadQuests();
   }, [loadQuests]);
 
-  const summary = useMemo(() => buildSummary(data?.quests ?? []), [data]);
+  useEffect(() => {
+    setSelectedTrack(parseLeaderboardTrackParam(searchParams.get('track')));
+  }, [searchParams]);
+
+  const setTrackFilter = useCallback(
+    (track: LeaderboardTrackFilter) => {
+      setSelectedTrack(track);
+      const query = track === 'TOUS' ? '' : `?track=${track}`;
+      router.replace(`/quests${query}`, { scroll: false });
+    },
+    [router]
+  );
+
+  const filteredQuests = useMemo(
+    () => filterQuestsByTrack(data?.quests ?? [], selectedTrack),
+    [data, selectedTrack]
+  );
+
+  const summary = useMemo(() => buildSummary(filteredQuests), [filteredQuests]);
   const resetLabel = useMemo(() => formatResetLabel(data?.weekEnd ?? null), [data]);
 
   if (status === 'loading') {
@@ -78,8 +109,7 @@ export default function WeeklyQuestsPage() {
     );
   }
 
-  const { quests } = data;
-  const isEmpty = quests.length === 0;
+  const isEmpty = filteredQuests.length === 0;
 
   return (
     <section style={{ padding: '1rem 0 2rem' }}>
@@ -126,6 +156,8 @@ export default function WeeklyQuestsPage() {
         </p>
       </Card>
 
+      <TrackFilterRow selected={selectedTrack} onSelect={setTrackFilter} />
+
       <section className="stat-grid" style={{ marginTop: '1.5rem' }}>
         <SummaryStat label="Quêtes complétées" value={`${summary.completed} / ${summary.total}`} />
         <SummaryStat label="Points gagnés" value={`${summary.earnedPoints}`} />
@@ -137,10 +169,10 @@ export default function WeeklyQuestsPage() {
       </section>
 
       {isEmpty ? (
-        <EmptyState />
+        <EmptyState selectedTrack={selectedTrack} />
       ) : (
         <div style={{ display: 'grid', gap: '1rem', marginTop: '1.5rem' }}>
-          {quests.map((quest) => (
+          {filteredQuests.map((quest) => (
             <QuestCard key={quest.id} quest={quest} />
           ))}
         </div>
@@ -260,12 +292,49 @@ function SummaryStat({ label, value }: { label: string; value: string }) {
   );
 }
 
-function EmptyState() {
+function TrackFilterRow({
+  selected,
+  onSelect,
+}: {
+  selected: LeaderboardTrackFilter;
+  onSelect: (track: LeaderboardTrackFilter) => void;
+}) {
+  return (
+    <div
+      className="leaderboard-track-filters"
+      style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap', marginTop: '1.25rem' }}
+    >
+      <span
+        className="muted"
+        style={{ fontSize: '0.8rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em' }}
+      >
+        Piste
+      </span>
+      <div className="chip-row" role="group" aria-label="Filtrer les quêtes par piste">
+        {LEADERBOARD_TRACK_FILTERS.map((track) => (
+          <button
+            key={track}
+            type="button"
+            className="chip"
+            aria-pressed={track === selected}
+            onClick={() => onSelect(track)}
+          >
+            {formatLeaderboardTrackFilter(track)}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function EmptyState({ selectedTrack }: { selectedTrack: LeaderboardTrackFilter }) {
   return (
     <Card style={{ marginTop: '1.5rem', textAlign: 'center' }}>
       <h2 style={{ fontSize: '1.2rem', fontWeight: 800 }}>Aucune quête active</h2>
       <p className="muted" style={{ marginTop: '0.5rem' }}>
-        Aucune quête n’a encore été générée pour cette semaine. Termine une unité pour amorcer le compteur.
+        {selectedTrack === 'TOUS'
+          ? 'Aucune quête n’a encore été générée pour cette semaine. Termine une unité pour amorcer le compteur.'
+          : `Aucune quête hebdo sur la piste ${formatLeaderboardTrackFilter(selectedTrack)} cette semaine.`}
       </p>
       <div style={{ display: 'flex', justifyContent: 'center', gap: '0.6rem', flexWrap: 'wrap', marginTop: '1rem' }}>
         <Button href="/courses">Lancer un parcours</Button>

@@ -18,6 +18,7 @@ import { useThemedStyles } from '../../hooks/useThemedStyles';
 import { toastQuestsCompleted } from '../../lib/gamification-toasts';
 import { detectNewlyCompletedQuests } from '../../lib/quest-feedback';
 import { hasPendingWeeklyQuest, writeQuestNavCache } from '../../lib/quest-nav-badge';
+import { writeStreakNavCache } from '../../lib/streak-nav-badge';
 import { clearTokens } from '../../services/auth';
 import {
   CourseSummary,
@@ -81,6 +82,7 @@ export function LearnerDashboardScreen({ onSignOut }: LearnerDashboardScreenProp
         }))
       )
     );
+    writeStreakNavCache(nextDashboard.data.learningStreak);
     setSprintMessage(
       nextSprint.source === 'demo'
         ? { text: 'Mode démo : connectez-vous pour enregistrer un vrai sprint.', tone: 'info' }

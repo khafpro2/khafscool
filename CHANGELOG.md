@@ -2,6 +2,11 @@
 
 ## Unreleased — `cursor/progress-dashboard-auth-v2`
 
+- Web : `/quests` — filtre piste (chips Toutes/Apple/Jamf/Intune, query `?track=`)
+- Mobile : écran natif `/about` — parité mission, 3 parcours, gratuité, lien GitHub (depuis Profil)
+- Web + Mobile : indicateur série 🔥 discret dans la navigation si streak &gt; 0 (dashboard API, thème sombre)
+- Tests : filtre quêtes par piste, logique streak nav
+
 - Mobile : pastille quête hebdo sur l’onglet Accueil (cache léger dashboard, parité nav web)
 - Mobile : écran `/diagnostics` — santé API, version backend, URL config et session (FR)
 - Web : deep link `/courses/[slug]#module-{slug}` — scroll + surbrillance module en cours

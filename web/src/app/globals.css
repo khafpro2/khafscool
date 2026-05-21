@@ -196,6 +196,30 @@ h1, h2, h3, h4 {
   flex-shrink: 0;
 }
 
+.nav-streak-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.25rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--warning) 35%, var(--border));
+  background: color-mix(in srgb, var(--warning) 12%, var(--surface));
+  color: var(--fg);
+  font-size: 0.78rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.nav-streak-days {
+  font-variant-numeric: tabular-nums;
+}
+
+html[data-theme='dark'] .nav-streak-badge {
+  border-color: color-mix(in srgb, #fbbf24 40%, var(--border));
+  background: color-mix(in srgb, #fbbf24 14%, var(--surface));
+  color: #fde68a;
+}
+
 .course-module-hash-highlight {
   border-color: var(--accent) !important;
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 28%, transparent);

@@ -18,6 +18,7 @@ import { RecentActivitySection } from '../../components/profile/RecentActivitySe
 import type { CompletedCourseSummary } from '../../services/progress';
 import { clearTokens } from '../../services/auth';
 import { LearnerDashboard, fetchLearnerDashboard } from '../../services/progress';
+import { writeStreakNavCache } from '../../lib/streak-nav-badge';
 
 export function ProfileScreen() {
   const router = useRouter();
@@ -30,6 +31,7 @@ export function ProfileScreen() {
     setLoading(true);
     const result = await fetchLearnerDashboard();
     setDashboard(result);
+    writeStreakNavCache(result.data.learningStreak);
     setLoading(false);
   }
 
@@ -180,10 +182,10 @@ export function ProfileScreen() {
         <Text style={styles.linkCta}>Ouvrir les diagnostics →</Text>
       </Pressable>
 
-      <Pressable style={styles.linkCard} onPress={() => openWebPath('/about')}>
+      <Pressable style={styles.linkCard} onPress={() => router.push('/about')}>
         <Text style={styles.linkTitle}>À propos</Text>
         <Text style={styles.linkHint}>Mission, vision et trois piliers MDM Academy</Text>
-        <Text style={styles.linkCta}>Ouvrir sur le web →</Text>
+        <Text style={styles.linkCta}>En savoir plus →</Text>
       </Pressable>
 
       <Pressable onPress={loadProfile} style={styles.refreshButton}>

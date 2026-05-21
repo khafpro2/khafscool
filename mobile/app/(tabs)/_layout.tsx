@@ -1,6 +1,7 @@
 import { Tabs } from 'expo-router';
 import { Text, View } from 'react-native';
 import { QuestTabDot } from '../../src/components/QuestTabDot';
+import { StreakNavBadge } from '../../src/components/StreakNavBadge';
 import { useAppTheme } from '../../src/context/ThemeContext';
 
 function TabIcon({ glyph, color, showQuestDot = false }: { glyph: string; color: string; showQuestDot?: boolean }) {
@@ -16,7 +17,8 @@ export default function TabsLayout() {
   const { colors } = useAppTheme();
 
   return (
-    <Tabs
+    <View style={{ flex: 1 }}>
+      <Tabs
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: colors.accent,
@@ -52,5 +54,12 @@ export default function TabsLayout() {
         }}
       />
     </Tabs>
+      <View
+        style={{ position: 'absolute', bottom: 66, right: 12, zIndex: 10 }}
+        pointerEvents="none"
+      >
+        <StreakNavBadge />
+      </View>
+    </View>
   );
 }

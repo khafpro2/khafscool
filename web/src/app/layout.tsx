@@ -7,6 +7,7 @@ import { DemoModeBanner } from '@/components/layout/DemoModeBanner';
 import { SiteMobileNav } from '@/components/layout/SiteMobileNav';
 import { SiteNavLinks } from '@/components/layout/SiteNavLinks';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
+import { StreakNavBadge } from '@/components/layout/StreakNavIndicator';
 import { Toaster } from '@/components/ui/Toast';
 import { Button } from '@/components/ui/Button';
 import { LEARNING_PATHS } from '@/lib/learningPaths';
@@ -124,6 +125,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </nav>
             <SiteMobileNav />
             <div className="site-actions">
+              <StreakNavBadge />
               <ThemeToggle />
               <Button href="/profile" variant="ghost" size="sm" className="site-action-profile">
                 Profil
