@@ -2,6 +2,13 @@
 
 ## Unreleased — `cursor/progress-dashboard-auth-v2`
 
+- Mobile : accueil/dashboard — CTA « Continuer l’apprentissage » (logique resume API, empty state FR)
+- Mobile : `/badges` — filtre piste (`TrackFilterChips`, parité web)
+- Web : `/diagnostics` — synthèse FR (health, version API, DB, auth, catalogue), lien docs stack locale
+- Web : navigation — pastille discrète sur « Quêtes » si quête hebdo non terminée (cache session 5 min)
+- API : `/health` expose `version` pour les diagnostics
+- Tests : health version, logique resume, E2E diagnostics
+
 - Mobile : profil — section « Activité récente » (`recentActivity[]`), empty state FR
 - Mobile : accueil — cartes quête hebdo + sprint certification (parité `HomeEngagementSection`)
 - Web : `/badges` — filtre piste (chips Toutes/Apple/Jamf/Intune, query `?track=`, thème sombre)

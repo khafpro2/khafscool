@@ -33,6 +33,21 @@ describe('health routes', () => {
     });
   });
 
+  it('exposes /health with service name and version', async () => {
+    const app = Fastify();
+    await app.register(healthRoutes);
+    const response = await app.inject({ method: 'GET', url: '/health' });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.json()).toEqual({
+      ok: true,
+      service: 'apple-mdm-academy-api',
+      version: '0.0.1',
+    });
+
+    await app.close();
+  });
+
   it('exposes /health/db publicly with a 503 when the database is unavailable', async () => {
     vi.mocked(prisma.$queryRaw).mockRejectedValue(new Error('connection failed'));
     const app = Fastify();

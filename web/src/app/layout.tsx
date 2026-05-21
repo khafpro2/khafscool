@@ -5,6 +5,7 @@ import { ApiHealthPoller } from '@/components/layout/ApiHealthPoller';
 import { ApiStatusBanner } from '@/components/layout/ApiStatusBanner';
 import { DemoModeBanner } from '@/components/layout/DemoModeBanner';
 import { SiteMobileNav } from '@/components/layout/SiteMobileNav';
+import { SiteNavLinks } from '@/components/layout/SiteNavLinks';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { Toaster } from '@/components/ui/Toast';
 import { Button } from '@/components/ui/Button';
@@ -83,13 +84,6 @@ export const viewport: Viewport = {
   themeColor: '#2563EB',
 };
 
-const NAV_ITEMS = [
-  { href: '/quests', label: 'Quêtes' },
-  { href: '/leaderboard', label: 'Classement' },
-  { href: '/badges', label: 'Badges' },
-  { href: '/sprint', label: 'Sprint' },
-];
-
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="fr" suppressHydrationWarning>
@@ -126,11 +120,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   </Link>
                 </div>
               </div>
-              {NAV_ITEMS.map((item) => (
-                <Link key={item.href} href={item.href}>
-                  {item.label}
-                </Link>
-              ))}
+              <SiteNavLinks />
             </nav>
             <SiteMobileNav />
             <div className="site-actions">

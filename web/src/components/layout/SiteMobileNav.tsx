@@ -2,11 +2,12 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
+import { QuestNavDot } from '@/components/layout/QuestNavIndicator';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { LEARNING_PATHS } from '@/lib/learningPaths';
 
 const NAV_LINKS = [
-  { href: '/quests', label: 'Quêtes' },
+  { href: '/quests', label: 'Quêtes', showQuestDot: true as const },
   { href: '/leaderboard', label: 'Classement' },
   { href: '/badges', label: 'Badges' },
   { href: '/sprint', label: 'Sprint' },
@@ -124,8 +125,14 @@ export function SiteMobileNav() {
 
         <div className="site-nav-drawer-section">
           {NAV_LINKS.map((item) => (
-            <Link key={item.href} href={item.href} className="site-nav-drawer-link" onClick={close}>
-              {item.label}
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`site-nav-drawer-link${'showQuestDot' in item && item.showQuestDot ? ' nav-link-quests' : ''}`}
+              onClick={close}
+            >
+              <span className="nav-link-label">{item.label}</span>
+              {'showQuestDot' in item && item.showQuestDot ? <QuestNavDot /> : null}
             </Link>
           ))}
           <Link href="/profile" className="site-nav-drawer-link" onClick={close}>

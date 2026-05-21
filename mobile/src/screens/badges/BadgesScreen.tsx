@@ -9,6 +9,7 @@ import {
   View,
 } from 'react-native';
 import { BrandIcon } from '../../components/BrandIcon';
+import { TrackFilterChips } from '../../components/TrackFilterChips';
 import { TrackIcon } from '../../components/TrackIcon';
 import {
   ALL_BADGE_SLUGS,
@@ -20,6 +21,7 @@ import {
 import { useAppTheme } from '../../context/ThemeContext';
 import type { AppThemeColors } from '../../lib/design';
 import { useThemedStyles } from '../../hooks/useThemedStyles';
+import { formatTrackFilter, type TrackFilter } from '../../lib/track-filters';
 import { UserBadgesResult, fetchUserBadges } from '../../services/gamification';
 
 export function BadgesScreen() {
@@ -29,6 +31,7 @@ export function BadgesScreen() {
   const [data, setData] = useState<UserBadgesResult | null>(null);
   const [source, setSource] = useState<'api' | 'demo'>('demo');
   const [loading, setLoading] = useState(true);
+  const [selectedTrack, setSelectedTrack] = useState<TrackFilter>('TOUS');
 
   const loadBadges = useCallback(async () => {
     setLoading(true);
@@ -42,7 +45,11 @@ export function BadgesScreen() {
     void loadBadges();
   }, [loadBadges]);
 
-  const summary = useMemo(() => buildSummary(data), [data]);
+  const filteredSlugs = useMemo(
+    () => filterBadgesByTrack(ALL_BADGE_SLUGS, selectedTrack),
+    [selectedTrack]
+  );
+  const summary = useMemo(() => buildSummary(data, selectedTrack), [data, selectedTrack]);
 
   if (loading || !data) {
     return (
@@ -54,8 +61,8 @@ export function BadgesScreen() {
   }
 
   const earnedSet = new Set(data.earnedSlugs);
-  const earnedBadges = ALL_BADGE_SLUGS.filter((slug) => earnedSet.has(slug));
-  const lockedBadges = ALL_BADGE_SLUGS.filter((slug) => !earnedSet.has(slug));
+  const earnedBadges = filteredSlugs.filter((slug) => earnedSet.has(slug));
+  const lockedBadges = filteredSlugs.filter((slug) => !earnedSet.has(slug));
   const earnedBySlug = new Map(data.badges.map((badge) => [badge.slug, badge]));
 
   return (
@@ -80,6 +87,8 @@ export function BadgesScreen() {
         </View>
       ) : null}
 
+      <TrackFilterChips selected={selectedTrack} onSelect={setSelectedTrack} />
+
       <View style={styles.summaryRow}>
         <SummaryStat label="Gagnés" value={`${summary.earned} / ${summary.total}`} styles={styles} />
         <SummaryStat label="Apple" value={String(summary.byTrack.APPLE)} styles={styles} />
@@ -101,7 +110,9 @@ export function BadgesScreen() {
           ))
         ) : (
           <Text style={styles.emptyText}>
-            Termine une première unité pour débloquer ton premier super-badge.
+            {selectedTrack === 'TOUS'
+              ? 'Termine une première unité pour débloquer ton premier super-badge.'
+              : `Aucun badge gagné sur la piste ${formatTrackFilter(selectedTrack)} pour le moment.`}
           </Text>
         )}
       </BadgeSection>
@@ -111,7 +122,9 @@ export function BadgesScreen() {
           lockedBadges.map((slug) => <BadgeCard key={slug} slug={slug} earned={false} styles={styles} colors={colors} />)
         ) : (
           <Text style={styles.emptyText}>
-            Bravo — tu as débloqué tous les super-badges disponibles !
+            {selectedTrack === 'TOUS'
+              ? 'Bravo — tu as débloqué tous les super-badges disponibles !'
+              : `Tous les badges ${formatTrackFilter(selectedTrack)} sont débloqués.`}
           </Text>
         )}
       </BadgeSection>
@@ -222,20 +235,28 @@ function formatEarnedDate(value: string) {
   return date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
 }
 
-function buildSummary(data: UserBadgesResult | null) {
+function filterBadgesByTrack(slugs: readonly string[], track: TrackFilter) {
+  if (track === 'TOUS') return [...slugs];
+  return slugs.filter((slug) => getBadgeTrack(slug) === track);
+}
+
+function buildSummary(data: UserBadgesResult | null, track: TrackFilter) {
   const earnedSlugs = data?.earnedSlugs ?? [];
+  const visibleSlugs = filterBadgesByTrack(ALL_BADGE_SLUGS, track);
   const byTrack = { APPLE: 0, JAMF: 0, INTUNE: 0 };
 
   for (const slug of earnedSlugs) {
-    const track = getBadgeTrack(slug);
-    if (track === 'APPLE') byTrack.APPLE += 1;
-    if (track === 'JAMF') byTrack.JAMF += 1;
-    if (track === 'INTUNE') byTrack.INTUNE += 1;
+    const badgeTrack = getBadgeTrack(slug);
+    if (badgeTrack === 'APPLE') byTrack.APPLE += 1;
+    if (badgeTrack === 'JAMF') byTrack.JAMF += 1;
+    if (badgeTrack === 'INTUNE') byTrack.INTUNE += 1;
   }
 
+  const earnedOnTrack = earnedSlugs.filter((slug) => visibleSlugs.includes(slug)).length;
+
   return {
-    earned: earnedSlugs.length,
-    total: ALL_BADGE_SLUGS.length,
+    earned: earnedOnTrack,
+    total: visibleSlugs.length,
     byTrack,
   };
 }

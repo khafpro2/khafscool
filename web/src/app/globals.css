@@ -176,6 +176,33 @@ h1, h2, h3, h4 {
 }
 .site-nav a:hover { color: var(--accent); text-decoration: none; }
 
+.nav-link-quests {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.nav-link-label {
+  display: inline-block;
+}
+
+.nav-quest-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--accent);
+  box-shadow: 0 0 0 2px var(--bg);
+  flex-shrink: 0;
+}
+
+.site-nav-drawer-link.nav-link-quests {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
 .nav-dropdown {
   position: relative;
 }

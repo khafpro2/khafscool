@@ -22,8 +22,14 @@ export async function getDatabaseHealth(): Promise<DatabaseHealthResponse> {
   }
 }
 
+const API_VERSION = '0.0.1';
+
 export async function healthRoutes(app: FastifyInstance) {
-  app.get('/health', async () => ({ ok: true, service: 'apple-mdm-academy-api' }));
+  app.get('/health', async () => ({
+    ok: true,
+    service: 'apple-mdm-academy-api',
+    version: API_VERSION,
+  }));
 
   app.get('/health/db', async (_req, reply) => {
     const health = await getDatabaseHealth();

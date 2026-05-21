@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { API_URL } from '@/lib/api';
 import { getAuthTokenPresence } from '@/lib/auth';
 import { Badge } from '@/components/ui/Badge';
@@ -15,6 +15,9 @@ type EndpointCheck = {
 };
 
 const EXPECTED_CATALOG_SLUGS = ['apple-cert-prep', 'jamf-pro-foundations', 'intune-ios-enrollment'];
+
+const DEV_STACK_README =
+  'https://github.com/khafpro2/khafscool/blob/main/README.md#démarrage-rapide';
 
 const quickLinks = [
   { href: '/auth', label: 'Connexion' },
@@ -33,6 +36,7 @@ const initialEndpointCheck: EndpointCheck = {
 
 export default function DiagnosticsPage() {
   const [healthCheck, setHealthCheck] = useState<EndpointCheck>(initialEndpointCheck);
+  const [apiVersion, setApiVersion] = useState<string | null>(null);
   const [databaseCheck, setDatabaseCheck] = useState<EndpointCheck>(initialEndpointCheck);
   const [catalogCheck, setCatalogCheck] = useState<EndpointCheck>(initialEndpointCheck);
   const [tokenPresence, setTokenPresence] = useState(() => ({
@@ -49,7 +53,8 @@ export default function DiagnosticsPage() {
 
   async function runEndpointChecks() {
     const [health, database, catalog] = await Promise.all([checkHealth(), checkDatabase(), checkCatalog()]);
-    setHealthCheck(health);
+    setHealthCheck(health.check);
+    setApiVersion(health.version);
     setDatabaseCheck(database);
     setCatalogCheck(catalog);
   }
@@ -60,13 +65,83 @@ export default function DiagnosticsPage() {
   const sessionStatus: CheckStatus =
     hasAccessToken && hasRefreshToken ? 'ok' : hasAnyToken ? 'warning' : 'error';
 
+  const apiUrlConfigured = Boolean(API_URL?.trim());
+  const authClientStatus: CheckStatus = hasAccessToken && hasRefreshToken ? 'ok' : hasAnyToken ? 'warning' : 'error';
+
+  const checklist = useMemo<Array<{ id: string; label: string; status: CheckStatus; detail: string }>>(
+    () => [
+      {
+        id: 'api-health',
+        label: 'Santé API (/health)',
+        status: healthCheck.status,
+        detail: healthCheck.detail,
+      },
+      {
+        id: 'api-version',
+        label: 'Version backend',
+        status: apiVersion ? 'ok' : healthCheck.status === 'error' ? 'warning' : ('warning' as CheckStatus),
+        detail: apiVersion
+          ? `Version ${apiVersion} exposée par l’API.`
+          : 'Champ version absent — redémarre le backend sur la branche courante.',
+      },
+      {
+        id: 'database',
+        label: 'Base de données (via /health/db)',
+        status: databaseCheck.status,
+        detail: databaseCheck.detail,
+      },
+      {
+        id: 'catalog',
+        label: 'Catalogue seedé (/catalog)',
+        status: catalogCheck.status,
+        detail: catalogCheck.detail,
+      },
+      {
+        id: 'api-url',
+        label: 'URL API configurée (web)',
+        status: apiUrlConfigured ? 'ok' : 'error',
+        detail: apiUrlConfigured
+          ? `NEXT_PUBLIC_API_URL → ${API_URL}`
+          : 'Variable NEXT_PUBLIC_API_URL absente — le front bascule en mode démo.',
+      },
+      {
+        id: 'auth-session',
+        label: 'Session navigateur (tokens locaux)',
+        status: authClientStatus,
+        detail: hasAnyToken
+          ? 'Jetons détectés en localStorage ou cookie (valeurs masquées).'
+          : 'Aucun jeton — connecte-toi via /auth pour tester le dashboard.',
+      },
+      {
+        id: 'auth-server',
+        label: 'Auth API (JWT côté serveur)',
+        status: 'warning' as CheckStatus,
+        detail:
+          'Non vérifiable depuis le navigateur. Contrôle JWT_SECRET, JWT_REFRESH_SECRET et CORS_ORIGIN (voir DEPLOYMENT.md).',
+      },
+    ],
+    [
+      apiUrlConfigured,
+      apiVersion,
+      authClientStatus,
+      catalogCheck.detail,
+      catalogCheck.status,
+      databaseCheck.detail,
+      databaseCheck.status,
+      hasAnyToken,
+      healthCheck.detail,
+      healthCheck.status,
+    ]
+  );
+
   return (
     <section style={{ padding: '1rem 0 2.5rem' }}>
       <div className="hero" style={{ marginTop: 0, padding: '2rem 1.75rem' }}>
         <span className="hero-eyebrow">Outils internes</span>
         <h1>Diagnostics MVP</h1>
         <p style={{ marginTop: '0.75rem', fontSize: '0.98rem' }}>
-          Vérifie l’API, Prisma, le catalogue seedé et la session locale — page réservée aux testeurs.
+          Vérifie l’API, Prisma, le catalogue seedé, la configuration auth et la session locale — page réservée aux
+          testeurs.
         </p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '1.25rem' }}>
           <Button type="button" onClick={runEndpointChecks}>
@@ -75,8 +150,41 @@ export default function DiagnosticsPage() {
           <Button href="/auth" variant="secondary">
             Tester la connexion
           </Button>
+          <Button href={DEV_STACK_README} variant="ghost" style={{ color: '#fff', borderColor: 'rgba(255,255,255,0.4)' }}>
+            Docs stack locale
+          </Button>
         </div>
       </div>
+
+      <Card style={{ marginTop: '1.5rem' }}>
+        <p className="section-eyebrow">Synthèse</p>
+        <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginTop: '0.35rem' }}>Liste des contrôles</h2>
+        <ul style={{ display: 'grid', gap: '0.65rem', marginTop: '1rem', padding: 0, listStyle: 'none' }}>
+          {checklist.map((item) => (
+            <li
+              key={item.id}
+              style={{
+                display: 'grid',
+                gap: '0.25rem',
+                padding: '0.75rem 0.85rem',
+                borderRadius: 12,
+                background: 'var(--accent-soft)',
+                border: `1px solid ${statusColor(item.status)}33`,
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.75rem', alignItems: 'center' }}>
+                <strong style={{ fontSize: '0.92rem' }}>{item.label}</strong>
+                <Badge tone={item.status === 'ok' ? 'success' : item.status === 'warning' ? 'warning' : 'neutral'}>
+                  {statusLabel(item.status)}
+                </Badge>
+              </div>
+              <p className="muted" style={{ fontSize: '0.85rem', margin: 0 }}>
+                {item.detail}
+              </p>
+            </li>
+          ))}
+        </ul>
+      </Card>
 
       <section
         style={{
@@ -87,6 +195,16 @@ export default function DiagnosticsPage() {
         }}
       >
         <StatusCard detail={healthCheck.detail} label="API /health" status={healthCheck.status} title="Santé de l’API" />
+        <StatusCard
+          detail={
+            apiVersion
+              ? `Version ${apiVersion} — service joignable.`
+              : 'Version non exposée par /health (met à jour le backend).'
+          }
+          label="Version API"
+          status={apiVersion ? 'ok' : healthCheck.status === 'ok' ? 'warning' : healthCheck.status}
+          title="Backend"
+        />
         <StatusCard
           detail={databaseCheck.detail}
           label="API /health/db"
@@ -110,6 +228,34 @@ export default function DiagnosticsPage() {
           title="Tokens navigateur"
         />
       </section>
+
+      <Card style={{ marginTop: '1rem' }}>
+        <p className="section-eyebrow">Stack locale</p>
+        <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginTop: '0.35rem' }}>Démarrage dev-stack</h2>
+        <p className="muted" style={{ marginTop: '0.35rem' }}>
+          Postgres + API + web en une commande. Voir aussi <code>DEPLOYMENT.md</code> pour les variables Vercel /
+          Railway.
+        </p>
+        <ul style={{ color: 'var(--muted)', display: 'grid', gap: '0.45rem', marginTop: '0.85rem', paddingLeft: '1.25rem' }}>
+          <li>
+            <code>pnpm dev:stack</code> — lance Docker Postgres, backend (:4000) et Next.js (:3000).
+          </li>
+          <li>
+            <code>pnpm setup</code> ou <code>pnpm db:migrate && pnpm db:seed</code> — première installation.
+          </li>
+          <li>
+            <code>pnpm smoke:all</code> — smoke HTTP API + pages web principales.
+          </li>
+        </ul>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '1rem' }}>
+          <Button href={DEV_STACK_README} variant="secondary" size="sm">
+            README — stack locale
+          </Button>
+          <Button href="/mvp" variant="ghost" size="sm">
+            Parcours MVP
+          </Button>
+        </div>
+      </Card>
 
       <Card style={{ marginTop: '1rem' }}>
         <p className="section-eyebrow">Dépannage local</p>
@@ -168,26 +314,40 @@ export default function DiagnosticsPage() {
   );
 }
 
-async function checkHealth(): Promise<EndpointCheck> {
+async function checkHealth(): Promise<{ check: EndpointCheck; version: string | null }> {
   try {
     const res = await fetch(`${API_URL}/health`, { cache: 'no-store' });
     if (!res.ok) {
-      return { detail: `Erreur HTTP ${res.status} sur /health.`, status: 'error' };
+      return {
+        check: { detail: `Erreur HTTP ${res.status} sur /health.`, status: 'error' },
+        version: null,
+      };
     }
 
-    const data = (await res.json()) as { ok?: boolean; service?: string };
+    const data = (await res.json()) as { ok?: boolean; service?: string; version?: string };
     if (!data.ok) {
-      return { detail: 'Réponse reçue, mais le champ ok est absent ou faux.', status: 'warning' };
+      return {
+        check: { detail: 'Réponse reçue, mais le champ ok est absent ou faux.', status: 'warning' },
+        version: data.version ?? null,
+      };
     }
+
+    const versionSuffix = data.version ? ` · v${data.version}` : '';
 
     return {
-      detail: `OK — ${data.service ?? 'service API joignable'}.`,
-      status: 'ok',
+      check: {
+        detail: `OK — ${data.service ?? 'service API joignable'}${versionSuffix}.`,
+        status: 'ok',
+      },
+      version: data.version ?? null,
     };
   } catch {
     return {
-      detail: 'API indisponible depuis le navigateur. Vérifie que le backend écoute sur l’URL configurée.',
-      status: 'error',
+      check: {
+        detail: 'API indisponible depuis le navigateur. Vérifie que le backend écoute sur l’URL configurée.',
+        status: 'error',
+      },
+      version: null,
     };
   }
 }
