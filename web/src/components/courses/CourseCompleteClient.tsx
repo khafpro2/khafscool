@@ -14,6 +14,7 @@ import { buildAuthUrl, getAccessToken } from '@/lib/auth';
 import { formatTrack } from '@/lib/tracks';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
+import { ShareSuccessButton } from '@/components/courses/ShareSuccessButton';
 import { Card } from '@/components/ui/Card';
 import { BrandIcon } from '@/components/ui/BrandIcon';
 import { TrackIcon } from '@/components/ui/TrackIcon';
@@ -231,7 +232,8 @@ export function CourseCompleteClient({
 
       <Card style={{ marginTop: '1.25rem', position: 'relative', zIndex: 1 }}>
         <h2 style={{ fontSize: '1.15rem', fontWeight: 800 }}>Et maintenant ?</h2>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem', marginTop: '0.85rem' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem', marginTop: '0.85rem', alignItems: 'flex-start' }}>
+          <ShareSuccessButton courseTitle={completion.title} slug={slug} />
           <Button href="/badges">Voir mes badges</Button>
           <Button href="/dashboard" variant="ghost">
             Tableau de bord

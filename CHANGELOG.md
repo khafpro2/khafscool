@@ -6,6 +6,8 @@
 - Web : page `/about` (mission, piliers Apple / Jamf / Intune, lien footer)
 - `smoke-web` : couverture HTTP de `/about`
 - Mobile : lien « À propos » vers `WEB_URL/about` depuis l’écran Profil
+- Web : bouton « Partager ma réussite » sur `/courses/[slug]/complete` (Web Share API + copie de lien)
+- Web : certificat de complétion imprimable `/courses/[slug]/certificate` (`window.print()`, auth ou démo)
 - Fix `scripts/dev-stack.sh` (fins de ligne LF, `pnpm dev:stack` relance db + backend + web)
 - Mobile : constantes parcours (`NEXT_COURSE_BY_SLUG`, slugs) importées depuis `@ama/shared`
 - Thème **MDM Academy Pro** gratuit (palette `#2563EB`, sans paywall bloquant ; `/pricing` → `/courses`)

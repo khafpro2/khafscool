@@ -17,4 +17,12 @@ test.describe('Parcours d’apprentissage — smoke', () => {
     await page.goto('/pricing');
     await expect(page).toHaveURL(/\/courses$/);
   });
+
+  test('page complétion parcours affiche le partage', async ({ page }) => {
+    await page.goto('/courses/apple-cert-prep/complete');
+    await expect(page.getByRole('heading', { name: /Bravo !/i })).toBeVisible({ timeout: 15_000 });
+    await expect(
+      page.getByRole('button', { name: /Partager ma réussite/i })
+    ).toBeVisible();
+  });
 });
