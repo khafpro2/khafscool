@@ -112,6 +112,9 @@ pnpm db:seed
 - [ ] `/auth` — inscription / connexion email
 - [ ] `/dashboard` — progression après connexion ou démo
 - [ ] `/diagnostics` — santé API et tokens (outil mainteneur)
+- [ ] `/courses/apple-cert-prep/complete` — partage et lien certificat
+- [ ] `/courses/apple-cert-prep/certificate` — certificat imprimable (mode démo OK)
+- [ ] Mobile : écran victoire → certificat web + partage natif (`EXPO_PUBLIC_WEB_URL` pointant vers le web local)
 
 ---
 

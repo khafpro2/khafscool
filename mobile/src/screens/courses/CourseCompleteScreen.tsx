@@ -1,6 +1,15 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useMemo } from 'react';
-import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  Linking,
+  Platform,
+  Pressable,
+  ScrollView,
+  Share,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { WEB_URL } from '../../config';
 import { BrandIcon } from '../../components/BrandIcon';
 import { TrackIcon } from '../../components/TrackIcon';
@@ -28,8 +37,33 @@ export function CourseCompleteScreen() {
   const badgeVisual = badgeEarned ? getBadgeVisual(badgeEarned) : null;
   const nextCourse = useMemo(() => NEXT_COURSE_BY_SLUG[slug as CourseSlug] ?? null, [slug]);
 
+  function openCertificate() {
+    void Linking.openURL(`${WEB_URL}/courses/${slug}/certificate`);
+  }
+
   function openWebComplete() {
     void Linking.openURL(`${WEB_URL}/courses/${slug}/complete`);
+  }
+
+  async function shareSuccess() {
+    const url = `${WEB_URL}/courses/${slug}/complete`;
+    const intro = `J'ai complété le parcours « ${title} » sur Apple MDM Academy.`;
+    try {
+      await Share.share(
+        Platform.OS === 'ios'
+          ? {
+              message: intro,
+              url,
+              title: 'Parcours terminé — MDM Academy',
+            }
+          : {
+              message: `${intro} ${url}`,
+              title: 'Parcours terminé — MDM Academy',
+            }
+      );
+    } catch {
+      // Annulation ou partage indisponible
+    }
   }
 
   return (
@@ -71,8 +105,14 @@ export function CourseCompleteScreen() {
       </View>
 
       <View style={styles.actions}>
-        <Pressable style={styles.primaryButton} onPress={openWebComplete}>
-          <Text style={styles.primaryButtonText}>Voir sur le web</Text>
+        <Pressable style={styles.primaryButton} onPress={openCertificate}>
+          <Text style={styles.primaryButtonText}>Voir mon certificat</Text>
+        </Pressable>
+        <Pressable style={styles.secondaryButton} onPress={() => void shareSuccess()}>
+          <Text style={styles.secondaryButtonText}>Partager ma réussite</Text>
+        </Pressable>
+        <Pressable style={styles.ghostButton} onPress={openWebComplete}>
+          <Text style={styles.ghostButtonText}>Voir la célébration sur le web</Text>
         </Pressable>
         <Pressable style={styles.secondaryButton} onPress={() => router.replace('/(tabs)')}>
           <Text style={styles.secondaryButtonText}>Retour au tableau de bord</Text>
