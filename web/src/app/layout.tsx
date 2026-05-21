@@ -3,8 +3,10 @@ import Link from 'next/link';
 import { AppErrorBoundary } from '@/components/ErrorBoundary';
 import { DemoModeBanner } from '@/components/layout/DemoModeBanner';
 import { SiteMobileNav } from '@/components/layout/SiteMobileNav';
+import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { Button } from '@/components/ui/Button';
 import { LEARNING_PATHS } from '@/lib/learningPaths';
+import { themeInitScript } from '@/lib/theme';
 import './globals.css';
 
 const siteUrl = process.env.WEB_URL ?? 'http://127.0.0.1:3000';
@@ -28,8 +30,12 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: 'MDM Academy' }],
   icons: {
-    icon: [{ url: '/icon', type: 'image/png' }],
-    apple: [{ url: '/icon', type: 'image/png' }],
+    icon: [
+      { url: '/icon', type: 'image/png', sizes: '32x32' },
+      { url: '/icon-192', type: 'image/png', sizes: '192x192' },
+      { url: '/icon-512', type: 'image/png', sizes: '512x512' },
+    ],
+    apple: [{ url: '/icon-192', type: 'image/png', sizes: '192x192' }],
   },
   openGraph: {
     type: 'website',
@@ -83,7 +89,10 @@ const NAV_ITEMS = [
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fr">
+    <html lang="fr" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
       <body>
         <header className="site-header">
           <div className="container site-header-inner">
@@ -119,6 +128,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </nav>
             <SiteMobileNav />
             <div className="site-actions">
+              <ThemeToggle />
               <Button href="/profile" variant="ghost" size="sm" className="site-action-profile">
                 Profil
               </Button>

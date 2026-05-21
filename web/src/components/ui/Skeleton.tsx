@@ -125,6 +125,82 @@ export function DashboardSkeleton() {
   );
 }
 
+export function LeaderboardPageSkeleton() {
+  return (
+    <section style={{ padding: '1rem 0 2rem' }} aria-busy="true" aria-label="Chargement du classement">
+      <div className="hero" style={{ marginTop: 0 }}>
+        <Skeleton width={200} height={28} rounded="pill" style={{ opacity: 0.5 }} />
+        <Skeleton width="min(480px, 95%)" height={40} rounded="sm" style={{ marginTop: '1rem', opacity: 0.5 }} />
+        <Skeleton width="min(420px, 90%)" height={16} rounded="sm" style={{ marginTop: '0.75rem', opacity: 0.45 }} />
+        <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', marginTop: '1.25rem' }}>
+          <Skeleton width={148} height={40} rounded="md" style={{ opacity: 0.45 }} />
+          <Skeleton width={120} height={40} rounded="md" style={{ opacity: 0.45 }} />
+        </div>
+      </div>
+
+      <div className="card" style={{ marginTop: '1.5rem' }}>
+        <Skeleton width="40%" height={18} rounded="sm" />
+        <Skeleton width="85%" height={14} rounded="sm" style={{ marginTop: '0.5rem' }} />
+      </div>
+
+      <div
+        style={{
+          display: 'grid',
+          gap: '1rem',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+          marginTop: '1.5rem',
+        }}
+      >
+        {Array.from({ length: 3 }).map((_, index) => (
+          <div key={index} className="card" aria-hidden>
+            <Skeleton width={48} height={14} rounded="pill" />
+            <Skeleton width="70%" height={20} rounded="sm" style={{ marginTop: '0.75rem' }} />
+            <Skeleton width="55%" height={14} rounded="sm" style={{ marginTop: '0.35rem' }} />
+            <div style={{ display: 'flex', gap: '0.35rem', marginTop: '0.65rem' }}>
+              <Skeleton width={72} height={24} rounded="pill" />
+              <Skeleton width={64} height={24} rounded="pill" />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="card" style={{ marginTop: '1.5rem', padding: 0, overflow: 'hidden' }}>
+        <div
+          style={{
+            display: 'grid',
+            gap: '0.5rem',
+            gridTemplateColumns: '60px minmax(0, 1.6fr) 90px 140px minmax(0, 1fr)',
+            padding: '0.85rem 1.25rem',
+            borderBottom: '1px solid var(--border-soft)',
+          }}
+        >
+          {Array.from({ length: 5 }).map((_, index) => (
+            <Skeleton key={index} width="80%" height={12} rounded="pill" />
+          ))}
+        </div>
+        {Array.from({ length: 6 }).map((_, row) => (
+          <div
+            key={row}
+            style={{
+              display: 'grid',
+              gap: '0.5rem',
+              gridTemplateColumns: '60px minmax(0, 1.6fr) 90px 140px minmax(0, 1fr)',
+              padding: '0.85rem 1.25rem',
+              borderBottom: '1px solid var(--border-soft)',
+            }}
+          >
+            <Skeleton width={32} height={18} rounded="sm" />
+            <Skeleton width="75%" height={18} rounded="sm" />
+            <Skeleton width={48} height={18} rounded="sm" />
+            <Skeleton width={100} height={24} rounded="pill" />
+            <Skeleton width="90%" height={24} rounded="pill" />
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 export function QuestsPageSkeleton() {
   return (
     <section style={{ padding: '1rem 0 2rem' }} aria-busy="true" aria-label="Chargement des quêtes">

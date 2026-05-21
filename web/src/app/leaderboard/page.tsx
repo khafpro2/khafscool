@@ -7,6 +7,7 @@ import { getAccessToken } from '@/lib/auth';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { LeaderboardPageSkeleton } from '@/components/ui/Skeleton';
 import { getBadgeVisual, getRankInfo, getTrackVisual } from '@/lib/design';
 
 const LEADERBOARD_VISUAL = getTrackVisual('LEADERBOARD');
@@ -35,12 +36,7 @@ export default function LeaderboardPage() {
   }, []);
 
   if (status === 'loading') {
-    return (
-      <section style={{ padding: '2rem 0' }}>
-        <h1 style={{ fontSize: '2rem', fontWeight: 800 }}>Classement</h1>
-        <p className="muted" style={{ marginTop: '0.5rem' }}>Chargement du classement...</p>
-      </section>
-    );
+    return <LeaderboardPageSkeleton />;
   }
 
   if (status === 'error' || !data) {

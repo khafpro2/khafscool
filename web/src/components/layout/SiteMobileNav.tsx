@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
+import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { LEARNING_PATHS } from '@/lib/learningPaths';
 
 const NAV_LINKS = [
@@ -133,6 +134,12 @@ export function SiteMobileNav() {
         </div>
 
         <div className="site-nav-drawer-actions">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
+            <span className="site-nav-drawer-label" style={{ padding: 0 }}>
+              Apparence
+            </span>
+            <ThemeToggle />
+          </div>
           <Link href="/auth" className="btn btn-sm" onClick={close}>
             Commencer gratuitement
           </Link>
