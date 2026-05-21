@@ -78,6 +78,10 @@ pnpm smoke:web
 - [ ] **Filtres piste** — `/courses?track=` et `/leaderboard?track=` (chips Toutes / Apple / Jamf / Intune) ; parité mobile catalogue + classement
 - [ ] **Page `/resources`** — liens officiels Apple MDM, Jamf, Microsoft Intune (BrandIcon, layout Pro)
 - [ ] **Compte démo** — exploration sans inscription (`demo@ama.dev`, mode local `/demo`)
+- [ ] **Pages légales FR** — `/legal/confidentialite`, `/legal/conditions` (métadonnées SEO, liens footer)
+- [ ] **Bannière cookies** — consentement localStorage, lien confidentialité, pas de traceur tiers
+- [ ] **Header points + rang** — indicateur discret (cache session 5 min, liens profil/classement)
+- [ ] **Profil certificats** — parcours 100 % → lien `/courses/[slug]/certificate` (web + mobile)
 
 ---
 
@@ -129,7 +133,10 @@ pnpm db:seed
 - [ ] `/diagnostics` — santé API et tokens (outil mainteneur)
 - [ ] `/courses/apple-cert-prep/complete` — partage et lien certificat
 - [ ] `/courses/apple-cert-prep/certificate` — certificat imprimable (mode démo OK)
+- [ ] `/profile` — section certificats (parcours terminés → certificat, empty state FR)
+- [ ] Bannière cookies — affichée une fois, masquée après « J'ai compris », lien `/legal/confidentialite`
 - [ ] Mobile : écran victoire → certificat web + partage natif (`EXPO_PUBLIC_WEB_URL` pointant vers le web local)
+- [ ] Mobile : profil → certificats (ouverture `WEB_URL/courses/[slug]/certificate`)
 - [ ] Mobile : filtres piste sur catalogue parcours et écran classement
 
 ---

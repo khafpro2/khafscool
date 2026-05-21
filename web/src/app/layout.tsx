@@ -7,6 +7,7 @@ import { DemoModeBanner } from '@/components/layout/DemoModeBanner';
 import { SiteMobileNav } from '@/components/layout/SiteMobileNav';
 import { SiteNavLinks } from '@/components/layout/SiteNavLinks';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
+import { CookieConsentBanner } from '@/components/layout/CookieConsentBanner';
 import { PointsRankNavIndicator } from '@/components/layout/PointsRankNavIndicator';
 import { StreakNavBadge } from '@/components/layout/StreakNavIndicator';
 import { Toaster } from '@/components/ui/Toast';
@@ -145,6 +146,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <AppErrorBoundary>{children}</AppErrorBoundary>
         </main>
         <Toaster />
+        <CookieConsentBanner />
         <footer className="site-footer">
           <div className="container site-footer-inner">
             <div>

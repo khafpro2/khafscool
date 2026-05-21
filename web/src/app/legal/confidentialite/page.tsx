@@ -8,6 +8,14 @@ export const metadata: Metadata = {
   description:
     'Politique de confidentialité MDM Academy Pro : formation gratuite, données minimales, pas de revente.',
   alternates: { canonical: '/legal/confidentialite' },
+  openGraph: {
+    locale: 'fr_FR',
+    title: 'Politique de confidentialité — MDM Academy',
+    description:
+      'Formation gratuite Apple, Jamf et Intune : données minimales, pas de revente ni publicité ciblée.',
+    url: '/legal/confidentialite',
+  },
+  robots: { index: true, follow: true },
 };
 
 export default function ConfidentialitePage() {

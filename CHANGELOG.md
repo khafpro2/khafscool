@@ -2,6 +2,12 @@
 
 ## Unreleased — `cursor/progress-dashboard-auth-v2`
 
+- Web : bannière consentement cookies FR (localStorage, lien `/legal/confidentialite`, pas de traceur tiers)
+- Web : profil — section certificats (parcours terminés → `/courses/[slug]/certificate`, empty state FR, dark mode)
+- Mobile : profil — certificats (lien web imprimable par parcours terminé)
+- `MERGE.md` — checklist pages légales, cookies, points/rang nav, certificats profil
+- Tests : logique consentement cookies, E2E bannière + profil certificats
+
 - Web : header discret points + rang classement (cache dashboard 5 min, liens profil/classement, thème sombre)
 - Web : pages légales FR `/legal/confidentialite` et `/legal/conditions` + liens footer
 - Web : sitemap/robots — pages about, resources, diagnostics et légales

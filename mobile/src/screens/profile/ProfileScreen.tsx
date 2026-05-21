@@ -115,24 +115,29 @@ export function ProfileScreen() {
 
       <RecentActivitySection items={recentActivity} />
 
-      <Text style={styles.sectionTitle}>Parcours terminés</Text>
+      <Text style={styles.sectionTitle}>Certificats</Text>
       <Text style={styles.sectionHint}>
         {source === 'api'
-          ? 'Tes victoires synchronisées depuis le tableau de bord'
-          : 'Connecte-toi pour voir tes parcours validés'}
+          ? 'Parcours terminés — certificat imprimable sur le web'
+          : 'Connecte-toi pour voir tes certificats synchronisés'}
       </Text>
 
       {completedCourses.length > 0 ? (
         <View style={styles.completedList}>
           {completedCourses.map((course) => (
-            <CompletedCourseRow key={course.slug} course={course} styles={styles} />
+            <CompletedCourseRow
+              key={course.slug}
+              course={course}
+              styles={styles}
+              onOpenCertificate={() => openWebPath(`/courses/${course.slug}/certificate`)}
+            />
           ))}
         </View>
       ) : (
         <View style={styles.emptyCompletedCard}>
-          <Text style={styles.emptyCompletedTitle}>Aucun parcours terminé pour l’instant</Text>
+          <Text style={styles.emptyCompletedTitle}>Aucun certificat pour l’instant</Text>
           <Text style={styles.emptyCompletedText}>
-            Valide toutes les unités d’un parcours pour l’ajouter ici et débloquer ton prochain badge.
+            Valide toutes les unités d’un parcours pour débloquer ton certificat de complétion sur le web.
           </Text>
           <Pressable style={styles.catalogLink} onPress={() => router.push('/(tabs)/courses')}>
             <Text style={styles.catalogLinkText}>Explorer le catalogue →</Text>
@@ -202,18 +207,25 @@ export function ProfileScreen() {
 function CompletedCourseRow({
   course,
   styles,
+  onOpenCertificate,
 }: {
   course: CompletedCourseSummary;
   styles: ReturnType<typeof createStyles>;
+  onOpenCertificate: () => void;
 }) {
   return (
-    <View style={styles.completedCard}>
+    <Pressable
+      style={styles.completedCard}
+      onPress={onOpenCertificate}
+      accessibilityRole="button"
+      accessibilityLabel={`Voir le certificat pour ${course.title}`}
+    >
       <Text style={styles.completedTitle}>{course.title}</Text>
       <Text style={styles.completedMeta}>
         {formatTrack(course.track)} · {formatCompletedDate(course.completedAt)}
       </Text>
-      <Text style={styles.completedSlug}>{course.slug}</Text>
-    </View>
+      <Text style={styles.completedCta}>Voir le certificat sur le web →</Text>
+    </Pressable>
   );
 }
 
@@ -298,7 +310,7 @@ function createStyles(colors: AppThemeColors) {
     },
     completedTitle: { color: colors.fg, fontSize: 17, fontWeight: '800' },
     completedMeta: { color: colors.muted, marginTop: 6, fontSize: 14 },
-    completedSlug: { color: colors.muted, marginTop: 4, fontSize: 12, fontWeight: '600', opacity: 0.75 },
+    completedCta: { color: colors.accent, marginTop: 10, fontSize: 14, fontWeight: '800' },
     emptyCompletedCard: {
       backgroundColor: colors.bgSoft,
       borderRadius: 18,

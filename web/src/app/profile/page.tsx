@@ -182,10 +182,10 @@ export default function ProfilePage() {
       ) : null}
 
       {completedCourses.length > 0 ? (
-        <section className="section" style={{ marginTop: '1.5rem' }}>
+        <section className="section profile-certificates" style={{ marginTop: '1.5rem' }}>
           <div className="section-head">
             <div>
-              <span className="section-eyebrow">Historique</span>
+              <span className="section-eyebrow">Certificats</span>
               <h2>Parcours terminés</h2>
             </div>
             <Link href="/badges" style={{ fontWeight: 700 }}>
@@ -204,14 +204,14 @@ export default function ProfilePage() {
               return (
                 <TrailCard
                   key={course.slug}
-                  href={`/courses/${course.slug}/complete`}
+                  href={`/courses/${course.slug}/certificate`}
                   title={course.title}
                   track={course.track}
                   trackLabel={formatTrack(course.track)}
                   progressPercent={100}
                   level={level}
                   points={points}
-                  cta="Revoir la victoire"
+                  cta="Voir le certificat"
                   status="completed"
                 />
               );
@@ -219,11 +219,11 @@ export default function ProfilePage() {
           </div>
         </section>
       ) : (
-        <Card variant="soft" style={{ marginTop: '1.25rem' }}>
-          <span className="section-eyebrow">Historique</span>
-          <h2 style={{ fontSize: '1.15rem', fontWeight: 800, marginTop: '0.35rem' }}>Aucun parcours terminé</h2>
+        <Card variant="soft" className="profile-certificates-empty" style={{ marginTop: '1.25rem' }}>
+          <span className="section-eyebrow">Certificats</span>
+          <h2 style={{ fontSize: '1.15rem', fontWeight: 800, marginTop: '0.35rem' }}>Aucun certificat pour l&apos;instant</h2>
           <p className="muted" style={{ marginTop: '0.35rem' }}>
-            Termine les 3 unités d&apos;une piste pour l&apos;afficher ici et débloquer le super-badge.
+            Termine les 3 unités d&apos;un parcours pour débloquer ton certificat de complétion imprimable.
           </p>
           <Button href="/dashboard" style={{ marginTop: '0.85rem' }}>
             Reprendre l&apos;apprentissage

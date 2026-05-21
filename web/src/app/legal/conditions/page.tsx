@@ -8,6 +8,14 @@ export const metadata: Metadata = {
   description:
     'Conditions d’utilisation MDM Academy Pro : formation gratuite Apple, Jamf et Intune, usage pédagogique.',
   alternates: { canonical: '/legal/conditions' },
+  openGraph: {
+    locale: 'fr_FR',
+    title: 'Conditions d’utilisation — MDM Academy',
+    description:
+      'Conditions d’usage de la plateforme de formation MDM gratuite : parcours, quiz, badges et classement.',
+    url: '/legal/conditions',
+  },
+  robots: { index: true, follow: true },
 };
 
 export default function ConditionsPage() {
