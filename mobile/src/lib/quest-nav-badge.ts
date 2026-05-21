@@ -5,7 +5,7 @@ const CACHE_TTL_MS = 5 * 60 * 1000;
 type QuestLike = {
   id?: string;
   questKey?: string;
-  label?: string;
+  label: string;
   progress: number;
   target: number;
   completed?: boolean;
