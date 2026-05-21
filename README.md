@@ -29,6 +29,30 @@ Plateforme de formation gamifiée pour techniciens Apple et administrateurs MDM 
 - pnpm 9+
 - PostgreSQL 15+ ou Docker pour lancer PostgreSQL localement
 
+## Démarrer
+
+Depuis la racine du monorepo, enchaîner dans l’ordre :
+
+```bash
+# 1. Base PostgreSQL (Docker)
+pnpm db:up
+
+# 2. Première fois uniquement : dépendances, migrations et contenu seed
+pnpm setup
+# ou, si déjà installé : pnpm db:migrate && pnpm db:seed
+
+# 3. API + web en un terminal (Ctrl+C arrête tout)
+pnpm dev:stack
+```
+
+| Service | URL |
+| ------- | --- |
+| API | http://localhost:4000 |
+| Web | http://127.0.0.1:3000 |
+| Mobile (optionnel) | `pnpm --filter mobile dev` → Expo Dev Tools |
+
+Re-seed après modification du contenu : `pnpm db:seed`.
+
 ## Démarrage rapide
 
 **Première fois** (base + dépendances) :
@@ -76,6 +100,25 @@ Mobile (Expo, optionnel) :
 ```bash
 pnpm --filter mobile dev
 ```
+
+### Build mobile (EAS)
+
+Build preview interne avec l’URL API injectée via `mobile/eas.json` :
+
+```bash
+cd mobile
+npm i -g eas-cli   # une fois
+eas login          # une fois
+eas build --profile preview --platform ios     # ou android / all
+```
+
+Pour pointer vers votre API déployée, remplacez `EXPO_PUBLIC_API_URL` dans `mobile/eas.json` ou créez un secret EAS :
+
+```bash
+eas secret:create --name EXPO_PUBLIC_API_URL --value https://api.votredomaine.com
+```
+
+Sur appareil physique en dev local : `EXPO_PUBLIC_API_URL=http://<votre-ip-lan>:4000 pnpm --filter mobile dev`.
 
 La configuration Docker démarre PostgreSQL 16 sur `localhost:5432` avec la base `apple_mdm_academy` et l'utilisateur `postgres` / `postgres`, ce qui correspond au `DATABASE_URL` de `.env.example`. Si un PostgreSQL local occupe déjà le port 5432, mappez `5433:5432` dans `compose.yaml` et ajustez `DATABASE_URL` (voir commentaires dans `.env.example`). Pour arrêter la base locale :
 
