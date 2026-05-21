@@ -24,7 +24,7 @@ import { Card } from '@/components/ui/Card';
 import { LevelPill } from '@/components/ui/LevelPill';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import { BrandIcon } from '@/components/ui/BrandIcon';
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { CourseDetailPageSkeleton } from '@/components/ui/Skeleton';
 import { TrackIcon } from '@/components/ui/TrackIcon';
 import {
   estimateDurationMinutes,
@@ -267,11 +267,7 @@ export function CourseDetailClient({ slug }: { slug: string }) {
   }
 
   if (isLoading) {
-    return (
-      <section style={{ padding: '2rem 0' }}>
-        <LoadingSpinner label="Chargement…" />
-      </section>
-    );
+    return <CourseDetailPageSkeleton />;
   }
 
   if (!course) {

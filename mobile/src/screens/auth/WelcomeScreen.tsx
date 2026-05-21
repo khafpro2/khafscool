@@ -14,7 +14,9 @@ import {
 import * as WebBrowser from 'expo-web-browser';
 import * as Linking from 'expo-linking';
 import { API_URL } from '../../config';
-import { theme } from '../../lib/design';
+import { useAppTheme } from '../../context/ThemeContext';
+import type { AppThemeColors } from '../../lib/design';
+import { useThemedStyles } from '../../hooks/useThemedStyles';
 import { loginWithEmail, registerWithEmail } from '../../services/api';
 import { saveTokens } from '../../services/auth';
 
@@ -31,6 +33,8 @@ interface WelcomeScreenProps {
 }
 
 export function WelcomeScreen({ onAuthSuccess }: WelcomeScreenProps) {
+  const { colors } = useAppTheme();
+  const styles = useThemedStyles(createStyles);
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -141,7 +145,7 @@ export function WelcomeScreen({ onAuthSuccess }: WelcomeScreenProps) {
           <TextInput
             style={styles.input}
             placeholder="Nom affiché (optionnel)"
-            placeholderTextColor={theme.muted}
+            placeholderTextColor={colors.muted}
             value={displayName}
             onChangeText={setDisplayName}
             autoCapitalize="words"
@@ -151,7 +155,7 @@ export function WelcomeScreen({ onAuthSuccess }: WelcomeScreenProps) {
         <TextInput
           style={styles.input}
           placeholder="Email"
-          placeholderTextColor={theme.muted}
+          placeholderTextColor={colors.muted}
           value={email}
           onChangeText={setEmail}
           keyboardType="email-address"
@@ -162,7 +166,7 @@ export function WelcomeScreen({ onAuthSuccess }: WelcomeScreenProps) {
         <TextInput
           style={styles.input}
           placeholder="Mot de passe"
-          placeholderTextColor={theme.muted}
+          placeholderTextColor={colors.muted}
           value={password}
           onChangeText={setPassword}
           secureTextEntry
@@ -206,79 +210,81 @@ export function WelcomeScreen({ onAuthSuccess }: WelcomeScreenProps) {
   );
 }
 
-const styles = StyleSheet.create({
-  flex: { flex: 1, backgroundColor: theme.bg },
-  container: {
-    flexGrow: 1,
-    padding: 24,
-    justifyContent: 'center',
-    backgroundColor: theme.bg,
-  },
-  eyebrow: {
-    color: theme.accent,
-    fontSize: 13,
-    fontWeight: '800',
-    marginBottom: 6,
-    textTransform: 'uppercase',
-    letterSpacing: 0.08,
-  },
-  title: { fontSize: 28, fontWeight: '800', marginBottom: 8, color: theme.fg },
-  subtitle: { fontSize: 16, color: theme.muted, marginBottom: 20, lineHeight: 22 },
-  modeRow: {
-    flexDirection: 'row',
-    gap: 8,
-    marginBottom: 14,
-    backgroundColor: theme.accentSoft,
-    borderRadius: theme.radiusMd,
-    padding: 4,
-  },
-  modeBtn: {
-    flex: 1,
-    paddingVertical: 10,
-    borderRadius: theme.radiusMd - 2,
-    alignItems: 'center',
-  },
-  modeBtnActive: { backgroundColor: theme.bgSoft, shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 4 },
-  modeBtnText: { fontWeight: '700', color: theme.muted, fontSize: 14 },
-  modeBtnTextActive: { color: theme.accent },
-  input: {
-    backgroundColor: theme.bgSoft,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-    borderRadius: theme.radiusMd,
-    paddingHorizontal: 14,
-    paddingVertical: 14,
-    fontSize: 16,
-    color: theme.fg,
-    marginBottom: 10,
-  },
-  error: { color: '#dc2626', fontSize: 14, marginBottom: 10 },
-  primaryCta: {
-    backgroundColor: theme.accent,
-    padding: 16,
-    borderRadius: theme.radiusLg,
-    marginTop: 4,
-    marginBottom: 20,
-    minHeight: 52,
-    justifyContent: 'center',
-  },
-  primaryCtaText: { color: '#FFFFFF', textAlign: 'center', fontWeight: '800', fontSize: 16 },
-  dividerLabel: {
-    textAlign: 'center',
-    color: theme.muted,
-    fontSize: 13,
-    fontWeight: '600',
-    marginBottom: 12,
-  },
-  ssoButton: {
-    padding: 14,
-    borderRadius: theme.radiusMd,
-    marginBottom: 10,
-    minHeight: 50,
-    justifyContent: 'center',
-    backgroundColor: theme.bgSoft,
-    borderWidth: 1.5,
-  },
-  ssoButtonText: { textAlign: 'center', fontWeight: '700', fontSize: 15 },
-  disabled: { opacity: 0.65 },
-});
+function createStyles(colors: AppThemeColors) {
+  return StyleSheet.create({
+    flex: { flex: 1, backgroundColor: colors.bg },
+    container: {
+      flexGrow: 1,
+      padding: 24,
+      justifyContent: 'center',
+      backgroundColor: colors.bg,
+    },
+    eyebrow: {
+      color: colors.accent,
+      fontSize: 13,
+      fontWeight: '800',
+      marginBottom: 6,
+      textTransform: 'uppercase',
+      letterSpacing: 0.08,
+    },
+    title: { fontSize: 28, fontWeight: '800', marginBottom: 8, color: colors.fg },
+    subtitle: { fontSize: 16, color: colors.muted, marginBottom: 20, lineHeight: 22 },
+    modeRow: {
+      flexDirection: 'row',
+      gap: 8,
+      marginBottom: 14,
+      backgroundColor: colors.accentSoft,
+      borderRadius: colors.radiusMd,
+      padding: 4,
+    },
+    modeBtn: {
+      flex: 1,
+      paddingVertical: 10,
+      borderRadius: colors.radiusMd - 2,
+      alignItems: 'center',
+    },
+    modeBtnActive: { backgroundColor: colors.bgSoft, shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 4 },
+    modeBtnText: { fontWeight: '700', color: colors.muted, fontSize: 14 },
+    modeBtnTextActive: { color: colors.accent },
+    input: {
+      backgroundColor: colors.bgSoft,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: colors.radiusMd,
+      paddingHorizontal: 14,
+      paddingVertical: 14,
+      fontSize: 16,
+      color: colors.fg,
+      marginBottom: 10,
+    },
+    error: { color: '#f87171', fontSize: 14, marginBottom: 10 },
+    primaryCta: {
+      backgroundColor: colors.accent,
+      padding: 16,
+      borderRadius: colors.radiusLg,
+      marginTop: 4,
+      marginBottom: 20,
+      minHeight: 52,
+      justifyContent: 'center',
+    },
+    primaryCtaText: { color: '#FFFFFF', textAlign: 'center', fontWeight: '800', fontSize: 16 },
+    dividerLabel: {
+      textAlign: 'center',
+      color: colors.muted,
+      fontSize: 13,
+      fontWeight: '600',
+      marginBottom: 12,
+    },
+    ssoButton: {
+      padding: 14,
+      borderRadius: colors.radiusMd,
+      marginBottom: 10,
+      minHeight: 50,
+      justifyContent: 'center',
+      backgroundColor: colors.bgSoft,
+      borderWidth: 1.5,
+    },
+    ssoButtonText: { textAlign: 'center', fontWeight: '700', fontSize: 15 },
+    disabled: { opacity: 0.65 },
+  });
+}

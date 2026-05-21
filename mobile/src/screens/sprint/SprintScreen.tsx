@@ -9,7 +9,10 @@ import {
   View,
 } from 'react-native';
 import { TrackIcon } from '../../components/TrackIcon';
-import { formatTrack, getTrackVisual, theme } from '../../lib/design';
+import { useAppTheme } from '../../context/ThemeContext';
+import type { AppThemeColors } from '../../lib/design';
+import { formatTrack, getTrackVisual } from '../../lib/design';
+import { useThemedStyles } from '../../hooks/useThemedStyles';
 import {
   CertificationSprintDays,
   CertificationSprintSummary,
@@ -45,6 +48,8 @@ const SPRINT_PLAN_COPY: Record<
 
 export function SprintScreen() {
   const router = useRouter();
+  const { colors } = useAppTheme();
+  const styles = useThemedStyles(createStyles);
   const [selectedTrack, setSelectedTrack] = useState<CertificationSprintTrack>('APPLE');
   const [selectedDays, setSelectedDays] = useState<CertificationSprintDays>(7);
   const [sprint, setSprint] = useState<CertificationSprintSummary | null>(null);
@@ -97,7 +102,7 @@ export function SprintScreen() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator color={theme.accent} />
+        <ActivityIndicator color={colors.accent} />
         <Text style={styles.loadingText}>Chargement du sprint…</Text>
       </View>
     );
@@ -131,7 +136,7 @@ export function SprintScreen() {
         </View>
       ) : null}
 
-      <CurrentSprintCard sprint={sprint} />
+      <CurrentSprintCard sprint={sprint} styles={styles} colors={colors} />
 
       <Text style={styles.sectionEyebrow}>Nouveau sprint</Text>
       <Text style={styles.sectionTitle}>Démarrer un sprint</Text>
@@ -200,7 +205,15 @@ export function SprintScreen() {
   );
 }
 
-function CurrentSprintCard({ sprint }: { sprint: CertificationSprintSummary | null }) {
+function CurrentSprintCard({
+  sprint,
+  styles,
+  colors,
+}: {
+  sprint: CertificationSprintSummary | null;
+  styles: ReturnType<typeof createStyles>;
+  colors: AppThemeColors;
+}) {
   if (!sprint) {
     return (
       <View style={styles.currentCard}>
@@ -232,22 +245,31 @@ function CurrentSprintCard({ sprint }: { sprint: CertificationSprintSummary | nu
       </Text>
       <ProgressBar
         progress={Math.min(100, sprint.progressPercent)}
-        fillColor={sprint.completed ? theme.success : theme.accent}
+        fillColor={sprint.completed ? colors.success : colors.accent}
+        styles={styles}
       />
       <Text style={styles.currentProgress}>
         {sprint.progress}/{sprint.target} unités · {sprint.progressPercent} % complété
       </Text>
       <View style={styles.metricsRow}>
-        <SprintMetric label="Restants" value={String(sprint.remainingModules)} />
-        <SprintMetric label="Jours restants" value={String(daysRemaining)} />
-        <SprintMetric label="Parcours" value={formatTrack(sprint.track)} />
-        <SprintMetric label="Statut" value={statusLabel} />
+        <SprintMetric label="Restants" value={String(sprint.remainingModules)} styles={styles} />
+        <SprintMetric label="Jours restants" value={String(daysRemaining)} styles={styles} />
+        <SprintMetric label="Parcours" value={formatTrack(sprint.track)} styles={styles} />
+        <SprintMetric label="Statut" value={statusLabel} styles={styles} />
       </View>
     </View>
   );
 }
 
-function SprintMetric({ label, value }: { label: string; value: string }) {
+function SprintMetric({
+  label,
+  value,
+  styles,
+}: {
+  label: string;
+  value: string;
+  styles: ReturnType<typeof createStyles>;
+}) {
   return (
     <View style={styles.metric}>
       <Text style={styles.metricValue}>{value}</Text>
@@ -256,7 +278,15 @@ function SprintMetric({ label, value }: { label: string; value: string }) {
   );
 }
 
-function ProgressBar({ progress, fillColor }: { progress: number; fillColor: string }) {
+function ProgressBar({
+  progress,
+  fillColor,
+  styles,
+}: {
+  progress: number;
+  fillColor: string;
+  styles: ReturnType<typeof createStyles>;
+}) {
   const safeProgress = Math.max(0, Math.min(progress, 100));
   return (
     <View style={styles.progressTrack}>
@@ -278,109 +308,113 @@ function computeDaysRemaining(endsAt: string) {
   return Math.max(0, Math.ceil(diffMs / (1000 * 60 * 60 * 24)));
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: theme.bg },
-  content: { padding: 24, paddingBottom: 40 },
-  loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: theme.bg },
-  loadingText: { marginTop: 12, color: theme.muted, fontSize: 15 },
-  backLink: { marginBottom: 12 },
-  backLinkText: { color: theme.accent, fontWeight: '700', fontSize: 15 },
-  heroCard: { borderRadius: theme.radiusLg, padding: 20, marginBottom: 16 },
-  heroEyebrow: { color: 'rgba(255,255,255,0.92)', fontSize: 13, fontWeight: '800', marginBottom: 8 },
-  heroTitle: { color: '#FFFFFF', fontSize: 24, fontWeight: '800', lineHeight: 30 },
-  heroCopy: { color: 'rgba(255,255,255,0.9)', marginTop: 8, lineHeight: 20 },
-  demoBanner: {
-    backgroundColor: theme.demoBannerBg,
-    borderRadius: theme.radiusLg,
-    padding: 12,
-    marginBottom: 14,
-    borderWidth: 1,
-    borderColor: theme.demoBannerBorder,
-  },
-  demoText: { color: theme.demoBannerText, lineHeight: 20, fontWeight: '600' },
-  messageBanner: {
-    backgroundColor: theme.accentSoft,
-    borderRadius: theme.radiusMd,
-    padding: 12,
-    marginBottom: 14,
-  },
-  messageText: { color: theme.accentStrong, lineHeight: 20, fontWeight: '600' },
-  currentCard: {
-    backgroundColor: theme.bgSoft,
-    borderRadius: theme.radiusLg,
-    padding: 16,
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: theme.accentSoft,
-  },
-  currentHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6 },
-  currentEyebrow: { color: theme.accent, fontSize: 12, fontWeight: '800', textTransform: 'uppercase' },
-  currentTitle: { color: theme.fg, fontSize: 20, fontWeight: '800', marginTop: 4 },
-  currentCopy: { color: theme.muted, lineHeight: 20, marginTop: 6 },
-  currentMeta: { color: theme.muted, marginTop: 6, fontSize: 13, fontWeight: '600' },
-  currentProgress: { color: theme.muted, marginTop: 8, fontSize: 13, fontWeight: '700' },
-  metricsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 14 },
-  metric: {
-    flexGrow: 1,
-    flexBasis: '22%',
-    backgroundColor: '#F5F5F7',
-    borderRadius: 12,
-    padding: 10,
-    minWidth: 72,
-  },
-  metricValue: { color: theme.fg, fontSize: 15, fontWeight: '800' },
-  metricLabel: { color: theme.muted, fontSize: 11, fontWeight: '700', marginTop: 2 },
-  sectionEyebrow: {
-    color: theme.accent,
-    fontSize: 12,
-    fontWeight: '800',
-    textTransform: 'uppercase',
-  },
-  sectionTitle: { color: theme.fg, fontSize: 20, fontWeight: '800', marginBottom: 14 },
-  fieldLabel: { color: theme.fg, fontWeight: '800', marginBottom: 10, marginTop: 4 },
-  trackList: { gap: 10, marginBottom: 18 },
-  trackOption: {
-    backgroundColor: theme.bgSoft,
-    borderRadius: theme.radiusLg,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: theme.accentSoft,
-  },
-  trackOptionSelected: { borderColor: theme.accent, borderWidth: 2 },
-  trackOptionHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6 },
-  trackOptionTitle: { color: theme.fg, fontWeight: '800', fontSize: 16 },
-  trackOptionDescription: { color: theme.muted, lineHeight: 18, fontSize: 13 },
-  selectedPill: {
-    alignSelf: 'flex-start',
-    borderRadius: theme.radiusPill,
-    marginTop: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-  },
-  selectedPillText: { fontSize: 12, fontWeight: '800' },
-  dayRow: { gap: 10, marginBottom: 18 },
-  dayOption: {
-    backgroundColor: theme.bgSoft,
-    borderRadius: theme.radiusLg,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: theme.accentSoft,
-  },
-  dayOptionSelected: { borderColor: theme.accent, borderWidth: 2, backgroundColor: theme.accentSoft },
-  dayOptionTitle: { color: theme.fg, fontWeight: '800', fontSize: 16 },
-  dayOptionHint: { color: theme.accentStrong, fontWeight: '700', marginTop: 4, fontSize: 13 },
-  dayOptionDescription: { color: theme.muted, lineHeight: 18, marginTop: 6, fontSize: 13 },
-  startButton: {
-    backgroundColor: theme.accent,
-    borderRadius: theme.radiusMd,
-    padding: 16,
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  startButtonDisabled: { opacity: 0.7 },
-  startButtonText: { color: '#FFFFFF', fontWeight: '800', fontSize: 16 },
-  progressTrack: { height: 8, borderRadius: 999, overflow: 'hidden', backgroundColor: '#E5E5EA', marginTop: 12 },
-  progressFill: { height: '100%', borderRadius: 999 },
-  refreshButton: { padding: 16, alignItems: 'center' },
-  refreshText: { color: theme.accent, fontWeight: '700' },
-});
+function createStyles(colors: AppThemeColors) {
+  return StyleSheet.create({
+    container: { flex: 1, backgroundColor: colors.bg },
+    content: { padding: 24, paddingBottom: 40 },
+    loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.bg },
+    loadingText: { marginTop: 12, color: colors.muted, fontSize: 15 },
+    backLink: { marginBottom: 12 },
+    backLinkText: { color: colors.accent, fontWeight: '700', fontSize: 15 },
+    heroCard: { borderRadius: colors.radiusLg, padding: 20, marginBottom: 16 },
+    heroEyebrow: { color: 'rgba(255,255,255,0.92)', fontSize: 13, fontWeight: '800', marginBottom: 8 },
+    heroTitle: { color: '#FFFFFF', fontSize: 24, fontWeight: '800', lineHeight: 30 },
+    heroCopy: { color: 'rgba(255,255,255,0.9)', marginTop: 8, lineHeight: 20 },
+    demoBanner: {
+      backgroundColor: colors.demoBannerBg,
+      borderRadius: colors.radiusLg,
+      padding: 12,
+      marginBottom: 14,
+      borderWidth: 1,
+      borderColor: colors.demoBannerBorder,
+    },
+    demoText: { color: colors.demoBannerText, lineHeight: 20, fontWeight: '600' },
+    messageBanner: {
+      backgroundColor: colors.accentSoft,
+      borderRadius: colors.radiusMd,
+      padding: 12,
+      marginBottom: 14,
+    },
+    messageText: { color: colors.accentStrong, lineHeight: 20, fontWeight: '600' },
+    currentCard: {
+      backgroundColor: colors.bgSoft,
+      borderRadius: colors.radiusLg,
+      padding: 16,
+      marginBottom: 20,
+      borderWidth: 1,
+      borderColor: colors.accentSoft,
+    },
+    currentHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6 },
+    currentEyebrow: { color: colors.accent, fontSize: 12, fontWeight: '800', textTransform: 'uppercase' },
+    currentTitle: { color: colors.fg, fontSize: 20, fontWeight: '800', marginTop: 4 },
+    currentCopy: { color: colors.muted, lineHeight: 20, marginTop: 6 },
+    currentMeta: { color: colors.muted, marginTop: 6, fontSize: 13, fontWeight: '600' },
+    currentProgress: { color: colors.muted, marginTop: 8, fontSize: 13, fontWeight: '700' },
+    metricsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 14 },
+    metric: {
+      flexGrow: 1,
+      flexBasis: '22%',
+      backgroundColor: colors.bg,
+      borderRadius: 12,
+      padding: 10,
+      minWidth: 72,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    metricValue: { color: colors.fg, fontSize: 15, fontWeight: '800' },
+    metricLabel: { color: colors.muted, fontSize: 11, fontWeight: '700', marginTop: 2 },
+    sectionEyebrow: {
+      color: colors.accent,
+      fontSize: 12,
+      fontWeight: '800',
+      textTransform: 'uppercase',
+    },
+    sectionTitle: { color: colors.fg, fontSize: 20, fontWeight: '800', marginBottom: 14 },
+    fieldLabel: { color: colors.fg, fontWeight: '800', marginBottom: 10, marginTop: 4 },
+    trackList: { gap: 10, marginBottom: 18 },
+    trackOption: {
+      backgroundColor: colors.bgSoft,
+      borderRadius: colors.radiusLg,
+      padding: 14,
+      borderWidth: 1,
+      borderColor: colors.accentSoft,
+    },
+    trackOptionSelected: { borderColor: colors.accent, borderWidth: 2 },
+    trackOptionHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6 },
+    trackOptionTitle: { color: colors.fg, fontWeight: '800', fontSize: 16 },
+    trackOptionDescription: { color: colors.muted, lineHeight: 18, fontSize: 13 },
+    selectedPill: {
+      alignSelf: 'flex-start',
+      borderRadius: colors.radiusPill,
+      marginTop: 8,
+      paddingHorizontal: 10,
+      paddingVertical: 4,
+    },
+    selectedPillText: { fontSize: 12, fontWeight: '800' },
+    dayRow: { gap: 10, marginBottom: 18 },
+    dayOption: {
+      backgroundColor: colors.bgSoft,
+      borderRadius: colors.radiusLg,
+      padding: 14,
+      borderWidth: 1,
+      borderColor: colors.accentSoft,
+    },
+    dayOptionSelected: { borderColor: colors.accent, borderWidth: 2, backgroundColor: colors.accentSoft },
+    dayOptionTitle: { color: colors.fg, fontWeight: '800', fontSize: 16 },
+    dayOptionHint: { color: colors.accentStrong, fontWeight: '700', marginTop: 4, fontSize: 13 },
+    dayOptionDescription: { color: colors.muted, lineHeight: 18, marginTop: 6, fontSize: 13 },
+    startButton: {
+      backgroundColor: colors.accent,
+      borderRadius: colors.radiusMd,
+      padding: 16,
+      alignItems: 'center',
+      marginBottom: 8,
+    },
+    startButtonDisabled: { opacity: 0.7 },
+    startButtonText: { color: '#FFFFFF', fontWeight: '800', fontSize: 16 },
+    progressTrack: { height: 8, borderRadius: 999, overflow: 'hidden', backgroundColor: colors.border, marginTop: 12 },
+    progressFill: { height: '100%', borderRadius: 999 },
+    refreshButton: { padding: 16, alignItems: 'center' },
+    refreshText: { color: colors.accent, fontWeight: '700' },
+  });
+}

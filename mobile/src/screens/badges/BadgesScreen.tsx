@@ -16,12 +16,16 @@ import {
   getBadgeTrack,
   getBadgeVisual,
   getTrackVisual,
-  theme,
 } from '../../lib/design';
+import { useAppTheme } from '../../context/ThemeContext';
+import type { AppThemeColors } from '../../lib/design';
+import { useThemedStyles } from '../../hooks/useThemedStyles';
 import { UserBadgesResult, fetchUserBadges } from '../../services/gamification';
 
 export function BadgesScreen() {
   const router = useRouter();
+  const { colors } = useAppTheme();
+  const styles = useThemedStyles(createStyles);
   const [data, setData] = useState<UserBadgesResult | null>(null);
   const [source, setSource] = useState<'api' | 'demo'>('demo');
   const [loading, setLoading] = useState(true);
@@ -43,7 +47,7 @@ export function BadgesScreen() {
   if (loading || !data) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator color={theme.accent} />
+        <ActivityIndicator color={colors.accent} />
         <Text style={styles.loadingText}>Chargement de ta collection…</Text>
       </View>
     );
@@ -77,13 +81,13 @@ export function BadgesScreen() {
       ) : null}
 
       <View style={styles.summaryRow}>
-        <SummaryStat label="Gagnés" value={`${summary.earned} / ${summary.total}`} />
-        <SummaryStat label="Apple" value={String(summary.byTrack.APPLE)} />
-        <SummaryStat label="Jamf" value={String(summary.byTrack.JAMF)} />
-        <SummaryStat label="Intune" value={String(summary.byTrack.INTUNE)} />
+        <SummaryStat label="Gagnés" value={`${summary.earned} / ${summary.total}`} styles={styles} />
+        <SummaryStat label="Apple" value={String(summary.byTrack.APPLE)} styles={styles} />
+        <SummaryStat label="Jamf" value={String(summary.byTrack.JAMF)} styles={styles} />
+        <SummaryStat label="Intune" value={String(summary.byTrack.INTUNE)} styles={styles} />
       </View>
 
-      <BadgeSection title="Mes badges" eyebrow="Collection débloquée">
+      <BadgeSection title="Mes badges" eyebrow="Collection débloquée" styles={styles}>
         {earnedBadges.length > 0 ? (
           earnedBadges.map((slug) => (
             <BadgeCard
@@ -91,6 +95,8 @@ export function BadgesScreen() {
               slug={slug}
               earned
               earnedAt={earnedBySlug.get(slug)?.earnedAt}
+              styles={styles}
+              colors={colors}
             />
           ))
         ) : (
@@ -100,9 +106,9 @@ export function BadgesScreen() {
         )}
       </BadgeSection>
 
-      <BadgeSection title="À débloquer" eyebrow="Prochains objectifs">
+      <BadgeSection title="À débloquer" eyebrow="Prochains objectifs" styles={styles}>
         {lockedBadges.length > 0 ? (
-          lockedBadges.map((slug) => <BadgeCard key={slug} slug={slug} earned={false} />)
+          lockedBadges.map((slug) => <BadgeCard key={slug} slug={slug} earned={false} styles={styles} colors={colors} />)
         ) : (
           <Text style={styles.emptyText}>
             Bravo — tu as débloqué tous les super-badges disponibles !
@@ -130,10 +136,12 @@ function BadgeSection({
   title,
   eyebrow,
   children,
+  styles,
 }: {
   title: string;
   eyebrow: string;
   children: React.ReactNode;
+  styles: ReturnType<typeof createStyles>;
 }) {
   return (
     <View style={styles.section}>
@@ -148,10 +156,14 @@ function BadgeCard({
   slug,
   earned,
   earnedAt,
+  styles,
+  colors,
 }: {
   slug: string;
   earned: boolean;
   earnedAt?: string | null;
+  styles: ReturnType<typeof createStyles>;
+  colors: AppThemeColors;
 }) {
   const visual = getBadgeVisual(slug);
   const track = getBadgeTrack(slug);
@@ -178,8 +190,8 @@ function BadgeCard({
           ) : null}
         </View>
       </View>
-      <View style={[styles.badgeStatus, { backgroundColor: earned ? '#E9F8EE' : trackVisual.gradient[0] + '22' }]}>
-        <Text style={[styles.badgeStatusText, { color: earned ? theme.success : trackVisual.color }]}>
+      <View style={[styles.badgeStatus, { backgroundColor: earned ? colors.accentTealSoft : trackVisual.gradient[0] + '22' }]}>
+        <Text style={[styles.badgeStatusText, { color: earned ? colors.success : trackVisual.color }]}>
           {earned ? 'Débloqué' : 'À débloquer'}
         </Text>
       </View>
@@ -187,7 +199,15 @@ function BadgeCard({
   );
 }
 
-function SummaryStat({ label, value }: { label: string; value: string }) {
+function SummaryStat({
+  label,
+  value,
+  styles,
+}: {
+  label: string;
+  value: string;
+  styles: ReturnType<typeof createStyles>;
+}) {
   return (
     <View style={styles.summaryStat}>
       <Text style={styles.summaryValue}>{value}</Text>
@@ -220,100 +240,102 @@ function buildSummary(data: UserBadgesResult | null) {
   };
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: theme.bg },
-  content: { padding: 24, paddingBottom: 40 },
-  loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: theme.bg },
-  loadingText: { marginTop: 12, color: theme.muted, fontSize: 15 },
-  backLink: { marginBottom: 12 },
-  backLinkText: { color: theme.accent, fontWeight: '700', fontSize: 15 },
-  heroCard: {
-    backgroundColor: theme.accentStrong,
-    borderRadius: theme.radiusLg,
-    padding: 20,
-    marginBottom: 16,
-  },
-  heroEyebrow: { color: 'rgba(255,255,255,0.92)', fontSize: 13, fontWeight: '800', marginBottom: 8 },
-  heroTitle: { color: '#FFFFFF', fontSize: 24, fontWeight: '800', lineHeight: 30 },
-  heroCopy: { color: 'rgba(255,255,255,0.9)', marginTop: 8, lineHeight: 20 },
-  demoBanner: {
-    backgroundColor: theme.demoBannerBg,
-    borderRadius: theme.radiusLg,
-    padding: 12,
-    marginBottom: 14,
-    borderWidth: 1,
-    borderColor: theme.demoBannerBorder,
-  },
-  demoText: { color: theme.demoBannerText, lineHeight: 20, fontWeight: '600' },
-  summaryRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 20 },
-  summaryStat: {
-    flexGrow: 1,
-    flexBasis: '22%',
-    backgroundColor: theme.bgSoft,
-    borderRadius: theme.radiusMd,
-    padding: 12,
-    minWidth: 72,
-  },
-  summaryValue: { color: theme.fg, fontSize: 18, fontWeight: '800' },
-  summaryLabel: { color: theme.muted, fontSize: 11, fontWeight: '700', marginTop: 2 },
-  section: { marginBottom: 20 },
-  sectionEyebrow: {
-    color: theme.accent,
-    fontSize: 12,
-    fontWeight: '800',
-    textTransform: 'uppercase',
-    marginBottom: 4,
-  },
-  sectionTitle: { color: theme.fg, fontSize: 20, fontWeight: '800', marginBottom: 12 },
-  sectionBody: { gap: 10 },
-  badgeCard: {
-    backgroundColor: theme.bgSoft,
-    borderRadius: theme.radiusLg,
-    padding: 14,
-    marginBottom: 10,
-    borderWidth: 1,
-    borderColor: theme.accentSoft,
-  },
-  badgeCardEarned: { borderColor: '#bbf7d0', backgroundColor: '#f0fdf4' },
-  badgeCardLocked: { opacity: 0.92 },
-  badgeHeader: { flexDirection: 'row', gap: 12 },
-  badgeIconWrap: {
-    width: 52,
-    height: 52,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  badgeIcon: { fontSize: 24 },
-  badgeText: { flex: 1 },
-  badgeTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 },
-  badgeLabel: { flex: 1, color: theme.fg, fontWeight: '800', fontSize: 16, lineHeight: 20 },
-  badgeCriteria: { color: theme.muted, lineHeight: 18, fontSize: 13 },
-  badgeEarnedAt: { color: theme.success, marginTop: 6, fontSize: 12, fontWeight: '700' },
-  badgeStatus: {
-    alignSelf: 'flex-start',
-    borderRadius: theme.radiusPill,
-    marginTop: 10,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-  },
-  badgeStatusText: { fontSize: 12, fontWeight: '800', textTransform: 'uppercase' },
-  emptyText: { color: theme.muted, lineHeight: 20 },
-  ctaRow: { flexDirection: 'row', gap: 10, marginBottom: 8 },
-  ctaButton: {
-    flex: 1,
-    backgroundColor: theme.accent,
-    borderRadius: theme.radiusMd,
-    padding: 14,
-    alignItems: 'center',
-  },
-  ctaButtonSecondary: {
-    backgroundColor: theme.bgSoft,
-    borderWidth: 1,
-    borderColor: theme.accentSoft,
-  },
-  ctaButtonText: { color: '#FFFFFF', fontWeight: '800', fontSize: 14 },
-  ctaButtonTextSecondary: { color: theme.accentStrong },
-  refreshButton: { padding: 16, alignItems: 'center' },
-  refreshText: { color: theme.accent, fontWeight: '700' },
-});
+function createStyles(colors: AppThemeColors) {
+  return StyleSheet.create({
+    container: { flex: 1, backgroundColor: colors.bg },
+    content: { padding: 24, paddingBottom: 40 },
+    loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.bg },
+    loadingText: { marginTop: 12, color: colors.muted, fontSize: 15 },
+    backLink: { marginBottom: 12 },
+    backLinkText: { color: colors.accent, fontWeight: '700', fontSize: 15 },
+    heroCard: {
+      backgroundColor: colors.accentStrong,
+      borderRadius: colors.radiusLg,
+      padding: 20,
+      marginBottom: 16,
+    },
+    heroEyebrow: { color: 'rgba(255,255,255,0.92)', fontSize: 13, fontWeight: '800', marginBottom: 8 },
+    heroTitle: { color: '#FFFFFF', fontSize: 24, fontWeight: '800', lineHeight: 30 },
+    heroCopy: { color: 'rgba(255,255,255,0.9)', marginTop: 8, lineHeight: 20 },
+    demoBanner: {
+      backgroundColor: colors.demoBannerBg,
+      borderRadius: colors.radiusLg,
+      padding: 12,
+      marginBottom: 14,
+      borderWidth: 1,
+      borderColor: colors.demoBannerBorder,
+    },
+    demoText: { color: colors.demoBannerText, lineHeight: 20, fontWeight: '600' },
+    summaryRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 20 },
+    summaryStat: {
+      flexGrow: 1,
+      flexBasis: '22%',
+      backgroundColor: colors.bgSoft,
+      borderRadius: colors.radiusMd,
+      padding: 12,
+      minWidth: 72,
+    },
+    summaryValue: { color: colors.fg, fontSize: 18, fontWeight: '800' },
+    summaryLabel: { color: colors.muted, fontSize: 11, fontWeight: '700', marginTop: 2 },
+    section: { marginBottom: 20 },
+    sectionEyebrow: {
+      color: colors.accent,
+      fontSize: 12,
+      fontWeight: '800',
+      textTransform: 'uppercase',
+      marginBottom: 4,
+    },
+    sectionTitle: { color: colors.fg, fontSize: 20, fontWeight: '800', marginBottom: 12 },
+    sectionBody: { gap: 10 },
+    badgeCard: {
+      backgroundColor: colors.bgSoft,
+      borderRadius: colors.radiusLg,
+      padding: 14,
+      marginBottom: 10,
+      borderWidth: 1,
+      borderColor: colors.accentSoft,
+    },
+    badgeCardEarned: { borderColor: colors.success, backgroundColor: colors.accentTealSoft },
+    badgeCardLocked: { opacity: 0.92 },
+    badgeHeader: { flexDirection: 'row', gap: 12 },
+    badgeIconWrap: {
+      width: 52,
+      height: 52,
+      borderRadius: 14,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    badgeIcon: { fontSize: 24 },
+    badgeText: { flex: 1 },
+    badgeTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 },
+    badgeLabel: { flex: 1, color: colors.fg, fontWeight: '800', fontSize: 16, lineHeight: 20 },
+    badgeCriteria: { color: colors.muted, lineHeight: 18, fontSize: 13 },
+    badgeEarnedAt: { color: colors.success, marginTop: 6, fontSize: 12, fontWeight: '700' },
+    badgeStatus: {
+      alignSelf: 'flex-start',
+      borderRadius: colors.radiusPill,
+      marginTop: 10,
+      paddingHorizontal: 10,
+      paddingVertical: 5,
+    },
+    badgeStatusText: { fontSize: 12, fontWeight: '800', textTransform: 'uppercase' },
+    emptyText: { color: colors.muted, lineHeight: 20 },
+    ctaRow: { flexDirection: 'row', gap: 10, marginBottom: 8 },
+    ctaButton: {
+      flex: 1,
+      backgroundColor: colors.accent,
+      borderRadius: colors.radiusMd,
+      padding: 14,
+      alignItems: 'center',
+    },
+    ctaButtonSecondary: {
+      backgroundColor: colors.bgSoft,
+      borderWidth: 1,
+      borderColor: colors.accentSoft,
+    },
+    ctaButtonText: { color: '#FFFFFF', fontWeight: '800', fontSize: 14 },
+    ctaButtonTextSecondary: { color: colors.accentStrong },
+    refreshButton: { padding: 16, alignItems: 'center' },
+    refreshText: { color: colors.accent, fontWeight: '700' },
+  });
+}

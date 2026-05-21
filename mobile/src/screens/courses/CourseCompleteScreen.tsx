@@ -13,12 +13,15 @@ import {
 import { WEB_URL } from '../../config';
 import { BrandIcon } from '../../components/BrandIcon';
 import { TrackIcon } from '../../components/TrackIcon';
+import type { AppThemeColors } from '../../lib/design';
 import { formatTrack, getBadgeVisual, getTrackVisual } from '../../lib/design';
+import { useThemedStyles } from '../../hooks/useThemedStyles';
 import type { CourseSlug } from '@ama/shared/learning-paths';
 import { NEXT_COURSE_BY_SLUG } from '@ama/shared/constants';
 
 export function CourseCompleteScreen() {
   const router = useRouter();
+  const styles = useThemedStyles(createStyles);
   const params = useLocalSearchParams<{
     slug?: string;
     title?: string;
@@ -151,87 +154,89 @@ export function CourseCompleteScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F5F5F7' },
-  content: { padding: 20, paddingBottom: 40 },
-  hero: { borderRadius: 24, padding: 20, marginBottom: 16 },
-  heroEyebrow: { color: 'rgba(255,255,255,0.9)', fontWeight: '800', fontSize: 13 },
-  heroTitle: { color: '#FFFFFF', fontSize: 24, fontWeight: '900', marginTop: 8 },
-  heroText: { color: 'rgba(255,255,255,0.92)', marginTop: 8, lineHeight: 22 },
-  demoHint: {
-    marginTop: 12,
-    padding: 10,
-    borderRadius: 10,
-    backgroundColor: 'rgba(0,0,0,0.18)',
-    color: '#FFFFFF',
-    fontSize: 13,
-  },
-  statsRow: { gap: 12, marginBottom: 16 },
-  statCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 18,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: '#E5E5EA',
-  },
-  badgeCard: { backgroundColor: '#FFF8E6', borderColor: '#F0CF7A' },
-  statLabel: {
-    color: '#6E6E73',
-    fontSize: 11,
-    fontWeight: '800',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  statValue: { color: '#1D1D1F', fontSize: 28, fontWeight: '900', marginTop: 6 },
-  statMuted: { color: '#6E6E73', marginTop: 8 },
-  badgeRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 8 },
-  badgeIcon: { fontSize: 22 },
-  badgeLabel: { fontWeight: '800', fontSize: 15, flex: 1 },
-  actions: { gap: 10, marginBottom: 16 },
-  primaryButton: {
-    backgroundColor: '#0070D2',
-    borderRadius: 14,
-    padding: 14,
-    alignItems: 'center',
-  },
-  primaryButtonText: { color: '#FFFFFF', fontWeight: '800' },
-  secondaryButton: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 14,
-    padding: 14,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#C5DBF3',
-  },
-  secondaryButtonText: { color: '#0070D2', fontWeight: '800' },
-  ghostButton: { padding: 12, alignItems: 'center' },
-  ghostButtonText: { color: '#6E6E73', fontWeight: '700' },
-  nextCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 18,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: '#E5E5EA',
-    marginBottom: 12,
-  },
-  nextEyebrow: {
-    color: '#6E6E73',
-    fontSize: 11,
-    fontWeight: '800',
-    textTransform: 'uppercase',
-  },
-  nextTitle: { color: '#1D1D1F', fontSize: 18, fontWeight: '800', marginTop: 6 },
-  nextHint: { color: '#6E6E73', marginTop: 4, lineHeight: 20 },
-  nextButton: {
-    marginTop: 12,
-    alignSelf: 'flex-start',
-    backgroundColor: '#0070D2',
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-  },
-  nextButtonText: { color: '#FFFFFF', fontWeight: '700' },
-  footerNote: { color: '#6E6E73', lineHeight: 20, marginBottom: 12 },
-  backLink: { padding: 12, alignItems: 'center' },
-  backLinkText: { color: '#0070D2', fontWeight: '700' },
-});
+function createStyles(colors: AppThemeColors) {
+  return StyleSheet.create({
+    container: { flex: 1, backgroundColor: colors.bg },
+    content: { padding: 20, paddingBottom: 40 },
+    hero: { borderRadius: 24, padding: 20, marginBottom: 16 },
+    heroEyebrow: { color: 'rgba(255,255,255,0.9)', fontWeight: '800', fontSize: 13 },
+    heroTitle: { color: '#FFFFFF', fontSize: 24, fontWeight: '900', marginTop: 8 },
+    heroText: { color: 'rgba(255,255,255,0.92)', marginTop: 8, lineHeight: 22 },
+    demoHint: {
+      marginTop: 12,
+      padding: 10,
+      borderRadius: 10,
+      backgroundColor: 'rgba(0,0,0,0.18)',
+      color: '#FFFFFF',
+      fontSize: 13,
+    },
+    statsRow: { gap: 12, marginBottom: 16 },
+    statCard: {
+      backgroundColor: colors.bgSoft,
+      borderRadius: 18,
+      padding: 16,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    badgeCard: { backgroundColor: colors.demoBannerBg, borderColor: colors.demoBannerBorder },
+    statLabel: {
+      color: colors.muted,
+      fontSize: 11,
+      fontWeight: '800',
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
+    },
+    statValue: { color: colors.fg, fontSize: 28, fontWeight: '900', marginTop: 6 },
+    statMuted: { color: colors.muted, marginTop: 8 },
+    badgeRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 8 },
+    badgeIcon: { fontSize: 22 },
+    badgeLabel: { fontWeight: '800', fontSize: 15, flex: 1 },
+    actions: { gap: 10, marginBottom: 16 },
+    primaryButton: {
+      backgroundColor: colors.accent,
+      borderRadius: 14,
+      padding: 14,
+      alignItems: 'center',
+    },
+    primaryButtonText: { color: '#FFFFFF', fontWeight: '800' },
+    secondaryButton: {
+      backgroundColor: colors.bgSoft,
+      borderRadius: 14,
+      padding: 14,
+      alignItems: 'center',
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    secondaryButtonText: { color: colors.accent, fontWeight: '800' },
+    ghostButton: { padding: 12, alignItems: 'center' },
+    ghostButtonText: { color: colors.muted, fontWeight: '700' },
+    nextCard: {
+      backgroundColor: colors.bgSoft,
+      borderRadius: 18,
+      padding: 16,
+      borderWidth: 1,
+      borderColor: colors.border,
+      marginBottom: 12,
+    },
+    nextEyebrow: {
+      color: colors.muted,
+      fontSize: 11,
+      fontWeight: '800',
+      textTransform: 'uppercase',
+    },
+    nextTitle: { color: colors.fg, fontSize: 18, fontWeight: '800', marginTop: 6 },
+    nextHint: { color: colors.muted, marginTop: 4, lineHeight: 20 },
+    nextButton: {
+      marginTop: 12,
+      alignSelf: 'flex-start',
+      backgroundColor: colors.accent,
+      borderRadius: 12,
+      paddingHorizontal: 14,
+      paddingVertical: 10,
+    },
+    nextButtonText: { color: '#FFFFFF', fontWeight: '700' },
+    footerNote: { color: colors.muted, lineHeight: 20, marginBottom: 12 },
+    backLink: { padding: 12, alignItems: 'center' },
+    backLinkText: { color: colors.accent, fontWeight: '700' },
+  });
+}

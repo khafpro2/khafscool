@@ -9,7 +9,10 @@ import {
   View,
 } from 'react-native';
 import { TrackIcon } from '../../components/TrackIcon';
-import { formatTrack, theme } from '../../lib/design';
+import { useAppTheme } from '../../context/ThemeContext';
+import type { AppThemeColors } from '../../lib/design';
+import { formatTrack } from '../../lib/design';
+import { useThemedStyles } from '../../hooks/useThemedStyles';
 import {
   WeeklyQuest,
   WeeklyQuestsResponse,
@@ -20,6 +23,8 @@ import {
 
 export function QuestsScreen() {
   const router = useRouter();
+  const { colors } = useAppTheme();
+  const styles = useThemedStyles(createStyles);
   const [data, setData] = useState<WeeklyQuestsResponse | null>(null);
   const [source, setSource] = useState<'api' | 'demo'>('demo');
   const [loading, setLoading] = useState(true);
@@ -41,7 +46,7 @@ export function QuestsScreen() {
   if (loading || !data) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator color={theme.accent} />
+        <ActivityIndicator color={colors.accent} />
         <Text style={styles.loadingText}>Chargement des quêtes…</Text>
       </View>
     );
@@ -71,15 +76,15 @@ export function QuestsScreen() {
       ) : null}
 
       <View style={styles.summaryRow}>
-        <SummaryStat label="Terminées" value={String(summary.completed)} />
-        <SummaryStat label="En cours" value={String(summary.inProgress)} />
-        <SummaryStat label="Points bonus" value={`+${summary.earnedPoints}`} />
+        <SummaryStat label="Terminées" value={String(summary.completed)} styles={styles} />
+        <SummaryStat label="En cours" value={String(summary.inProgress)} styles={styles} />
+        <SummaryStat label="Points bonus" value={`+${summary.earnedPoints}`} styles={styles} />
       </View>
 
       <Text style={styles.resetLabel}>{formatResetLabel(data.weekEnd)}</Text>
 
       {data.quests.length > 0 ? (
-        data.quests.map((quest) => <QuestCard key={quest.id} quest={quest} />)
+        data.quests.map((quest) => <QuestCard key={quest.id} quest={quest} styles={styles} colors={colors} />)
       ) : (
         <Text style={styles.emptyText}>
           Aucune quête active. Termine une unité ou démarre un sprint pour garder le rythme.
@@ -93,7 +98,15 @@ export function QuestsScreen() {
   );
 }
 
-function QuestCard({ quest }: { quest: WeeklyQuest }) {
+function QuestCard({
+  quest,
+  styles,
+  colors,
+}: {
+  quest: WeeklyQuest;
+  styles: ReturnType<typeof createStyles>;
+  colors: AppThemeColors;
+}) {
   const target = Math.max(1, quest.target);
   const percent = Math.min(100, Math.round((quest.progress / target) * 100));
 
@@ -109,7 +122,7 @@ function QuestCard({ quest }: { quest: WeeklyQuest }) {
         </Text>
       </View>
       {quest.description ? <Text style={styles.questDescription}>{quest.description}</Text> : null}
-      <ProgressBar progress={percent} fillColor={quest.completed ? theme.success : theme.accent} />
+      <ProgressBar progress={percent} fillColor={quest.completed ? colors.success : colors.accent} styles={styles} />
       <View style={styles.questFooter}>
         {quest.track ? (
           <Text style={styles.questTrack}>{formatTrack(quest.track)}</Text>
@@ -124,7 +137,15 @@ function QuestCard({ quest }: { quest: WeeklyQuest }) {
   );
 }
 
-function SummaryStat({ label, value }: { label: string; value: string }) {
+function SummaryStat({
+  label,
+  value,
+  styles,
+}: {
+  label: string;
+  value: string;
+  styles: ReturnType<typeof createStyles>;
+}) {
   return (
     <View style={styles.summaryStat}>
       <Text style={styles.summaryValue}>{value}</Text>
@@ -133,7 +154,15 @@ function SummaryStat({ label, value }: { label: string; value: string }) {
   );
 }
 
-function ProgressBar({ progress, fillColor }: { progress: number; fillColor: string }) {
+function ProgressBar({
+  progress,
+  fillColor,
+  styles,
+}: {
+  progress: number;
+  fillColor: string;
+  styles: ReturnType<typeof createStyles>;
+}) {
   const safeProgress = Math.max(0, Math.min(progress, 100));
   return (
     <View style={styles.progressTrack}>
@@ -158,58 +187,60 @@ function buildSummary(quests: WeeklyQuest[]) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: theme.bg },
-  content: { padding: 24, paddingBottom: 40 },
-  loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: theme.bg },
-  loadingText: { marginTop: 12, color: theme.muted, fontSize: 15 },
-  backLink: { marginBottom: 12 },
-  backLinkText: { color: theme.accent, fontWeight: '700', fontSize: 15 },
-  heroCard: {
-    backgroundColor: theme.accentStrong,
-    borderRadius: theme.radiusLg,
-    padding: 20,
-    marginBottom: 16,
-  },
-  heroEyebrow: { color: 'rgba(255,255,255,0.92)', fontSize: 13, fontWeight: '800', marginBottom: 8 },
-  heroTitle: { color: '#FFFFFF', fontSize: 24, fontWeight: '800', lineHeight: 30 },
-  heroCopy: { color: 'rgba(255,255,255,0.9)', marginTop: 8, lineHeight: 20 },
-  heroMeta: { color: 'rgba(255,255,255,0.78)', marginTop: 10, fontSize: 13, fontWeight: '600' },
-  demoBanner: {
-    backgroundColor: theme.demoBannerBg,
-    borderRadius: theme.radiusLg,
-    padding: 12,
-    marginBottom: 14,
-    borderWidth: 1,
-    borderColor: theme.demoBannerBorder,
-  },
-  demoText: { color: theme.demoBannerText, lineHeight: 20, fontWeight: '600' },
-  summaryRow: { flexDirection: 'row', gap: 10, marginBottom: 8 },
-  summaryStat: { flex: 1, backgroundColor: theme.bgSoft, borderRadius: theme.radiusMd, padding: 12 },
-  summaryValue: { color: theme.fg, fontSize: 20, fontWeight: '800' },
-  summaryLabel: { color: theme.muted, fontSize: 12, fontWeight: '700', marginTop: 2 },
-  resetLabel: { color: theme.muted, fontSize: 13, fontWeight: '600', marginBottom: 16 },
-  questCard: {
-    backgroundColor: theme.bgSoft,
-    borderRadius: theme.radiusLg,
-    padding: 16,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: theme.accentSoft,
-  },
-  questCardCompleted: { borderColor: '#bbf7d0', backgroundColor: '#f0fdf4' },
-  questHeader: { flexDirection: 'row', justifyContent: 'space-between', gap: 12, marginBottom: 8 },
-  questTitleRow: { flex: 1, flexDirection: 'row', alignItems: 'flex-start', gap: 8 },
-  questLabel: { flex: 1, color: theme.fg, fontWeight: '800', lineHeight: 20, fontSize: 16 },
-  questStatus: { color: theme.accent, fontWeight: '800' },
-  questStatusDone: { color: theme.success },
-  questDescription: { color: theme.muted, lineHeight: 20, marginBottom: 10 },
-  progressTrack: { height: 8, borderRadius: 999, overflow: 'hidden', backgroundColor: '#E5E5EA' },
-  progressFill: { height: '100%', borderRadius: 999 },
-  questFooter: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 10 },
-  questTrack: { color: theme.muted, fontSize: 12, fontWeight: '700' },
-  questReward: { color: theme.accentStrong, fontWeight: '800', fontSize: 13 },
-  emptyText: { color: theme.muted, lineHeight: 20, marginBottom: 16 },
-  refreshButton: { padding: 16, alignItems: 'center' },
-  refreshText: { color: theme.accent, fontWeight: '700' },
-});
+function createStyles(colors: AppThemeColors) {
+  return StyleSheet.create({
+    container: { flex: 1, backgroundColor: colors.bg },
+    content: { padding: 24, paddingBottom: 40 },
+    loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.bg },
+    loadingText: { marginTop: 12, color: colors.muted, fontSize: 15 },
+    backLink: { marginBottom: 12 },
+    backLinkText: { color: colors.accent, fontWeight: '700', fontSize: 15 },
+    heroCard: {
+      backgroundColor: colors.accentStrong,
+      borderRadius: colors.radiusLg,
+      padding: 20,
+      marginBottom: 16,
+    },
+    heroEyebrow: { color: 'rgba(255,255,255,0.92)', fontSize: 13, fontWeight: '800', marginBottom: 8 },
+    heroTitle: { color: '#FFFFFF', fontSize: 24, fontWeight: '800', lineHeight: 30 },
+    heroCopy: { color: 'rgba(255,255,255,0.9)', marginTop: 8, lineHeight: 20 },
+    heroMeta: { color: 'rgba(255,255,255,0.78)', marginTop: 10, fontSize: 13, fontWeight: '600' },
+    demoBanner: {
+      backgroundColor: colors.demoBannerBg,
+      borderRadius: colors.radiusLg,
+      padding: 12,
+      marginBottom: 14,
+      borderWidth: 1,
+      borderColor: colors.demoBannerBorder,
+    },
+    demoText: { color: colors.demoBannerText, lineHeight: 20, fontWeight: '600' },
+    summaryRow: { flexDirection: 'row', gap: 10, marginBottom: 8 },
+    summaryStat: { flex: 1, backgroundColor: colors.bgSoft, borderRadius: colors.radiusMd, padding: 12 },
+    summaryValue: { color: colors.fg, fontSize: 20, fontWeight: '800' },
+    summaryLabel: { color: colors.muted, fontSize: 12, fontWeight: '700', marginTop: 2 },
+    resetLabel: { color: colors.muted, fontSize: 13, fontWeight: '600', marginBottom: 16 },
+    questCard: {
+      backgroundColor: colors.bgSoft,
+      borderRadius: colors.radiusLg,
+      padding: 16,
+      marginBottom: 12,
+      borderWidth: 1,
+      borderColor: colors.accentSoft,
+    },
+    questCardCompleted: { borderColor: colors.success, backgroundColor: colors.accentTealSoft },
+    questHeader: { flexDirection: 'row', justifyContent: 'space-between', gap: 12, marginBottom: 8 },
+    questTitleRow: { flex: 1, flexDirection: 'row', alignItems: 'flex-start', gap: 8 },
+    questLabel: { flex: 1, color: colors.fg, fontWeight: '800', lineHeight: 20, fontSize: 16 },
+    questStatus: { color: colors.accent, fontWeight: '800' },
+    questStatusDone: { color: colors.success },
+    questDescription: { color: colors.muted, lineHeight: 20, marginBottom: 10 },
+    progressTrack: { height: 8, borderRadius: 999, overflow: 'hidden', backgroundColor: colors.border },
+    progressFill: { height: '100%', borderRadius: 999 },
+    questFooter: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 10 },
+    questTrack: { color: colors.muted, fontSize: 12, fontWeight: '700' },
+    questReward: { color: colors.accentStrong, fontWeight: '800', fontSize: 13 },
+    emptyText: { color: colors.muted, lineHeight: 20, marginBottom: 16 },
+    refreshButton: { padding: 16, alignItems: 'center' },
+    refreshText: { color: colors.accent, fontWeight: '700' },
+  });
+}

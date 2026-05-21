@@ -12,7 +12,10 @@ import {
 import { WEB_URL } from '../../config';
 import { BrandIcon } from '../../components/BrandIcon';
 import { TrackIcon } from '../../components/TrackIcon';
+import { useAppTheme } from '../../context/ThemeContext';
+import type { AppThemeColors } from '../../lib/design';
 import { formatTrack, getBadgeVisual, getTrackVisual } from '../../lib/design';
+import { useThemedStyles } from '../../hooks/useThemedStyles';
 import {
   CheckAnswerResult,
   CourseDetail,
@@ -37,6 +40,8 @@ type SuccessNotice = {
 
 export function CourseDetailScreen() {
   const router = useRouter();
+  const { colors } = useAppTheme();
+  const styles = useThemedStyles(createStyles);
   const { slug } = useLocalSearchParams<{ slug: string }>();
   const courseSlug = typeof slug === 'string' ? slug : '';
 
@@ -248,7 +253,7 @@ export function CourseDetailScreen() {
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator color="#0070D2" />
+        <ActivityIndicator color={colors.accent} />
         <Text style={styles.loadingText}>Chargement du parcours…</Text>
       </View>
     );
@@ -285,7 +290,7 @@ export function CourseDetailScreen() {
             {progress.progress.completedModules}/{progress.progress.totalModules} unités · {percent} %
           </Text>
         </View>
-        <ProgressBar progress={percent} fillColor="#FFCE5B" trackColor="rgba(255,255,255,0.22)" />
+        <ProgressBar progress={percent} fillColor={colors.warning} trackColor="rgba(255,255,255,0.22)" styles={styles} />
       </View>
 
       {source === 'demo' ? (
@@ -431,6 +436,7 @@ export function CourseDetailScreen() {
                           <ProgressBar
                             progress={Math.round(((safeIndex + 1) / total) * 100)}
                             fillColor={visual.color}
+                            styles={styles}
                           />
                           <View style={styles.questionBlock}>
                             <Text style={styles.questionPrompt}>{question.prompt}</Text>
@@ -628,31 +634,34 @@ function computeQuizScorePercent(
 
 function ProgressBar({
   progress,
-  fillColor = '#34C759',
-  trackColor = '#E5E5EA',
+  fillColor,
+  trackColor,
+  styles,
 }: {
   progress: number;
   fillColor?: string;
   trackColor?: string;
+  styles: ReturnType<typeof createStyles>;
 }) {
   const safeProgress = Math.max(0, Math.min(progress, 100));
   return (
-    <View style={[styles.progressTrack, { backgroundColor: trackColor }]}>
-      <View style={[styles.progressFill, { width: `${safeProgress}%`, backgroundColor: fillColor }]} />
+    <View style={[styles.progressTrack, trackColor ? { backgroundColor: trackColor } : null]}>
+      <View style={[styles.progressFill, { width: `${safeProgress}%`, backgroundColor: fillColor ?? '#34C759' }]} />
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F5F5F7' },
+function createStyles(colors: AppThemeColors) {
+  return StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.bg },
   content: { padding: 20, paddingBottom: 40 },
-  centered: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#F5F5F7', padding: 24 },
-  loadingText: { marginTop: 12, color: '#6E6E73' },
-  errorTitle: { color: '#1D1D1F', fontSize: 18, fontWeight: '800', textAlign: 'center' },
+  centered: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.bg, padding: 24 },
+  loadingText: { marginTop: 12, color: colors.muted },
+  errorTitle: { color: colors.fg, fontSize: 18, fontWeight: '800', textAlign: 'center' },
   backButton: { marginTop: 16, padding: 12 },
-  backButtonText: { color: '#0070D2', fontWeight: '700' },
+  backButtonText: { color: colors.accent, fontWeight: '700' },
   backLink: { marginBottom: 12 },
-  backLinkText: { color: '#0070D2', fontWeight: '700' },
+  backLinkText: { color: colors.accent, fontWeight: '700' },
   heroCard: { borderRadius: 24, padding: 20, marginBottom: 16 },
   heroIcon: { fontSize: 28, marginBottom: 8 },
   heroTrack: {
@@ -666,58 +675,58 @@ const styles = StyleSheet.create({
   heroDescription: { color: 'rgba(255,255,255,0.9)', marginTop: 8, lineHeight: 20 },
   heroMeta: { marginTop: 12, marginBottom: 10 },
   heroMetaText: { color: 'rgba(255,255,255,0.85)', fontWeight: '600' },
-  progressTrack: { height: 8, borderRadius: 999, overflow: 'hidden' },
+  progressTrack: { height: 8, borderRadius: 999, overflow: 'hidden', backgroundColor: colors.border },
   progressFill: { height: '100%', borderRadius: 999 },
-  demoBanner: { backgroundColor: '#FFF7E6', borderRadius: 14, padding: 12, marginBottom: 16 },
-  demoText: { color: '#8A5A00', lineHeight: 20 },
+  demoBanner: { backgroundColor: colors.demoBannerBg, borderRadius: 14, padding: 12, marginBottom: 16, borderWidth: 1, borderColor: colors.demoBannerBorder },
+  demoText: { color: colors.demoBannerText, lineHeight: 20 },
   sectionHeader: { marginBottom: 10 },
-  sectionTitle: { color: '#1D1D1F', fontSize: 20, fontWeight: '800' },
-  sectionHint: { color: '#6E6E73', marginTop: 2, fontSize: 13 },
+  sectionTitle: { color: colors.fg, fontSize: 20, fontWeight: '800' },
+  sectionHint: { color: colors.muted, marginTop: 2, fontSize: 13 },
   moduleStrip: { flexDirection: 'row', gap: 8, marginBottom: 16 },
   stripItem: { flex: 1, borderRadius: 14, padding: 10, borderWidth: 1 },
-  stripCompleted: { backgroundColor: '#F4FBF6', borderColor: '#A8D8B2' },
-  stripInProgress: { backgroundColor: '#FFF8E6', borderColor: '#F0CF7A' },
-  stripTodo: { backgroundColor: '#F8FAFD', borderColor: '#E5E5EA' },
-  stripIndex: { color: '#6E6E73', fontSize: 10, fontWeight: '800', textTransform: 'uppercase' },
-  stripTitle: { color: '#1D1D1F', fontWeight: '700', fontSize: 12, marginTop: 4, minHeight: 32 },
-  stripStatus: { color: '#0070D2', fontSize: 11, fontWeight: '800', marginTop: 6 },
+  stripCompleted: { backgroundColor: colors.accentTealSoft, borderColor: colors.success },
+  stripInProgress: { backgroundColor: colors.demoBannerBg, borderColor: colors.demoBannerBorder },
+  stripTodo: { backgroundColor: colors.bgSoft, borderColor: colors.border },
+  stripIndex: { color: colors.muted, fontSize: 10, fontWeight: '800', textTransform: 'uppercase' },
+  stripTitle: { color: colors.fg, fontWeight: '700', fontSize: 12, marginTop: 4, minHeight: 32 },
+  stripStatus: { color: colors.accent, fontSize: 11, fontWeight: '800', marginTop: 6 },
   successBanner: {
-    backgroundColor: '#F4FBF6',
+    backgroundColor: colors.accentTealSoft,
     borderRadius: 18,
     borderWidth: 1,
-    borderColor: '#A8D8B2',
+    borderColor: colors.success,
     padding: 16,
     marginBottom: 16,
   },
-  successEyebrow: { color: '#1F7A3A', fontWeight: '800', fontSize: 13 },
-  successTitle: { color: '#1D1D1F', fontSize: 17, fontWeight: '800', marginTop: 6 },
-  successMeta: { color: '#6E6E73', marginTop: 6, lineHeight: 20 },
+  successEyebrow: { color: colors.success, fontWeight: '800', fontSize: 13 },
+  successTitle: { color: colors.fg, fontSize: 17, fontWeight: '800', marginTop: 6 },
+  successMeta: { color: colors.muted, marginTop: 6, lineHeight: 20 },
   badgeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 10 },
   badge: { borderRadius: 14, paddingHorizontal: 10, paddingVertical: 8, flexDirection: 'row', alignItems: 'center', gap: 6 },
   badgeIcon: { fontSize: 14 },
   badgeText: { fontWeight: '700', fontSize: 12 },
   moduleCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.bgSoft,
     borderRadius: 18,
     padding: 14,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#E5E5EA',
+    borderColor: colors.border,
   },
-  moduleCardCompleted: { borderColor: '#A8D8B2', backgroundColor: '#FCFFFD' },
+  moduleCardCompleted: { borderColor: colors.success, backgroundColor: colors.accentTealSoft },
   moduleHeader: { flexDirection: 'row', gap: 12, alignItems: 'flex-start' },
   moduleHeaderText: { flex: 1 },
-  moduleIndex: { color: '#6E6E73', fontSize: 11, fontWeight: '800', textTransform: 'uppercase' },
-  moduleTitle: { color: '#1D1D1F', fontSize: 17, fontWeight: '800', marginTop: 2 },
-  moduleSummary: { color: '#6E6E73', marginTop: 4, lineHeight: 20 },
+  moduleIndex: { color: colors.muted, fontSize: 11, fontWeight: '800', textTransform: 'uppercase' },
+  moduleTitle: { color: colors.fg, fontSize: 17, fontWeight: '800', marginTop: 2 },
+  moduleSummary: { color: colors.muted, marginTop: 4, lineHeight: 20 },
   statusPill: { borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5 },
-  statusCompleted: { backgroundColor: '#E9F8EE' },
-  statusInProgress: { backgroundColor: '#FFF7D6' },
-  statusTodo: { backgroundColor: '#F5F5F7' },
-  statusPillText: { fontSize: 11, fontWeight: '800', color: '#1D1D1F' },
-  moduleBody: { marginTop: 14, paddingTop: 14, borderTopWidth: 1, borderTopColor: '#F0F0F5' },
+  statusCompleted: { backgroundColor: colors.accentTealSoft },
+  statusInProgress: { backgroundColor: colors.demoBannerBg },
+  statusTodo: { backgroundColor: colors.bg },
+  statusPillText: { fontSize: 11, fontWeight: '800', color: colors.fg },
+  moduleBody: { marginTop: 14, paddingTop: 14, borderTopWidth: 1, borderTopColor: colors.border },
   questionBlock: { marginBottom: 14 },
-  questionPrompt: { color: '#1D1D1F', fontWeight: '700', lineHeight: 22, marginBottom: 8 },
+  questionPrompt: { color: colors.fg, fontWeight: '700', lineHeight: 22, marginBottom: 8 },
   quizStepper: { gap: 10 },
   quizHeaderRow: {
     flexDirection: 'row',
@@ -725,8 +734,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 4,
   },
-  quizScoreLive: { fontWeight: '800', color: '#1D1D1F', fontSize: 13 },
-  quizStepLabel: { color: '#6E6E73', fontWeight: '700', fontSize: 12 },
+  quizScoreLive: { fontWeight: '800', color: colors.fg, fontSize: 13 },
+  quizStepLabel: { color: colors.muted, fontWeight: '700', fontSize: 12 },
   quizNavRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -737,53 +746,53 @@ const styles = StyleSheet.create({
   },
   quizNavBtn: {
     borderWidth: 1,
-    borderColor: '#C5DBF3',
+    borderColor: colors.border,
     borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 10,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.bgSoft,
   },
-  quizNavBtnText: { color: '#0070D2', fontWeight: '700' },
+  quizNavBtnText: { color: colors.accent, fontWeight: '700' },
   quizNavBtnPrimary: {
     borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 10,
-    backgroundColor: '#0070D2',
+    backgroundColor: colors.accent,
   },
   quizNavBtnPrimaryText: { color: '#FFFFFF', fontWeight: '800' },
-  quizFinishHint: { flex: 1, textAlign: 'right', color: '#6E6E73', fontSize: 12, fontWeight: '600' },
+  quizFinishHint: { flex: 1, textAlign: 'right', color: colors.muted, fontSize: 12, fontWeight: '600' },
   quizFeedback: { marginTop: 8, fontWeight: '700', fontSize: 14 },
-  quizFeedbackSuccess: { color: '#2F7A45' },
-  quizFeedbackError: { color: '#A23D3D' },
+  quizFeedbackSuccess: { color: colors.success },
+  quizFeedbackError: { color: colors.warning },
   option: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
     borderWidth: 1,
-    borderColor: '#E5E5EA',
+    borderColor: colors.border,
     borderRadius: 12,
     padding: 12,
     marginBottom: 8,
-    backgroundColor: '#FAFAFC',
+    backgroundColor: colors.bg,
   },
   optionLetter: {
     width: 26,
     height: 26,
     borderRadius: 8,
-    backgroundColor: '#EEF0F5',
+    backgroundColor: colors.accentSoft,
     textAlign: 'center',
     lineHeight: 26,
     fontWeight: '800',
     fontSize: 12,
-    color: '#6E6E73',
+    color: colors.muted,
   },
-  optionSelected: { borderColor: '#0070D2', backgroundColor: '#EAF3FF', borderWidth: 2 },
-  optionCorrect: { borderColor: '#6FBF84', backgroundColor: '#E8F7EC' },
-  optionIncorrect: { borderColor: '#E08B8B', backgroundColor: '#FDEEEE' },
-  optionText: { flex: 1, color: '#1D1D1F', lineHeight: 20 },
-  optionTextSelected: { color: '#0066CC', fontWeight: '700' },
-  optionTextSuccess: { color: '#2F7A45', fontWeight: '700' },
-  optionTextError: { color: '#B44', fontWeight: '700' },
+  optionSelected: { borderColor: colors.accent, backgroundColor: colors.accentSoft, borderWidth: 2 },
+  optionCorrect: { borderColor: colors.success, backgroundColor: colors.accentTealSoft },
+  optionIncorrect: { borderColor: colors.warning, backgroundColor: colors.demoBannerBg },
+  optionText: { flex: 1, color: colors.fg, lineHeight: 20 },
+  optionTextSelected: { color: colors.accent, fontWeight: '700' },
+  optionTextSuccess: { color: colors.success, fontWeight: '700' },
+  optionTextError: { color: colors.warning, fontWeight: '700' },
   checkButton: {
     alignSelf: 'flex-start',
     marginTop: 4,
@@ -791,26 +800,26 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 4,
   },
-  checkButtonText: { color: '#0070D2', fontWeight: '700' },
+  checkButtonText: { color: colors.accent, fontWeight: '700' },
   explanationBox: {
     marginTop: 8,
     padding: 12,
     borderRadius: 12,
-    backgroundColor: '#EEF6FF',
+    backgroundColor: colors.accentSoft,
     borderWidth: 1,
-    borderColor: '#C5DBF3',
+    borderColor: colors.border,
   },
   explanationTitle: {
-    color: '#6E6E73',
+    color: colors.muted,
     fontSize: 12,
     fontWeight: '800',
     textTransform: 'uppercase',
     letterSpacing: 0.4,
   },
-  explanationText: { color: '#1D1D1F', marginTop: 4, lineHeight: 20 },
-  localResult: { color: '#8A5A00', marginBottom: 10, lineHeight: 20 },
+  explanationText: { color: colors.fg, marginTop: 4, lineHeight: 20 },
+  localResult: { color: colors.demoBannerText, marginBottom: 10, lineHeight: 20 },
   primaryButton: {
-    backgroundColor: '#0070D2',
+    backgroundColor: colors.accent,
     borderRadius: 14,
     padding: 14,
     alignItems: 'center',
@@ -819,26 +828,29 @@ const styles = StyleSheet.create({
   primaryButtonText: { color: '#FFFFFF', fontWeight: '800' },
   buttonDisabled: { opacity: 0.5 },
   webFallback: { gap: 10 },
-  webFallbackText: { color: '#6E6E73', lineHeight: 20 },
+  webFallbackText: { color: colors.muted, lineHeight: 20 },
   secondaryButton: {
     alignSelf: 'flex-start',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.bgSoft,
     borderWidth: 1,
-    borderColor: '#C5DBF3',
+    borderColor: colors.border,
     borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 10,
   },
-  secondaryButtonText: { color: '#0070D2', fontWeight: '700' },
+  secondaryButtonText: { color: colors.accent, fontWeight: '700' },
   footerCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.bgSoft,
     borderRadius: 18,
     padding: 16,
     marginTop: 8,
     marginBottom: 8,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
-  footerTitle: { color: '#1D1D1F', fontSize: 17, fontWeight: '800' },
-  footerText: { color: '#6E6E73', marginTop: 6, lineHeight: 20, marginBottom: 12 },
+  footerTitle: { color: colors.fg, fontSize: 17, fontWeight: '800' },
+  footerText: { color: colors.muted, marginTop: 6, lineHeight: 20, marginBottom: 12 },
   refreshButton: { padding: 16, alignItems: 'center' },
-  refreshText: { color: '#0070D2', fontWeight: '700' },
-});
+  refreshText: { color: colors.accent, fontWeight: '700' },
+  });
+}

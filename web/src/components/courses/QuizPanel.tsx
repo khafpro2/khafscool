@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type RefObject } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent, type CSSProperties, type RefObject } from 'react';
 import type { CourseModule } from '@/lib/api';
 import { getTrackVisual } from '@/lib/design';
 import { Badge } from '@/components/ui/Badge';
@@ -238,6 +238,17 @@ export function QuizPanel({
               if (!currentRevealed) onSelectAnswer(currentQuestion.id, optionId);
             }}
             onCheck={() => void handleCheckAnswer()}
+            onEnterAdvance={() => {
+              if (!currentRevealed) {
+                void handleCheckAnswer();
+                return;
+              }
+              if (currentIndex < totalQuestions - 1) {
+                goToQuestion(currentIndex + 1);
+                return;
+              }
+              handleFinishQuiz();
+            }}
           />
         )}
 
@@ -321,6 +332,7 @@ type QuizQuestionStepProps = {
   feedbackRef: RefObject<HTMLDivElement | null>;
   onSelect: (optionId: string) => void;
   onCheck: () => void;
+  onEnterAdvance: () => void;
 };
 
 function QuizQuestionStep({
@@ -338,10 +350,53 @@ function QuizQuestionStep({
   feedbackRef,
   onSelect,
   onCheck,
+  onEnterAdvance,
 }: QuizQuestionStepProps) {
   const isCorrect = revealed && checkResult?.correct === true;
   const isIncorrect = revealed && checkResult?.correct === false;
   const canValidate = Boolean(selectedOptionId) && !revealed && !disabled;
+  const optionRefs = useRef<Array<HTMLButtonElement | null>>([]);
+
+  useEffect(() => {
+    optionRefs.current = [];
+  }, [question.id]);
+
+  function focusOption(index: number) {
+    const safeIndex = Math.max(0, Math.min(index, question.options.length - 1));
+    optionRefs.current[safeIndex]?.focus();
+  }
+
+  function handleOptionKeyDown(event: KeyboardEvent<HTMLButtonElement>, optionIndex: number) {
+    const optionCount = question.options.length;
+    if (event.key === 'ArrowDown' || event.key === 'ArrowRight') {
+      event.preventDefault();
+      const nextIndex = (optionIndex + 1) % optionCount;
+      focusOption(nextIndex);
+      if (!revealed && !disabled) onSelect(question.options[nextIndex].id);
+      return;
+    }
+    if (event.key === 'ArrowUp' || event.key === 'ArrowLeft') {
+      event.preventDefault();
+      const prevIndex = (optionIndex - 1 + optionCount) % optionCount;
+      focusOption(prevIndex);
+      if (!revealed && !disabled) onSelect(question.options[prevIndex].id);
+      return;
+    }
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      if (revealed || disabled || isChecking) {
+        if (revealed) onEnterAdvance();
+        return;
+      }
+      const option = question.options[optionIndex];
+      if (!option) return;
+      if (selectedOptionId === option.id && canValidate) {
+        onCheck();
+        return;
+      }
+      onSelect(option.id);
+    }
+  }
 
   return (
     <article
@@ -387,13 +442,18 @@ function QuizQuestionStep({
             return (
               <button
                 key={option.id}
+                ref={(node) => {
+                  optionRefs.current[optionIndex] = node;
+                }}
                 type="button"
                 role="radio"
                 aria-checked={selected}
+                tabIndex={selected || (optionIndex === 0 && !selectedOptionId) ? 0 : -1}
                 disabled={disabled || revealed}
                 className={stateClass}
                 style={{ animationDelay: `${optionIndex * 40}ms` }}
                 onClick={() => onSelect(option.id)}
+                onKeyDown={(event) => handleOptionKeyDown(event, optionIndex)}
               >
                 <span className="quiz-option-letter" aria-hidden>
                   {String.fromCharCode(65 + optionIndex)}
@@ -421,6 +481,12 @@ function QuizQuestionStep({
             className="quiz-validate-btn"
             onClick={onCheck}
             disabled={isChecking}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter') {
+                event.preventDefault();
+                onCheck();
+              }
+            }}
           >
             {isChecking ? 'Vérification…' : 'Valider ma réponse'}
           </Button>
