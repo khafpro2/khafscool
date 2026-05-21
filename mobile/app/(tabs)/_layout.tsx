@@ -1,20 +1,23 @@
 import { Tabs } from 'expo-router';
 import { Text } from 'react-native';
+import { useAppTheme } from '../../src/context/ThemeContext';
 
 function TabIcon({ glyph, color }: { glyph: string; color: string }) {
   return <Text style={{ fontSize: 22, color }}>{glyph}</Text>;
 }
 
 export default function TabsLayout() {
+  const { colors } = useAppTheme();
+
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#2563EB',
-        tabBarInactiveTintColor: '#6E6E73',
+        tabBarActiveTintColor: colors.accent,
+        tabBarInactiveTintColor: colors.tabBarInactive,
         tabBarStyle: {
-          backgroundColor: '#FFFFFF',
-          borderTopColor: '#E5E5EA',
+          backgroundColor: colors.tabBarBg,
+          borderTopColor: colors.tabBarBorder,
           paddingTop: 4,
           height: 60,
         },

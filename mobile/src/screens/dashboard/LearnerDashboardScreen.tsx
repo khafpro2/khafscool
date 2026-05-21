@@ -9,7 +9,10 @@ import {
   View,
 } from 'react-native';
 import { BrandIcon } from '../../components/BrandIcon';
-import { formatLevel, formatTrack, getBadgeVisual, getRankInfo, theme } from '../../lib/design';
+import { useAppTheme } from '../../context/ThemeContext';
+import type { AppThemeColors } from '../../lib/design';
+import { formatLevel, formatTrack, getBadgeVisual, getRankInfo } from '../../lib/design';
+import { useThemedStyles } from '../../hooks/useThemedStyles';
 import { clearTokens } from '../../services/auth';
 import {
   CourseSummary,
@@ -36,6 +39,8 @@ type SprintMessage = {
 
 export function LearnerDashboardScreen({ onSignOut }: LearnerDashboardScreenProps) {
   const router = useRouter();
+  const { colors } = useAppTheme();
+  const styles = useThemedStyles(createStyles);
   const [dashboard, setDashboard] = useState<LearnerDashboard | null>(null);
   const [sprint, setSprint] = useState<CertificationSprintSummary | null>(null);
   const [sprintSource, setSprintSource] = useState<'api' | 'demo'>('api');
@@ -106,7 +111,7 @@ export function LearnerDashboardScreen({ onSignOut }: LearnerDashboardScreenProp
   if (loading || !dashboard) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator color={theme.accent} />
+        <ActivityIndicator color={colors.accent} />
         <Text style={styles.loadingText}>Chargement de votre progression…</Text>
       </View>
     );
@@ -158,10 +163,15 @@ export function LearnerDashboardScreen({ onSignOut }: LearnerDashboardScreenProp
           {rank.icon} Rang MDM · {rank.name}
         </Text>
         <View style={styles.heroStats}>
-          <Stat label="Points" value={String(data.progress.points)} />
-          <Stat label="Niveau" value={formatLevel(data.progress.level)} />
+          <Stat label="Points" value={String(data.progress.points)} styles={styles} />
+          <Stat label="Niveau" value={formatLevel(data.progress.level)} styles={styles} />
         </View>
-        <ProgressBar progress={rankPercent} fillColor="#FFCE5B" trackColor="rgba(255,255,255,0.22)" />
+        <ProgressBar
+          progress={rankPercent}
+          fillColor="#FFCE5B"
+          trackColor="rgba(255,255,255,0.22)"
+          styles={styles}
+        />
         <Text style={styles.progressCopy}>
           {rank.nextName
             ? `${remainingPoints} pts pour le rang ${rank.nextName}`
@@ -211,6 +221,7 @@ export function LearnerDashboardScreen({ onSignOut }: LearnerDashboardScreenProp
           <CourseProgressCard
             key={course.id}
             course={course}
+            styles={styles}
             onPress={() => router.push(`/course/${course.slug}`)}
           />
         ))
@@ -225,6 +236,8 @@ export function LearnerDashboardScreen({ onSignOut }: LearnerDashboardScreenProp
         sprint={sprint}
         startingTrack={startingTrack}
         message={sprintMessage}
+        styles={styles}
+        colors={colors}
         onStart={handleStartSprint}
         onOpenSprint={() => router.push('/sprint')}
       />
@@ -244,7 +257,7 @@ export function LearnerDashboardScreen({ onSignOut }: LearnerDashboardScreenProp
                   {quest.progress}/{quest.target}
                 </Text>
               </View>
-              <ProgressBar progress={questPercent} fillColor={theme.accent} />
+              <ProgressBar progress={questPercent} fillColor={colors.accent} styles={styles} />
             </View>
           );
         })
@@ -312,12 +325,16 @@ function SprintCard({
   sprint,
   startingTrack,
   message,
+  styles,
+  colors,
   onStart,
   onOpenSprint,
 }: {
   sprint: CertificationSprintSummary | null;
   startingTrack: CertificationSprintTrack | null;
   message: SprintMessage | null;
+  styles: ReturnType<typeof createStyles>;
+  colors: AppThemeColors;
   onStart: (track: CertificationSprintTrack) => void;
   onOpenSprint: () => void;
 }) {
@@ -353,15 +370,15 @@ function SprintCard({
             </Text>
             <Text style={styles.sprintDeadline}>Échéance {formatSprintDate(sprint.endsAt)}</Text>
           </View>
-          <ProgressBar progress={sprint.progressPercent} />
+          <ProgressBar progress={sprint.progressPercent} fillColor={colors.accent} styles={styles} />
           <Text style={styles.sprintMeta}>
             {formatTrack(sprint.track)} · {sprint.progress}/{sprint.target} unités ·{' '}
             {sprint.progressPercent} % complété
           </Text>
           <View style={styles.sprintMetrics}>
-            <SprintMetric label="Parcours" value={formatTrack(sprint.track)} />
-            <SprintMetric label="Objectif" value={`${sprint.progress}/${sprint.target}`} />
-            <SprintMetric label="Restants" value={String(sprint.remainingModules)} />
+            <SprintMetric label="Parcours" value={formatTrack(sprint.track)} styles={styles} />
+            <SprintMetric label="Objectif" value={`${sprint.progress}/${sprint.target}`} styles={styles} />
+            <SprintMetric label="Restants" value={String(sprint.remainingModules)} styles={styles} />
           </View>
         </View>
       ) : (
@@ -412,7 +429,15 @@ function SprintCard({
   );
 }
 
-function SprintMetric({ label, value }: { label: string; value: string }) {
+function SprintMetric({
+  label,
+  value,
+  styles,
+}: {
+  label: string;
+  value: string;
+  styles: ReturnType<typeof createStyles>;
+}) {
   return (
     <View style={styles.sprintMetric}>
       <Text style={styles.sprintMetricValue}>{value}</Text>
@@ -421,7 +446,15 @@ function SprintMetric({ label, value }: { label: string; value: string }) {
   );
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
+function Stat({
+  label,
+  value,
+  styles,
+}: {
+  label: string;
+  value: string;
+  styles: ReturnType<typeof createStyles>;
+}) {
   return (
     <View style={styles.stat}>
       <Text style={styles.statValue}>{value}</Text>
@@ -430,7 +463,15 @@ function Stat({ label, value }: { label: string; value: string }) {
   );
 }
 
-function CourseProgressCard({ course, onPress }: { course: CourseSummary; onPress: () => void }) {
+function CourseProgressCard({
+  course,
+  styles,
+  onPress,
+}: {
+  course: CourseSummary;
+  styles: ReturnType<typeof createStyles>;
+  onPress: () => void;
+}) {
   const progress = course.progressPercent ?? 0;
 
   return (
@@ -445,7 +486,7 @@ function CourseProgressCard({ course, onPress }: { course: CourseSummary; onPres
         </View>
         <Text style={styles.courseChevron}>›</Text>
       </View>
-      <ProgressBar progress={progress} />
+      <ProgressBar progress={progress} styles={styles} />
       <Text style={styles.nextModule}>
         {course.nextModule ? `À suivre : ${course.nextModule.title}` : 'Parcours terminé'}
       </Text>
@@ -457,10 +498,12 @@ function ProgressBar({
   progress,
   fillColor = '#34C759',
   trackColor = '#E5E5EA',
+  styles,
 }: {
   progress: number;
   fillColor?: string;
   trackColor?: string;
+  styles: ReturnType<typeof createStyles>;
 }) {
   const safeProgress = Math.max(0, Math.min(progress, 100));
 
@@ -483,21 +526,22 @@ function formatSprintDate(value: string) {
   return date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: theme.bg },
+function createStyles(colors: AppThemeColors) {
+  return StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.bg },
   content: { padding: 24, paddingBottom: 40 },
-  loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: theme.bg },
-  loadingText: { marginTop: 12, color: theme.muted, fontSize: 15 },
+  loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.bg },
+  loadingText: { marginTop: 12, color: colors.muted, fontSize: 15 },
   header: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 18 },
-  eyebrow: { color: theme.accent, fontSize: 13, fontWeight: '800', marginBottom: 4, textTransform: 'uppercase' },
-  title: { color: theme.fg, fontSize: 28, fontWeight: '800', maxWidth: 220 },
+  eyebrow: { color: colors.accent, fontSize: 13, fontWeight: '800', marginBottom: 4, textTransform: 'uppercase' },
+  title: { color: colors.fg, fontSize: 28, fontWeight: '800', maxWidth: 220 },
   signOutButton: {
     paddingHorizontal: 12,
     paddingVertical: 8,
-    borderRadius: theme.radiusPill,
-    backgroundColor: theme.bgSoft,
+    borderRadius: colors.radiusPill,
+    backgroundColor: colors.bgSoft,
   },
-  signOutText: { color: theme.muted, fontWeight: '600' },
+  signOutText: { color: colors.muted, fontWeight: '600' },
   streakCard: {
     backgroundColor: '#FFF4E8',
     borderRadius: 18,
@@ -510,15 +554,15 @@ const styles = StyleSheet.create({
   streakValue: { color: '#1D1D1F', fontSize: 22, fontWeight: '800', marginTop: 6 },
   streakMeta: { color: '#6E6E73', marginTop: 4, fontSize: 13, fontWeight: '600' },
   demoBanner: {
-    backgroundColor: theme.demoBannerBg,
-    borderRadius: theme.radiusLg,
+    backgroundColor: colors.demoBannerBg,
+    borderRadius: colors.radiusLg,
     padding: 12,
     marginBottom: 14,
     borderWidth: 1,
-    borderColor: theme.demoBannerBorder,
+    borderColor: colors.demoBannerBorder,
   },
-  demoText: { color: theme.demoBannerText, lineHeight: 20, fontWeight: '600' },
-  heroCard: { borderRadius: theme.radiusLg, padding: 20, marginBottom: 16 },
+  demoText: { color: colors.demoBannerText, lineHeight: 20, fontWeight: '600' },
+  heroCard: { borderRadius: colors.radiusLg, padding: 20, marginBottom: 16 },
   heroEyebrow: { color: 'rgba(255,255,255,0.92)', fontSize: 13, fontWeight: '800', marginBottom: 12 },
   heroStats: { flexDirection: 'row', gap: 12, marginBottom: 18 },
   stat: { flex: 1 },
@@ -530,34 +574,34 @@ const styles = StyleSheet.create({
   progressMeta: { color: 'rgba(255,255,255,0.78)', marginTop: 6, lineHeight: 18, fontSize: 13 },
   quickActions: { flexDirection: 'row', gap: 10, marginBottom: 24 },
   quickAction: { flex: 1, borderRadius: 18, padding: 14 },
-  quickActionQuests: { backgroundColor: theme.demoBannerBg, borderWidth: 1, borderColor: theme.demoBannerBorder },
-  quickActionLeaderboard: { backgroundColor: theme.accentSoft, borderWidth: 1, borderColor: '#bfdbfe' },
+  quickActionQuests: { backgroundColor: colors.demoBannerBg, borderWidth: 1, borderColor: colors.demoBannerBorder },
+  quickActionLeaderboard: { backgroundColor: colors.accentSoft, borderWidth: 1, borderColor: '#bfdbfe' },
   quickActionBadges: { backgroundColor: '#f0fdf4', borderWidth: 1, borderColor: '#bbf7d0' },
   quickActionSprint: { backgroundColor: '#eef2ff', borderWidth: 1, borderColor: '#c7d2fe' },
   quickActionIcon: { fontSize: 22, marginBottom: 6 },
-  quickActionTitle: { color: theme.fg, fontSize: 15, fontWeight: '800' },
-  quickActionHint: { color: theme.muted, fontSize: 12, marginTop: 2, fontWeight: '600' },
+  quickActionTitle: { color: colors.fg, fontSize: 15, fontWeight: '800' },
+  quickActionHint: { color: colors.muted, fontSize: 12, marginTop: 2, fontWeight: '600' },
   sectionHeader: { marginBottom: 10 },
-  sectionTitle: { color: theme.fg, fontSize: 20, fontWeight: '800' },
-  sectionHint: { color: theme.muted, marginTop: 2, fontSize: 13 },
-  emptyText: { color: theme.muted, lineHeight: 20, marginBottom: 16 },
+  sectionTitle: { color: colors.fg, fontSize: 20, fontWeight: '800' },
+  sectionHint: { color: colors.muted, marginTop: 2, fontSize: 13 },
+  emptyText: { color: colors.muted, lineHeight: 20, marginBottom: 16 },
   catalogButton: { marginBottom: 24, paddingVertical: 6 },
-  catalogButtonText: { color: theme.accent, fontWeight: '800', fontSize: 15 },
-  questCard: { backgroundColor: theme.bgSoft, borderRadius: theme.radiusLg, padding: 14, marginBottom: 10 },
+  catalogButtonText: { color: colors.accent, fontWeight: '800', fontSize: 15 },
+  questCard: { backgroundColor: colors.bgSoft, borderRadius: colors.radiusLg, padding: 14, marginBottom: 10 },
   questHeader: { flexDirection: 'row', justifyContent: 'space-between', gap: 12, marginBottom: 10 },
-  questLabel: { flex: 1, color: theme.fg, fontWeight: '700', lineHeight: 20 },
-  questCount: { color: theme.accent, fontWeight: '800' },
+  questLabel: { flex: 1, color: colors.fg, fontWeight: '700', lineHeight: 20 },
+  questCount: { color: colors.accent, fontWeight: '800' },
   linkButton: { marginBottom: 24, paddingVertical: 4 },
-  linkButtonText: { color: theme.accent, fontWeight: '700' },
-  sprintCard: { backgroundColor: theme.bgSoft, borderRadius: theme.radiusLg, padding: 18, marginBottom: 24 },
+  linkButtonText: { color: colors.accent, fontWeight: '700' },
+  sprintCard: { backgroundColor: colors.bgSoft, borderRadius: colors.radiusLg, padding: 18, marginBottom: 24 },
   cardLabel: { color: '#8E8E93', fontSize: 13, fontWeight: '700', marginBottom: 10, textTransform: 'uppercase' },
   sprintHeader: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 },
   sprintText: { flex: 1 },
-  sprintTitle: { color: theme.fg, fontSize: 21, fontWeight: '800' },
+  sprintTitle: { color: colors.fg, fontSize: 21, fontWeight: '800' },
   sprintDuration: {
-    backgroundColor: theme.accentSoft,
-    borderRadius: theme.radiusPill,
-    color: theme.accentStrong,
+    backgroundColor: colors.accentSoft,
+    borderRadius: colors.radiusPill,
+    color: colors.accentStrong,
     fontWeight: '800',
     overflow: 'hidden',
     paddingHorizontal: 10,
@@ -574,7 +618,7 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     textTransform: 'uppercase',
   },
-  sprintStatusActive: { backgroundColor: theme.accentSoft, color: theme.accentStrong },
+  sprintStatusActive: { backgroundColor: colors.accentSoft, color: colors.accentStrong },
   sprintStatusCompleted: { backgroundColor: '#E9F8EE', color: '#1F7A3A' },
   sprintStatusExpired: { backgroundColor: '#FFECEC', color: '#B3261E' },
   sprintDeadline: { color: '#6E6E73', fontWeight: '700' },
@@ -586,11 +630,11 @@ const styles = StyleSheet.create({
   sprintMessage: { borderRadius: 14, fontWeight: '700', lineHeight: 20, marginTop: 10, padding: 12 },
   sprintMessageSuccess: { backgroundColor: '#E9F8EE', color: '#1F7A3A' },
   sprintMessageError: { backgroundColor: '#FFECEC', color: '#B3261E' },
-  sprintMessageInfo: { backgroundColor: theme.accentSoft, color: theme.accentStrong },
+  sprintMessageInfo: { backgroundColor: colors.accentSoft, color: colors.accentStrong },
   trackButtons: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginTop: 14 },
   trackButton: {
-    backgroundColor: theme.accent,
-    borderRadius: theme.radiusMd,
+    backgroundColor: colors.accent,
+    borderRadius: colors.radiusMd,
     minWidth: 112,
     paddingHorizontal: 14,
     paddingVertical: 12,
@@ -610,27 +654,28 @@ const styles = StyleSheet.create({
   },
   badgeIcon: { fontSize: 16 },
   badgeText: { fontWeight: '700', fontSize: 13 },
-  courseCard: { backgroundColor: theme.bgSoft, borderRadius: theme.radiusLg, padding: 16, marginBottom: 12 },
+  courseCard: { backgroundColor: colors.bgSoft, borderRadius: colors.radiusLg, padding: 16, marginBottom: 12 },
   courseHeader: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 },
   courseText: { flex: 1 },
-  courseChevron: { color: theme.accentTeal, fontSize: 28, fontWeight: '300', marginTop: 8 },
+  courseChevron: { color: colors.accentTeal, fontSize: 28, fontWeight: '300', marginTop: 8 },
   courseTrack: {
-    color: theme.accent,
+    color: colors.accent,
     fontSize: 11,
     fontWeight: '800',
     textTransform: 'uppercase',
     letterSpacing: 0.6,
   },
-  courseTitle: { color: theme.fg, fontSize: 17, fontWeight: '800', marginTop: 4 },
-  courseMeta: { color: theme.muted, marginTop: 4, marginBottom: 12 },
-  nextModule: { color: theme.muted, marginTop: 12, lineHeight: 20 },
-  ctaCard: { backgroundColor: theme.bgSoft, borderRadius: theme.radiusLg, padding: 18, marginTop: 4 },
-  ctaTitle: { color: theme.fg, fontSize: 21, fontWeight: '800', marginBottom: 8 },
-  ctaText: { color: theme.muted, lineHeight: 20, marginBottom: 14 },
+  courseTitle: { color: colors.fg, fontSize: 17, fontWeight: '800', marginTop: 4 },
+  courseMeta: { color: colors.muted, marginTop: 4, marginBottom: 12 },
+  nextModule: { color: colors.muted, marginTop: 12, lineHeight: 20 },
+  ctaCard: { backgroundColor: colors.bgSoft, borderRadius: colors.radiusLg, padding: 18, marginTop: 4 },
+  ctaTitle: { color: colors.fg, fontSize: 21, fontWeight: '800', marginBottom: 8 },
+  ctaText: { color: colors.muted, lineHeight: 20, marginBottom: 14 },
   ctaButtons: { flexDirection: 'row', gap: 10 },
-  ctaButton: { flex: 1, padding: 14, borderRadius: theme.radiusMd, alignItems: 'center' },
-  primaryButton: { backgroundColor: theme.accent },
+  ctaButton: { flex: 1, padding: 14, borderRadius: colors.radiusMd, alignItems: 'center' },
+  primaryButton: { backgroundColor: colors.accent },
   primaryButtonText: { color: '#FFFFFF', fontWeight: '800' },
   refreshButton: { padding: 16, alignItems: 'center' },
-  refreshText: { color: theme.accent, fontWeight: '700' },
-});
+  refreshText: { color: colors.accent, fontWeight: '700' },
+  });
+}

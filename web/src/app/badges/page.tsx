@@ -17,6 +17,7 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import { BrandIcon } from '@/components/ui/BrandIcon';
+import { BadgesPageSkeleton } from '@/components/ui/Skeleton';
 import { TrackIcon } from '@/components/ui/TrackIcon';
 
 const BADGES_VISUAL = getTrackVisual('DEFAULT');
@@ -43,12 +44,7 @@ export default function BadgesPage() {
   const summary = useMemo(() => buildSummary(data), [data]);
 
   if (status === 'loading') {
-    return (
-      <section style={{ padding: '2rem 0' }}>
-        <h1 style={{ fontSize: '2rem', fontWeight: 800 }}>Mes super-badges</h1>
-        <p className="muted" style={{ marginTop: '0.5rem' }}>Chargement de ta collection...</p>
-      </section>
-    );
+    return <BadgesPageSkeleton />;
   }
 
   if (status === 'error' || !data) {

@@ -9,14 +9,19 @@ import {
   Text,
   View,
 } from 'react-native';
+import { preferenceLabel, useAppTheme } from '../../context/ThemeContext';
 import { WEB_URL } from '../../config';
+import type { AppThemeColors } from '../../lib/design';
 import { formatLevel, formatTrack, getRankInfo } from '../../lib/design';
+import { useThemedStyles } from '../../hooks/useThemedStyles';
 import type { CompletedCourseSummary } from '../../services/progress';
 import { clearTokens } from '../../services/auth';
 import { LearnerDashboard, fetchLearnerDashboard } from '../../services/progress';
 
 export function ProfileScreen() {
   const router = useRouter();
+  const { colors, preference, cyclePreference } = useAppTheme();
+  const styles = useThemedStyles(createStyles);
   const [dashboard, setDashboard] = useState<LearnerDashboard | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -43,7 +48,7 @@ export function ProfileScreen() {
   if (loading || !dashboard) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator color="#0070D2" />
+        <ActivityIndicator color={colors.accent} />
         <Text style={styles.loadingText}>Chargement du profil…</Text>
       </View>
     );
@@ -58,6 +63,17 @@ export function ProfileScreen() {
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.eyebrow}>Mon profil</Text>
       <Text style={styles.title}>{displayName}</Text>
+
+      <Pressable
+        style={styles.themeCard}
+        onPress={cyclePreference}
+        accessibilityRole="button"
+        accessibilityLabel={`Apparence : ${preferenceLabel(preference)}. Appuyer pour changer.`}
+      >
+        <Text style={styles.themeTitle}>Apparence</Text>
+        <Text style={styles.themeValue}>{preferenceLabel(preference)}</Text>
+        <Text style={styles.themeHint}>Clair, sombre ou suivre le système</Text>
+      </Pressable>
 
       {source === 'demo' ? (
         <View style={styles.demoBanner}>
@@ -84,8 +100,8 @@ export function ProfileScreen() {
           {rank.icon} Rang {rank.name}
         </Text>
         <View style={styles.statsRow}>
-          <Stat label="Points" value={String(data.progress.points)} />
-          <Stat label="Niveau" value={formatLevel(data.progress.level)} />
+          <Stat label="Points" value={String(data.progress.points)} styles={styles} />
+          <Stat label="Niveau" value={formatLevel(data.progress.level)} styles={styles} />
         </View>
         <Text style={styles.heroMeta}>
           {data.progress.completedModules}/{data.progress.totalModules} unités · score moyen{' '}
@@ -103,7 +119,7 @@ export function ProfileScreen() {
       {completedCourses.length > 0 ? (
         <View style={styles.completedList}>
           {completedCourses.map((course) => (
-            <CompletedCourseRow key={course.slug} course={course} />
+            <CompletedCourseRow key={course.slug} course={course} styles={styles} />
           ))}
         </View>
       ) : (
@@ -171,7 +187,13 @@ export function ProfileScreen() {
   );
 }
 
-function CompletedCourseRow({ course }: { course: CompletedCourseSummary }) {
+function CompletedCourseRow({
+  course,
+  styles,
+}: {
+  course: CompletedCourseSummary;
+  styles: ReturnType<typeof createStyles>;
+}) {
   return (
     <View style={styles.completedCard}>
       <Text style={styles.completedTitle}>{course.title}</Text>
@@ -189,7 +211,15 @@ function formatCompletedDate(value: string) {
   return date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
+function Stat({
+  label,
+  value,
+  styles,
+}: {
+  label: string;
+  value: string;
+  styles: ReturnType<typeof createStyles>;
+}) {
   return (
     <View style={styles.stat}>
       <Text style={styles.statValue}>{value}</Text>
@@ -198,71 +228,99 @@ function Stat({ label, value }: { label: string; value: string }) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F5F5F7' },
-  content: { padding: 24, paddingBottom: 40 },
-  loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#F5F5F7' },
-  loadingText: { marginTop: 12, color: '#6E6E73', fontSize: 15 },
-  eyebrow: { color: '#0070D2', fontSize: 13, fontWeight: '700', marginBottom: 4, textTransform: 'uppercase' },
-  title: { color: '#1D1D1F', fontSize: 28, fontWeight: '800', marginBottom: 16 },
-  streakCard: {
-    backgroundColor: '#FFF4E8',
-    borderRadius: 18,
-    padding: 16,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#F5B87A',
-  },
-  streakEyebrow: { color: '#B45309', fontSize: 12, fontWeight: '800', textTransform: 'uppercase' },
-  streakValue: { color: '#1D1D1F', fontSize: 22, fontWeight: '800', marginTop: 6 },
-  streakMeta: { color: '#6E6E73', marginTop: 4, fontSize: 13, fontWeight: '600' },
-  demoBanner: { backgroundColor: '#FFF7E6', borderRadius: 14, padding: 12, marginBottom: 16 },
-  demoText: { color: '#8A5A00', lineHeight: 20 },
-  heroCard: { borderRadius: 24, padding: 20, marginBottom: 24 },
-  heroEyebrow: { color: 'rgba(255,255,255,0.92)', fontSize: 13, fontWeight: '800', marginBottom: 12 },
-  statsRow: { flexDirection: 'row', gap: 12 },
-  stat: { flex: 1 },
-  statValue: { color: '#FFFFFF', fontSize: 28, fontWeight: '800' },
-  statLabel: { color: 'rgba(255,255,255,0.82)', marginTop: 4 },
-  heroMeta: { color: 'rgba(255,255,255,0.78)', marginTop: 12, lineHeight: 18, fontSize: 13 },
-  sectionTitle: { color: '#1D1D1F', fontSize: 20, fontWeight: '800' },
-  sectionHint: { color: '#6E6E73', marginTop: 2, marginBottom: 12, fontSize: 13 },
-  completedList: { gap: 10, marginBottom: 24 },
-  completedCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 18,
-    padding: 16,
-  },
-  completedTitle: { color: '#1D1D1F', fontSize: 17, fontWeight: '800' },
-  completedMeta: { color: '#6E6E73', marginTop: 6, fontSize: 14 },
-  completedSlug: { color: '#AEAEB2', marginTop: 4, fontSize: 12, fontWeight: '600' },
-  emptyCompletedCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 18,
-    padding: 16,
-    marginBottom: 24,
-  },
-  emptyCompletedTitle: { color: '#1D1D1F', fontSize: 17, fontWeight: '800' },
-  emptyCompletedText: { color: '#6E6E73', marginTop: 8, lineHeight: 20, fontSize: 14 },
-  catalogLink: { marginTop: 12 },
-  catalogLinkText: { color: '#0070D2', fontWeight: '800', fontSize: 15 },
-  linkCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 18,
-    padding: 16,
-    marginBottom: 10,
-  },
-  linkTitle: { color: '#1D1D1F', fontSize: 17, fontWeight: '800' },
-  linkHint: { color: '#6E6E73', marginTop: 4, lineHeight: 20, fontSize: 14 },
-  linkCta: { color: '#0070D2', fontWeight: '800', marginTop: 10, fontSize: 15 },
-  refreshButton: { padding: 16, alignItems: 'center' },
-  refreshText: { color: '#0070D2', fontWeight: '700' },
-  signOutButton: {
-    marginTop: 8,
-    padding: 14,
-    borderRadius: 14,
-    backgroundColor: '#FFFFFF',
-    alignItems: 'center',
-  },
-  signOutText: { color: '#B3261E', fontWeight: '800' },
-});
+function createStyles(colors: AppThemeColors) {
+  return StyleSheet.create({
+    container: { flex: 1, backgroundColor: colors.bg },
+    content: { padding: 24, paddingBottom: 40 },
+    loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.bg },
+    loadingText: { marginTop: 12, color: colors.muted, fontSize: 15 },
+    eyebrow: { color: colors.accent, fontSize: 13, fontWeight: '700', marginBottom: 4, textTransform: 'uppercase' },
+    title: { color: colors.fg, fontSize: 28, fontWeight: '800', marginBottom: 16 },
+    themeCard: {
+      backgroundColor: colors.bgSoft,
+      borderRadius: colors.radiusLg,
+      padding: 16,
+      marginBottom: 16,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    themeTitle: { color: colors.fg, fontSize: 17, fontWeight: '800' },
+    themeValue: { color: colors.accent, fontWeight: '800', marginTop: 6, fontSize: 15 },
+    themeHint: { color: colors.muted, marginTop: 4, fontSize: 13 },
+    streakCard: {
+      backgroundColor: colors.demoBannerBg,
+      borderRadius: 18,
+      padding: 16,
+      marginBottom: 16,
+      borderWidth: 1,
+      borderColor: colors.demoBannerBorder,
+    },
+    streakEyebrow: { color: colors.demoBannerText, fontSize: 12, fontWeight: '800', textTransform: 'uppercase' },
+    streakValue: { color: colors.fg, fontSize: 22, fontWeight: '800', marginTop: 6 },
+    streakMeta: { color: colors.muted, marginTop: 4, fontSize: 13, fontWeight: '600' },
+    demoBanner: {
+      backgroundColor: colors.demoBannerBg,
+      borderRadius: 14,
+      padding: 12,
+      marginBottom: 16,
+      borderWidth: 1,
+      borderColor: colors.demoBannerBorder,
+    },
+    demoText: { color: colors.demoBannerText, lineHeight: 20 },
+    heroCard: { borderRadius: 24, padding: 20, marginBottom: 24 },
+    heroEyebrow: { color: 'rgba(255,255,255,0.92)', fontSize: 13, fontWeight: '800', marginBottom: 12 },
+    statsRow: { flexDirection: 'row', gap: 12 },
+    stat: { flex: 1 },
+    statValue: { color: '#FFFFFF', fontSize: 28, fontWeight: '800' },
+    statLabel: { color: 'rgba(255,255,255,0.82)', marginTop: 4 },
+    heroMeta: { color: 'rgba(255,255,255,0.78)', marginTop: 12, lineHeight: 18, fontSize: 13 },
+    sectionTitle: { color: colors.fg, fontSize: 20, fontWeight: '800' },
+    sectionHint: { color: colors.muted, marginTop: 2, marginBottom: 12, fontSize: 13 },
+    completedList: { gap: 10, marginBottom: 24 },
+    completedCard: {
+      backgroundColor: colors.bgSoft,
+      borderRadius: 18,
+      padding: 16,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    completedTitle: { color: colors.fg, fontSize: 17, fontWeight: '800' },
+    completedMeta: { color: colors.muted, marginTop: 6, fontSize: 14 },
+    completedSlug: { color: colors.muted, marginTop: 4, fontSize: 12, fontWeight: '600', opacity: 0.75 },
+    emptyCompletedCard: {
+      backgroundColor: colors.bgSoft,
+      borderRadius: 18,
+      padding: 16,
+      marginBottom: 24,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    emptyCompletedTitle: { color: colors.fg, fontSize: 17, fontWeight: '800' },
+    emptyCompletedText: { color: colors.muted, marginTop: 8, lineHeight: 20, fontSize: 14 },
+    catalogLink: { marginTop: 12 },
+    catalogLinkText: { color: colors.accent, fontWeight: '800', fontSize: 15 },
+    linkCard: {
+      backgroundColor: colors.bgSoft,
+      borderRadius: 18,
+      padding: 16,
+      marginBottom: 10,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    linkTitle: { color: colors.fg, fontSize: 17, fontWeight: '800' },
+    linkHint: { color: colors.muted, marginTop: 4, lineHeight: 20, fontSize: 14 },
+    linkCta: { color: colors.accent, fontWeight: '800', marginTop: 10, fontSize: 15 },
+    refreshButton: { padding: 16, alignItems: 'center' },
+    refreshText: { color: colors.accent, fontWeight: '700' },
+    signOutButton: {
+      marginTop: 8,
+      padding: 14,
+      borderRadius: 14,
+      backgroundColor: colors.bgSoft,
+      alignItems: 'center',
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    signOutText: { color: '#f87171', fontWeight: '800' },
+  });
+}

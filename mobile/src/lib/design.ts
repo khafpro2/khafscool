@@ -2,7 +2,31 @@ import type { BrandId } from './brands';
 import { getBadgeBrand, getTrackBrand } from './brands';
 
 /** Tokens alignés sur MDM Academy Pro (web) */
-export const theme = {
+export type AppThemeColors = {
+  accent: string;
+  accentStrong: string;
+  accentSoft: string;
+  accentTeal: string;
+  accentTealSoft: string;
+  bg: string;
+  bgSoft: string;
+  fg: string;
+  muted: string;
+  success: string;
+  warning: string;
+  demoBannerBg: string;
+  demoBannerBorder: string;
+  demoBannerText: string;
+  border: string;
+  tabBarBg: string;
+  tabBarBorder: string;
+  tabBarInactive: string;
+  radiusLg: number;
+  radiusMd: number;
+  radiusPill: number;
+};
+
+export const lightTheme: AppThemeColors = {
   accent: '#2563EB',
   accentStrong: '#1d4ed8',
   accentSoft: '#dbeafe',
@@ -17,10 +41,45 @@ export const theme = {
   demoBannerBg: '#fff8e6',
   demoBannerBorder: '#f0cf7a',
   demoBannerText: '#8a5a00',
+  border: '#e2e8f0',
+  tabBarBg: '#ffffff',
+  tabBarBorder: '#e5e7eb',
+  tabBarInactive: '#6e6e73',
   radiusLg: 16,
   radiusMd: 12,
   radiusPill: 999,
-} as const;
+};
+
+export const darkTheme: AppThemeColors = {
+  accent: '#3b82f6',
+  accentStrong: '#60a5fa',
+  accentSoft: '#1e3a5f',
+  accentTeal: '#2dd4bf',
+  accentTealSoft: '#134e4a',
+  bg: '#0b1220',
+  bgSoft: '#111827',
+  fg: '#f1f5f9',
+  muted: '#94a3b8',
+  success: '#34d399',
+  warning: '#fbbf24',
+  demoBannerBg: '#422006',
+  demoBannerBorder: '#78350f',
+  demoBannerText: '#fcd34d',
+  border: '#334155',
+  tabBarBg: '#111827',
+  tabBarBorder: '#1e293b',
+  tabBarInactive: '#94a3b8',
+  radiusLg: 16,
+  radiusMd: 12,
+  radiusPill: 999,
+};
+
+/** Thème clair par défaut — préférer `useAppTheme()` dans les écrans. */
+export const theme = lightTheme;
+
+export function getThemeColors(mode: 'light' | 'dark'): AppThemeColors {
+  return mode === 'dark' ? darkTheme : lightTheme;
+}
 
 export type { BrandId } from './brands';
 export { getBadgeBrand, getTrackBrand } from './brands';

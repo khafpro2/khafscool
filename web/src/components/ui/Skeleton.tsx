@@ -201,6 +201,240 @@ export function LeaderboardPageSkeleton() {
   );
 }
 
+export function BadgeCardSkeleton() {
+  return (
+    <div className="card" aria-hidden style={{ pointerEvents: 'none' }}>
+      <div
+        style={{
+          display: 'grid',
+          gap: '1rem',
+          gridTemplateColumns: 'auto minmax(0, 1fr) auto',
+          alignItems: 'center',
+        }}
+      >
+        <Skeleton width={56} height={56} rounded="pill" />
+        <div>
+          <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+            <Skeleton width={72} height={24} rounded="pill" />
+            <Skeleton width={88} height={24} rounded="pill" />
+          </div>
+          <Skeleton width="65%" height={20} rounded="sm" style={{ marginTop: '0.5rem' }} />
+          <Skeleton width="80%" height={14} rounded="sm" style={{ marginTop: '0.35rem' }} />
+        </div>
+        <Skeleton width={40} height={40} rounded="lg" />
+      </div>
+    </div>
+  );
+}
+
+export function BadgesPageSkeleton() {
+  return (
+    <section style={{ padding: '1rem 0 2rem' }} aria-busy="true" aria-label="Chargement des badges">
+      <div className="hero" style={{ marginTop: 0 }}>
+        <Skeleton width={180} height={28} rounded="pill" style={{ opacity: 0.5 }} />
+        <Skeleton width="min(480px, 95%)" height={40} rounded="sm" style={{ marginTop: '1rem', opacity: 0.5 }} />
+        <Skeleton width="min(420px, 90%)" height={16} rounded="sm" style={{ marginTop: '0.75rem', opacity: 0.45 }} />
+        <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', marginTop: '1.25rem' }}>
+          <Skeleton width={148} height={40} rounded="md" style={{ opacity: 0.45 }} />
+          <Skeleton width={120} height={40} rounded="md" style={{ opacity: 0.45 }} />
+        </div>
+      </div>
+
+      <div className="card" style={{ marginTop: '1.5rem' }}>
+        <Skeleton width="35%" height={18} rounded="sm" />
+        <Skeleton width="90%" height={14} rounded="sm" style={{ marginTop: '0.5rem' }} />
+      </div>
+
+      <div className="stat-grid" style={{ marginTop: '1.5rem' }}>
+        {Array.from({ length: 4 }).map((_, index) => (
+          <div key={index} className="stat">
+            <Skeleton width="75%" height={12} rounded="pill" />
+            <Skeleton width="55%" height={28} rounded="sm" style={{ marginTop: '0.35rem' }} />
+          </div>
+        ))}
+      </div>
+
+      <Skeleton width="100%" height={8} rounded="pill" style={{ marginTop: '1rem' }} />
+      <Skeleton width={200} height={14} rounded="sm" style={{ marginTop: '0.4rem' }} />
+
+      <div style={{ marginTop: '2rem' }}>
+        <Skeleton width={140} height={12} rounded="pill" />
+        <Skeleton width={180} height={24} rounded="sm" style={{ marginTop: '0.5rem' }} />
+        <div style={{ display: 'grid', gap: '1rem', marginTop: '1rem' }}>
+          {Array.from({ length: 2 }).map((_, index) => (
+            <BadgeCardSkeleton key={index} />
+          ))}
+        </div>
+      </div>
+
+      <div style={{ marginTop: '2rem' }}>
+        <Skeleton width={160} height={12} rounded="pill" />
+        <Skeleton width={200} height={24} rounded="sm" style={{ marginTop: '0.5rem' }} />
+        <div style={{ display: 'grid', gap: '1rem', marginTop: '1rem' }}>
+          {Array.from({ length: 2 }).map((_, index) => (
+            <BadgeCardSkeleton key={`locked-${index}`} />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export function SprintPageSkeleton() {
+  return (
+    <section style={{ padding: '1rem 0 2rem' }} aria-busy="true" aria-label="Chargement du sprint">
+      <div className="hero" style={{ marginTop: 0 }}>
+        <Skeleton width={200} height={28} rounded="pill" style={{ opacity: 0.5 }} />
+        <Skeleton width="min(520px, 95%)" height={40} rounded="sm" style={{ marginTop: '1rem', opacity: 0.5 }} />
+        <Skeleton width="min(480px, 90%)" height={16} rounded="sm" style={{ marginTop: '0.75rem', opacity: 0.45 }} />
+        <div
+          style={{
+            marginTop: '1.75rem',
+            display: 'grid',
+            gap: '0.75rem',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+          }}
+        >
+          {Array.from({ length: 4 }).map((_, index) => (
+            <Skeleton key={index} width="100%" height={72} rounded="md" style={{ opacity: 0.4 }} />
+          ))}
+        </div>
+      </div>
+
+      <div className="card" style={{ marginTop: '1.5rem' }}>
+        <Skeleton width={120} height={24} rounded="pill" />
+        <Skeleton width="70%" height={18} rounded="sm" style={{ marginTop: '0.65rem' }} />
+        <Skeleton width="95%" height={14} rounded="sm" style={{ marginTop: '0.35rem' }} />
+      </div>
+
+      <div
+        style={{
+          display: 'grid',
+          gap: '1rem',
+          gridTemplateColumns: 'minmax(0, 1fr) minmax(280px, 0.85fr)',
+          marginTop: '1.5rem',
+          alignItems: 'start',
+        }}
+      >
+        <div>
+          <div className="card">
+            <Skeleton width={120} height={12} rounded="pill" />
+            <Skeleton width="55%" height={22} rounded="sm" style={{ marginTop: '0.5rem' }} />
+            <Skeleton width="80%" height={14} rounded="sm" style={{ marginTop: '0.5rem' }} />
+            <div
+              style={{
+                display: 'grid',
+                gap: '0.75rem',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))',
+                marginTop: '1rem',
+              }}
+            >
+              {Array.from({ length: 3 }).map((_, index) => (
+                <Skeleton key={index} width="100%" height={120} rounded="md" />
+              ))}
+            </div>
+            <Skeleton width={160} height={40} rounded="md" style={{ marginTop: '1.25rem' }} />
+          </div>
+          <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', marginTop: '1.5rem' }}>
+            {Array.from({ length: 2 }).map((_, index) => (
+              <TrailCardSkeleton key={index} />
+            ))}
+          </div>
+        </div>
+        <div className="card">
+          <Skeleton width={100} height={12} rounded="pill" />
+          <Skeleton width="70%" height={22} rounded="sm" style={{ marginTop: '0.5rem' }} />
+          <Skeleton width="85%" height={14} rounded="sm" style={{ marginTop: '0.75rem' }} />
+          <Skeleton width="100%" height={8} rounded="pill" style={{ marginTop: '1.1rem' }} />
+          <div
+            style={{
+              display: 'grid',
+              gap: '0.75rem',
+              gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+              marginTop: '1.25rem',
+            }}
+          >
+            {Array.from({ length: 4 }).map((_, index) => (
+              <Skeleton key={index} width="100%" height={48} rounded="md" />
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export function ProfilePageSkeleton() {
+  return (
+    <section style={{ padding: '1rem 0 2rem' }} aria-busy="true" aria-label="Chargement du profil">
+      <div
+        className="card"
+        style={{
+          background: 'var(--border-soft)',
+          borderColor: 'transparent',
+        }}
+      >
+        <div
+          style={{
+            display: 'grid',
+            gap: '1.25rem',
+            gridTemplateColumns: 'auto minmax(0, 1fr) auto',
+            alignItems: 'center',
+          }}
+        >
+          <Skeleton width={72} height={72} rounded="pill" />
+          <div>
+            <Skeleton width={120} height={20} rounded="pill" />
+            <Skeleton width="min(280px, 70%)" height={32} rounded="sm" style={{ marginTop: '0.5rem' }} />
+            <Skeleton width="min(220px, 55%)" height={14} rounded="sm" style={{ marginTop: '0.35rem' }} />
+            <Skeleton width="100%" height={10} rounded="pill" style={{ marginTop: '1rem', maxWidth: 560 }} />
+          </div>
+          <Skeleton width={100} height={36} rounded="md" />
+        </div>
+      </div>
+
+      <div className="card" style={{ marginTop: '1.25rem' }}>
+        <Skeleton width={160} height={12} rounded="pill" />
+        <div
+          style={{
+            display: 'grid',
+            gap: '0.85rem',
+            marginTop: '1rem',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+          }}
+        >
+          {Array.from({ length: 6 }).map((_, index) => (
+            <div key={index}>
+              <Skeleton width="60%" height={12} rounded="pill" />
+              <Skeleton width="80%" height={18} rounded="sm" style={{ marginTop: '0.25rem' }} />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div style={{ marginTop: '1.5rem' }}>
+        <Skeleton width={100} height={12} rounded="pill" />
+        <Skeleton width={160} height={24} rounded="sm" style={{ marginTop: '0.5rem' }} />
+        <div
+          style={{
+            display: 'grid',
+            gap: '0.75rem',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+            marginTop: '1rem',
+          }}
+        >
+          {Array.from({ length: 4 }).map((_, index) => (
+            <div key={index} className="card card-soft" aria-hidden>
+              <Skeleton width="70%" height={18} rounded="sm" />
+              <Skeleton width="90%" height={14} rounded="sm" style={{ marginTop: '0.35rem' }} />
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export function QuestsPageSkeleton() {
   return (
     <section style={{ padding: '1rem 0 2rem' }} aria-busy="true" aria-label="Chargement des quêtes">

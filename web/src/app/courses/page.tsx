@@ -64,6 +64,7 @@ export default function CoursesPage() {
       const haystack = [
         course.title,
         course.description ?? '',
+        course.slug,
         formatTrack(course.track),
         course.track,
       ]
@@ -128,9 +129,12 @@ export default function CoursesPage() {
         <input
           id="courses-search"
           type="search"
+          role="searchbox"
           value={searchQuery}
           onChange={(event) => setSearchQuery(event.target.value)}
-          placeholder="Titre, description ou piste (Apple, Jamf, Intune)…"
+          placeholder="Titre, description, slug ou piste (Apple, Jamf, Intune)…"
+          aria-describedby="courses-search-hint"
+          autoComplete="off"
           style={{
             border: '1px solid rgba(255,255,255,0.35)',
             borderRadius: 14,
@@ -143,6 +147,9 @@ export default function CoursesPage() {
             maxWidth: 520,
           }}
         />
+        <p id="courses-search-hint" className="sr-only">
+          Filtre les parcours affichés par titre, description, identifiant ou piste.
+        </p>
       </div>
 
       {!hasToken && (

@@ -13,6 +13,14 @@ test.describe('Parcours d’apprentissage — smoke', () => {
     await expect(page.getByRole('heading', { name: /Trois parcours pour devenir expert MDM/i })).toBeVisible();
   });
 
+  test('recherche catalogue filtre par mot-clé', async ({ page }) => {
+    await page.goto('/courses');
+    await expect(page.getByRole('searchbox', { name: /rechercher/i })).toBeVisible();
+    await page.getByRole('searchbox', { name: /rechercher/i }).fill('jamf-pro');
+    await expect(page.getByRole('link', { name: /Jamf Pro/i }).first()).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByRole('heading', { name: /Aucun parcours ne correspond/i })).not.toBeVisible();
+  });
+
   test('/pricing redirige vers /courses', async ({ page }) => {
     await page.goto('/pricing');
     await expect(page).toHaveURL(/\/courses$/);

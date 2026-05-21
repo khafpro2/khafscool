@@ -10,11 +10,16 @@ import {
 } from 'react-native';
 import { BrandIcon } from '../../components/BrandIcon';
 import { LEARNING_PATHS } from '../../lib/learningPaths';
-import { formatTrack, getTrackVisual, theme } from '../../lib/design';
+import { useAppTheme } from '../../context/ThemeContext';
+import type { AppThemeColors } from '../../lib/design';
+import { formatTrack, getTrackVisual } from '../../lib/design';
+import { useThemedStyles } from '../../hooks/useThemedStyles';
 import { CourseSummary, fetchCourses } from '../../services/courses';
 
 export function CoursesCatalogScreen() {
   const router = useRouter();
+  const { colors } = useAppTheme();
+  const styles = useThemedStyles(createStyles);
   const [courses, setCourses] = useState<CourseSummary[]>([]);
   const [source, setSource] = useState<'api' | 'demo'>('api');
   const [loading, setLoading] = useState(true);
@@ -42,7 +47,7 @@ export function CoursesCatalogScreen() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator color={theme.accent} />
+        <ActivityIndicator color={colors.accent} />
         <Text style={styles.loadingText}>Chargement du catalogue…</Text>
       </View>
     );
@@ -73,6 +78,7 @@ export function CoursesCatalogScreen() {
             key={path.slug}
             path={path}
             course={course}
+            styles={styles}
             onPress={() => router.push(`/course/${path.slug}`)}
           />
         );
@@ -88,10 +94,12 @@ export function CoursesCatalogScreen() {
 function CatalogCourseCard({
   path,
   course,
+  styles,
   onPress,
 }: {
   path: (typeof LEARNING_PATHS)[number];
   course?: CourseSummary;
+  styles: ReturnType<typeof createStyles>;
   onPress: () => void;
 }) {
   const visual = getTrackVisual(path.track);
@@ -133,29 +141,32 @@ function CatalogCourseCard({
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: theme.bg },
+function createStyles(colors: AppThemeColors) {
+  return StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.bg },
   content: { padding: 24, paddingBottom: 40 },
-  loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: theme.bg },
-  loadingText: { marginTop: 12, color: theme.muted, fontSize: 15 },
+  loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.bg },
+  loadingText: { marginTop: 12, color: colors.muted, fontSize: 15 },
   header: { marginBottom: 20 },
-  eyebrow: { color: theme.accent, fontSize: 13, fontWeight: '800', marginBottom: 4, textTransform: 'uppercase' },
-  title: { color: theme.fg, fontSize: 26, fontWeight: '800', lineHeight: 32 },
-  subtitle: { color: theme.muted, marginTop: 8, lineHeight: 22, fontSize: 15 },
+  eyebrow: { color: colors.accent, fontSize: 13, fontWeight: '800', marginBottom: 4, textTransform: 'uppercase' },
+  title: { color: colors.fg, fontSize: 26, fontWeight: '800', lineHeight: 32 },
+  subtitle: { color: colors.muted, marginTop: 8, lineHeight: 22, fontSize: 15 },
   demoBanner: {
-    backgroundColor: theme.demoBannerBg,
-    borderRadius: theme.radiusLg,
+    backgroundColor: colors.demoBannerBg,
+    borderRadius: colors.radiusLg,
     padding: 12,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: theme.demoBannerBorder,
+    borderColor: colors.demoBannerBorder,
   },
-  demoText: { color: theme.demoBannerText, lineHeight: 20, fontWeight: '600' },
+  demoText: { color: colors.demoBannerText, lineHeight: 20, fontWeight: '600' },
   card: {
-    backgroundColor: theme.bgSoft,
-    borderRadius: theme.radiusLg,
+    backgroundColor: colors.bgSoft,
+    borderRadius: colors.radiusLg,
     marginBottom: 14,
     overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   banner: {
     paddingHorizontal: 16,
@@ -173,13 +184,14 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   cardBody: { padding: 16 },
-  cardTitle: { color: theme.fg, fontSize: 18, fontWeight: '800' },
-  cardMeta: { color: theme.muted, marginTop: 6, fontSize: 13, fontWeight: '600' },
+  cardTitle: { color: colors.fg, fontSize: 18, fontWeight: '800' },
+  cardMeta: { color: colors.muted, marginTop: 6, fontSize: 13, fontWeight: '600' },
   objectives: { marginTop: 10, gap: 4 },
-  objectiveItem: { color: theme.muted, fontSize: 13, lineHeight: 18 },
+  objectiveItem: { color: colors.muted, fontSize: 13, lineHeight: 18 },
   cardFooter: { flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 6, marginTop: 14 },
-  ctaLabel: { color: theme.accent, fontWeight: '800', fontSize: 15 },
-  ctaArrow: { color: theme.accentTeal, fontSize: 18, fontWeight: '300' },
+  ctaLabel: { color: colors.accent, fontWeight: '800', fontSize: 15 },
+  ctaArrow: { color: colors.accentTeal, fontSize: 18, fontWeight: '300' },
   refreshButton: { padding: 16, alignItems: 'center' },
-  refreshText: { color: theme.accent, fontWeight: '700' },
-});
+  refreshText: { color: colors.accent, fontWeight: '700' },
+  });
+}

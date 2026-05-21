@@ -17,6 +17,7 @@ import { Card } from '@/components/ui/Card';
 import { LevelPill } from '@/components/ui/LevelPill';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import { BrandIcon } from '@/components/ui/BrandIcon';
+import { SprintPageSkeleton } from '@/components/ui/Skeleton';
 import { TrackIcon } from '@/components/ui/TrackIcon';
 import {
   estimateDurationMinutes,
@@ -130,6 +131,10 @@ export default function SprintPage() {
   }
 
   const isBusy = status === 'loading' || status === 'starting';
+
+  if (status === 'loading') {
+    return <SprintPageSkeleton />;
+  }
 
   return (
     <section style={{ padding: '1rem 0 2rem' }}>
@@ -347,7 +352,7 @@ export default function SprintPage() {
           </section>
         </div>
 
-        <CurrentSprintCard sprint={sprint} isLoading={status === 'loading'} />
+        <CurrentSprintCard sprint={sprint} isLoading={false} />
       </div>
     </section>
   );

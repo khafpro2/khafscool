@@ -9,6 +9,7 @@ import { formatTrack } from '@/lib/tracks';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { ProfilePageSkeleton } from '@/components/ui/Skeleton';
 import { TrailCard } from '@/components/ui/TrailCard';
 import {
   estimatePoints,
@@ -62,12 +63,7 @@ export default function ProfilePage() {
   const storedUser = useMemo(() => (typeof window !== 'undefined' ? getStoredUser() : null), [hasToken]);
 
   if (isLoading) {
-    return (
-      <section style={{ padding: '2rem 0' }}>
-        <h1 style={{ fontSize: '2rem', fontWeight: 800 }}>Mon profil</h1>
-        <p className="muted" style={{ marginTop: '0.5rem' }}>Chargement de ton compte…</p>
-      </section>
-    );
+    return <ProfilePageSkeleton />;
   }
 
   if (!data) {
