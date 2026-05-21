@@ -16,6 +16,7 @@ import { Card } from '@/components/ui/Card';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import { TrackIcon } from '@/components/ui/TrackIcon';
 import { getTrackVisual } from '@/lib/design';
+import { QuestsPageSkeleton } from '@/components/ui/Skeleton';
 
 const QUESTS_VISUAL = getTrackVisual('QUESTS');
 
@@ -53,12 +54,7 @@ export default function WeeklyQuestsPage() {
   const resetLabel = useMemo(() => formatResetLabel(data?.weekEnd ?? null), [data]);
 
   if (status === 'loading') {
-    return (
-      <section style={{ padding: '2rem 0' }}>
-        <h1 style={{ fontSize: '2rem', fontWeight: 800 }}>Quêtes hebdo</h1>
-        <p className="muted" style={{ marginTop: '0.5rem' }}>Chargement des quêtes...</p>
-      </section>
-    );
+    return <QuestsPageSkeleton />;
   }
 
   if (status === 'error' || !data) {

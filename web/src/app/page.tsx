@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { HomeOnboardingBanner } from '@/components/home/HomeOnboardingBanner';
+import { InstallAppButton } from '@/components/home/InstallAppButton';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { LearningPathCard } from '@/components/ui/LearningPathCard';
@@ -38,7 +39,7 @@ export default function HomePage() {
           Trois parcours guidés de 3 unités : support Apple, administration Jamf et enrôlement Intune pour
           flottes iOS et macOS.
         </p>
-        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginTop: '1.75rem' }}>
+        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginTop: '1.75rem', alignItems: 'center' }}>
           <Button href="/auth" size="lg" variant="secondary">
             Commencer gratuitement
           </Button>
@@ -50,6 +51,7 @@ export default function HomePage() {
           >
             Explorer les parcours
           </Button>
+          <InstallAppButton />
         </div>
         <div
           style={{

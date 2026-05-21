@@ -14,6 +14,7 @@ import { TrailCard } from '@/components/ui/TrailCard';
 import { inferLevelFromModules, type TrailLevel } from '@/lib/design';
 import { getLearningPath, sortMvpCoursesFirst } from '@/lib/learningPaths';
 import { TracksComparisonTable } from '@/components/courses/TracksComparisonTable';
+import { TrailCardSkeleton } from '@/components/ui/Skeleton';
 
 const LEVELS: ('TOUS' | TrailLevel)[] = ['TOUS', 'Débutant', 'Intermédiaire', 'Avancé'];
 
@@ -187,9 +188,16 @@ export default function CoursesPage() {
         />
 
         {isLoading ? (
-          <p className="muted" style={{ marginTop: '1.5rem' }}>
-            Chargement des parcours...
-          </p>
+          <div
+            className="grid grid-cards-lg"
+            style={{ marginTop: '1.25rem' }}
+            aria-busy="true"
+            aria-label="Chargement du catalogue"
+          >
+            {Array.from({ length: 6 }).map((_, index) => (
+              <TrailCardSkeleton key={index} />
+            ))}
+          </div>
         ) : filteredCourses.length === 0 ? (
           <Card style={{ marginTop: '1.25rem', textAlign: 'center' }}>
             <h2 style={{ fontSize: '1.2rem', fontWeight: 800 }}>

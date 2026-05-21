@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import Link from 'next/link';
 import { AppErrorBoundary } from '@/components/ErrorBoundary';
 import { DemoModeBanner } from '@/components/layout/DemoModeBanner';
@@ -62,6 +62,16 @@ export const metadata: Metadata = {
   alternates: {
     canonical: '/',
   },
+  manifest: '/manifest.webmanifest',
+  appleWebApp: {
+    capable: true,
+    title: 'MDM Academy Pro',
+    statusBarStyle: 'default',
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: '#2563EB',
 };
 
 const NAV_ITEMS = [

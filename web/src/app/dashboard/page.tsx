@@ -15,7 +15,7 @@ import { Card } from '@/components/ui/Card';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import { TrackIcon } from '@/components/ui/TrackIcon';
 import { MdmTracksSection } from '@/components/dashboard/MdmTracksSection';
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { DashboardSkeleton } from '@/components/ui/Skeleton';
 import { TrailCard } from '@/components/ui/TrailCard';
 import { estimatePoints, getRankInfo, inferLevelFromModules } from '@/lib/design';
 type QuickAction = {
@@ -88,9 +88,9 @@ export default function DashboardPage() {
 
   if (isLoading) {
     return (
-      <section style={{ padding: '2rem 0' }}>
-        <h1 style={{ fontSize: '2rem', fontWeight: 800 }}>Mon apprentissage</h1>
-        <LoadingSpinner label="Chargement…" />
+      <section style={{ padding: '1rem 0 2rem' }}>
+        <h1 className="sr-only">Mon apprentissage</h1>
+        <DashboardSkeleton />
       </section>
     );
   }
