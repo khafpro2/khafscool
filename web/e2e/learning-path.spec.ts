@@ -24,5 +24,19 @@ test.describe('Parcours d’apprentissage — smoke', () => {
     await expect(
       page.getByRole('button', { name: /Partager ma réussite/i })
     ).toBeVisible();
+    await expect(
+      page.getByRole('link', { name: /Télécharger mon certificat/i })
+    ).toBeVisible();
+  });
+
+  test('certificat imprimable en mode démo', async ({ page }) => {
+    await page.goto('/courses/apple-cert-prep/certificate');
+    await expect(page.getByRole('heading', { name: /Apprenant démo/i })).toBeVisible({
+      timeout: 15_000,
+    });
+    await expect(page.getByRole('article', { name: /Certificat de complétion/i })).toBeVisible();
+    await expect(
+      page.getByRole('button', { name: /Imprimer.*PDF/i })
+    ).toBeVisible();
   });
 });
