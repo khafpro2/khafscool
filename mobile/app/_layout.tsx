@@ -1,13 +1,17 @@
 import { Stack } from 'expo-router';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ApiHealthPoller } from '../src/components/ApiHealthPoller';
 import { ApiStatusBanner } from '../src/components/ApiStatusBanner';
+import { Toaster } from '../src/components/Toast';
 import { ThemeProvider } from '../src/context/ThemeContext';
 
 export default function RootLayout() {
   return (
+    <SafeAreaProvider>
     <ThemeProvider>
     <ApiHealthPoller />
     <ApiStatusBanner />
+    <Toaster />
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="index" />
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
@@ -19,5 +23,6 @@ export default function RootLayout() {
       <Stack.Screen name="course/[slug]/complete" />
     </Stack>
     </ThemeProvider>
+    </SafeAreaProvider>
   );
 }

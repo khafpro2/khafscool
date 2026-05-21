@@ -472,7 +472,7 @@ export function CourseDetailClient({ slug }: { slug: string }) {
                     </div>
                     <Badge
                       tone={moduleStatus === 'completed' ? 'success' : moduleStatus === 'in_progress' ? 'warning' : 'neutral'}
-                      icon={moduleStatus === 'completed' ? '\u2705' : moduleStatus === 'in_progress' ? '\u{1F3AF}' : '\u23F3'}
+                      icon={moduleStatusIcon(moduleStatus)}
                     >
                       {moduleStatusLabel(moduleStatus)}
                       {moduleProgress?.score !== null && moduleProgress?.score !== undefined
@@ -691,7 +691,13 @@ function getModuleStatus(
 function moduleStatusLabel(status: ModuleStatus) {
   if (status === 'completed') return 'Terminé';
   if (status === 'in_progress') return 'En cours';
-  return 'À faire';
+  return 'Verrouillé';
+}
+
+function moduleStatusIcon(status: ModuleStatus) {
+  if (status === 'completed') return '\u2705';
+  if (status === 'in_progress') return '\u{1F3AF}';
+  return '\u{1F512}';
 }
 
 function ModuleStatusStrip({
@@ -736,6 +742,7 @@ function ModuleStatusStrip({
             <p style={{ fontWeight: 700, fontSize: '0.85rem', marginTop: '0.15rem' }}>{module.title}</p>
             <Badge
               tone={status === 'completed' ? 'success' : status === 'in_progress' ? 'warning' : 'neutral'}
+              icon={moduleStatusIcon(status)}
               style={{ marginTop: '0.35rem' }}
             >
               {moduleStatusLabel(status)}

@@ -253,3 +253,18 @@ export function getTrackVisual(track?: string | null): TrackVisual {
 export function formatTrack(track: string) {
   return getTrackVisual(track).label;
 }
+
+export type TrailLevel = 'Débutant' | 'Intermédiaire' | 'Avancé';
+
+export function inferLevelFromModules(totalModules?: number): TrailLevel {
+  if (!totalModules) return 'Débutant';
+  if (totalModules <= 3) return 'Débutant';
+  if (totalModules <= 7) return 'Intermédiaire';
+  return 'Avancé';
+}
+
+export function estimatePoints(totalModules?: number, level: TrailLevel = 'Débutant'): number {
+  const count = Math.max(1, totalModules ?? 1);
+  const factor = level === 'Avancé' ? 50 : level === 'Intermédiaire' ? 40 : 30;
+  return count * factor;
+}

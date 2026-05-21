@@ -1,6 +1,8 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import {
+  Animated,
+  Easing,
   Linking,
   Platform,
   Pressable,
@@ -13,14 +15,26 @@ import {
 import { WEB_URL } from '../../config';
 import { BrandIcon } from '../../components/BrandIcon';
 import { TrackIcon } from '../../components/TrackIcon';
+import { useAppTheme } from '../../context/ThemeContext';
 import type { AppThemeColors } from '../../lib/design';
-import { formatTrack, getBadgeVisual, getTrackVisual } from '../../lib/design';
+import { estimatePoints, formatTrack, getBadgeVisual, getTrackVisual, inferLevelFromModules } from '../../lib/design';
 import { useThemedStyles } from '../../hooks/useThemedStyles';
 import type { CourseSlug } from '@ama/shared/learning-paths';
 import { NEXT_COURSE_BY_SLUG } from '@ama/shared/constants';
 
+const MOTIVATIONAL_MESSAGES = [
+  'Tu viens de franchir une étape majeure — la suite t’attend avec confiance.',
+  'Chaque unité validée te rapproche d’un profil MDM crédible sur le terrain.',
+  'Garde ce rythme : la régularité bat le talent ponctuel.',
+  'Ton parcours est complet — transforme cette victoire en habitude.',
+  'Les flottes Apple, Jamf et Intune n’ont plus de secrets pour toi sur ce socle.',
+];
+
+const CONFETTI_PIECES = ['\u{1F389}', '\u2B50', '\u{1F3C6}', '\u2728', '\u{1F34F}', '\u{1F6E1}'];
+
 export function CourseCompleteScreen() {
   const router = useRouter();
+  const { colors } = useAppTheme();
   const styles = useThemedStyles(createStyles);
   const params = useLocalSearchParams<{
     slug?: string;
@@ -39,6 +53,31 @@ export function CourseCompleteScreen() {
   const visual = getTrackVisual(track);
   const badgeVisual = badgeEarned ? getBadgeVisual(badgeEarned) : null;
   const nextCourse = useMemo(() => NEXT_COURSE_BY_SLUG[slug as CourseSlug] ?? null, [slug]);
+  const motivationalLine = useMemo(() => pickMotivationalMessage(slug), [slug]);
+  const moduleCount = 3;
+  const level = inferLevelFromModules(moduleCount);
+  const estimatedTotal = estimatePoints(moduleCount, level);
+  const displayPoints = pointsEarned > 0 ? pointsEarned : estimatedTotal;
+
+  const heroScale = useRef(new Animated.Value(0.96)).current;
+  const heroOpacity = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(heroOpacity, {
+        toValue: 1,
+        duration: 420,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+      Animated.spring(heroScale, {
+        toValue: 1,
+        friction: 7,
+        tension: 80,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [heroOpacity, heroScale]);
 
   function openCertificate() {
     void Linking.openURL(`${WEB_URL}/courses/${slug}/certificate`);
@@ -71,35 +110,56 @@ export function CourseCompleteScreen() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <View style={[styles.hero, { backgroundColor: visual.gradient[0] }]}>
+      <View style={styles.animationLayer} pointerEvents="none">
+        <ConfettiLayer />
+        <SparkleLayer />
+      </View>
+
+      <Animated.View
+        style={[
+          styles.hero,
+          { backgroundColor: visual.gradient[0], opacity: heroOpacity, transform: [{ scale: heroScale }] },
+        ]}
+      >
+        <View style={styles.heroBadge}>
+          <Text style={styles.heroBadgeText}>{'\u{1F389}'} Parcours terminé</Text>
+        </View>
         <TrackIcon track={track} size="lg" style={{ marginBottom: 10 }} />
-        <Text style={styles.heroEyebrow}>Parcours terminé</Text>
         <Text style={styles.heroTitle}>Bravo ! Tu as complété « {title} »</Text>
         <Text style={styles.heroText}>
-          Toutes les unités du parcours {formatTrack(track)} sont validées.
+          Tu viens de boucler les {moduleCount} unités du parcours {formatTrack(track)}. Continue sur la lancée !
         </Text>
+        <Text style={styles.heroMotivation}>{motivationalLine}</Text>
         {usesDemo ? (
           <Text style={styles.demoHint}>
             Mode démo — connectez-vous sur le web pour enregistrer votre progression.
           </Text>
         ) : null}
-      </View>
+      </Animated.View>
 
       <View style={styles.statsRow}>
         <View style={styles.statCard}>
-          <Text style={styles.statLabel}>Points gagnés</Text>
-          <Text style={styles.statValue}>+{pointsEarned} pts</Text>
+          <Text style={styles.statLabel}>Points gagnés sur le parcours</Text>
+          <Text style={styles.statValue}>+{displayPoints} pts</Text>
+          <Text style={styles.statHint}>
+            Estimation catalogue : jusqu’à {estimatedTotal} pts pour ce parcours {level.toLowerCase()}.
+          </Text>
         </View>
         <View style={[styles.statCard, styles.badgeCard]}>
-          <Text style={styles.statLabel}>Super-badge</Text>
+          <Text style={styles.statLabel}>Super-badge débloqué</Text>
           {badgeVisual ? (
             <View style={styles.badgeRow}>
-              {badgeVisual.brand ? (
-                <BrandIcon brand={badgeVisual.brand} size="md" />
-              ) : (
-                <Text style={styles.badgeIcon}>{badgeVisual.icon}</Text>
-              )}
-              <Text style={[styles.badgeLabel, { color: badgeVisual.color }]}>{badgeVisual.label}</Text>
+              <View style={[styles.badgeIconWrap, { backgroundColor: badgeVisual.bg }]}>
+                {badgeVisual.brand ? (
+                  <BrandIcon brand={badgeVisual.brand} size="md" />
+                ) : (
+                  <Text style={styles.badgeIcon}>{badgeVisual.icon}</Text>
+                )}
+              </View>
+              <View style={styles.badgeCopy}>
+                <Text style={[styles.badgeLabel, { color: badgeVisual.color }]}>{badgeVisual.label}</Text>
+                <Text style={styles.badgeHint}>Ajouté à ta collection MDM Academy.</Text>
+              </View>
             </View>
           ) : (
             <Text style={styles.statMuted}>Badge en cours de déblocage</Text>
@@ -107,45 +167,48 @@ export function CourseCompleteScreen() {
         </View>
       </View>
 
-      <View style={styles.actions}>
-        <Pressable style={styles.primaryButton} onPress={openCertificate}>
-          <Text style={styles.primaryButtonText}>Voir mon certificat</Text>
-        </Pressable>
-        <Pressable style={styles.secondaryButton} onPress={() => void shareSuccess()}>
-          <Text style={styles.secondaryButtonText}>Partager ma réussite</Text>
-        </Pressable>
-        <Pressable style={styles.ghostButton} onPress={openWebComplete}>
-          <Text style={styles.ghostButtonText}>Voir la célébration sur le web</Text>
-        </Pressable>
-        <Pressable style={styles.secondaryButton} onPress={() => router.replace('/(tabs)')}>
-          <Text style={styles.secondaryButtonText}>Retour au tableau de bord</Text>
-        </Pressable>
-        <Pressable style={styles.ghostButton} onPress={() => router.push('/(tabs)/courses')}>
-          <Text style={styles.ghostButtonText}>Tous les parcours</Text>
-        </Pressable>
-      </View>
-
-      {nextCourse ? (
-        <View style={styles.nextCard}>
-          <Text style={styles.nextEyebrow}>Parcours suggéré</Text>
-          <Text style={styles.nextTitle}>{nextCourse.title}</Text>
-          <Text style={styles.nextHint}>
-            {slug === 'apple-cert-prep'
-              ? 'Enchaîne avec Jamf Pro après ton socle Apple.'
-              : 'Poursuis ta montée en compétences MDM multi-plateforme.'}
-          </Text>
-          <Pressable
-            style={styles.nextButton}
-            onPress={() => router.push(`/course/${nextCourse.slug}`)}
-          >
-            <Text style={styles.nextButtonText}>Commencer le parcours suivant</Text>
+      <View style={styles.actionsCard}>
+        <Text style={styles.actionsTitle}>Et maintenant ?</Text>
+        <View style={styles.actions}>
+          <Pressable style={styles.primaryButton} onPress={openCertificate}>
+            <Text style={styles.primaryButtonText}>{'\u{1F4DC}'} Voir mon certificat</Text>
+          </Pressable>
+          <Pressable style={styles.secondaryButton} onPress={() => void shareSuccess()}>
+            <Text style={styles.secondaryButtonText}>Partager ma réussite</Text>
+          </Pressable>
+          <Pressable style={styles.ghostButton} onPress={openWebComplete}>
+            <Text style={styles.ghostButtonText}>Voir la célébration sur le web</Text>
+          </Pressable>
+          <Pressable style={styles.secondaryButton} onPress={() => router.replace('/(tabs)')}>
+            <Text style={styles.secondaryButtonText}>Retour au tableau de bord</Text>
+          </Pressable>
+          <Pressable style={styles.ghostButton} onPress={() => router.push('/(tabs)/courses')}>
+            <Text style={styles.ghostButtonText}>Tous les parcours</Text>
           </Pressable>
         </View>
-      ) : (
-        <Text style={styles.footerNote}>
-          Tu as complété la trilogie Apple · Jamf · Intune. Explore les quêtes sur le web !
-        </Text>
-      )}
+
+        {nextCourse ? (
+          <View style={styles.nextCard}>
+            <Text style={styles.nextEyebrow}>Parcours suggéré</Text>
+            <Text style={styles.nextTitle}>{nextCourse.title}</Text>
+            <Text style={styles.nextHint}>
+              {slug === 'apple-cert-prep'
+                ? 'Enchaîne avec Jamf Pro après ton socle Apple.'
+                : 'Poursuis ta montée en compétences MDM multi-plateforme.'}
+            </Text>
+            <Pressable
+              style={styles.nextButton}
+              onPress={() => router.push(`/course/${nextCourse.slug}`)}
+            >
+              <Text style={styles.nextButtonText}>Commencer le parcours suivant</Text>
+            </Pressable>
+          </View>
+        ) : (
+          <Text style={styles.footerNote}>
+            Tu as complété la trilogie Apple · Jamf · Intune. Explore les quêtes sur le web !
+          </Text>
+        )}
+      </View>
 
       <Pressable onPress={() => router.back()} style={styles.backLink}>
         <Text style={styles.backLinkText}>← Revoir le parcours</Text>
@@ -154,14 +217,152 @@ export function CourseCompleteScreen() {
   );
 }
 
+function pickMotivationalMessage(slug: string) {
+  let hash = 0;
+  for (let index = 0; index < slug.length; index += 1) {
+    hash = (hash + slug.charCodeAt(index) * (index + 1)) % MOTIVATIONAL_MESSAGES.length;
+  }
+  return MOTIVATIONAL_MESSAGES[hash] ?? MOTIVATIONAL_MESSAGES[0];
+}
+
+function ConfettiLayer() {
+  return (
+    <View style={StyleSheet.absoluteFill}>
+      {Array.from({ length: 14 }).map((_, index) => (
+        <ConfettiPiece
+          key={index}
+          emoji={CONFETTI_PIECES[index % CONFETTI_PIECES.length]}
+          left={`${(index * 17) % 100}%`}
+          delay={index * 120}
+          duration={2800 + (index % 4) * 400}
+        />
+      ))}
+    </View>
+  );
+}
+
+function ConfettiPiece({
+  emoji,
+  left,
+  delay,
+  duration,
+}: {
+  emoji: string;
+  left: `${number}%`;
+  delay: number;
+  duration: number;
+}) {
+  const translateY = useRef(new Animated.Value(-40)).current;
+  const opacity = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    const animation = Animated.loop(
+      Animated.sequence([
+        Animated.delay(delay),
+        Animated.parallel([
+          Animated.timing(translateY, {
+            toValue: 420,
+            duration,
+            easing: Easing.linear,
+            useNativeDriver: true,
+          }),
+          Animated.sequence([
+            Animated.timing(opacity, { toValue: 1, duration: 300, useNativeDriver: true }),
+            Animated.timing(opacity, { toValue: 0, duration: duration - 300, useNativeDriver: true }),
+          ]),
+        ]),
+        Animated.timing(translateY, { toValue: -40, duration: 0, useNativeDriver: true }),
+      ])
+    );
+    animation.start();
+    return () => animation.stop();
+  }, [delay, duration, opacity, translateY]);
+
+  return (
+    <Animated.Text
+      style={{
+        position: 'absolute',
+        left,
+        top: 0,
+        fontSize: 16 + (delay % 3) * 4,
+        opacity,
+        transform: [{ translateY }],
+      }}
+    >
+      {emoji}
+    </Animated.Text>
+  );
+}
+
+function SparkleLayer() {
+  return (
+    <View style={StyleSheet.absoluteFill}>
+      {Array.from({ length: 8 }).map((_, index) => (
+        <Sparkle key={index} left={`${8 + (index * 11) % 84}%`} top={`${12 + (index % 4) * 16}%`} delay={index * 350} />
+      ))}
+    </View>
+  );
+}
+
+function Sparkle({ left, top, delay }: { left: `${number}%`; top: `${number}%`; delay: number }) {
+  const opacity = useRef(new Animated.Value(0.2)).current;
+
+  useEffect(() => {
+    const animation = Animated.loop(
+      Animated.sequence([
+        Animated.delay(delay),
+        Animated.timing(opacity, { toValue: 1, duration: 900, useNativeDriver: true }),
+        Animated.timing(opacity, { toValue: 0.2, duration: 900, useNativeDriver: true }),
+      ])
+    );
+    animation.start();
+    return () => animation.stop();
+  }, [delay, opacity]);
+
+  return (
+    <Animated.View
+      style={{
+        position: 'absolute',
+        left,
+        top,
+        width: 8,
+        height: 8,
+        borderRadius: 999,
+        backgroundColor: '#ffffff',
+        opacity,
+      }}
+    />
+  );
+}
+
 function createStyles(colors: AppThemeColors) {
   return StyleSheet.create({
     container: { flex: 1, backgroundColor: colors.bg },
     content: { padding: 20, paddingBottom: 40 },
-    hero: { borderRadius: 24, padding: 20, marginBottom: 16 },
-    heroEyebrow: { color: 'rgba(255,255,255,0.9)', fontWeight: '800', fontSize: 13 },
-    heroTitle: { color: '#FFFFFF', fontSize: 24, fontWeight: '900', marginTop: 8 },
+    animationLayer: {
+      ...StyleSheet.absoluteFillObject,
+      height: 320,
+      overflow: 'hidden',
+    },
+    hero: { borderRadius: 24, padding: 20, marginBottom: 16, overflow: 'hidden' },
+    heroBadge: {
+      alignSelf: 'flex-start',
+      backgroundColor: 'rgba(255,255,255,0.22)',
+      borderRadius: 999,
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+      marginBottom: 8,
+    },
+    heroBadgeText: { color: '#FFFFFF', fontWeight: '800', fontSize: 13 },
+    heroTitle: { color: '#FFFFFF', fontSize: 24, fontWeight: '900', marginTop: 4 },
     heroText: { color: 'rgba(255,255,255,0.92)', marginTop: 8, lineHeight: 22 },
+    heroMotivation: {
+      color: 'rgba(255,255,255,0.98)',
+      marginTop: 10,
+      lineHeight: 22,
+      fontWeight: '700',
+      fontSize: 15,
+    },
     demoHint: {
       marginTop: 12,
       padding: 10,
@@ -187,11 +388,30 @@ function createStyles(colors: AppThemeColors) {
       letterSpacing: 0.5,
     },
     statValue: { color: colors.fg, fontSize: 28, fontWeight: '900', marginTop: 6 },
+    statHint: { color: colors.muted, marginTop: 6, lineHeight: 18, fontSize: 13 },
     statMuted: { color: colors.muted, marginTop: 8 },
-    badgeRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 8 },
-    badgeIcon: { fontSize: 22 },
-    badgeLabel: { fontWeight: '800', fontSize: 15, flex: 1 },
-    actions: { gap: 10, marginBottom: 16 },
+    badgeRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 10 },
+    badgeIconWrap: {
+      width: 52,
+      height: 52,
+      borderRadius: 14,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    badgeIcon: { fontSize: 24 },
+    badgeCopy: { flex: 1 },
+    badgeLabel: { fontWeight: '800', fontSize: 15 },
+    badgeHint: { color: colors.muted, marginTop: 4, fontSize: 13 },
+    actionsCard: {
+      backgroundColor: colors.bgSoft,
+      borderRadius: 18,
+      padding: 16,
+      borderWidth: 1,
+      borderColor: colors.border,
+      marginBottom: 12,
+    },
+    actionsTitle: { color: colors.fg, fontSize: 18, fontWeight: '800' },
+    actions: { gap: 10, marginTop: 12 },
     primaryButton: {
       backgroundColor: colors.accent,
       borderRadius: 14,
@@ -200,7 +420,7 @@ function createStyles(colors: AppThemeColors) {
     },
     primaryButtonText: { color: '#FFFFFF', fontWeight: '800' },
     secondaryButton: {
-      backgroundColor: colors.bgSoft,
+      backgroundColor: colors.bg,
       borderRadius: 14,
       padding: 14,
       alignItems: 'center',
@@ -211,12 +431,12 @@ function createStyles(colors: AppThemeColors) {
     ghostButton: { padding: 12, alignItems: 'center' },
     ghostButtonText: { color: colors.muted, fontWeight: '700' },
     nextCard: {
-      backgroundColor: colors.bgSoft,
-      borderRadius: 18,
-      padding: 16,
+      marginTop: 16,
+      padding: 14,
+      borderRadius: 14,
       borderWidth: 1,
       borderColor: colors.border,
-      marginBottom: 12,
+      backgroundColor: colors.bg,
     },
     nextEyebrow: {
       color: colors.muted,
@@ -235,7 +455,7 @@ function createStyles(colors: AppThemeColors) {
       paddingVertical: 10,
     },
     nextButtonText: { color: '#FFFFFF', fontWeight: '700' },
-    footerNote: { color: colors.muted, lineHeight: 20, marginBottom: 12 },
+    footerNote: { color: colors.muted, lineHeight: 20, marginTop: 16 },
     backLink: { padding: 12, alignItems: 'center' },
     backLinkText: { color: colors.accent, fontWeight: '700' },
   });

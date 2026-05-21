@@ -13,6 +13,8 @@ import { useAppTheme } from '../../context/ThemeContext';
 import type { AppThemeColors } from '../../lib/design';
 import { formatTrack } from '../../lib/design';
 import { useThemedStyles } from '../../hooks/useThemedStyles';
+import { toastQuestsCompleted } from '../../lib/gamification-toasts';
+import { detectNewlyCompletedQuests } from '../../lib/quest-feedback';
 import {
   WeeklyQuest,
   WeeklyQuestsResponse,
@@ -32,6 +34,10 @@ export function QuestsScreen() {
   const loadQuests = useCallback(async () => {
     setLoading(true);
     const result = await fetchWeeklyQuests();
+    const newlyCompleted = detectNewlyCompletedQuests(result.data.quests);
+    if (newlyCompleted.length > 0) {
+      toastQuestsCompleted(newlyCompleted);
+    }
     setData(result.data);
     setSource(result.source);
     setLoading(false);

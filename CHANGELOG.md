@@ -3,6 +3,9 @@
 ## Unreleased — `cursor/progress-dashboard-auth-v2`
 
 - Web : toasts gamification (points, badge, quête) — CSS léger, thème sombre, FR
+- Mobile : toasts gamification (points, badge, quête) — banner Animated, thème sombre, FR
+- Mobile : écran complétion — confettis/sparkles Animated + message motivant FR
+- Web + Mobile : progression modules — statuts Terminé / En cours / Verrouillé, scores
 - Web : page `/courses/[slug]/complete` — sparkles CSS + message motivant FR
 - Web : métadonnées SEO (`/courses`, `/dashboard`, `/leaderboard`, `/courses/[slug]`, complétion)
 - Web : thème sombre, PWA (`manifest`), bannière API, lien d’évitement « Aller au contenu »

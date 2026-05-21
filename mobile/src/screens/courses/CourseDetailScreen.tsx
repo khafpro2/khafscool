@@ -10,12 +10,12 @@ import {
   View,
 } from 'react-native';
 import { WEB_URL } from '../../config';
-import { BrandIcon } from '../../components/BrandIcon';
 import { TrackIcon } from '../../components/TrackIcon';
 import { useAppTheme } from '../../context/ThemeContext';
 import type { AppThemeColors } from '../../lib/design';
-import { formatTrack, getBadgeVisual, getTrackVisual } from '../../lib/design';
+import { formatTrack, getTrackVisual } from '../../lib/design';
 import { useThemedStyles } from '../../hooks/useThemedStyles';
+import { toastBadgeUnlocked, toastModuleCompleted } from '../../lib/gamification-toasts';
 import {
   CheckAnswerResult,
   CourseDetail,
@@ -28,15 +28,8 @@ import {
   fetchCourseProgress,
 } from '../../services/courses';
 
-type ModuleStatus = 'completed' | 'in_progress' | 'todo';
+type ModuleStatus = 'completed' | 'in_progress' | 'locked';
 
-type SuccessNotice = {
-  badges: string[];
-  gameScore: number;
-  moduleTitle: string;
-  pointsEarned: number;
-  quizScore: number;
-};
 
 export function CourseDetailScreen() {
   const router = useRouter();
@@ -58,7 +51,6 @@ export function CourseDetailScreen() {
   const [quizQuestionIndex, setQuizQuestionIndex] = useState(0);
   const [quizFeedback, setQuizFeedback] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [successNotice, setSuccessNotice] = useState<SuccessNotice | null>(null);
   const [localResult, setLocalResult] = useState<string | null>(null);
 
   const loadCourse = useCallback(async () => {
@@ -179,7 +171,6 @@ export function CourseDetailScreen() {
     if (!module.questions.length) return;
 
     setSubmitting(true);
-    setSuccessNotice(null);
     setLocalResult(null);
 
     const estimatedQuizScore = computeQuizScorePercent(module.questions.length, questionResults);
@@ -219,13 +210,15 @@ export function CourseDetailScreen() {
           return;
         }
 
-        setSuccessNotice({
-          badges: result.badges ?? [],
-          gameScore: result.gameScore,
-          moduleTitle: module.title,
-          pointsEarned: result.pointsEarned,
-          quizScore: result.quizScore,
-        });
+        toastModuleCompleted(
+          module.title,
+          result.pointsEarned,
+          result.quizScore,
+          result.gameScore
+        );
+        for (const badgeSlug of result.badges ?? []) {
+          toastBadgeUnlocked(badgeSlug);
+        }
         resetQuizState(module);
         setProgress(refreshed.data);
         setExpandedModuleId(refreshed.data.progress.nextModule?.id ?? null);
@@ -319,55 +312,28 @@ export function CourseDetailScreen() {
                   ? styles.stripCompleted
                   : status === 'in_progress'
                     ? styles.stripInProgress
-                    : styles.stripTodo,
+                    : styles.stripLocked,
               ]}
             >
               <Text style={styles.stripIndex}>Unité {index + 1}</Text>
               <Text style={styles.stripTitle} numberOfLines={2}>
                 {module.title}
               </Text>
-              <Text style={styles.stripStatus}>{moduleStatusLabel(status)}</Text>
+              <Text style={styles.stripStatus}>
+                {moduleStatusIcon(status)} {moduleStatusLabel(status)}
+              </Text>
             </View>
           );
         })}
       </View>
 
-      {successNotice ? (
-        <View style={styles.successBanner}>
-          <Text style={styles.successEyebrow}>🎉 Unité terminée</Text>
-          <Text style={styles.successTitle}>
-            Bravo ! « {successNotice.moduleTitle} » est complétée.
-          </Text>
-          <Text style={styles.successMeta}>
-            Quiz {successNotice.quizScore} % · mini-scénario {successNotice.gameScore} % · +
-            {successNotice.pointsEarned} points
-          </Text>
-          {successNotice.badges.length > 0 ? (
-            <View style={styles.badgeRow}>
-              {successNotice.badges.map((badgeSlug) => {
-                const badge = getBadgeVisual(badgeSlug);
-                return (
-                  <View key={badgeSlug} style={[styles.badge, { backgroundColor: badge.bg }]}>
-                    {badge.brand ? (
-                      <BrandIcon brand={badge.brand} size="sm" />
-                    ) : (
-                      <Text style={styles.badgeIcon}>{badge.icon}</Text>
-                    )}
-                    <Text style={[styles.badgeText, { color: badge.color }]}>{badge.label}</Text>
-                  </View>
-                );
-              })}
-            </View>
-          ) : null}
-        </View>
-      ) : null}
-
       {course.modules.map((module, index) => {
         const moduleProgress = moduleProgressById.get(module.id);
         const status = getModuleStatus(module.id, moduleProgress, nextModuleId);
         const isExpanded = expandedModuleId === module.id;
+        const isLocked = status === 'locked';
         const hasQuestions = module.questions.length > 0;
-        const canPlayHere = hasQuestions && (status === 'in_progress' || isExpanded);
+        const canPlayHere = hasQuestions && !isLocked && (status === 'in_progress' || isExpanded);
 
         return (
           <View
@@ -375,10 +341,12 @@ export function CourseDetailScreen() {
             style={[
               styles.moduleCard,
               status === 'completed' ? styles.moduleCardCompleted : null,
+              isLocked ? styles.moduleCardLocked : null,
             ]}
           >
             <Pressable
               onPress={() => {
+                if (isLocked) return;
                 if (isExpanded) {
                   setExpandedModuleId(null);
                   return;
@@ -392,6 +360,11 @@ export function CourseDetailScreen() {
                 <Text style={styles.moduleIndex}>Unité {index + 1}</Text>
                 <Text style={styles.moduleTitle}>{module.title}</Text>
                 <Text style={styles.moduleSummary}>{module.summary}</Text>
+                {moduleProgress?.completedAt ? (
+                  <Text style={styles.moduleCompletedAt}>
+                    Terminée le {new Date(moduleProgress.completedAt).toLocaleDateString('fr-FR')}
+                  </Text>
+                ) : null}
               </View>
               <View
                 style={[
@@ -400,16 +373,26 @@ export function CourseDetailScreen() {
                     ? styles.statusCompleted
                     : status === 'in_progress'
                       ? styles.statusInProgress
-                      : styles.statusTodo,
+                      : styles.statusLocked,
                 ]}
               >
-                <Text style={styles.statusPillText}>{moduleStatusLabel(status)}</Text>
+                <Text style={styles.statusPillText}>
+                  {moduleStatusIcon(status)} {moduleStatusLabel(status)}
+                  {moduleProgress?.score != null ? ` · ${moduleProgress.score}%` : ''}
+                </Text>
               </View>
             </Pressable>
 
             {isExpanded ? (
               <View style={styles.moduleBody}>
-                {canPlayHere ? (
+                {isLocked ? (
+                  <View style={styles.lockedBox}>
+                    <Text style={styles.lockedText}>
+                      Termine l&apos;unité précédente pour débloquer le quiz ({module.questions.length}{' '}
+                      question{module.questions.length > 1 ? 's' : ''}).
+                    </Text>
+                  </View>
+                ) : canPlayHere ? (
                   <>
                     {(() => {
                       const total = module.questions.length;
@@ -560,6 +543,15 @@ export function CourseDetailScreen() {
                       )}
                     </Pressable>
                   </>
+                ) : status === 'completed' ? (
+                  <View style={styles.completedBox}>
+                    <Text style={styles.completedEyebrow}>{'\u2705'} Quiz terminé</Text>
+                    <Text style={styles.completedMeta}>
+                      {module.questions.length} question{module.questions.length > 1 ? 's' : ''} complétée
+                      {module.questions.length > 1 ? 's' : ''}
+                      {moduleProgress?.quizScore != null ? ` · score ${moduleProgress.quizScore}%` : ''}
+                    </Text>
+                  </View>
                 ) : (
                   <View style={styles.webFallback}>
                     <Text style={styles.webFallbackText}>
@@ -602,13 +594,19 @@ function getModuleStatus(
 ): ModuleStatus {
   if (moduleProgress?.completed) return 'completed';
   if (moduleId === nextModuleId) return 'in_progress';
-  return 'todo';
+  return 'locked';
 }
 
 function moduleStatusLabel(status: ModuleStatus) {
   if (status === 'completed') return 'Terminé';
   if (status === 'in_progress') return 'En cours';
-  return 'À faire';
+  return 'Verrouillé';
+}
+
+function moduleStatusIcon(status: ModuleStatus) {
+  if (status === 'completed') return '\u2705';
+  if (status === 'in_progress') return '\u{1F3AF}';
+  return '\u{1F512}';
 }
 
 function sumModuleProgressPoints(
@@ -686,25 +684,10 @@ function createStyles(colors: AppThemeColors) {
   stripItem: { flex: 1, borderRadius: 14, padding: 10, borderWidth: 1 },
   stripCompleted: { backgroundColor: colors.accentTealSoft, borderColor: colors.success },
   stripInProgress: { backgroundColor: colors.demoBannerBg, borderColor: colors.demoBannerBorder },
-  stripTodo: { backgroundColor: colors.bgSoft, borderColor: colors.border },
+  stripLocked: { backgroundColor: colors.bg, borderColor: colors.border, opacity: 0.88 },
   stripIndex: { color: colors.muted, fontSize: 10, fontWeight: '800', textTransform: 'uppercase' },
   stripTitle: { color: colors.fg, fontWeight: '700', fontSize: 12, marginTop: 4, minHeight: 32 },
   stripStatus: { color: colors.accent, fontSize: 11, fontWeight: '800', marginTop: 6 },
-  successBanner: {
-    backgroundColor: colors.accentTealSoft,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: colors.success,
-    padding: 16,
-    marginBottom: 16,
-  },
-  successEyebrow: { color: colors.success, fontWeight: '800', fontSize: 13 },
-  successTitle: { color: colors.fg, fontSize: 17, fontWeight: '800', marginTop: 6 },
-  successMeta: { color: colors.muted, marginTop: 6, lineHeight: 20 },
-  badgeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 10 },
-  badge: { borderRadius: 14, paddingHorizontal: 10, paddingVertical: 8, flexDirection: 'row', alignItems: 'center', gap: 6 },
-  badgeIcon: { fontSize: 14 },
-  badgeText: { fontWeight: '700', fontSize: 12 },
   moduleCard: {
     backgroundColor: colors.bgSoft,
     borderRadius: 18,
@@ -714,17 +697,36 @@ function createStyles(colors: AppThemeColors) {
     borderColor: colors.border,
   },
   moduleCardCompleted: { borderColor: colors.success, backgroundColor: colors.accentTealSoft },
+  moduleCardLocked: { opacity: 0.92 },
   moduleHeader: { flexDirection: 'row', gap: 12, alignItems: 'flex-start' },
   moduleHeaderText: { flex: 1 },
   moduleIndex: { color: colors.muted, fontSize: 11, fontWeight: '800', textTransform: 'uppercase' },
   moduleTitle: { color: colors.fg, fontSize: 17, fontWeight: '800', marginTop: 2 },
   moduleSummary: { color: colors.muted, marginTop: 4, lineHeight: 20 },
+  moduleCompletedAt: { color: colors.muted, marginTop: 6, fontSize: 12 },
   statusPill: { borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5 },
   statusCompleted: { backgroundColor: colors.accentTealSoft },
   statusInProgress: { backgroundColor: colors.demoBannerBg },
-  statusTodo: { backgroundColor: colors.bg },
+  statusLocked: { backgroundColor: colors.bg },
   statusPillText: { fontSize: 11, fontWeight: '800', color: colors.fg },
   moduleBody: { marginTop: 14, paddingTop: 14, borderTopWidth: 1, borderTopColor: colors.border },
+  lockedBox: {
+    backgroundColor: colors.bg,
+    borderRadius: 12,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  lockedText: { color: colors.muted, lineHeight: 20 },
+  completedBox: {
+    backgroundColor: colors.bg,
+    borderRadius: 12,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  completedEyebrow: { color: colors.success, fontWeight: '800', fontSize: 13 },
+  completedMeta: { color: colors.muted, marginTop: 6, lineHeight: 20 },
   questionBlock: { marginBottom: 14 },
   questionPrompt: { color: colors.fg, fontWeight: '700', lineHeight: 22, marginBottom: 8 },
   quizStepper: { gap: 10 },

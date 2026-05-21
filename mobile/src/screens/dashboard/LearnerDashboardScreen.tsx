@@ -13,6 +13,8 @@ import { useAppTheme } from '../../context/ThemeContext';
 import type { AppThemeColors } from '../../lib/design';
 import { formatLevel, formatTrack, getBadgeVisual, getRankInfo } from '../../lib/design';
 import { useThemedStyles } from '../../hooks/useThemedStyles';
+import { toastQuestsCompleted } from '../../lib/gamification-toasts';
+import { detectNewlyCompletedQuests } from '../../lib/quest-feedback';
 import { clearTokens } from '../../services/auth';
 import {
   CourseSummary,
@@ -57,6 +59,16 @@ export function LearnerDashboardScreen({ onSignOut }: LearnerDashboardScreenProp
     setDashboard(nextDashboard);
     setSprint(nextSprint.data);
     setSprintSource(nextSprint.source);
+    const newlyCompleted = detectNewlyCompletedQuests(
+      nextDashboard.data.quests.map((quest) => ({
+        ...quest,
+        questKey: quest.id,
+        completed: quest.target > 0 && quest.progress >= quest.target,
+      }))
+    );
+    if (newlyCompleted.length > 0) {
+      toastQuestsCompleted(newlyCompleted);
+    }
     setSprintMessage(
       nextSprint.source === 'demo'
         ? { text: 'Mode démo : connectez-vous pour enregistrer un vrai sprint.', tone: 'info' }
