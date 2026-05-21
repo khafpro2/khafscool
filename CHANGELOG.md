@@ -2,6 +2,8 @@
 
 ## Unreleased — `cursor/progress-dashboard-auth-v2`
 
+- Fix `scripts/dev-stack.sh` (fins de ligne LF, `pnpm dev:stack` relance db + backend + web)
+- Mobile : constantes parcours (`NEXT_COURSE_BY_SLUG`, slugs) importées depuis `@ama/shared`
 - Thème **MDM Academy Pro** gratuit (palette `#2563EB`, sans paywall bloquant ; `/pricing` → `/courses`)
 - Web : QCM, mini-scénarios, pages badges, quêtes, sprint, classement et ressources
 - Mobile : écrans natifs `/badges`, `/sprint`, `/quests`, `/leaderboard` (fallback démo FR)

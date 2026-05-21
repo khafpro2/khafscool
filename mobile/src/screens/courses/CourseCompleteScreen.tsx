@@ -5,7 +5,8 @@ import { WEB_URL } from '../../config';
 import { BrandIcon } from '../../components/BrandIcon';
 import { TrackIcon } from '../../components/TrackIcon';
 import { formatTrack, getBadgeVisual, getTrackVisual } from '../../lib/design';
-import { NEXT_COURSE_BY_SLUG } from '../../services/courses';
+import type { CourseSlug } from '@ama/shared/learning-paths';
+import { NEXT_COURSE_BY_SLUG } from '@ama/shared/constants';
 
 export function CourseCompleteScreen() {
   const router = useRouter();
@@ -25,7 +26,7 @@ export function CourseCompleteScreen() {
   const track = slug.includes('jamf') ? 'JAMF' : slug.includes('intune') ? 'INTUNE' : 'APPLE';
   const visual = getTrackVisual(track);
   const badgeVisual = badgeEarned ? getBadgeVisual(badgeEarned) : null;
-  const nextCourse = useMemo(() => NEXT_COURSE_BY_SLUG[slug] ?? null, [slug]);
+  const nextCourse = useMemo(() => NEXT_COURSE_BY_SLUG[slug as CourseSlug] ?? null, [slug]);
 
   function openWebComplete() {
     void Linking.openURL(`${WEB_URL}/courses/${slug}/complete`);
