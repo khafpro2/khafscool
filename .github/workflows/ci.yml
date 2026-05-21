@@ -106,3 +106,33 @@ jobs:
 
       - name: Smoke test API
         run: pnpm smoke:api
+
+  e2e-web:
+    runs-on: ubuntu-latest
+    needs: build-test
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@9.15.0 --activate
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright Chromium
+        run: pnpm --filter web exec playwright install --with-deps chromium
+
+      - name: Run Playwright E2E
+        env:
+          CI: true
+          NEXT_PUBLIC_API_URL: http://localhost:4000
+        run: pnpm --filter web test:e2e
