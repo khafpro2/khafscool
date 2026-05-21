@@ -6,6 +6,7 @@ import { ProgressBar } from '@/components/ui/ProgressBar';
 import {
   estimatePoints,
   formatDurationLabel,
+  getRewardBadgeForTrack,
   getTrackVisual,
 } from '@/lib/design';
 import type { LearningPathMeta } from '@/lib/learningPaths';
@@ -33,11 +34,19 @@ export function LearningPathCard({
   const isCompleted = percent >= 100;
   const ctaLabel = isCompleted ? 'Revoir le parcours' : inProgress ? 'Continuer le parcours' : cta;
 
+  const rewardBadge = getRewardBadgeForTrack(path.track);
+
   const cardClass = size === 'hero' ? 'learning-path-card learning-path-card-hero' : 'learning-path-card';
 
   return (
     <article className={cardClass}>
-      <PathBanner gradient={visual.gradient} brand={path.brand} recommended={path.recommended} large={size === 'hero'} />
+      <PathBanner
+        gradient={visual.gradient}
+        brand={path.brand}
+        recommended={path.recommended}
+        trackBadgeLabel={rewardBadge?.label}
+        large={size === 'hero'}
+      />
       <PathBody
         path={path}
         title={displayTitle}
@@ -55,16 +64,34 @@ function PathBanner({
   gradient,
   brand,
   recommended,
+  trackBadgeLabel,
   large,
 }: {
   gradient: string;
   brand: LearningPathMeta['brand'];
   recommended?: boolean;
+  trackBadgeLabel?: string;
   large?: boolean;
 }) {
   return (
     <div className="learning-path-card-banner" style={{ background: gradient }}>
       <BrandIcon brand={brand} size={large ? 'lg' : 'md'} variant="onColor" />
+      {trackBadgeLabel ? (
+        <Badge
+          tone="neutral"
+          style={{
+            position: 'absolute',
+            bottom: '0.85rem',
+            left: '0.85rem',
+            background: 'rgba(255,255,255,0.92)',
+            color: '#0f172a',
+            border: 'none',
+            maxWidth: 'calc(100% - 1.7rem)',
+          }}
+        >
+          {'\u{1F3C5}'} {trackBadgeLabel}
+        </Badge>
+      ) : null}
       {recommended ? (
         <Badge
           tone="success"

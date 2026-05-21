@@ -1,9 +1,13 @@
 import { Stack } from 'expo-router';
+import { ApiHealthPoller } from '../src/components/ApiHealthPoller';
+import { ApiStatusBanner } from '../src/components/ApiStatusBanner';
 import { ThemeProvider } from '../src/context/ThemeContext';
 
 export default function RootLayout() {
   return (
     <ThemeProvider>
+    <ApiHealthPoller />
+    <ApiStatusBanner />
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="index" />
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />

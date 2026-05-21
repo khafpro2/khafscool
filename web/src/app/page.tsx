@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import { HomeOnboardingBanner } from '@/components/home/HomeOnboardingBanner';
 import { InstallAppButton } from '@/components/home/InstallAppButton';
 import { Button } from '@/components/ui/Button';
@@ -71,7 +70,7 @@ export default function HomePage() {
 
       <HomeOnboardingBanner />
 
-      <section className="section container" style={{ marginTop: '2.5rem' }}>
+      <section className="section container home-learning-paths" style={{ marginTop: '2.5rem' }}>
         <div className="section-head">
           <div>
             <span className="section-eyebrow">Apprentissage</span>
@@ -81,14 +80,19 @@ export default function HomePage() {
               Microsoft — commence par Apple si tu débutes.
             </p>
           </div>
-          <Link href="/courses" style={{ fontWeight: 700 }}>
-            Catalogue complet →
-          </Link>
         </div>
         <div className="grid-learning-paths-hero">
           {LEARNING_PATHS.map((path) => (
             <LearningPathCard key={path.slug} path={path} size="hero" />
           ))}
+        </div>
+        <div className="home-learning-paths-cta">
+          <Button href="/courses" size="lg">
+            Voir tous les parcours
+          </Button>
+          <p className="muted home-learning-paths-hint">
+            3 pistes · 9 unités · badges de piste à débloquer
+          </p>
         </div>
       </section>
 
@@ -128,10 +132,9 @@ export default function HomePage() {
       <div className="container">
         <Card
           variant="elevated"
+          className="home-cta-card"
           style={{
             marginTop: '2.5rem',
-            background: 'linear-gradient(135deg, #ffffff 0%, #dbeafe 100%)',
-            borderColor: '#93c5fd',
             display: 'grid',
             gap: '1.5rem',
             gridTemplateColumns: 'minmax(0, 1fr) auto',

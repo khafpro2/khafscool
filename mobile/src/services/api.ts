@@ -1,5 +1,10 @@
 import { API_URL } from '../config';
+import { recordApiFailure, recordApiSuccess } from '../lib/api-status-store';
 import { clearTokens, getAccessToken, getRefreshToken, saveTokens } from './auth';
+
+function isNetworkError(error: unknown) {
+  return error instanceof TypeError || (error instanceof Error && error.name === 'AbortError');
+}
 
 export interface AuthUser {
   id: string;
@@ -101,18 +106,30 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
     ...(init?.headers ?? {}),
   };
 
-  let res = await fetch(`${API_URL}${path}`, { ...init, headers });
+  try {
+    let res = await fetch(`${API_URL}${path}`, { ...init, headers });
 
-  if (res.status === 401 && hasAuthorizationHeader(headers)) {
-    const refreshed = await refreshSessionOnce();
-    if (refreshed) {
-      res = await fetch(`${API_URL}${path}`, {
-        ...init,
-        headers: withAccessToken(init?.headers, refreshed.accessToken),
-      });
+    if (res.status === 401 && hasAuthorizationHeader(headers)) {
+      const refreshed = await refreshSessionOnce();
+      if (refreshed) {
+        res = await fetch(`${API_URL}${path}`, {
+          ...init,
+          headers: withAccessToken(init?.headers, refreshed.accessToken),
+        });
+      }
     }
-  }
 
-  if (!res.ok) throw new Error(`Erreur API ${res.status}`);
-  return res.json() as Promise<T>;
+    if (!res.ok) {
+      recordApiFailure();
+      throw new Error(`Erreur API ${res.status}`);
+    }
+
+    recordApiSuccess();
+    return res.json() as Promise<T>;
+  } catch (error) {
+    if (isNetworkError(error)) {
+      recordApiFailure();
+    }
+    throw error;
+  }
 }

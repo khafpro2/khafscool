@@ -47,6 +47,10 @@ test.describe('Parcours d’apprentissage — smoke', () => {
 
   test('certificat imprimable en mode démo', async ({ page }) => {
     await page.goto('/courses/apple-cert-prep/certificate');
+    const breadcrumb = page.getByRole('navigation', { name: /fil d'Ariane/i });
+    await expect(breadcrumb).toBeVisible({ timeout: 15_000 });
+    await expect(breadcrumb.getByRole('link', { name: 'Parcours', exact: true })).toBeVisible();
+    await expect(breadcrumb.getByText('Certificat')).toBeVisible();
     await expect(page.getByRole('heading', { name: /Apprenant démo/i })).toBeVisible({
       timeout: 15_000,
     });
@@ -54,5 +58,13 @@ test.describe('Parcours d’apprentissage — smoke', () => {
     await expect(
       page.getByRole('button', { name: /Imprimer.*PDF/i })
     ).toBeVisible();
+  });
+
+  test('lien « Aller au contenu » visible au focus', async ({ page }) => {
+    await page.goto('/');
+    const skipLink = page.getByRole('link', { name: /Aller au contenu/i });
+    await skipLink.focus();
+    await expect(skipLink).toBeVisible();
+    await expect(page.locator('#main-content')).toBeVisible();
   });
 });

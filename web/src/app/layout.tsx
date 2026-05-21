@@ -96,6 +96,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
       <body>
+        <a href="#main-content" className="skip-link">
+          Aller au contenu
+        </a>
         <header className="site-header">
           <div className="container site-header-inner">
             <Link href="/" className="site-logo" aria-label="Retour à l'accueil MDM Academy">
@@ -143,7 +146,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ApiHealthPoller />
         <ApiStatusBanner />
         <DemoModeBanner />
-        <main className="container" style={{ paddingTop: '1.5rem' }}>
+        <main id="main-content" className="container" style={{ paddingTop: '1.5rem' }}>
           <AppErrorBoundary>{children}</AppErrorBoundary>
         </main>
         <footer className="site-footer">

@@ -11,6 +11,7 @@ import {
 } from '@/lib/api';
 import { buildAuthUrl, getAccessToken, getStoredUser } from '@/lib/auth';
 import { formatTrack } from '@/lib/tracks';
+import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { Button } from '@/components/ui/Button';
 import { BrandIcon } from '@/components/ui/BrandIcon';
 import { TrackIcon } from '@/components/ui/TrackIcon';
@@ -179,6 +180,14 @@ export function CourseCertificateClient({ slug }: { slug: string }) {
 
   return (
     <section className="certificate-page">
+      <Breadcrumbs
+        items={[
+          { label: 'Accueil', href: '/' },
+          { label: 'Parcours', href: '/courses' },
+          { label: course.title, href: `/courses/${slug}` },
+          { label: 'Certificat' },
+        ]}
+      />
       <div className="certificate-toolbar no-print">
         <div>
           <Link href={`/courses/${slug}/complete`} style={{ fontWeight: 700 }}>

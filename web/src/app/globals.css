@@ -766,6 +766,27 @@ h1, h2, h3, h4 {
   font-size: 1.35rem;
 }
 
+.home-learning-paths-cta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.65rem;
+  margin-top: 1.75rem;
+  text-align: center;
+}
+.home-learning-paths-hint {
+  font-size: 0.88rem;
+  margin: 0;
+}
+.home-cta-card {
+  background: linear-gradient(135deg, var(--surface) 0%, var(--accent-soft) 100%);
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--border-soft));
+}
+[data-theme='dark'] .home-cta-card {
+  background: linear-gradient(135deg, var(--surface) 0%, color-mix(in srgb, var(--accent) 18%, var(--bg)) 100%);
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border-soft));
+}
+
 /* Auth élégante */
 .auth-shell {
   max-width: 960px;
@@ -855,6 +876,34 @@ h1, h2, h3, h4 {
   font-size: 1.35rem;
   font-weight: 800;
   margin-top: 0.2rem;
+}
+
+/* ---- Skip link ---- */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  z-index: 100;
+  padding: 0.65rem 1rem;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.9rem;
+  border-radius: var(--radius-md);
+  text-decoration: none;
+}
+.skip-link:focus {
+  position: fixed;
+  left: 0.75rem;
+  top: 0.75rem;
+  width: auto;
+  height: auto;
+  overflow: visible;
+  outline: 2px solid var(--fg);
+  outline-offset: 2px;
 }
 
 /* ---- API status banner ---- */
