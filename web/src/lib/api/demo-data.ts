@@ -134,6 +134,7 @@ export function mockLeaderboard(): LeaderboardResponse {
         points: 980,
         level: 'EXPERT',
         badges: ['apple-mdm-foundation', 'jamf-engineer'],
+        primaryTrack: 'APPLE',
         isCurrentUser: false,
       },
       {
@@ -142,6 +143,7 @@ export function mockLeaderboard(): LeaderboardResponse {
         points: 845,
         level: 'EXPERT',
         badges: ['jamf-engineer'],
+        primaryTrack: 'JAMF',
         isCurrentUser: false,
       },
       {
@@ -150,6 +152,7 @@ export function mockLeaderboard(): LeaderboardResponse {
         points: 760,
         level: 'TECHNICIAN',
         badges: ['intune-professional'],
+        primaryTrack: 'INTUNE',
         isCurrentUser: false,
       },
       {
@@ -158,6 +161,7 @@ export function mockLeaderboard(): LeaderboardResponse {
         points: 120,
         level: 'TECHNICIAN',
         badges: ['apple-mdm-foundation'],
+        primaryTrack: 'APPLE',
         isCurrentUser: true,
       },
     ],

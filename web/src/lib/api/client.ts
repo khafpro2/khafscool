@@ -1,3 +1,4 @@
+import { AuthRequestError, throwAuthRequestError } from '../auth-errors';
 import { refreshSession } from '../auth';
 import { recordApiFailure, recordApiSuccess } from '../api-status-store';
 import { clearDemoMode, markDemoFallback } from '../demo-mode-store';
@@ -102,18 +103,35 @@ function authHeader(token?: string): Record<string, string> {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
+async function authRequest<T>(path: string, body: unknown): Promise<T> {
+  try {
+    const res = await fetch(`${API_URL}${path}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+      cache: 'no-store',
+    });
+
+    if (!res.ok) {
+      recordApiFailure();
+      await throwAuthRequestError(res);
+    }
+
+    recordApiSuccess();
+    return (await res.json()) as T;
+  } catch (error) {
+    if (error instanceof AuthRequestError) throw error;
+    if (isNetworkError(error)) recordApiFailure();
+    throw error;
+  }
+}
+
 export function login(email: string, password: string) {
-  return apiRequest<AuthResponse>('/auth/login', {
-    method: 'POST',
-    body: JSON.stringify({ email, password }),
-  });
+  return authRequest<AuthResponse>('/auth/login', { email, password });
 }
 
 export function register(email: string, password: string, displayName: string) {
-  return apiRequest<AuthResponse>('/auth/register', {
-    method: 'POST',
-    body: JSON.stringify({ email, password, displayName }),
-  });
+  return authRequest<AuthResponse>('/auth/register', { email, password, displayName });
 }
 
 export function fetchBillingStatus() {

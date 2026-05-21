@@ -176,6 +176,8 @@ export interface LeaderboardEntry {
   level: string;
   badges: string[];
   isCurrentUser: boolean;
+  /** Piste principale pour le filtre client (démo ou inférée des badges) */
+  primaryTrack?: 'APPLE' | 'JAMF' | 'INTUNE' | null;
 }
 
 export interface LeaderboardResponse {

@@ -14,6 +14,16 @@ Plateforme de formation gamifiée pour techniciens Apple et administrateurs MDM 
 - **Mobile Expo** — auth par email, dashboard apprenant, quêtes et classement natifs (fallback démo FR sans token)
 - **Thème MDM Academy Pro** — palette bleu `#2563EB`, sans page pricing bloquante
 
+## Fonctionnalités récentes
+
+Voir le détail dans [CHANGELOG.md](./CHANGELOG.md) (branche `cursor/progress-dashboard-auth-v2`, PR #6).
+
+- Toasts gamification web/mobile, progression modules, complétion avec confettis
+- Mini-scénarios accessibles au clavier, erreurs auth en français, filtre classement par piste
+- Certificat imprimable, partage de réussite, thème sombre et PWA
+
+**Compte démo** — sans inscription, explore le catalogue, le classement et les parcours en mode local (`demo@ama.dev` affiché dans l’UI). Pour sauvegarder ta progression, crée un compte gratuit sur [`/auth`](http://127.0.0.1:3000/auth) ou suis le [guide démo](/demo).
+
 ## Stack
 
 

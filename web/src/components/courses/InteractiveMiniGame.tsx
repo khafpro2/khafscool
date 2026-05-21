@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo, useState, type CSSProperties, type DragEvent } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type DragEvent, type KeyboardEvent } from 'react';
 import type { CourseModule } from '@/lib/api';
 import { getTrackVisual } from '@/lib/design';
 import { Badge } from '@/components/ui/Badge';
@@ -44,6 +44,9 @@ const HINT_BY_TYPE: Record<string, string> = {
   EXAM_RUNBOOK: 'Sécurité d’abord, diagnostic officiel, documentation avant réparation.',
 };
 
+const KEYBOARD_INSTRUCTIONS =
+  'Glisse une étape avec la souris, ou utilise le clavier : Tab pour naviguer, Espace pour sélectionner une étape, flèches Haut/Bas pour la déplacer, Espace pour la déposer, Échap pour annuler. Les boutons Monter et Descendre restent disponibles.';
+
 function labelForGameType(type: string) {
   return GAME_TYPE_LABELS[type] ?? 'Mini-scénario MDM';
 }
@@ -71,7 +74,9 @@ export function InteractiveMiniGame({
 }: InteractiveMiniGameProps) {
   const trackVisual = getTrackVisual(track);
   const stepsById = useMemo(() => new Map(game.steps.map((step) => [step.id, step])), [game.steps]);
+  const listRef = useRef<HTMLOListElement>(null);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [pickedIndex, setPickedIndex] = useState<number | null>(null);
   const [checked, setChecked] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
 
@@ -97,28 +102,96 @@ export function InteractiveMiniGame({
     [onOrderChange, onTouched]
   );
 
-  function moveStep(fromIndex: number, toIndex: number) {
-    if (disabled || fromIndex === toIndex || toIndex < 0 || toIndex >= order.length) return;
-    const next = [...order];
-    const [moved] = next.splice(fromIndex, 1);
-    next.splice(toIndex, 0, moved);
-    applyOrder(next);
+  const moveStep = useCallback(
+    (fromIndex: number, toIndex: number) => {
+      if (disabled || fromIndex === toIndex || toIndex < 0 || toIndex >= order.length) return false;
+      const next = [...order];
+      const [moved] = next.splice(fromIndex, 1);
+      next.splice(toIndex, 0, moved);
+      applyOrder(next);
+      return true;
+    },
+    [applyOrder, disabled, order]
+  );
+
+  useEffect(() => {
+    if (pickedIndex !== null && pickedIndex >= orderedSteps.length) {
+      setPickedIndex(null);
+    }
+  }, [orderedSteps.length, pickedIndex]);
+
+  function focusItem(index: number) {
+    const item = listRef.current?.children.item(index) as HTMLElement | null;
+    item?.focus();
   }
 
   function handleDragStart(index: number) {
     if (disabled) return;
     setDragIndex(index);
+    setPickedIndex(null);
   }
 
   function handleDragOver(event: DragEvent<HTMLLIElement>, index: number) {
     event.preventDefault();
     if (disabled || dragIndex === null || dragIndex === index) return;
-    moveStep(dragIndex, index);
-    setDragIndex(index);
+    if (moveStep(dragIndex, index)) setDragIndex(index);
   }
 
   function handleDragEnd() {
     setDragIndex(null);
+  }
+
+  function handleKeyboardReorder(event: KeyboardEvent<HTMLLIElement>, index: number) {
+    if (disabled) return;
+
+    if (event.key === ' ' || event.key === 'Enter') {
+      event.preventDefault();
+      if (pickedIndex === null) {
+        setPickedIndex(index);
+        return;
+      }
+      if (pickedIndex === index) {
+        setPickedIndex(null);
+        return;
+      }
+      if (moveStep(pickedIndex, index)) {
+        setPickedIndex(index);
+      }
+      return;
+    }
+
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      setPickedIndex(null);
+      return;
+    }
+
+    if (pickedIndex !== null && pickedIndex !== index) return;
+
+    if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      if (pickedIndex !== null) {
+        if (moveStep(pickedIndex, pickedIndex - 1)) {
+          setPickedIndex(pickedIndex - 1);
+          focusItem(pickedIndex - 1);
+        }
+      } else if (index > 0) {
+        focusItem(index - 1);
+      }
+      return;
+    }
+
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      if (pickedIndex !== null) {
+        if (moveStep(pickedIndex, pickedIndex + 1)) {
+          setPickedIndex(pickedIndex + 1);
+          focusItem(pickedIndex + 1);
+        }
+      } else if (index < orderedSteps.length - 1) {
+        focusItem(index + 1);
+      }
+    }
   }
 
   function handleVerify() {
@@ -141,6 +214,7 @@ export function InteractiveMiniGame({
   }
 
   const panelStyle = { '--quiz-accent': trackVisual.color } as CSSProperties;
+  const instructionsId = 'mini-game-keyboard-help';
 
   return (
     <section className="mini-game-panel" aria-label="Mini-scénario interactif" style={panelStyle}>
@@ -177,23 +251,39 @@ export function InteractiveMiniGame({
       <div className="mini-game-body">
         <p className="mini-game-scenario">{game.scenario}</p>
         <p className="mini-game-hint">{hintForGameType(game.type)}</p>
+        <p id={instructionsId} className="mini-game-a11y-instructions">
+          {KEYBOARD_INSTRUCTIONS}
+        </p>
 
-        <ol className="mini-game-steps" aria-label="Étapes à ordonner">
+        <ol
+          ref={listRef}
+          className="mini-game-steps"
+          aria-label="Étapes à ordonner"
+          aria-describedby={instructionsId}
+        >
           {orderedSteps.map((step, index) => {
             const positionCorrect =
               checked && correctOrder ? correctOrder[index] === step.id : null;
+            const isPicked = pickedIndex === index;
+            const stepLabel = `Étape ${index + 1} sur ${orderedSteps.length} : ${step.label}`;
+
             return (
               <li
                 key={step.id}
                 className={[
                   'mini-game-step',
                   dragIndex === index ? 'mini-game-step-dragging' : '',
+                  isPicked ? 'mini-game-step-picked' : '',
                   positionCorrect === true ? 'mini-game-step-correct' : '',
                   positionCorrect === false ? 'mini-game-step-incorrect' : '',
                 ]
                   .filter(Boolean)
                   .join(' ')}
                 draggable={!disabled}
+                tabIndex={disabled ? -1 : 0}
+                aria-label={stepLabel}
+                aria-selected={isPicked}
+                aria-grabbed={isPicked}
                 onDragStart={() => handleDragStart(index)}
                 onDragOver={(event) => handleDragOver(event, index)}
                 onDragEnd={handleDragEnd}
@@ -201,11 +291,11 @@ export function InteractiveMiniGame({
                 <span className="mini-game-step-rank" aria-hidden>
                   {index + 1}
                 </span>
-                <span className="mini-game-step-grip" aria-hidden title="Glisser pour réordonner">
+                <span className="mini-game-step-grip" aria-hidden>
                   ⋮⋮
                 </span>
                 <span className="mini-game-step-label">{step.label}</span>
-                <span className="mini-game-step-actions">
+                <span className="mini-game-step-actions" aria-label={`Actions pour l’étape ${index + 1}`}>
                   <button
                     type="button"
                     className="mini-game-step-btn"
@@ -225,13 +315,18 @@ export function InteractiveMiniGame({
                     ↓
                   </button>
                 </span>
+                {isPicked && (
+                  <span className="mini-game-step-picked-label" aria-live="polite">
+                    Sélectionnée
+                  </span>
+                )}
                 {positionCorrect === true && (
-                  <span className="mini-game-step-icon mini-game-step-icon-ok" aria-hidden>
+                  <span className="mini-game-step-icon mini-game-step-icon-ok" aria-label="Position correcte">
                     ✓
                   </span>
                 )}
                 {positionCorrect === false && (
-                  <span className="mini-game-step-icon mini-game-step-icon-ko" aria-hidden>
+                  <span className="mini-game-step-icon mini-game-step-icon-ko" aria-label="Position incorrecte">
                     ✗
                   </span>
                 )}
@@ -240,13 +335,23 @@ export function InteractiveMiniGame({
           })}
         </ol>
 
+        {pickedIndex !== null && (
+          <p className="mini-game-live-status" role="status" aria-live="polite">
+            Étape {pickedIndex + 1} sélectionnée — utilise les flèches pour la déplacer, Espace pour la déposer,
+            Échap pour annuler.
+          </p>
+        )}
+
         <div className="mini-game-actions">
           <Button
             type="button"
             size="sm"
             variant="secondary"
             disabled={disabled}
-            onClick={() => applyOrder([...order].reverse())}
+            onClick={() => {
+              setPickedIndex(null);
+              applyOrder([...order].reverse());
+            }}
           >
             Inverser l’ordre
           </Button>

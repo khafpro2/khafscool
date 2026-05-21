@@ -9,6 +9,7 @@ import {
   sanitizeRedirectPath,
   storeAuthTokens,
 } from '@/lib/auth';
+import { resolveAuthErrorMessage } from '@/lib/auth-errors';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -71,12 +72,8 @@ export default function AuthPage() {
       storeAuthTokens(auth);
       setHasSession(true);
       router.push(redirectPath);
-    } catch {
-      setError(
-        mode === 'login'
-          ? 'Connexion impossible. Vérifie tes identifiants ou que le backend est démarré.'
-          : 'Inscription impossible. Cet email existe peut-être déjà.'
-      );
+    } catch (error) {
+      setError(resolveAuthErrorMessage(error, mode));
     } finally {
       setIsSubmitting(false);
     }
@@ -193,6 +190,7 @@ export default function AuthPage() {
 
             {error && (
               <p
+                role="alert"
                 style={{
                   color: '#b42318',
                   fontWeight: 600,

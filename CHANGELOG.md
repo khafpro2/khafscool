@@ -2,7 +2,9 @@
 
 ## Unreleased — `cursor/progress-dashboard-auth-v2`
 
-- Web : toasts gamification (points, badge, quête) — CSS léger, thème sombre, FR
+- Web : mini-scénarios accessibles au clavier (ARIA FR), erreurs auth API en français
+- Web : filtre classement par piste (Apple / Jamf / Intune) avec query `?track=`
+- README : section « Fonctionnalités récentes » + compte démo
 - Mobile : toasts gamification (points, badge, quête) — banner Animated, thème sombre, FR
 - Mobile : écran complétion — confettis/sparkles Animated + message motivant FR
 - Web + Mobile : progression modules — statuts Terminé / En cours / Verrouillé, scores
