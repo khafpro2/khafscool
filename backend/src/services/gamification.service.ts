@@ -40,6 +40,42 @@ export function sumCoursePointsFromProgress(
   );
 }
 
+type RecentModuleProgressRow = {
+  module: {
+    id: string;
+    slug: string;
+    title: string;
+    course: { slug: string; title: string; track: CourseTrack };
+  };
+  completedAt: Date | null;
+  quizScore: number | null;
+  gameScore: number | null;
+};
+
+export function mapRecentActivity(rows: RecentModuleProgressRow[]) {
+  return rows.map((progress) => ({
+    id: progress.module.id,
+    slug: progress.module.slug,
+    title: progress.module.title,
+    courseSlug: progress.module.course.slug,
+    courseTitle: progress.module.course.title,
+    track: progress.module.course.track,
+    completedAt: progress.completedAt,
+    quizScore: progress.quizScore,
+    gameScore: progress.gameScore,
+    pointsEarned: modulePointsFromScores(progress.quizScore ?? 0, progress.gameScore ?? 0),
+  }));
+}
+
+async function fetchRecentCompletedModules(userId: string, take = 5) {
+  return prisma.moduleProgress.findMany({
+    where: { userId, completedAt: { not: null } },
+    include: { module: { include: { course: true } } },
+    orderBy: { completedAt: 'desc' },
+    take,
+  });
+}
+
 export type CompletedCourseSummary = {
   slug: string;
   title: string;
@@ -723,12 +759,7 @@ export async function getUserProgress(userId: string) {
       },
       orderBy: { sortOrder: 'asc' },
     }),
-    prisma.moduleProgress.findMany({
-      where: { userId, completedAt: { not: null } },
-      include: { module: { include: { course: true } } },
-      orderBy: { completedAt: 'desc' },
-      take: 5,
-    }),
+    fetchRecentCompletedModules(userId),
   ]);
   if (!user) throw new Error('USER_NOT_FOUND');
 
@@ -815,17 +846,7 @@ export async function getUserProgress(userId: string) {
     quests: user.quests,
     courses: coursesWithProgress,
     tracks,
-    recentCompletedModules: recentProgress.map((progress) => ({
-      id: progress.module.id,
-      slug: progress.module.slug,
-      title: progress.module.title,
-      courseSlug: progress.module.course.slug,
-      courseTitle: progress.module.course.title,
-      track: progress.module.course.track,
-      completedAt: progress.completedAt,
-      quizScore: progress.quizScore,
-      gameScore: progress.gameScore,
-    })),
+    recentActivity: mapRecentActivity(recentProgress),
   };
 }
 
@@ -890,10 +911,13 @@ export async function getDashboard(userId: string) {
   });
   if (!user) throw new Error('USER_NOT_FOUND');
 
-  const courses = await prisma.course.findMany({
-    include: { modules: { include: { progresses: { where: { userId } } } } },
-    orderBy: { sortOrder: 'asc' },
-  });
+  const [courses, recentProgress] = await Promise.all([
+    prisma.course.findMany({
+      include: { modules: { include: { progresses: { where: { userId } } } } },
+      orderBy: { sortOrder: 'asc' },
+    }),
+    fetchRecentCompletedModules(userId),
+  ]);
 
   const coursesWithProgress = courses.map((c) => {
     const total = c.modules.length;
@@ -956,6 +980,7 @@ export async function getDashboard(userId: string) {
     certificationSprint: await getCurrentCertificationSprint(userId),
     courses: coursesWithProgress,
     completedCourses: buildCompletedCourses(courses),
+    recentActivity: mapRecentActivity(recentProgress),
     subscription: user.subscription,
   };
 }

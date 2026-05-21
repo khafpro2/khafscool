@@ -2,6 +2,11 @@
 
 ## Unreleased — `cursor/progress-dashboard-auth-v2`
 
+- Web : profil `/profile` — section « Activité récente » (modules complétés, points gagnés), skeleton et empty state FR, thème sombre
+- Web : accueil — bandeau « Quête de la semaine » avec progression + lien `/quests`, carte « Sprint certification » si sprint actif → `/sprint`
+- Web : page `/about` enrichie — BrandIcon Apple/Jamf/Microsoft, contact et lien GitHub
+- API : `recentActivity[]` sur `/users/me/progress` et `/users/me/dashboard` (points calculés depuis quiz + mini-jeu)
+
 - Web : mini-scénarios accessibles au clavier (ARIA FR), erreurs auth API en français
 - Web : filtre classement par piste (Apple / Jamf / Intune) avec query `?track=`
 - README : section « Fonctionnalités récentes » + compte démo

@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { ProfilePageSkeleton } from '@/components/ui/Skeleton';
+import { RecentActivitySection } from '@/components/profile/RecentActivitySection';
 import { TrailCard } from '@/components/ui/TrailCard';
 import {
   estimatePoints,
@@ -80,7 +81,7 @@ export default function ProfilePage() {
     );
   }
 
-  const { user, stats, badges, courses, completedCourses = [] } = data;
+  const { user, stats, badges, courses, completedCourses = [], recentActivity = [] } = data;
   const displayName = user.displayName ?? storedUser?.displayName ?? 'Apprenant';
   const email = user.email ?? storedUser?.email ?? 'demo@ama.dev';
   const rank = getRankInfo(stats.points);
@@ -151,6 +152,8 @@ export default function ProfilePage() {
       />
 
       <QuickLinksCard />
+
+      <RecentActivitySection items={recentActivity} />
 
       {recentBadges.length > 0 ? (
         <Card style={{ marginTop: '1.25rem' }}>

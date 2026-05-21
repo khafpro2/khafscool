@@ -2,8 +2,11 @@ import type { Metadata } from 'next';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { BrandIcon } from '@/components/ui/BrandIcon';
 import { TrackIcon } from '@/components/ui/TrackIcon';
 import { getTrackVisual } from '@/lib/design';
+
+const GITHUB_REPO_URL = 'https://github.com/khafpro2/khafscool';
 
 export const metadata: Metadata = {
   title: 'À propos — Mission et vision',
@@ -22,18 +25,21 @@ export const metadata: Metadata = {
 const PILLARS = [
   {
     track: 'APPLE' as const,
+    brand: 'apple' as const,
     title: 'Apple Device Support',
     description:
       'Support des appareils, diagnostic, sécurité et fondamentaux de gestion pour flottes iOS et macOS.',
   },
   {
     track: 'JAMF' as const,
+    brand: 'jamf' as const,
     title: 'Jamf Pro',
     description:
       'Administration Jamf, inventaire, smart groups et politiques MDM — exercices courts et scénarios terrain.',
   },
   {
     track: 'INTUNE' as const,
+    brand: 'microsoft' as const,
     title: 'Microsoft Intune',
     description:
       'Enrôlement Apple via Intune, conformité, profils et bonnes pratiques Microsoft Endpoint Manager.',
@@ -87,6 +93,7 @@ export default function AboutPage() {
             return (
               <Card key={pillar.track} variant="elevated">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                  <BrandIcon brand={pillar.brand} size="md" />
                   <TrackIcon track={pillar.track} size="sm" />
                   <Badge tone="outline">{visual.label}</Badge>
                 </div>
@@ -112,6 +119,25 @@ export default function AboutPage() {
           MDM Academy n’est pas affilié à Apple Inc., Jamf ou Microsoft. Les contenus pédagogiques sont
           originaux ; consulte les sources officielles avant un examen ou une décision de conformité.
         </p>
+      </Card>
+
+      <Card variant="soft" style={{ marginTop: '1.5rem' }} className="about-contact-card">
+        <span className="section-eyebrow">Contact & communauté</span>
+        <h2 style={{ fontSize: '1.35rem', fontWeight: 800, marginTop: '0.5rem' }}>
+          Un projet open source, 100 % gratuit
+        </h2>
+        <p className="muted" style={{ marginTop: '0.65rem', maxWidth: 680 }}>
+          MDM Academy Pro reste gratuit pour tous les techniciens et administrateurs MDM. Le code source est
+          public : signale un bug, propose une amélioration ou contribue aux parcours pédagogiques.
+        </p>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '1rem', alignItems: 'center' }}>
+          <Button href={GITHUB_REPO_URL} variant="secondary" size="sm">
+            Voir le dépôt GitHub
+          </Button>
+          <Button href="/courses" size="sm">
+            Commencer gratuitement
+          </Button>
+        </div>
       </Card>
 
       <Card

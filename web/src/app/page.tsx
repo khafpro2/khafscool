@@ -1,4 +1,5 @@
 import { HomeOnboardingBanner } from '@/components/home/HomeOnboardingBanner';
+import { HomeEngagementSection } from '@/components/home/HomeEngagementSection';
 import { InstallAppButton } from '@/components/home/InstallAppButton';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -69,6 +70,8 @@ export default function HomePage() {
       </section>
 
       <HomeOnboardingBanner />
+
+      <HomeEngagementSection />
 
       <section className="section container home-learning-paths" style={{ marginTop: '2.5rem' }}>
         <div className="section-head">

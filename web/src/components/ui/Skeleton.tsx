@@ -415,6 +415,40 @@ export function ProfilePageSkeleton() {
       <div style={{ marginTop: '1.5rem' }}>
         <Skeleton width={100} height={12} rounded="pill" />
         <Skeleton width={160} height={24} rounded="sm" style={{ marginTop: '0.5rem' }} />
+        <div className="profile-activity-list" style={{ marginTop: '1rem' }}>
+          {Array.from({ length: 3 }).map((_, index) => (
+            <div key={index} className="card card-soft profile-activity-item" aria-hidden style={{ pointerEvents: 'none' }}>
+              <Skeleton width={40} height={40} rounded="lg" />
+              <div style={{ flex: 1 }}>
+                <Skeleton width="70%" height={18} rounded="sm" />
+                <Skeleton width="55%" height={14} rounded="sm" style={{ marginTop: '0.35rem' }} />
+              </div>
+              <Skeleton width={56} height={18} rounded="sm" />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div style={{ marginTop: '1.5rem' }}>
+        <Skeleton width={100} height={12} rounded="pill" />
+        <Skeleton width={180} height={24} rounded="sm" style={{ marginTop: '0.5rem' }} />
+        <div className="profile-activity-list" style={{ marginTop: '1rem' }}>
+          {Array.from({ length: 3 }).map((_, index) => (
+            <div key={index} className="card card-soft profile-activity-item" aria-hidden style={{ pointerEvents: 'none' }}>
+              <Skeleton width={40} height={40} rounded="lg" />
+              <div style={{ flex: 1 }}>
+                <Skeleton width="70%" height={18} rounded="sm" />
+                <Skeleton width="55%" height={14} rounded="sm" style={{ marginTop: '0.35rem' }} />
+              </div>
+              <Skeleton width={56} height={18} rounded="sm" />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div style={{ marginTop: '1.5rem' }}>
+        <Skeleton width={100} height={12} rounded="pill" />
+        <Skeleton width={160} height={24} rounded="sm" style={{ marginTop: '0.5rem' }} />
         <div
           style={{
             display: 'grid',

@@ -197,6 +197,7 @@ export async function fetchDashboard(token?: string): Promise<DashboardData> {
         courses: data.courses,
         completedCourses: data.completedCourses ?? [],
         learningStreak: data.learningStreak ?? defaultLearningStreak(),
+        recentActivity: data.recentActivity ?? [],
       };
     }
 

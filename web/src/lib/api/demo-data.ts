@@ -201,6 +201,20 @@ export function mockDashboard(): DashboardData {
       longestDays: 4,
       lastActivityDate: new Date().toISOString().slice(0, 10),
     },
+    recentActivity: [
+      {
+        id: 'demo-apple-module-1',
+        slug: 'device-support-basics',
+        title: 'Fondamentaux Device Support',
+        courseSlug: 'apple-cert-prep',
+        courseTitle: 'Parcours Apple — Device Support & MDM',
+        track: 'APPLE',
+        completedAt: '2026-05-18T14:22:00.000Z',
+        quizScore: 85,
+        gameScore: 90,
+        pointsEarned: 27,
+      },
+    ],
   };
 }
 
@@ -225,6 +239,7 @@ export function toDashboardData(data: UserProgressData): DashboardData {
     quests: data.quests,
     certificationSprint: data.certificationSprint ?? null,
     courses: data.courses,
+    recentActivity: data.recentActivity ?? [],
   };
 }
 

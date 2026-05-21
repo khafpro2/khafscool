@@ -24,6 +24,19 @@ export interface LearningStreak {
   lastActivityDate: string | null;
 }
 
+export interface RecentActivityItem {
+  id: string;
+  slug: string;
+  title: string;
+  courseSlug: string;
+  courseTitle: string;
+  track: string;
+  completedAt: string | Date | null;
+  quizScore: number | null;
+  gameScore: number | null;
+  pointsEarned: number;
+}
+
 export interface DashboardData {
   user: AuthUser;
   stats: {
@@ -40,6 +53,7 @@ export interface DashboardData {
   courses: CourseSummary[];
   completedCourses?: CompletedCourseSummary[];
   learningStreak?: LearningStreak;
+  recentActivity?: RecentActivityItem[];
 }
 
 export type CertificationSprintTrack = 'APPLE' | 'JAMF' | 'INTUNE';
@@ -90,6 +104,7 @@ export interface UserProgressData {
     averageScore: number;
     nextModule?: CourseNextModule | null;
   }[];
+  recentActivity?: RecentActivityItem[];
 }
 
 export interface CourseSummary {
@@ -269,6 +284,7 @@ export interface DashboardApiResponse {
   certificationSprint?: CertificationSprintSummary | null;
   courses: CourseSummary[];
   completedCourses?: CompletedCourseSummary[];
+  recentActivity?: RecentActivityItem[];
 }
 
 export interface CourseCompletionResult {
