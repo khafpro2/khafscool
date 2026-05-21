@@ -15,13 +15,14 @@ function getResumeLearningAction(courses: CourseLike[]) {
       title: nextCourse.nextModule.title,
       hasProgress: true,
       slug: nextCourse.slug,
+      href: `/courses/${nextCourse.slug}#module-${nextCourse.nextModule.slug}`,
     };
   }
   const incomplete = courses.find((course) => (course.progressPercent ?? 0) < 100);
   if (incomplete) {
-    return { title: incomplete.title, hasProgress: true, slug: incomplete.slug };
+    return { title: incomplete.title, hasProgress: true, slug: incomplete.slug, href: `/courses/${incomplete.slug}` };
   }
-  return { title: 'Aucun parcours en cours', hasProgress: false, slug: null };
+  return { title: 'Aucun parcours en cours', hasProgress: false, slug: null, href: '/courses' };
 }
 
 describe('resume learning (logique partagée web/mobile)', () => {
@@ -47,7 +48,22 @@ describe('resume learning (logique partagée web/mobile)', () => {
       title: 'Bases MDM',
       hasProgress: true,
       slug: 'apple-cert-prep',
+      href: '/courses/apple-cert-prep#module-mdm-basics',
     });
+  });
+
+  it('ajoute le hash module sur le CTA resume quand nextModule est connu', () => {
+    const action = getResumeLearningAction([
+      {
+        slug: 'apple-cert-prep',
+        title: 'Apple',
+        track: 'APPLE',
+        progressPercent: 33,
+        nextModule: { slug: 'mdm-basics', title: 'Bases MDM' },
+      },
+    ]);
+
+    expect(action.href).toBe('/courses/apple-cert-prep#module-mdm-basics');
   });
 
   it('retombe sur un parcours incomplet sans nextModule', () => {

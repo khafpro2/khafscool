@@ -148,11 +148,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </div>
             <div style={{ display: 'flex', gap: '1.25rem', flexWrap: 'wrap', alignItems: 'center' }}>
               <Link href="/courses">Parcours</Link>
+              <Link href="/resources">Ressources</Link>
               <Link href="/about">À propos</Link>
               <Link href="/demo">Démo</Link>
-              <Link href="/resources">Ressources</Link>
               <Link href="/diagnostics" className="site-footer-tools">
-                Outils
+                Diagnostics
               </Link>
             </div>
             <div style={{ color: 'var(--muted)', fontSize: '0.8rem' }}>

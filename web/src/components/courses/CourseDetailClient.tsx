@@ -52,6 +52,7 @@ export function CourseDetailClient({ slug }: { slug: string }) {
   const [gameTouched, setGameTouched] = useState<Record<string, boolean>>({});
   const [hasToken, setHasToken] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [hashHighlightSlug, setHashHighlightSlug] = useState<string | null>(null);
 
   useEffect(() => {
     if (!course) return;
@@ -86,6 +87,36 @@ export function CourseDetailClient({ slug }: { slug: string }) {
       })
       .finally(() => setIsLoading(false));
   }, [slug]);
+
+  useEffect(() => {
+    if (isLoading || !course) return;
+
+    let highlightTimer: number | undefined;
+
+    function focusModuleFromHash() {
+      const hash = window.location.hash;
+      if (!hash.startsWith('#module-')) return;
+
+      const moduleSlug = decodeURIComponent(hash.slice('#module-'.length));
+      const target = document.getElementById(`module-${moduleSlug}`);
+      if (!target) return;
+
+      setHashHighlightSlug(moduleSlug);
+      requestAnimationFrame(() => {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+
+      if (highlightTimer) window.clearTimeout(highlightTimer);
+      highlightTimer = window.setTimeout(() => setHashHighlightSlug(null), 4_000);
+    }
+
+    focusModuleFromHash();
+    window.addEventListener('hashchange', focusModuleFromHash);
+    return () => {
+      window.removeEventListener('hashchange', focusModuleFromHash);
+      if (highlightTimer) window.clearTimeout(highlightTimer);
+    };
+  }, [course, isLoading]);
 
   const moduleProgressById = useMemo(() => {
     return new Map(progress?.modules.map((module) => [module.id, module]) ?? []);
@@ -457,7 +488,12 @@ export function CourseDetailClient({ slug }: { slug: string }) {
                   key={module.id}
                   id={`module-${module.slug}`}
                   as="article"
-                  className={completed ? 'card-completed' : undefined}
+                  className={[
+                    completed ? 'card-completed' : undefined,
+                    hashHighlightSlug === module.slug ? 'course-module-hash-highlight' : undefined,
+                  ]
+                    .filter(Boolean)
+                    .join(' ')}
                   style={{
                     borderColor: completed ? undefined : 'var(--border)',
                     background: completed ? undefined : 'var(--surface)',

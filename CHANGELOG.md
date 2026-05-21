@@ -2,6 +2,13 @@
 
 ## Unreleased — `cursor/progress-dashboard-auth-v2`
 
+- Mobile : pastille quête hebdo sur l’onglet Accueil (cache léger dashboard, parité nav web)
+- Mobile : écran `/diagnostics` — santé API, version backend, URL config et session (FR)
+- Web : deep link `/courses/[slug]#module-{slug}` — scroll + surbrillance module en cours
+- Web : footer — liens Ressources, À propos, Diagnostics
+- README : section « Aperçu en 30 secondes » (`pnpm dev:stack`, compte démo, URLs)
+- Tests : quest nav badge, hash resume CTA, E2E deep link module
+
 - Mobile : accueil/dashboard — CTA « Continuer l’apprentissage » (logique resume API, empty state FR)
 - Mobile : `/badges` — filtre piste (`TrackFilterChips`, parité web)
 - Web : `/diagnostics` — synthèse FR (health, version API, DB, auth, catalogue), lien docs stack locale

@@ -1,9 +1,15 @@
 import { Tabs } from 'expo-router';
-import { Text } from 'react-native';
+import { Text, View } from 'react-native';
+import { QuestTabDot } from '../../src/components/QuestTabDot';
 import { useAppTheme } from '../../src/context/ThemeContext';
 
-function TabIcon({ glyph, color }: { glyph: string; color: string }) {
-  return <Text style={{ fontSize: 22, color }}>{glyph}</Text>;
+function TabIcon({ glyph, color, showQuestDot = false }: { glyph: string; color: string; showQuestDot?: boolean }) {
+  return (
+    <View style={{ position: 'relative' }}>
+      <Text style={{ fontSize: 22, color }}>{glyph}</Text>
+      {showQuestDot ? <QuestTabDot /> : null}
+    </View>
+  );
 }
 
 export default function TabsLayout() {
@@ -28,7 +34,7 @@ export default function TabsLayout() {
         name="index"
         options={{
           title: 'Accueil',
-          tabBarIcon: ({ color }) => <TabIcon glyph={'\u{1F3E0}'} color={color} />,
+          tabBarIcon: ({ color }) => <TabIcon glyph={'\u{1F3E0}'} color={color} showQuestDot />,
         }}
       />
       <Tabs.Screen

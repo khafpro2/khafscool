@@ -4,6 +4,22 @@ Plateforme de formation gamifiée pour techniciens Apple et administrateurs MDM 
 
 > **Non affilié** à Apple Inc., Jamf ou Microsoft. Contenus pédagogiques originaux.
 
+## Aperçu en 30 secondes
+
+```bash
+pnpm setup      # première fois : dépendances, migrations, seed
+pnpm dev:stack  # Postgres + API (:4000) + web (:3000)
+```
+
+| Où | URL |
+| --- | --- |
+| Web | http://127.0.0.1:3000 |
+| API | http://localhost:4000 |
+| Diagnostics | http://127.0.0.1:3000/diagnostics |
+| Auth / compte | http://127.0.0.1:3000/auth |
+
+**Compte démo** — explore le catalogue, le classement et les parcours sans inscription (`demo@ama.dev` affiché dans l’UI). Connecte-toi sur `/auth` pour sauvegarder ta progression.
+
 ## Fonctionnalités
 
 - **100 % gratuit** — pas de paywall sur le MVP ; checkout billing simulé sans Stripe obligatoire

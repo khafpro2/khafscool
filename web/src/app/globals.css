@@ -196,6 +196,12 @@ h1, h2, h3, h4 {
   flex-shrink: 0;
 }
 
+.course-module-hash-highlight {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 28%, transparent);
+  scroll-margin-top: 5.5rem;
+}
+
 .site-nav-drawer-link.nav-link-quests {
   display: inline-flex;
   align-items: center;

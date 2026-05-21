@@ -17,6 +17,7 @@ import { formatLevel, formatTrack, getBadgeVisual, getRankInfo } from '../../lib
 import { useThemedStyles } from '../../hooks/useThemedStyles';
 import { toastQuestsCompleted } from '../../lib/gamification-toasts';
 import { detectNewlyCompletedQuests } from '../../lib/quest-feedback';
+import { hasPendingWeeklyQuest, writeQuestNavCache } from '../../lib/quest-nav-badge';
 import { clearTokens } from '../../services/auth';
 import {
   CourseSummary,
@@ -71,6 +72,15 @@ export function LearnerDashboardScreen({ onSignOut }: LearnerDashboardScreenProp
     if (newlyCompleted.length > 0) {
       toastQuestsCompleted(newlyCompleted);
     }
+    writeQuestNavCache(
+      hasPendingWeeklyQuest(
+        nextDashboard.data.quests.map((quest) => ({
+          ...quest,
+          questKey: quest.id,
+          completed: quest.target > 0 && quest.progress >= quest.target,
+        }))
+      )
+    );
     setSprintMessage(
       nextSprint.source === 'demo'
         ? { text: 'Mode démo : connectez-vous pour enregistrer un vrai sprint.', tone: 'info' }
