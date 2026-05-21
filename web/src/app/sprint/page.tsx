@@ -137,7 +137,7 @@ export default function SprintPage() {
   }
 
   return (
-    <section style={{ padding: '1rem 0 2rem' }}>
+    <section className="sprint-page" style={{ padding: '1rem 0 2rem' }}>
       {!hasToken ? <AuthConnectBanner redirectPath="/sprint" /> : null}
       <div className="hero" style={{ background: SPRINT_GRADIENT, marginTop: 0 }}>
         <span className="hero-eyebrow">
@@ -217,15 +217,7 @@ export default function SprintPage() {
         </div>
       </Card>
 
-      <div
-        style={{
-          display: 'grid',
-          gap: '1rem',
-          gridTemplateColumns: 'minmax(0, 1fr) minmax(280px, 0.85fr)',
-          marginTop: '1.5rem',
-          alignItems: 'start',
-        }}
-      >
+      <div className="sprint-page-grid">
         <div>
           <Card>
             <span className="section-eyebrow">Nouveau sprint</span>
@@ -251,16 +243,12 @@ export default function SprintPage() {
                   <button
                     key={track.value}
                     type="button"
+                    className="sprint-track-option"
                     onClick={() => setSelectedTrack(track.value)}
                     aria-pressed={isSelected}
                     style={{
-                      background: isSelected ? `${visual.color}10` : '#ffffff',
-                      border: `2px solid ${isSelected ? visual.color : 'var(--border)'}`,
-                      borderRadius: 14,
-                      color: 'inherit',
-                      cursor: 'pointer',
-                      padding: '1rem',
-                      textAlign: 'left',
+                      borderColor: isSelected ? visual.color : undefined,
+                      background: isSelected ? `${visual.color}10` : undefined,
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
@@ -314,7 +302,7 @@ export default function SprintPage() {
                 {status === 'starting' ? 'Démarrage...' : 'Démarrer ce sprint'}
               </Button>
               <Button href={selectedTrackMeta.courseHref} variant="secondary">
-                Voir le parcours lié
+                Parcours {formatTrack(selectedTrackMeta.value)} →
               </Button>
             </div>
 
@@ -516,14 +504,15 @@ function CurrentSprintCard({
 
   if (!sprint) {
     return (
-      <Card as="aside" style={{ alignSelf: 'start' }}>
+      <Card as="aside" className="sprint-current-card">
         <span className="section-eyebrow">Sprint courant</span>
         <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginTop: '0.4rem' }}>Aucun sprint actif</h2>
         <p className="muted" style={{ marginTop: '0.75rem' }}>
-          Choisis un objectif et lance ton prochain cycle de préparation.
+          Choisis une piste Apple, Jamf ou Intune et lance un cycle de 7 ou 14 jours pour structurer ta révision
+          certification.
         </p>
         <Button href="/courses" variant="secondary" style={{ marginTop: '1rem' }}>
-          Explorer les parcours
+          Choisir un parcours
         </Button>
       </Card>
     );
@@ -538,9 +527,10 @@ function CurrentSprintCard({
     month: 'long',
     year: 'numeric',
   }).format(new Date(sprint.endsAt));
+  const objectiveLabel = `${formatTrack(sprint.track)} · ${sprint.days} jours · ${sprint.target} unités`;
 
   return (
-    <Card as="aside" style={{ alignSelf: 'start' }}>
+    <Card as="aside" className="sprint-current-card">
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.75rem', alignItems: 'flex-start' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
           <TrackIcon track={sprint.track} size="sm" />
@@ -552,39 +542,41 @@ function CurrentSprintCard({
       </div>
 
       <h2 style={{ fontSize: '1.35rem', fontWeight: 800, marginTop: '0.5rem' }}>{sprint.label}</h2>
-      <p className="muted" style={{ marginTop: '0.5rem' }}>
-        {sprint.days} jours · fin prévue le {endsAtLabel}
-      </p>
+
+      <div className="sprint-current-objective">
+        <span className="sprint-current-objective-label">Objectif certification</span>
+        <strong className="sprint-current-objective-value">{objectiveLabel}</strong>
+        <p className="muted sprint-current-progress-copy">
+          Fin prévue le {endsAtLabel}
+          {daysRemaining > 0 ? ` · ${daysRemaining} jour${daysRemaining > 1 ? 's' : ''} restant${daysRemaining > 1 ? 's' : ''}` : ''}
+        </p>
+      </div>
 
       <ProgressBar
         value={Math.min(100, sprint.progressPercent)}
         tone={sprint.completed ? 'success' : 'accent'}
-        label={`${sprint.progressPercent}% complété`}
+        label={`Progression : ${sprint.progressPercent}%`}
         showValueLabel
         style={{ marginTop: '1.1rem' }}
       />
-      <p className="muted" style={{ fontSize: '0.85rem', marginTop: '0.35rem' }}>
-        {sprint.progress}/{sprint.target} unités validées
+      <p className="muted sprint-current-progress-copy">
+        {sprint.progress}/{sprint.target} unités validées · {sprint.remainingModules} restante
+        {sprint.remainingModules > 1 ? 's' : ''}
       </p>
 
-      <div
-        style={{
-          display: 'grid',
-          gap: '0.75rem',
-          gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-          marginTop: '1.25rem',
-        }}
-      >
-        <SprintMetric label="Restants" value={String(sprint.remainingModules)} />
+      <div className="sprint-current-metrics">
+        <SprintMetric label="Parcours lié" value={formatTrack(sprint.track)} />
+        <SprintMetric label="Classement sprint" value={statusLabel} />
+        <SprintMetric label="Unités restantes" value={String(sprint.remainingModules)} />
         <SprintMetric label="Jours restants" value={String(daysRemaining)} />
-        <SprintMetric label="Parcours" value={formatTrack(sprint.track)} />
-        <SprintMetric label="Statut" value={statusLabel} />
       </div>
 
-      <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', marginTop: '1.25rem' }}>
-        <Button href="/courses">Continuer les unités</Button>
-        <Button href={trackMeta.courseHref} variant="secondary">
-          Voir parcours lié
+      <div className="sprint-current-actions">
+        <Button href={trackMeta.courseHref}>
+          Continuer {formatTrack(sprint.track)} →
+        </Button>
+        <Button href="/courses" variant="secondary">
+          Tous les parcours
         </Button>
       </div>
     </Card>

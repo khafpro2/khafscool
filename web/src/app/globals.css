@@ -220,6 +220,162 @@ html[data-theme='dark'] .nav-streak-badge {
   color: #fde68a;
 }
 
+.nav-points-rank {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  max-width: min(100%, 220px);
+}
+
+.nav-points-rank-link,
+.nav-points-rank-rank {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--border));
+  background: color-mix(in srgb, var(--accent) 8%, var(--surface));
+  color: var(--fg);
+  font-size: 0.76rem;
+  font-weight: 800;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.nav-points-rank-link:hover,
+.nav-points-rank-rank:hover {
+  background: color-mix(in srgb, var(--accent) 14%, var(--surface));
+  text-decoration: none;
+}
+
+.nav-points-rank-value,
+.nav-points-rank-rank {
+  font-variant-numeric: tabular-nums;
+}
+
+.nav-points-rank-sep {
+  opacity: 0.55;
+  font-weight: 600;
+}
+
+.nav-points-rank-name {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+html[data-theme='dark'] .nav-points-rank-link,
+html[data-theme='dark'] .nav-points-rank-rank {
+  border-color: color-mix(in srgb, var(--accent) 42%, var(--border));
+  background: color-mix(in srgb, var(--accent) 16%, var(--surface));
+}
+
+html[data-theme='dark'] .nav-points-rank-name {
+  color: color-mix(in srgb, var(--fg) 72%, var(--muted));
+}
+
+.legal-card {
+  max-width: 760px;
+}
+
+.sprint-page-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 0.85fr);
+  margin-top: 1.5rem;
+  align-items: start;
+}
+
+.sprint-track-option {
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 14px;
+  color: inherit;
+  cursor: pointer;
+  padding: 1rem;
+  text-align: left;
+  transition: border-color 160ms ease, background 160ms ease;
+}
+
+.sprint-track-option:hover {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+}
+
+.sprint-track-option[aria-pressed='true'] {
+  background: color-mix(in srgb, var(--accent) 8%, var(--surface));
+}
+
+.sprint-current-card {
+  align-self: start;
+}
+
+.sprint-current-objective {
+  margin-top: 0.85rem;
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  border: 1px solid var(--border-soft);
+  background: color-mix(in srgb, var(--accent) 6%, var(--surface));
+}
+
+.sprint-current-objective-label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.sprint-current-objective-value {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.sprint-current-progress-copy {
+  font-size: 0.85rem;
+  margin-top: 0.35rem;
+}
+
+.sprint-current-metrics {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 1.25rem;
+}
+
+.sprint-current-actions {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin-top: 1.25rem;
+}
+
+[data-theme='dark'] .sprint-track-option {
+  background: var(--surface);
+}
+
+[data-theme='dark'] .sprint-track-option[aria-pressed='true'] {
+  background: color-mix(in srgb, var(--accent) 14%, var(--surface));
+}
+
+[data-theme='dark'] .sprint-current-objective {
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface));
+  border-color: color-mix(in srgb, var(--accent) 28%, var(--border-soft));
+}
+
+@media (max-width: 900px) {
+  .sprint-page-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .nav-points-rank {
+    display: none;
+  }
+}
+
 .course-module-hash-highlight {
   border-color: var(--accent) !important;
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 28%, transparent);

@@ -14,6 +14,8 @@ const PUBLIC_PATHS = [
   '/resources',
   '/demo',
   '/diagnostics',
+  '/legal/confidentialite',
+  '/legal/conditions',
 ] as const;
 
 export default function sitemap(): MetadataRoute.Sitemap {

@@ -7,6 +7,7 @@ import { DemoModeBanner } from '@/components/layout/DemoModeBanner';
 import { SiteMobileNav } from '@/components/layout/SiteMobileNav';
 import { SiteNavLinks } from '@/components/layout/SiteNavLinks';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
+import { PointsRankNavIndicator } from '@/components/layout/PointsRankNavIndicator';
 import { StreakNavBadge } from '@/components/layout/StreakNavIndicator';
 import { Toaster } from '@/components/ui/Toast';
 import { Button } from '@/components/ui/Button';
@@ -125,6 +126,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </nav>
             <SiteMobileNav />
             <div className="site-actions">
+              <PointsRankNavIndicator />
               <StreakNavBadge />
               <ThemeToggle />
               <Button href="/profile" variant="ghost" size="sm" className="site-action-profile">
@@ -156,6 +158,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <Link href="/diagnostics" className="site-footer-tools">
                 Diagnostics
               </Link>
+              <Link href="/legal/confidentialite">Confidentialité</Link>
+              <Link href="/legal/conditions">Conditions</Link>
             </div>
             <div style={{ color: 'var(--muted)', fontSize: '0.8rem' }}>
               Non affilié à Apple Inc., Jamf ou Microsoft.

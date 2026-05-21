@@ -2,6 +2,13 @@
 
 ## Unreleased — `cursor/progress-dashboard-auth-v2`
 
+- Web : header discret points + rang classement (cache dashboard 5 min, liens profil/classement, thème sombre)
+- Web : pages légales FR `/legal/confidentialite` et `/legal/conditions` + liens footer
+- Web : sitemap/robots — pages about, resources, diagnostics et légales
+- Web : `/sprint` — objectif, progression et CTA parcours lié (FR, dark mode)
+- Mobile : sous-titre accueil points + rang (#classement) avec liens profil/classement
+- Tests : logique points/rank nav, E2E pages légales, smoke pages legal
+
 - Web : `/quests` — filtre piste (chips Toutes/Apple/Jamf/Intune, query `?track=`)
 - Mobile : écran natif `/about` — parité mission, 3 parcours, gratuité, lien GitHub (depuis Profil)
 - Web + Mobile : indicateur série 🔥 discret dans la navigation si streak &gt; 0 (dashboard API, thème sombre)

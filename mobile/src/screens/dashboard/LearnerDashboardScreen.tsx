@@ -18,7 +18,13 @@ import { useThemedStyles } from '../../hooks/useThemedStyles';
 import { toastQuestsCompleted } from '../../lib/gamification-toasts';
 import { detectNewlyCompletedQuests } from '../../lib/quest-feedback';
 import { hasPendingWeeklyQuest, writeQuestNavCache } from '../../lib/quest-nav-badge';
+import {
+  buildPointsRankNavSnapshot,
+  formatLeaderboardRankLabel,
+  writePointsRankNavCache,
+} from '../../lib/points-rank-nav-badge';
 import { writeStreakNavCache } from '../../lib/streak-nav-badge';
+import { usePointsRankNav } from '../../hooks/usePointsRankNav';
 import { clearTokens } from '../../services/auth';
 import {
   CourseSummary,
@@ -31,6 +37,7 @@ import {
   fetchCurrentCertificationSprint,
   startCertificationSprint,
 } from '../../services/sprint';
+import { fetchLeaderboard } from '../../services/gamification';
 
 interface LearnerDashboardScreenProps {
   onSignOut: () => void;
@@ -47,6 +54,7 @@ export function LearnerDashboardScreen({ onSignOut }: LearnerDashboardScreenProp
   const router = useRouter();
   const { colors } = useAppTheme();
   const styles = useThemedStyles(createStyles);
+  const pointsRankNav = usePointsRankNav();
   const [dashboard, setDashboard] = useState<LearnerDashboard | null>(null);
   const [sprint, setSprint] = useState<CertificationSprintSummary | null>(null);
   const [sprintSource, setSprintSource] = useState<'api' | 'demo'>('api');
@@ -83,6 +91,15 @@ export function LearnerDashboardScreen({ onSignOut }: LearnerDashboardScreenProp
       )
     );
     writeStreakNavCache(nextDashboard.data.learningStreak);
+    if (nextDashboard.source === 'api') {
+      const leaderboard = await fetchLeaderboard();
+      writePointsRankNavCache(
+        buildPointsRankNavSnapshot(
+          nextDashboard.data.progress.points,
+          leaderboard.data.currentUserRank
+        )
+      );
+    }
     setSprintMessage(
       nextSprint.source === 'demo'
         ? { text: 'Mode démo : connectez-vous pour enregistrer un vrai sprint.', tone: 'info' }
@@ -157,9 +174,31 @@ export function LearnerDashboardScreen({ onSignOut }: LearnerDashboardScreenProp
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.header}>
-        <View>
+        <View style={{ flex: 1 }}>
           <Text style={styles.eyebrow}>Espace apprenant</Text>
           <Text style={styles.title}>Bonjour {displayName}</Text>
+          {source === 'api' && pointsRankNav ? (
+            <View style={styles.headerSubtitleRow}>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`${pointsRankNav.points} points, rang ${pointsRankNav.rankName}`}
+                onPress={() => router.push('/(tabs)/profile')}
+              >
+                <Text style={styles.headerSubtitle}>
+                  {pointsRankNav.points} pts · {pointsRankNav.rankName}
+                </Text>
+              </Pressable>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`Classement ${formatLeaderboardRankLabel(pointsRankNav.leaderboardRank)}`}
+                onPress={() => router.push('/leaderboard')}
+              >
+                <Text style={styles.headerSubtitleRank}>
+                  {formatLeaderboardRankLabel(pointsRankNav.leaderboardRank)}
+                </Text>
+              </Pressable>
+            </View>
+          ) : null}
         </View>
         <Pressable onPress={handleSignOut} style={styles.signOutButton}>
           <Text style={styles.signOutText}>Déconnexion</Text>
@@ -565,6 +604,23 @@ function createStyles(colors: AppThemeColors) {
   header: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 18 },
   eyebrow: { color: colors.accent, fontSize: 13, fontWeight: '800', marginBottom: 4, textTransform: 'uppercase' },
   title: { color: colors.fg, fontSize: 28, fontWeight: '800', maxWidth: 220 },
+  headerSubtitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: 6,
+  },
+  headerSubtitle: {
+    color: colors.muted,
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  headerSubtitleRank: {
+    color: colors.accent,
+    fontSize: 13,
+    fontWeight: '800',
+  },
   signOutButton: {
     paddingHorizontal: 12,
     paddingVertical: 8,
