@@ -235,7 +235,7 @@ export function CourseCompleteClient({
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem', marginTop: '0.85rem', alignItems: 'flex-start' }}>
           <ShareSuccessButton courseTitle={completion.title} slug={slug} />
           <Button href={`/courses/${slug}/certificate`} variant="secondary" icon={'\u{1F4DC}'}>
-            Télécharger mon certificat
+            Télécharger / Imprimer mon certificat
           </Button>
           <Button href="/badges">Voir mes badges</Button>
           <Button href="/dashboard" variant="ghost">

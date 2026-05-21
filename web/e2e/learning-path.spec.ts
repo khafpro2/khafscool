@@ -25,7 +25,7 @@ test.describe('Parcours d’apprentissage — smoke', () => {
       page.getByRole('button', { name: /Partager ma réussite/i })
     ).toBeVisible();
     await expect(
-      page.getByRole('link', { name: /Télécharger mon certificat/i })
+      page.getByRole('link', { name: /Télécharger.*certificat/i })
     ).toBeVisible();
   });
 
