@@ -8,6 +8,7 @@ import {
 } from '@/lib/api';
 import { AuthConnectBanner } from '@/components/auth/AuthConnectBanner';
 import { getAccessToken } from '@/lib/auth';
+import { toastQuestsCompleted } from '@/lib/gamification-toasts';
 import { detectNewlyCompletedQuests, isQuestCompleted } from '@/lib/quest-feedback';
 import { formatTrack } from '@/lib/tracks';
 import { Badge } from '@/components/ui/Badge';
@@ -37,6 +38,9 @@ export default function WeeklyQuestsPage() {
     try {
       const response = await fetchWeeklyQuests(token);
       const newlyCompleted = detectNewlyCompletedQuests(response.quests);
+      if (newlyCompleted.length > 0) {
+        toastQuestsCompleted(newlyCompleted);
+      }
       setCompletionBanner(newlyCompleted);
       setData(response);
       setUsingFallback(!token);

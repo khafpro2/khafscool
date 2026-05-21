@@ -6,6 +6,7 @@ import { ApiStatusBanner } from '@/components/layout/ApiStatusBanner';
 import { DemoModeBanner } from '@/components/layout/DemoModeBanner';
 import { SiteMobileNav } from '@/components/layout/SiteMobileNav';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
+import { Toaster } from '@/components/ui/Toast';
 import { Button } from '@/components/ui/Button';
 import { LEARNING_PATHS } from '@/lib/learningPaths';
 import { themeInitScript } from '@/lib/theme';
@@ -149,6 +150,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <main id="main-content" className="container" style={{ paddingTop: '1.5rem' }}>
           <AppErrorBoundary>{children}</AppErrorBoundary>
         </main>
+        <Toaster />
         <footer className="site-footer">
           <div className="container site-footer-inner">
             <div>

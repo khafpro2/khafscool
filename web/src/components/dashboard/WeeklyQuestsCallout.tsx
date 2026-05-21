@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { fetchDashboard, type DashboardData } from '@/lib/api';
 import { getAccessToken } from '@/lib/auth';
+import { toastQuestsCompleted } from '@/lib/gamification-toasts';
 import { countCompletedQuests, detectNewlyCompletedQuests } from '@/lib/quest-feedback';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -19,6 +20,9 @@ export function WeeklyQuestsCallout() {
       .then((data) => {
         setDashboard(data);
         const newlyCompleted = detectNewlyCompletedQuests(mapDashboardQuests(data));
+        if (newlyCompleted.length > 0) {
+          toastQuestsCompleted(newlyCompleted);
+        }
         setHasNewCompletion(newlyCompleted.length > 0);
       })
       .catch(() => {

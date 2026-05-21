@@ -132,6 +132,7 @@ export function CourseCompleteClient({
   const badgeVisual = badgeSlug ? getBadgeVisual(badgeSlug) : null;
   const level = inferLevelFromModules(course.modules.length);
   const estimatedTotal = estimatePoints(course.modules.length, level);
+  const motivationalLine = pickMotivationalMessage(slug);
 
   return (
     <section style={{ padding: '1rem 0 3rem', position: 'relative', overflow: 'hidden' }}>
@@ -143,6 +144,7 @@ export function CourseCompleteClient({
         ]}
       />
       <ConfettiLayer />
+      <SparkleLayer />
 
       <div className="hero" style={{ marginTop: 0, position: 'relative', zIndex: 1, background: visual.gradient }}>
         <Badge tone="success" icon="\u{1F389}" style={{ background: 'rgba(255,255,255,0.2)', color: '#fff' }}>
@@ -154,6 +156,18 @@ export function CourseCompleteClient({
         <p style={{ marginTop: '0.65rem', maxWidth: 640, color: 'rgba(255,255,255,0.94)' }}>
           Tu viens de boucler les {course.modules.length} unités du parcours{' '}
           {formatTrack(course.track)}. Continue sur la lancée !
+        </p>
+        <p
+          className="completion-motivation"
+          style={{
+            marginTop: '0.85rem',
+            maxWidth: 560,
+            fontSize: '1.05rem',
+            fontWeight: 700,
+            color: 'rgba(255,255,255,0.98)',
+          }}
+        >
+          {motivationalLine}
         </p>
         {usesDemo && (
           <p
@@ -323,6 +337,40 @@ function buildDemoCompletion(course: CourseDetail): CompletionState {
       ...(reward ? { badgeEarned: reward.badgeSlug } : {}),
     },
   };
+}
+
+const MOTIVATIONAL_MESSAGES = [
+  'Tu viens de franchir une étape majeure — la suite t’attend avec confiance.',
+  'Chaque unité validée te rapproche d’un profil MDM crédible sur le terrain.',
+  'Garde ce rythme : la régularité bat le talent ponctuel.',
+  'Ton parcours est complet — transforme cette victoire en habitude.',
+  'Les flottes Apple, Jamf et Intune n’ont plus de secrets pour toi sur ce socle.',
+];
+
+function pickMotivationalMessage(slug: string) {
+  let hash = 0;
+  for (let index = 0; index < slug.length; index += 1) {
+    hash = (hash + slug.charCodeAt(index) * (index + 1)) % MOTIVATIONAL_MESSAGES.length;
+  }
+  return MOTIVATIONAL_MESSAGES[hash] ?? MOTIVATIONAL_MESSAGES[0];
+}
+
+function SparkleLayer() {
+  return (
+    <div aria-hidden className="completion-sparkle-layer">
+      {Array.from({ length: 10 }).map((_, index) => (
+        <span
+          key={index}
+          className="completion-sparkle"
+          style={{
+            left: `${8 + (index * 9) % 84}%`,
+            top: `${12 + (index % 4) * 18}%`,
+            animationDelay: `${index * 0.35}s`,
+          }}
+        />
+      ))}
+    </div>
+  );
 }
 
 function ConfettiLayer() {

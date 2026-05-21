@@ -36,6 +36,7 @@ import {
   getTrackVisual,
   inferLevelFromModules,
 } from '@/lib/design';
+import { toastBadgeUnlocked, toastModuleCompleted } from '@/lib/gamification-toasts';
 
 export function CourseDetailClient({ slug }: { slug: string }) {
   const router = useRouter();
@@ -249,6 +250,15 @@ export function CourseDetailClient({ slug }: { slug: string }) {
           pointsEarned: backendResult.pointsEarned,
           quizScore: backendResult.quizScore,
         });
+        toastModuleCompleted(
+          activeModule.title,
+          backendResult.pointsEarned,
+          backendResult.quizScore,
+          backendResult.gameScore
+        );
+        for (const badgeSlug of backendResult.badges ?? []) {
+          toastBadgeUnlocked(badgeSlug);
+        }
         setResult(null);
         resetActiveQuizState();
         setProgress(updatedProgress);

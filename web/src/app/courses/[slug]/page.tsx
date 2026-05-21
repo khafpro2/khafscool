@@ -19,10 +19,13 @@ export async function generateMetadata({
 
   return {
     title: path.title,
-    description: `${path.shortTitle} — ${path.objectives.join(' ')}`,
+    description: `${path.shortTitle} — ${path.objectives.join(' ')} Parcours MDM Academy Pro gratuit avec quiz et badges.`,
     openGraph: {
-      title: path.title,
+      title: `${path.title} — MDM Academy Pro`,
       description: path.objectives[0],
+    },
+    alternates: {
+      canonical: `/courses/${slug}`,
     },
   };
 }

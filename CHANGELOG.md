@@ -2,6 +2,10 @@
 
 ## Unreleased — `cursor/progress-dashboard-auth-v2`
 
+- Web : toasts gamification (points, badge, quête) — CSS léger, thème sombre, FR
+- Web : page `/courses/[slug]/complete` — sparkles CSS + message motivant FR
+- Web : métadonnées SEO (`/courses`, `/dashboard`, `/leaderboard`, `/courses/[slug]`, complétion)
+- Web : thème sombre, PWA (`manifest`), bannière API, lien d’évitement « Aller au contenu »
 - `MERGE.md` — checklist mainteneur avant fusion PR #6 (CI, seed, billing dormant, OAuth stub)
 - Web : page `/about` (mission, piliers Apple / Jamf / Intune, lien footer)
 - `smoke-web` : couverture HTTP de `/about`
