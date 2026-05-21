@@ -2,6 +2,13 @@
 
 ## Unreleased — `cursor/progress-dashboard-auth-v2`
 
+- Mobile : profil — section « Activité récente » (`recentActivity[]`), empty state FR
+- Mobile : accueil — cartes quête hebdo + sprint certification (parité `HomeEngagementSection`)
+- Web : `/badges` — filtre piste (chips Toutes/Apple/Jamf/Intune, query `?track=`, thème sombre)
+- Web : accueil + dashboard — CTA « Continuer l’apprentissage » (dernier module / parcours en cours, empty state)
+- `DEPLOYMENT.md` — résumé variables WEB, API, DATABASE, JWT + hints Vercel/Railway
+- Tests : `mapRecentActivity` (backend), E2E filtre badges (Playwright)
+
 - Web : profil `/profile` — section « Activité récente » (modules complétés, points gagnés), skeleton et empty state FR, thème sombre
 - Web : accueil — bandeau « Quête de la semaine » avec progression + lien `/quests`, carte « Sprint certification » si sprint actif → `/sprint`
 - Web : page `/about` enrichie — BrandIcon Apple/Jamf/Microsoft, contact et lien GitHub

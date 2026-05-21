@@ -19,6 +19,11 @@ import { MdmTracksSection } from '@/components/dashboard/MdmTracksSection';
 import { DashboardSkeleton } from '@/components/ui/Skeleton';
 import { TrailCard } from '@/components/ui/TrailCard';
 import { estimatePoints, getRankInfo, inferLevelFromModules } from '@/lib/design';
+import {
+  getFallbackResumeAction,
+  getResumeLearningAction,
+  type ResumeLearningAction,
+} from '@/lib/resume-learning';
 type QuickAction = {
   label: string;
   description: string;
@@ -27,14 +32,6 @@ type QuickAction = {
   progress?: number;
   primary?: boolean;
 };
-type RecommendedAction = {
-  title: string;
-  description: string;
-  href: string;
-  cta: string;
-  meta: string;
-};
-
 const fallbackQuickActions: QuickAction[] = [
   {
     label: 'Continuer Apple',
@@ -97,7 +94,7 @@ export default function DashboardPage() {
   }
 
   if (!hasToken) {
-    const recommendedAction = getFallbackRecommendation();
+    const recommendedAction = getFallbackResumeAction();
 
     return (
       <section style={{ padding: '1rem 0 2rem' }}>
@@ -145,7 +142,7 @@ export default function DashboardPage() {
   }
 
   const { stats, courses, certificationSprint, learningStreak } = data;
-  const recommendedAction = getRecommendedAction(data);
+  const recommendedAction = getResumeLearningAction(data);
   const quickActions = getQuickActions(data);
   const rank = getRankInfo(stats.points);
 
@@ -341,16 +338,13 @@ function LeaderboardCallout() {
   );
 }
 
-function RecommendedActionCard({ action }: { action: RecommendedAction }) {
+function RecommendedActionCard({ action }: { action: ResumeLearningAction }) {
   return (
     <Card
-      style={{
-        marginTop: '1.25rem',
-        background: 'linear-gradient(135deg, #ffffff 0%, #dbeafe 100%)',
-        borderColor: '#93c5fd',
-      }}
+      className={action.hasProgress ? 'dashboard-resume-card dashboard-resume-card-active' : 'dashboard-resume-card'}
+      style={{ marginTop: '1.25rem' }}
     >
-      <span className="section-eyebrow">Prochaine unité</span>
+      <span className="section-eyebrow">Continuer l’apprentissage</span>
       <div
         style={{
           display: 'grid',
@@ -417,44 +411,6 @@ function QuickActionsGrid({ actions }: { actions: QuickAction[] }) {
       </div>
     </section>
   );
-}
-
-function getRecommendedAction(data: DashboardData): RecommendedAction {
-  const nextCourse = data.courses.find((course) => course.nextModule);
-
-  if (nextCourse?.nextModule) {
-    return {
-      title: nextCourse.nextModule.title,
-      description: `Continue le parcours ${formatTrack(nextCourse.track)} là où tu t’es arrêté.`,
-      href: `/courses/${nextCourse.slug}#module-${nextCourse.nextModule.slug}`,
-      cta: 'Continuer',
-      meta: `${nextCourse.progressPercent ?? 0}% du parcours complété`,
-    };
-  }
-
-  const incompleteCourse = data.courses.find((course) => (course.progressPercent ?? 0) < 100);
-
-  if (incompleteCourse) {
-    return {
-      title: incompleteCourse.title,
-      description: `Ouvre la prochaine unité disponible pour renforcer ton socle ${formatTrack(incompleteCourse.track)}.`,
-      href: `/courses/${incompleteCourse.slug}`,
-      cta: 'Continuer',
-      meta: `${incompleteCourse.progressPercent ?? 0}% du parcours complété`,
-    };
-  }
-
-  return getFallbackRecommendation();
-}
-
-function getFallbackRecommendation(): RecommendedAction {
-  return {
-    title: 'Préparer un sprint certification',
-    description: 'Planifie 7 ou 14 jours de révision Apple, Jamf ou Intune pour cadrer ta progression.',
-    href: '/sprint',
-    cta: 'Lancer un sprint',
-    meta: 'Disponible avec ou sans session connectée',
-  };
 }
 
 function getQuickActions(data: DashboardData): QuickAction[] {

@@ -32,6 +32,17 @@ export interface LearningStreak {
   lastActivityDate: string | null;
 }
 
+export interface RecentActivityItem {
+  id: string;
+  slug: string;
+  title: string;
+  courseSlug: string;
+  courseTitle: string;
+  track: string;
+  completedAt: string | Date | null;
+  pointsEarned: number;
+}
+
 export interface LearnerProgress {
   user: {
     id: string;
@@ -51,6 +62,7 @@ export interface LearnerProgress {
   courses: CourseSummary[];
   completedCourses?: CompletedCourseSummary[];
   learningStreak?: LearningStreak;
+  recentActivity?: RecentActivityItem[];
   tracks?: {
     track: string;
     totalModules: number;
@@ -73,15 +85,22 @@ export async function fetchLearnerDashboard(): Promise<LearnerDashboard> {
   try {
     const [progress, dashboard] = await Promise.all([
       apiFetch<LearnerProgress>('/users/me/progress'),
-      apiFetch<{ completedCourses?: CompletedCourseSummary[]; learningStreak?: LearningStreak }>(
-        '/users/me/dashboard'
-      ).catch(() => ({ completedCourses: [], learningStreak: undefined })),
+      apiFetch<{
+        completedCourses?: CompletedCourseSummary[];
+        learningStreak?: LearningStreak;
+        recentActivity?: RecentActivityItem[];
+      }>('/users/me/dashboard').catch(() => ({
+        completedCourses: [],
+        learningStreak: undefined,
+        recentActivity: [],
+      })),
     ]);
     return {
       data: {
         ...progress,
         completedCourses: dashboard.completedCourses ?? [],
         learningStreak: dashboard.learningStreak,
+        recentActivity: progress.recentActivity ?? dashboard.recentActivity ?? [],
       },
       source: 'api',
     };
@@ -103,6 +122,18 @@ const demoProgress: LearnerProgress = {
   badges: ['apple-mdm-foundation'],
   learningStreak: { currentDays: 2, longestDays: 4, lastActivityDate: '2026-05-18' },
   quests: [{ id: 'weekly-apple-3', label: 'Termine 3 unités Apple cette semaine', progress: 1, target: 3 }],
+  recentActivity: [
+    {
+      id: 'demo-apple-module-2',
+      slug: 'device-support',
+      title: 'Support appareils Apple',
+      courseSlug: 'apple-cert-prep',
+      courseTitle: 'Parcours Apple Device Support & MDM',
+      track: 'APPLE',
+      completedAt: '2026-05-18T14:30:00.000Z',
+      pointsEarned: 42,
+    },
+  ],
   courses: [
     {
       id: 'demo-apple',

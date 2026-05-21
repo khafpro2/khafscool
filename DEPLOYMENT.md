@@ -2,6 +2,17 @@
 
 Ce document décrit une architecture de production recommandée pour le monorepo (`web`, `backend`, `mobile`).
 
+## Variables essentielles (résumé)
+
+| Composant | Plateforme | Variables clés |
+| --------- | ---------- | -------------- |
+| **Web** | Vercel | `NEXT_PUBLIC_API_URL` |
+| **API** | Railway / Render / Fly.io | `DATABASE_URL`, `JWT_SECRET`, `JWT_REFRESH_SECRET`, `CORS_ORIGIN` |
+| **Base** | Neon / Supabase / Postgres managé | URL dans `DATABASE_URL` |
+| **Mobile** | EAS Build | `EXPO_PUBLIC_API_URL`, `EXPO_PUBLIC_WEB_URL` |
+
+Voir le détail par service ci-dessous. Aligner les trois URLs publiques (web, mobile, API) sur le même backend avant la mise en prod.
+
 ## Architecture recommandée
 
 | Composant | Hébergement conseillé | Rôle |

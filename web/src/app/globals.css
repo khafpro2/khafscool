@@ -837,6 +837,56 @@ h1, h2, h3, h4 {
 [data-theme='dark'] .home-engagement-sprint {
   background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 16%, var(--surface)) 0%, var(--surface) 72%);
 }
+
+.home-continue-learning {
+  margin-top: 0.5rem;
+}
+.home-continue-learning-card {
+  border: 1px solid var(--border-soft);
+}
+.home-continue-learning-card-active {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 10%, var(--surface)) 0%, var(--surface) 100%);
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--border-soft));
+}
+.home-continue-learning-title {
+  font-size: 1.35rem;
+  font-weight: 800;
+  margin-top: 0.35rem;
+}
+.home-continue-learning-caption {
+  margin-top: 0.35rem;
+  max-width: 620px;
+}
+.home-continue-learning-meta {
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+}
+.home-continue-learning-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+}
+.home-continue-learning-link {
+  font-weight: 700;
+  color: var(--accent);
+}
+.dashboard-resume-card {
+  border: 1px solid var(--border-soft);
+}
+.dashboard-resume-card-active {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 10%, var(--surface)) 0%, var(--surface) 100%);
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--border-soft));
+}
+.badge-locked-icon {
+  background: var(--chip-bg);
+  border: 2px dashed var(--border);
+}
+[data-theme='dark'] .home-continue-learning-card-active,
+[data-theme='dark'] .dashboard-resume-card-active {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 14%, var(--surface)) 0%, var(--surface) 100%);
+}
 [data-theme='dark'] .about-contact-card {
   background: color-mix(in srgb, var(--accent) 8%, var(--surface));
 }

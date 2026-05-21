@@ -9,6 +9,7 @@ import {
   View,
 } from 'react-native';
 import { BrandIcon } from '../../components/BrandIcon';
+import { HomeEngagementSection } from '../../components/home/HomeEngagementSection';
 import { useAppTheme } from '../../context/ThemeContext';
 import type { AppThemeColors } from '../../lib/design';
 import { formatLevel, formatTrack, getBadgeVisual, getRankInfo } from '../../lib/design';
@@ -194,6 +195,8 @@ export function LearnerDashboardScreen({ onSignOut }: LearnerDashboardScreenProp
           {data.progress.averageScore} %
         </Text>
       </View>
+
+      <HomeEngagementSection quests={data.quests} sprint={sprint} />
 
       <View style={styles.quickActions}>
         <Pressable style={[styles.quickAction, styles.quickActionQuests]} onPress={() => router.push('/quests')}>

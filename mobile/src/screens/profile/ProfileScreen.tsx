@@ -14,6 +14,7 @@ import { WEB_URL } from '../../config';
 import type { AppThemeColors } from '../../lib/design';
 import { formatLevel, formatTrack, getRankInfo } from '../../lib/design';
 import { useThemedStyles } from '../../hooks/useThemedStyles';
+import { RecentActivitySection } from '../../components/profile/RecentActivitySection';
 import type { CompletedCourseSummary } from '../../services/progress';
 import { clearTokens } from '../../services/auth';
 import { LearnerDashboard, fetchLearnerDashboard } from '../../services/progress';
@@ -58,6 +59,7 @@ export function ProfileScreen() {
   const displayName = data.user.displayName ?? 'Apprenant';
   const rank = getRankInfo(data.progress.points);
   const completedCourses = data.completedCourses ?? [];
+  const recentActivity = data.recentActivity ?? [];
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -108,6 +110,8 @@ export function ProfileScreen() {
           {data.progress.averageScore} %
         </Text>
       </View>
+
+      <RecentActivitySection items={recentActivity} />
 
       <Text style={styles.sectionTitle}>Parcours terminés</Text>
       <Text style={styles.sectionHint}>

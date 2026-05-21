@@ -1,0 +1,434 @@
+'use client';
+
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { fetchUserBadges, type UserBadge, type UserBadgesResult } from '@/lib/api';
+import { AuthConnectBanner } from '@/components/auth/AuthConnectBanner';
+import { getAccessToken } from '@/lib/auth';
+import {
+  ALL_BADGE_SLUGS,
+  getBadgeCriteria,
+  getBadgeTrack,
+  getBadgeVisual,
+  getTrackVisual,
+} from '@/lib/design';
+import { formatTrack } from '@/lib/tracks';
+import {
+  formatLeaderboardTrackFilter,
+  LEADERBOARD_TRACK_FILTERS,
+  type LeaderboardTrackFilter,
+} from '@/lib/leaderboard-tracks';
+import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
+import { ProgressBar } from '@/components/ui/ProgressBar';
+import { BrandIcon } from '@/components/ui/BrandIcon';
+import { BadgesPageSkeleton } from '@/components/ui/Skeleton';
+import { TrackIcon } from '@/components/ui/TrackIcon';
+
+const BADGES_VISUAL = getTrackVisual('DEFAULT');
+
+type Status = 'loading' | 'ready' | 'error';
+
+type BadgesPageClientProps = {
+  initialTrack: LeaderboardTrackFilter;
+};
+
+export function BadgesPageClient({ initialTrack }: BadgesPageClientProps) {
+  const router = useRouter();
+  const [data, setData] = useState<UserBadgesResult | null>(null);
+  const [hasToken, setHasToken] = useState(false);
+  const [status, setStatus] = useState<Status>('loading');
+  const [selectedTrack, setSelectedTrack] = useState<LeaderboardTrackFilter>(initialTrack);
+
+  useEffect(() => {
+    setSelectedTrack(initialTrack);
+  }, [initialTrack]);
+
+  useEffect(() => {
+    const token = getAccessToken();
+    setHasToken(Boolean(token));
+
+    fetchUserBadges(token)
+      .then((result) => {
+        setData(result);
+        setStatus('ready');
+      })
+      .catch(() => setStatus('error'));
+  }, []);
+
+  const setTrackFilter = useCallback(
+    (track: LeaderboardTrackFilter) => {
+      setSelectedTrack(track);
+      const query = track === 'TOUS' ? '' : `?track=${track}`;
+      router.replace(`/badges${query}`, { scroll: false });
+    },
+    [router]
+  );
+
+  const filteredSlugs = useMemo(
+    () => filterBadgesByTrack(ALL_BADGE_SLUGS, selectedTrack),
+    [selectedTrack]
+  );
+
+  const summary = useMemo(() => buildSummary(data, selectedTrack), [data, selectedTrack]);
+
+  if (status === 'loading') {
+    return <BadgesPageSkeleton />;
+  }
+
+  if (status === 'error' || !data) {
+    return (
+      <section style={{ padding: '2rem 0' }}>
+        <h1 style={{ fontSize: '2rem', fontWeight: 800 }}>Mes super-badges</h1>
+        <p className="muted" style={{ marginTop: '0.5rem' }}>
+          Impossible de charger les badges. Réessaie plus tard ou reconnecte-toi.
+        </p>
+        <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', marginTop: '1rem' }}>
+          <Button href="/dashboard">Retour au tableau de bord</Button>
+          <Button href="/courses" variant="dark">
+            Voir les parcours
+          </Button>
+        </div>
+      </section>
+    );
+  }
+
+  const earnedSet = new Set(data.earnedSlugs);
+  const earnedBadges = filteredSlugs.filter((slug) => earnedSet.has(slug));
+  const lockedBadges = filteredSlugs.filter((slug) => !earnedSet.has(slug));
+  const earnedBySlug = new Map(data.badges.map((badge) => [badge.slug, badge]));
+
+  return (
+    <section style={{ padding: '1rem 0 2rem' }}>
+      {!hasToken ? <AuthConnectBanner redirectPath="/badges" /> : null}
+      <div className="hero" style={{ marginTop: 0 }}>
+        <span className="hero-eyebrow">
+          <span aria-hidden>{BADGES_VISUAL.icon ?? '\u{1F3C5}'}</span> Galerie des badges
+        </span>
+        <h1>Tes super-badges MDM Academy</h1>
+        <p style={{ marginTop: '0.75rem', maxWidth: 640 }}>
+          Chaque piste Apple, Jamf et Intune récompense ta progression avec un badge distinct. Collectionne-les
+          tous pour montrer ton expertise multi-plateforme.
+        </p>
+        <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', marginTop: '1.25rem' }}>
+          <Button href="/dashboard" variant="secondary">
+            Tableau de bord
+          </Button>
+          <Button href="/courses" variant="ghost" style={{ color: '#fff', borderColor: 'rgba(255,255,255,0.4)' }}>
+            Parcours
+          </Button>
+          <Button href="/sprint" variant="ghost" style={{ color: '#fff', borderColor: 'rgba(255,255,255,0.4)' }}>
+            Sprint certification
+          </Button>
+        </div>
+      </div>
+
+      <Card
+        className={hasToken && data.fromApi ? undefined : 'notice-demo'}
+        style={{
+          marginTop: '1.5rem',
+          background: hasToken && data.fromApi ? 'var(--surface)' : undefined,
+          borderColor: hasToken && data.fromApi ? 'var(--border)' : undefined,
+        }}
+      >
+        <strong>{hasToken && data.fromApi ? 'Collection connectée' : 'Collection en mode démo'}</strong>
+        <p className="muted" style={{ marginTop: '0.35rem' }}>
+          {hasToken && data.fromApi
+            ? 'Tes badges sont récupérés via GET /users/me/dashboard.'
+            : 'Connecte-toi pour synchroniser tes vrais badges. Cet aperçu local mélange badges gagnés et à débloquer.'}
+        </p>
+      </Card>
+
+      <TrackFilterRow selected={selectedTrack} onSelect={setTrackFilter} />
+
+      <section className="stat-grid" style={{ marginTop: '1.5rem' }}>
+        <SummaryStat label="Badges gagnés" value={`${summary.earned} / ${summary.total}`} />
+        <SummaryStat label="Apple" value={String(summary.byTrack.APPLE)} />
+        <SummaryStat label="Jamf" value={String(summary.byTrack.JAMF)} />
+        <SummaryStat label="Intune" value={String(summary.byTrack.INTUNE)} />
+      </section>
+
+      <ProgressBar value={summary.percent} tone="accent" style={{ marginTop: '1rem' }} />
+      <p className="muted" style={{ fontSize: '0.85rem', marginTop: '0.4rem' }}>
+        {summary.percent}% de la collection complétée
+        {selectedTrack !== 'TOUS' ? ` · piste ${formatLeaderboardTrackFilter(selectedTrack)}` : ''}
+      </p>
+
+      <BadgeSection title="Mes badges" eyebrow="Collection débloquée">
+        {earnedBadges.length > 0 ? (
+          <div style={{ display: 'grid', gap: '1rem', marginTop: '1rem' }}>
+            {earnedBadges.map((slug) => (
+              <EarnedBadgeCard key={slug} slug={slug} badge={earnedBySlug.get(slug)} />
+            ))}
+          </div>
+        ) : (
+          <p className="muted" style={{ marginTop: '0.75rem' }}>
+            {selectedTrack === 'TOUS'
+              ? 'Aucun badge gagné pour le moment. Termine une unité complète pour afficher ta première récompense.'
+              : `Aucun badge gagné sur la piste ${formatLeaderboardTrackFilter(selectedTrack)} pour le moment.`}
+          </p>
+        )}
+      </BadgeSection>
+
+      <BadgeSection title="À débloquer" eyebrow="Prochains objectifs">
+        {lockedBadges.length > 0 ? (
+          <div style={{ display: 'grid', gap: '1rem', marginTop: '1rem' }}>
+            {lockedBadges.map((slug) => (
+              <LockedBadgeCard key={slug} slug={slug} />
+            ))}
+          </div>
+        ) : (
+          <p className="muted" style={{ marginTop: '0.75rem' }}>
+            {selectedTrack === 'TOUS'
+              ? 'Bravo — tu as débloqué tous les super-badges disponibles !'
+              : `Bravo — tous les badges ${formatLeaderboardTrackFilter(selectedTrack)} sont débloqués !`}
+          </p>
+        )}
+      </BadgeSection>
+
+      <Card style={{ marginTop: '2rem' }}>
+        <span className="section-eyebrow">Continuer la progression</span>
+        <h2 style={{ fontSize: '1.2rem', fontWeight: 800, marginTop: '0.35rem' }}>
+          Chaque unité te rapproche d’un nouveau badge
+        </h2>
+        <p className="muted" style={{ marginTop: '0.35rem' }}>
+          Reprends un parcours, lance un sprint ou consulte ton tableau de bord pour suivre ta progression.
+        </p>
+        <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', marginTop: '1rem' }}>
+          <Button href="/courses">Explorer les parcours</Button>
+          <Button href="/dashboard" variant="secondary">
+            Mon tableau de bord
+          </Button>
+          <Button href="/sprint" variant="ghost">
+            Sprint certification
+          </Button>
+        </div>
+      </Card>
+    </section>
+  );
+}
+
+function TrackFilterRow({
+  selected,
+  onSelect,
+}: {
+  selected: LeaderboardTrackFilter;
+  onSelect: (track: LeaderboardTrackFilter) => void;
+}) {
+  return (
+    <div
+      className="leaderboard-track-filters"
+      style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap', marginTop: '1.25rem' }}
+    >
+      <span
+        className="muted"
+        style={{ fontSize: '0.8rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em' }}
+      >
+        Piste
+      </span>
+      <div className="chip-row" role="group" aria-label="Filtrer les badges par piste">
+        {LEADERBOARD_TRACK_FILTERS.map((track) => (
+          <button
+            key={track}
+            type="button"
+            className="chip"
+            aria-pressed={track === selected}
+            onClick={() => onSelect(track)}
+          >
+            {formatLeaderboardTrackFilter(track)}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function BadgeSection({
+  title,
+  eyebrow,
+  children,
+}: {
+  title: string;
+  eyebrow: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="section" style={{ marginTop: '2rem' }}>
+      <div className="section-head">
+        <div>
+          <span className="section-eyebrow">{eyebrow}</span>
+          <h2>{title}</h2>
+        </div>
+      </div>
+      {children}
+    </section>
+  );
+}
+
+function EarnedBadgeCard({ slug, badge }: { slug: string; badge?: UserBadge }) {
+  const visual = getBadgeVisual(slug);
+  const track = getBadgeTrack(slug);
+  const trackVisual = getTrackVisual(track);
+
+  return (
+    <Card
+      style={{
+        borderColor: `${visual.color}33`,
+        background: `linear-gradient(135deg, ${visual.bg} 0%, var(--surface) 100%)`,
+      }}
+    >
+      <div
+        style={{
+          display: 'grid',
+          gap: '1rem',
+          gridTemplateColumns: 'auto minmax(0, 1fr) auto',
+          alignItems: 'center',
+        }}
+      >
+        <div
+          aria-hidden
+          style={{
+            width: 56,
+            height: 56,
+            borderRadius: '50%',
+            display: 'grid',
+            placeItems: 'center',
+            fontSize: '1.75rem',
+            background: visual.bg,
+            border: `2px solid ${visual.color}44`,
+          }}
+        >
+          {visual.brand ? <BrandIcon brand={visual.brand} size="lg" /> : visual.icon}
+        </div>
+        <div style={{ minWidth: 0 }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', alignItems: 'center' }}>
+            <Badge tone="success" icon="\u2705">
+              Débloqué
+            </Badge>
+            <Badge
+              tone="accent"
+              brand={trackVisual.brand}
+              style={{ background: `${trackVisual.color}12`, color: trackVisual.color }}
+            >
+              {formatTrack(track)}
+            </Badge>
+          </div>
+          <h3 style={{ fontSize: '1.15rem', fontWeight: 800, marginTop: '0.45rem' }}>{visual.label}</h3>
+          <p className="muted" style={{ marginTop: '0.3rem', fontSize: '0.9rem' }}>
+            Piste {formatTrack(track)}
+            {badge?.earnedAt ? ` · obtenu le ${formatEarnedDate(badge.earnedAt)}` : ''}
+          </p>
+        </div>
+        <TrackIcon track={track} size="sm" />
+      </div>
+    </Card>
+  );
+}
+
+function LockedBadgeCard({ slug }: { slug: string }) {
+  const visual = getBadgeVisual(slug);
+  const track = getBadgeTrack(slug);
+  const criteria = getBadgeCriteria(slug);
+
+  return (
+    <Card
+      style={{
+        borderColor: 'var(--border-soft)',
+        background: 'var(--card)',
+        opacity: 0.92,
+      }}
+    >
+      <div
+        style={{
+          display: 'grid',
+          gap: '1rem',
+          gridTemplateColumns: 'auto minmax(0, 1fr) auto',
+          alignItems: 'center',
+        }}
+      >
+        <div
+          aria-hidden
+          className="badge-locked-icon"
+          style={{
+            width: 56,
+            height: 56,
+            borderRadius: '50%',
+            display: 'grid',
+            placeItems: 'center',
+            fontSize: '1.75rem',
+            filter: 'grayscale(0.85)',
+          }}
+        >
+          {visual.brand ? <BrandIcon brand={visual.brand} size="lg" /> : visual.icon}
+        </div>
+        <div style={{ minWidth: 0 }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', alignItems: 'center' }}>
+            <Badge tone="neutral" icon="\u{1F512}">
+              Verrouillé
+            </Badge>
+            <Badge tone="outline" brand={getTrackVisual(track).brand}>
+              {formatTrack(track)}
+            </Badge>
+          </div>
+          <h3 style={{ fontSize: '1.15rem', fontWeight: 800, marginTop: '0.45rem', color: 'var(--muted)' }}>
+            {visual.label}
+          </h3>
+          <p style={{ marginTop: '0.3rem', fontSize: '0.9rem' }}>{criteria}</p>
+        </div>
+        <Button href="/courses" size="sm" variant="secondary">
+          Voir le parcours
+        </Button>
+      </div>
+    </Card>
+  );
+}
+
+function SummaryStat({ label, value }: { label: string; value: string }) {
+  return (
+    <Card variant="soft">
+      <p className="stat-label">{label}</p>
+      <p className="stat-value">{value}</p>
+    </Card>
+  );
+}
+
+function filterBadgesByTrack(slugs: readonly string[], track: LeaderboardTrackFilter) {
+  if (track === 'TOUS') return [...slugs];
+  return slugs.filter((slug) => getBadgeTrack(slug) === track);
+}
+
+function buildSummary(data: UserBadgesResult | null, track: LeaderboardTrackFilter) {
+  const visibleSlugs = filterBadgesByTrack(ALL_BADGE_SLUGS, track);
+  const total = visibleSlugs.length;
+  const earnedSlugs = new Set(data?.earnedSlugs ?? []);
+  const earned = visibleSlugs.filter((slug) => earnedSlugs.has(slug)).length;
+  const byTrack = { APPLE: 0, JAMF: 0, INTUNE: 0 };
+
+  for (const slug of data?.earnedSlugs ?? []) {
+    if (track !== 'TOUS' && getBadgeTrack(slug) !== track) continue;
+    const badgeTrack = getBadgeTrack(slug);
+    if (badgeTrack in byTrack) {
+      byTrack[badgeTrack as keyof typeof byTrack] += 1;
+    }
+  }
+
+  return {
+    total,
+    earned,
+    percent: total > 0 ? Math.round((earned / total) * 100) : 0,
+    byTrack,
+  };
+}
+
+function formatEarnedDate(iso: string) {
+  try {
+    return new Intl.DateTimeFormat('fr-FR', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    }).format(new Date(iso));
+  } catch {
+    return '';
+  }
+}
