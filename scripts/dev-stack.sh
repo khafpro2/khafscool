@@ -7,6 +7,11 @@ cd "$ROOT"
 echo "==> PostgreSQL (docker compose, port 5432)…"
 pnpm db:up
 
+echo "==> Migrations et seed (si première install ou schéma modifié)…"
+echo "    pnpm db:migrate && pnpm db:seed"
+pnpm db:migrate
+pnpm db:seed
+
 echo "==> Backend http://localhost:4000 et Web http://127.0.0.1:3000"
 echo "    Ctrl+C arrête les deux serveurs."
 echo ""

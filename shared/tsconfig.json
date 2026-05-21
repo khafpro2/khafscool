@@ -1,18 +1,14 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
     "outDir": "dist",
     "rootDir": "src",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "declaration": true,
-    "paths": {
-      "@ama/shared": ["../shared/src/index.ts"],
-      "@ama/shared/*": ["../shared/src/*"]
-    }
+    "declaration": true
   },
   "include": ["src/**/*"]
 }

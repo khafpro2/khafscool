@@ -1,4 +1,5 @@
 packages:
   - "backend"
   - "mobile"
+  - "shared"
   - "web"

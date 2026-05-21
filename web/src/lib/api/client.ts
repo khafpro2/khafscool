@@ -236,11 +236,6 @@ export async function fetchCourseProgress(slug: string, token?: string): Promise
   }
 }
 
-export const NEXT_COURSE_BY_SLUG: Record<string, { slug: string; title: string }> = {
-  'apple-cert-prep': { slug: 'jamf-pro-foundations', title: 'Fondamentaux Jamf Pro' },
-  'jamf-pro-foundations': { slug: 'intune-ios-enrollment', title: 'Microsoft Intune pour Apple' },
-};
-
 export async function checkModuleAnswer(
   moduleId: string,
   token: string,

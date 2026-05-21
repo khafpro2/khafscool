@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
+import type { CourseSlug } from '@ama/shared/learning-paths';
 import {
   fetchCourse,
   fetchCourseProgress,
@@ -95,7 +96,10 @@ export function CourseCompleteClient({
       .finally(() => setIsLoading(false));
   }, [slug, initialCompletion]);
 
-  const nextCourse = useMemo(() => NEXT_COURSE_BY_SLUG[slug] ?? null, [slug]);
+  const nextCourse = useMemo(
+    () => NEXT_COURSE_BY_SLUG[slug as CourseSlug] ?? null,
+    [slug]
+  );
 
   if (isLoading) {
     return (

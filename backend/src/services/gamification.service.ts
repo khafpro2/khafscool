@@ -20,11 +20,6 @@ const TRACK_BADGES: Partial<Record<CourseTrack, string>> = {
   [CourseTrack.INTUNE]: 'intune-professional',
 };
 
-export const NEXT_COURSE_BY_SLUG: Record<string, { slug: string; title: string }> = {
-  'apple-cert-prep': { slug: 'jamf-pro-foundations', title: 'Fondamentaux Jamf Pro' },
-  'jamf-pro-foundations': { slug: 'intune-ios-enrollment', title: 'Microsoft Intune pour Apple' },
-};
-
 export type CourseCompletionPayload = {
   slug: string;
   title: string;

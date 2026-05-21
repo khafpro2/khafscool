@@ -1,15 +1,54 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { AppErrorBoundary } from '@/components/ErrorBoundary';
 import { DemoModeBanner } from '@/components/layout/DemoModeBanner';
 import { SiteMobileNav } from '@/components/layout/SiteMobileNav';
 import { Button } from '@/components/ui/Button';
 import { LEARNING_PATHS } from '@/lib/learningPaths';
 import './globals.css';
 
+const siteUrl = process.env.WEB_URL ?? 'http://127.0.0.1:3000';
+
 export const metadata: Metadata = {
-  title: 'MDM Academy Pro — Apple, Jamf Pro et Intune gratuits',
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: 'MDM Academy Pro — Apple, Jamf Pro et Intune gratuits',
+    template: '%s | MDM Academy',
+  },
   description:
     'Formation gamifiée gratuite : Apple Device Support, Jamf Pro et Microsoft Intune. Quiz, mini-jeux, badges et sprints certification.',
+  keywords: [
+    'MDM',
+    'Apple Device Support',
+    'Jamf Pro',
+    'Microsoft Intune',
+    'formation Apple',
+    'certification MDM',
+    'enrôlement iOS',
+  ],
+  authors: [{ name: 'MDM Academy' }],
+  openGraph: {
+    type: 'website',
+    locale: 'fr_FR',
+    url: siteUrl,
+    siteName: 'MDM Academy',
+    title: 'MDM Academy Pro — Apple, Jamf Pro et Intune gratuits',
+    description:
+      'Formation gamifiée gratuite : Apple Device Support, Jamf Pro et Microsoft Intune. Quiz, mini-jeux, badges et sprints certification.',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'MDM Academy Pro — Apple, Jamf Pro et Intune gratuits',
+    description:
+      'Formation gamifiée gratuite : Apple Device Support, Jamf Pro et Microsoft Intune.',
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+  alternates: {
+    canonical: '/',
+  },
 };
 
 const NAV_ITEMS = [
@@ -68,7 +107,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </header>
         <DemoModeBanner />
         <main className="container" style={{ paddingTop: '1.5rem' }}>
-          {children}
+          <AppErrorBoundary>{children}</AppErrorBoundary>
         </main>
         <footer className="site-footer">
           <div className="container site-footer-inner">

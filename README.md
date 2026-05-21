@@ -77,7 +77,7 @@ Mobile (Expo, optionnel) :
 pnpm --filter mobile dev
 ```
 
-La configuration Docker démarre PostgreSQL 16 sur `localhost:5432` avec la base `apple_mdm_academy` et l'utilisateur `postgres` / `postgres`, ce qui correspond au `DATABASE_URL` de `.env.example`. Pour arrêter la base locale :
+La configuration Docker démarre PostgreSQL 16 sur `localhost:5432` avec la base `apple_mdm_academy` et l'utilisateur `postgres` / `postgres`, ce qui correspond au `DATABASE_URL` de `.env.example`. Si un PostgreSQL local occupe déjà le port 5432, mappez `5433:5432` dans `compose.yaml` et ajustez `DATABASE_URL` (voir commentaires dans `.env.example`). Pour arrêter la base locale :
 
 ```bash
 pnpm db:down

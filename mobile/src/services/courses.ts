@@ -3,7 +3,7 @@ import {
   intuneIosEnrollmentQuestions,
   jamfProFoundationsQuestions,
   toDemoQuestions,
-} from '@shared/quiz-content';
+} from '@ama/shared/quiz-content';
 import { apiFetch } from './api';
 import { getAccessToken } from './auth';
 
@@ -102,10 +102,7 @@ export interface CompleteModuleResult {
   courseCompletion?: CourseCompletionResult;
 }
 
-export const NEXT_COURSE_BY_SLUG: Record<string, { slug: string; title: string }> = {
-  'apple-cert-prep': { slug: 'jamf-pro-foundations', title: 'Fondations Jamf Pro' },
-  'jamf-pro-foundations': { slug: 'intune-ios-enrollment', title: 'Microsoft Intune pour Apple' },
-};
+export { NEXT_COURSE_BY_SLUG } from '@ama/shared/constants';
 
 export async function fetchCourse(slug: string): Promise<{ data: CourseDetail; source: 'api' | 'demo' }> {
   const token = await getAccessToken();

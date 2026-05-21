@@ -3,7 +3,7 @@ import {
   intuneIosEnrollmentQuestions,
   jamfProFoundationsQuestions,
   toDemoQuestions,
-} from '@shared/quiz-content';
+} from '@ama/shared/quiz-content';
 import { formatTrack } from '../tracks';
 import type {
   CertificationSprintDays,
@@ -554,4 +554,4 @@ export const DEMO_COURSES: CourseDetail[] = [
       },
     ],
   },
-];
+];

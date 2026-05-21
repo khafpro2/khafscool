@@ -4,7 +4,8 @@ import {
   intuneIosEnrollmentQuestions,
   jamfProFoundationsQuestions,
   type SeedQuestion,
-} from '../../shared/quiz-content.js';
+} from '@ama/shared/quiz-content';
+import { LEARNING_PATHS } from '@ama/shared/learning-paths';
 
 const prisma = new PrismaClient();
 
@@ -102,11 +103,17 @@ async function seedCourse(course: {
   return savedCourse;
 }
 
+function pathTitle(slug: string): string {
+  const path = LEARNING_PATHS.find((entry) => entry.slug === slug);
+  if (!path) throw new Error(`Parcours inconnu: ${slug}`);
+  return path.title;
+}
+
 async function main() {
   const appleCourse = await seedCourse({
     track: CourseTrack.APPLE,
     slug: 'apple-cert-prep',
-    title: 'Parcours Apple — Device Support & MDM',
+    title: pathTitle('apple-cert-prep'),
     description:
       'Parcours fondamental pour techniciens support et débutants MDM sur l’écosystème Apple. En fin de parcours, tu sauras diagnostiquer Mac, iPhone et iPad, sécuriser sauvegardes et restaurations, structurer ta préparation à l’examen Apple Device Support et relier support terrain et bases MDM. Contenus originaux, non affiliés à Apple Inc.',
     sortOrder: 1,
@@ -173,7 +180,7 @@ async function main() {
   const jamfCourse = await seedCourse({
     track: CourseTrack.JAMF,
     slug: 'jamf-pro-foundations',
-    title: 'Fondamentaux Jamf Pro',
+    title: pathTitle('jamf-pro-foundations'),
     description:
       'Parcours pratique pour administrateurs MDM Jamf. En fin de parcours, tu sauras cibler des appareils avec smart groups, déployer des politiques pilotes, lire l’inventaire et la conformité Jamf, et enrôler une flotte supervisée via Apple Business Manager.',
     sortOrder: 2,
@@ -240,7 +247,7 @@ async function main() {
   const intuneCourse = await seedCourse({
     track: CourseTrack.INTUNE,
     slug: 'intune-ios-enrollment',
-    title: 'Microsoft Intune — Enrôlement iOS/iPadOS',
+    title: pathTitle('intune-ios-enrollment'),
     description:
       'Parcours pour admins Microsoft 365 et équipes endpoint hybrides. En fin de parcours, tu sauras configurer l’enrôlement automatisé (ADE) pour iOS/iPadOS, déployer des politiques de conformité Intune et protéger les apps M365 avec App Protection et Conditional Access.',
     sortOrder: 3,

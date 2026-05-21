@@ -8,6 +8,10 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
+      # Hôte 5432 → conteneur 5432 (valeur par défaut, alignée sur .env.example).
+      # Si PostgreSQL tourne déjà en local sur 5432, remplacer par :
+      # - "5433:5432"
+      # puis DATABASE_URL=postgresql://postgres:postgres@localhost:5433/apple_mdm_academy
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
