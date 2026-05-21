@@ -9,6 +9,7 @@ const pages = [
   { path: '/dashboard', label: 'dashboard', marker: 'Mon apprentissage' },
   { path: '/profile', label: 'profile', marker: 'Mon profil' },
   { path: '/courses', label: 'courses', marker: 'Catalogue public' },
+  { path: '/about', label: 'about', marker: 'Former les pros Apple et MDM' },
   { path: '/badges', label: 'badges', marker: 'Mes super-badges' },
   { path: '/quests', label: 'quests', marker: 'Quêtes hebdo' },
   { path: '/sprint', label: 'sprint', marker: 'Accélère ta préparation certification' },

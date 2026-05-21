@@ -154,6 +154,12 @@ export function ProfileScreen() {
         <Text style={styles.linkCta}>Ouvrir sur le web →</Text>
       </Pressable>
 
+      <Pressable style={styles.linkCard} onPress={() => openWebPath('/about')}>
+        <Text style={styles.linkTitle}>À propos</Text>
+        <Text style={styles.linkHint}>Mission, vision et trois piliers MDM Academy</Text>
+        <Text style={styles.linkCta}>Ouvrir sur le web →</Text>
+      </Pressable>
+
       <Pressable onPress={loadProfile} style={styles.refreshButton}>
         <Text style={styles.refreshText}>Rafraîchir le profil</Text>
       </Pressable>

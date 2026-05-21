@@ -2,6 +2,10 @@
 
 ## Unreleased — `cursor/progress-dashboard-auth-v2`
 
+- `MERGE.md` — checklist mainteneur avant fusion PR #6 (CI, seed, billing dormant, OAuth stub)
+- Web : page `/about` (mission, piliers Apple / Jamf / Intune, lien footer)
+- `smoke-web` : couverture HTTP de `/about`
+- Mobile : lien « À propos » vers `WEB_URL/about` depuis l’écran Profil
 - Fix `scripts/dev-stack.sh` (fins de ligne LF, `pnpm dev:stack` relance db + backend + web)
 - Mobile : constantes parcours (`NEXT_COURSE_BY_SLUG`, slugs) importées depuis `@ama/shared`
 - Thème **MDM Academy Pro** gratuit (palette `#2563EB`, sans paywall bloquant ; `/pricing` → `/courses`)
