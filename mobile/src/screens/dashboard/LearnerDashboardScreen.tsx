@@ -2,12 +2,14 @@ import { useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
+  Linking,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
+import { WEB_URL } from '../../config';
 import { BrandIcon } from '../../components/BrandIcon';
 import { ContinueLearningSection } from '../../components/home/ContinueLearningSection';
 import { HomeEngagementSection } from '../../components/home/HomeEngagementSection';
@@ -386,6 +388,17 @@ export function LearnerDashboardScreen({ onSignOut }: LearnerDashboardScreenProp
       <Pressable onPress={loadDashboard} style={styles.refreshButton}>
         <Text style={styles.refreshText}>Rafraîchir la progression</Text>
       </Pressable>
+
+      <Pressable
+        style={styles.supportCard}
+        onPress={() => void Linking.openURL(`${WEB_URL}/soutenir`)}
+      >
+        <Text style={styles.supportEyebrow}>{'\u{1F49A}'} Soutenir le projet</Text>
+        <Text style={styles.supportTitle}>Formation 100 % gratuite</Text>
+        <Text style={styles.supportHint}>
+          Un don volontaire aide l&apos;hébergement — ouvre la page web /soutenir.
+        </Text>
+      </Pressable>
     </ScrollView>
   );
 }
@@ -763,5 +776,17 @@ function createStyles(colors: AppThemeColors) {
   primaryButtonText: { color: '#FFFFFF', fontWeight: '800' },
   refreshButton: { padding: 16, alignItems: 'center' },
   refreshText: { color: colors.accent, fontWeight: '700' },
+  supportCard: {
+    marginTop: 8,
+    marginBottom: 24,
+    padding: 18,
+    borderRadius: colors.radiusLg,
+    backgroundColor: '#ecfdf5',
+    borderWidth: 1,
+    borderColor: '#a7f3d0',
+  },
+  supportEyebrow: { color: '#047857', fontWeight: '800', fontSize: 12, textTransform: 'uppercase' },
+  supportTitle: { color: colors.fg, fontWeight: '800', fontSize: 18, marginTop: 6 },
+  supportHint: { color: colors.muted, marginTop: 6, lineHeight: 20 },
   });
 }

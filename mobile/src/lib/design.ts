@@ -111,6 +111,12 @@ const BADGE_VISUALS: Record<string, BadgeVisual> = {
     color: '#0050a0',
     bg: '#e3f0ff',
   },
+  supporter: {
+    label: 'Supporter',
+    icon: '\u{1F49A}',
+    color: '#059669',
+    bg: '#ecfdf5',
+  },
 };
 
 export function getBadgeVisual(badge: string): BadgeVisual {

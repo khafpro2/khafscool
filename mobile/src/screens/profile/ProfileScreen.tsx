@@ -16,7 +16,7 @@ import {
 import { preferenceLabel, useAppTheme } from '../../context/ThemeContext';
 import { WEB_URL } from '../../config';
 import type { AppThemeColors } from '../../lib/design';
-import { formatLevel, formatTrack, getRankInfo } from '../../lib/design';
+import { formatLevel, formatTrack, getBadgeVisual, getRankInfo } from '../../lib/design';
 import { useThemedStyles } from '../../hooks/useThemedStyles';
 import { RecentActivitySection } from '../../components/profile/RecentActivitySection';
 import type { CompletedCourseSummary, LearnerDashboard } from '../../services/progress';
@@ -294,6 +294,11 @@ export function ProfileScreen() {
           <Text style={styles.supporterText}>
             {'\u{1F49A}'} Merci pour votre soutien — vous contribuez à faire vivre MDM Academy Pro.
           </Text>
+          <View style={[styles.supporterBadgeChip, { backgroundColor: getBadgeVisual('supporter').bg }]}>
+            <Text style={[styles.supporterBadgeLabel, { color: getBadgeVisual('supporter').color }]}>
+              {getBadgeVisual('supporter').icon} Badge Supporter
+            </Text>
+          </View>
         </View>
       ) : null}
 
@@ -740,6 +745,14 @@ function createStyles(colors: AppThemeColors) {
       borderColor: '#a7f3d0',
     },
     supporterText: { color: '#047857', lineHeight: 20, fontWeight: '700', fontSize: 14 },
+    supporterBadgeChip: {
+      alignSelf: 'flex-start',
+      marginTop: 10,
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+      borderRadius: 999,
+    },
+    supporterBadgeLabel: { fontWeight: '800', fontSize: 13 },
     statsRecapCard: { borderRadius: 24, padding: 20, marginBottom: 24 },
     statsRecapEyebrow: {
       color: 'rgba(255,255,255,0.92)',
