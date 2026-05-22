@@ -6,8 +6,10 @@ export const metadata: Metadata = {
   description:
     'Soutenez MDM Academy Pro par un don optionnel. La formation Apple, Jamf et Intune reste 100 % gratuite.',
   openGraph: {
+    locale: 'fr_FR',
     title: 'Soutenir MDM Academy Pro',
     description: 'Don volontaire pour maintenir une formation MDM 100 % gratuite.',
+    url: '/soutenir',
   },
   alternates: {
     canonical: '/soutenir',

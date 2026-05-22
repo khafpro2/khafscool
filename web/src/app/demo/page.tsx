@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { DEMO_ACCOUNT } from '@ama/shared/constants';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -70,6 +71,22 @@ const QUICK_ROUTES = [
   { href: '/resources', label: 'Ressources' },
   { href: '/diagnostics', label: 'Diagnostics' },
 ];
+
+export const metadata: Metadata = {
+  title: 'Guide de démonstration — Tester en 6 étapes',
+  description:
+    'Parcours guidé FR pour tester MDM Academy Pro : compte démo, parcours Apple/Jamf/Intune, quiz, quêtes, classement et certificat.',
+  openGraph: {
+    locale: 'fr_FR',
+    title: 'Guide démo — MDM Academy Pro',
+    description:
+      'Valide le MVP en local : catalogue, gamification et certificat avec le compte démo ou sans inscription.',
+    url: '/demo',
+  },
+  alternates: {
+    canonical: '/demo',
+  },
+};
 
 export default function DemoPage() {
   return (

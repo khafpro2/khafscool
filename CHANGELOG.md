@@ -26,6 +26,13 @@ Première release MVP **MDM Academy Pro** (branche `cursor/progress-dashboard-au
 
 ## Unreleased — `cursor/progress-dashboard-auth-v2`
 
+### Sprint v0.2 (en cours)
+- Contenu Intune : +2 questions quiz ADE (`ade-enrollment-basics`) — profil Setup Assistant, renouvellement jeton MDM
+- Certificat : bouton « Télécharger PDF » + aide impression navigateur (`@media print` existant)
+- API : `GET /admin/donations/stats` protégée par `X-Admin-Api-Key` — agrégats lecture seule ; doc `docs/DONATIONS.md`
+- Mobile : carte « Soutenir le projet » sur l’accueil ; chip badge Supporter sur profil connecté
+- SEO : métadonnées Open Graph `fr_FR` sur `/soutenir` et `/demo`
+
 ### Contact HarmyTech
 - Email officiel `KTHIAM@HARMYTECH.COM` — footer, à propos, pages légales, profil RGPD, `/soutenir` (questions dons), mobile à propos
 - Variables optionnelles : `CONTACT_EMAIL`, `NEXT_PUBLIC_CONTACT_EMAIL`, `EXPO_PUBLIC_CONTACT_EMAIL` ; helper `web/src/lib/contact.ts`
