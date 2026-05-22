@@ -1,5 +1,6 @@
 'use client';
 
+import { DEMO_ACCOUNT } from '@ama/shared/constants';
 import Link from 'next/link';
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import type { DashboardData } from '@/lib/api';
@@ -89,7 +90,7 @@ export default function ProfilePage() {
   const isSupporter = data.isSupporter ?? badges.includes('supporter');
   const displayName =
     displayNameOverride ?? user.displayName ?? storedUser?.displayName ?? 'Apprenant';
-  const email = user.email ?? storedUser?.email ?? 'demo@ama.dev';
+  const email = user.email ?? storedUser?.email ?? DEMO_ACCOUNT.email;
   const rank = getRankInfo(stats.points);
   const previousFloor = rank.minPoints;
   const ceiling = rank.nextPoints ?? Math.max(previousFloor + 100, stats.points + 100);

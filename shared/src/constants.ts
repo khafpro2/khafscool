@@ -8,3 +8,10 @@ export const NEXT_COURSE_BY_SLUG: Partial<Record<CourseSlug, NextCourseLink>> = 
   'apple-cert-prep': { slug: 'jamf-pro-foundations', title: 'Fondamentaux Jamf Pro' },
   'jamf-pro-foundations': { slug: 'intune-ios-enrollment', title: 'Microsoft Intune pour Apple' },
 };
+
+/** Compte démo seedé (API) et affiché dans l’UI locale — voir `pnpm db:seed`. */
+export const DEMO_ACCOUNT = {
+  email: 'demo@mdmacademy.local',
+  password: 'DemoTest2026!',
+  displayName: 'Technicien démo',
+} as const;

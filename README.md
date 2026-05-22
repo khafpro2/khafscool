@@ -18,7 +18,7 @@ pnpm dev:stack  # Postgres + API (:4000) + web (:3000)
 | Diagnostics | http://127.0.0.1:3000/diagnostics |
 | Auth / compte | http://127.0.0.1:3000/auth |
 
-**Compte démo** — explore le catalogue, le classement et les parcours sans inscription (`demo@ama.dev` affiché dans l’UI). Connecte-toi sur `/auth` pour sauvegarder ta progression.
+**Compte démo** — explore le catalogue, le classement et les parcours sans inscription (`demo@mdmacademy.local` / `DemoTest2026!` après `pnpm db:seed`, ou mode local sur `/demo`). Connecte-toi sur `/auth` pour sauvegarder ta progression.
 
 ## Fonctionnalités
 
@@ -38,7 +38,7 @@ Voir le détail dans [CHANGELOG.md](./CHANGELOG.md) (branche `cursor/progress-da
 - Mini-scénarios accessibles au clavier, erreurs auth en français, filtre classement par piste
 - Certificat imprimable, partage de réussite, thème sombre et PWA
 
-**Compte démo** — sans inscription, explore le catalogue, le classement et les parcours en mode local (`demo@ama.dev` affiché dans l’UI). Pour sauvegarder ta progression, crée un compte gratuit sur [`/auth`](http://127.0.0.1:3000/auth) ou suis le [guide démo](/demo).
+**Compte démo** — sans inscription, explore le catalogue, le classement et les parcours en mode local (`demo@mdmacademy.local`, mot de passe `DemoTest2026!` après seed). Pour sauvegarder ta progression, connecte-toi sur [`/auth`](http://127.0.0.1:3000/auth) ou suis le [guide démo](/demo).
 
 ## Contact
 
@@ -341,7 +341,7 @@ Ce fichier est géré par l’IDE (hors dépôt git) ; le README documente son e
 
 ## Prochaines étapes
 
-Roadmap post-PR #6 (ne pas merger sans revue — voir [MERGE.md](./MERGE.md) et [DEPLOYMENT.md](./DEPLOYMENT.md)) :
+Roadmap détaillée : [ROADMAP.md](./ROADMAP.md). Post-PR #6 (ne pas merger sans revue — voir [MERGE.md](./MERGE.md) et [DEPLOYMENT.md](./DEPLOYMENT.md)) :
 
 1. **Fusion PR #6** — valider CI (build-test, integration, e2e-web), checklist [MERGE.md](./MERGE.md)
 2. **Déploiement** — web sur Vercel + API sur Railway/Fly (variables `DATABASE_URL`, JWT, `NEXT_PUBLIC_API_URL`, `WEB_URL`)

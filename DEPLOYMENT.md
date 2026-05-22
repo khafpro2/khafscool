@@ -84,6 +84,8 @@ pnpm exec prisma migrate deploy
 pnpm exec prisma db seed
 ```
 
+Le seed crée aussi le compte démo API : `demo@mdmacademy.local` / `DemoTest2026!` (voir [ROADMAP.md](./ROADMAP.md)).
+
 Ne pas exécuter le seed sur une base de production contenant déjà des comptes réels.
 
 ## Déploiement par composant

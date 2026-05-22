@@ -40,7 +40,7 @@ Workflow : `.github/workflows/ci.yml`
 
 - [ ] Version monorepo `@ama/shared`, backend, web, mobile : **0.1.0**
 - [ ] [CHANGELOG.md](./CHANGELOG.md) — section `[0.1.0]` à jour
-- [ ] Compte démo local (`demo@ama.dev`) et compte API seed testés
+- [ ] Compte démo seed (`demo@mdmacademy.local` / `DemoTest2026!`) et mode local `/demo` testés
 - [ ] Variables prod documentées dans [DEPLOYMENT.md](./DEPLOYMENT.md)
 - [ ] Export / suppression compte testés (`GET /users/me/export`, `DELETE /users/me`)
 - [ ] `bash scripts/verify-release.sh` — ou `SKIP_E2E=1 bash scripts/verify-release.sh` (sans Playwright)
@@ -95,12 +95,12 @@ pnpm smoke:web
 - [ ] **Bannière API** — alerte si le backend est indisponible (`ApiStatusBanner` web, équivalent mobile)
 - [ ] **Filtres piste** — `/courses?track=` et `/leaderboard?track=` (chips Toutes / Apple / Jamf / Intune) ; parité mobile catalogue + classement
 - [ ] **Page `/resources`** — liens officiels Apple MDM, Jamf, Microsoft Intune (BrandIcon, layout Pro)
-- [ ] **Compte démo** — exploration sans inscription (`demo@ama.dev`, mode local `/demo`)
+- [ ] **Compte démo** — exploration sans inscription (`demo@mdmacademy.local`, mode local `/demo`)
 - [ ] **Pages légales FR** — `/legal/confidentialite`, `/legal/conditions` (métadonnées SEO, liens footer)
 - [ ] **Bannière cookies** — consentement localStorage, lien confidentialité, pas de traceur tiers
 - [ ] **Header points + rang** — indicateur discret (cache session 5 min, liens profil/classement)
 - [ ] **Profil certificats** — parcours 100 % → lien `/courses/[slug]/certificate` (web + mobile)
-- [ ] **Guide démo `/demo`** — parcours guidé 6 étapes, bandeau `demo@ama.dev`, BrandIcon, dark mode
+- [ ] **Guide démo `/demo`** — parcours guidé 6 étapes, bandeau `demo@mdmacademy.local`, BrandIcon, dark mode
 - [ ] **Open Graph parcours** — image dynamique titre + piste sur `/courses/[slug]`
 - [ ] **Mobile profil stats** — carte récap points, rang, streak et #classement
 - [ ] **RGPD compte** — export JSON + suppression compte (web profil + mobile API)

@@ -1,4 +1,6 @@
-import { CourseTrack, Prisma, PrismaClient } from '@prisma/client';
+import bcrypt from 'bcrypt';
+import { AuthProvider, CourseTrack, Prisma, PrismaClient } from '@prisma/client';
+import { DEMO_ACCOUNT } from '@ama/shared/constants';
 import {
   appleCertPrepQuestions,
   intuneIosEnrollmentQuestions,
@@ -327,6 +329,22 @@ async function main() {
     countQuestions(intuneCourse.id),
   ]);
 
+  const passwordHash = await bcrypt.hash(DEMO_ACCOUNT.password, 12);
+  await prisma.user.upsert({
+    where: { email: DEMO_ACCOUNT.email },
+    update: {
+      displayName: DEMO_ACCOUNT.displayName,
+      passwordHash,
+      provider: AuthProvider.LOCAL,
+    },
+    create: {
+      email: DEMO_ACCOUNT.email,
+      displayName: DEMO_ACCOUNT.displayName,
+      passwordHash,
+      provider: AuthProvider.LOCAL,
+    },
+  });
+
   console.log(
     '✅ Seed OK — parcours:',
     appleCourse.slug,
@@ -334,7 +352,9 @@ async function main() {
     jamfCourse.slug,
     `(${jamfQ} questions)`,
     intuneCourse.slug,
-    `(${intuneQ} questions)`
+    `(${intuneQ} questions)`,
+    '| compte démo:',
+    DEMO_ACCOUNT.email
   );
 }
 

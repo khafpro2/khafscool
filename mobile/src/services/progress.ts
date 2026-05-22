@@ -1,3 +1,4 @@
+import { DEMO_ACCOUNT } from '@ama/shared/constants';
 import { getAccessToken } from './auth';
 import { apiFetch } from './api';
 
@@ -114,7 +115,7 @@ export async function fetchLearnerDashboard(): Promise<LearnerDashboard> {
 }
 
 const demoProgress: LearnerProgress = {
-  user: { id: 'demo', displayName: 'Technicien démo', email: 'demo@ama.dev' },
+  user: { id: 'demo', displayName: DEMO_ACCOUNT.displayName, email: DEMO_ACCOUNT.email },
   progress: {
     totalModules: 6,
     completedModules: 2,

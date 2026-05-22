@@ -1,3 +1,4 @@
+import { DEMO_ACCOUNT } from '@ama/shared/constants';
 import { expect, test } from '@playwright/test';
 
 test.describe('Page démo — smoke', () => {
@@ -8,7 +9,8 @@ test.describe('Page démo — smoke', () => {
     await expect(page.getByRole('heading', { name: /Tester Apple MDM Academy en 6 étapes/i })).toBeVisible();
     await expect(page.getByRole('note', { name: /Identifiants compte démo/i })).toBeVisible();
     const credentialsBanner = page.getByRole('note', { name: /Identifiants compte démo/i });
-    await expect(credentialsBanner.getByText('demo@ama.dev', { exact: true })).toBeVisible();
+    await expect(credentialsBanner.getByText(DEMO_ACCOUNT.email, { exact: true })).toBeVisible();
+    await expect(credentialsBanner.getByText(DEMO_ACCOUNT.password, { exact: true })).toBeVisible();
     await expect(credentialsBanner.getByText(/Technicien démo/i)).toBeVisible();
 
     await expect(page.getByRole('heading', { name: 'Compte démo' })).toBeVisible();

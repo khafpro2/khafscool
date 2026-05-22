@@ -1,11 +1,12 @@
+import { DEMO_ACCOUNT } from '@ama/shared/constants';
 import { expect, test } from '@playwright/test';
 
 const API_BASE = 'http://localhost:4000';
 
 const mockUser = {
   id: 'e2e-user-demo',
-  email: 'demo@ama.dev',
-  displayName: 'Technicien démo',
+  email: DEMO_ACCOUNT.email,
+  displayName: DEMO_ACCOUNT.displayName,
   provider: 'EMAIL',
 };
 
@@ -66,8 +67,8 @@ test.describe('Profil — export RGPD (compte connecté)', () => {
   test('connexion démo puis bouton export visible sur le profil', async ({ page }) => {
     await page.goto('/auth?redirect=/profile');
 
-    await page.getByLabel(/Email/i).fill('demo@ama.dev');
-    await page.getByLabel(/Mot de passe/i).fill('demo-password-ci');
+    await page.getByLabel(/Email/i).fill(DEMO_ACCOUNT.email);
+    await page.getByLabel(/Mot de passe/i).fill(DEMO_ACCOUNT.password);
     await page.getByRole('button', { name: /Se connecter/i }).first().click();
 
     await expect(page).toHaveURL(/\/profile/);

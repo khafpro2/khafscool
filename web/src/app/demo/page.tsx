@@ -1,11 +1,9 @@
+import { DEMO_ACCOUNT } from '@ama/shared/constants';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { BrandIcon } from '@/components/ui/BrandIcon';
 import type { BrandId } from '@/lib/brands';
-
-const DEMO_EMAIL = 'demo@ama.dev';
-const DEMO_DISPLAY_NAME = 'Technicien démo';
 
 const GUIDED_STEPS: {
   brand?: BrandId;
@@ -102,11 +100,12 @@ export default function DemoPage() {
             Compte démo
           </Badge>
           <p className="demo-credentials-banner__title">
-            <strong>{DEMO_DISPLAY_NAME}</strong> · <code>{DEMO_EMAIL}</code>
+            <strong>{DEMO_ACCOUNT.displayName}</strong> · <code>{DEMO_ACCOUNT.email}</code>
           </p>
           <p className="demo-credentials-banner__hint">
-            Mode local sans mot de passe — données de démonstration dans le navigateur. Connecte-toi sur{' '}
-            <a href="/auth">/auth</a> pour enregistrer ta progression réelle après le seed.
+            Mot de passe API (après <code>pnpm db:seed</code>) : <code>{DEMO_ACCOUNT.password}</code>. Sans
+            connexion, le mode local affiche des données de démonstration dans le navigateur. Connecte-toi sur{' '}
+            <a href="/auth">/auth</a> pour enregistrer ta progression réelle.
           </p>
         </div>
       </div>

@@ -6,6 +6,12 @@ import { Card } from '@/components/ui/Card';
 export const metadata: Metadata = {
   title: 'Don annulé',
   description: 'Le paiement du don à MDM Academy Pro a été annulé. La formation reste gratuite.',
+  openGraph: {
+    locale: 'fr_FR',
+    title: 'Don annulé — MDM Academy Pro',
+    description: 'Aucun paiement effectué. La formation MDM reste entièrement gratuite.',
+    url: '/soutenir/annule',
+  },
   robots: { index: false, follow: true },
   alternates: {
     canonical: '/soutenir/annule',

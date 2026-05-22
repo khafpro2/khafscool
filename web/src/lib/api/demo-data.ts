@@ -1,3 +1,4 @@
+import { DEMO_ACCOUNT } from '@ama/shared/constants';
 import {
   appleCertPrepQuestions,
   intuneIosEnrollmentQuestions,
@@ -171,7 +172,7 @@ export function mockLeaderboard(): LeaderboardResponse {
 
 export function mockDashboard(): DashboardData {
   return {
-    user: { id: 'demo', displayName: 'Technicien démo', email: 'demo@ama.dev' },
+    user: { id: 'demo', displayName: DEMO_ACCOUNT.displayName, email: DEMO_ACCOUNT.email },
     stats: {
       points: 120,
       level: 'TECHNICIAN',

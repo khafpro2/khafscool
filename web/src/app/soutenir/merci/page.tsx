@@ -6,6 +6,12 @@ import { Card } from '@/components/ui/Card';
 export const metadata: Metadata = {
   title: 'Merci pour votre soutien',
   description: 'Votre don à MDM Academy Pro a bien été enregistré. La formation reste 100 % gratuite.',
+  openGraph: {
+    locale: 'fr_FR',
+    title: 'Merci pour votre soutien — MDM Academy Pro',
+    description: 'Votre don volontaire aide la communauté MDM. La formation reste 100 % gratuite.',
+    url: '/soutenir/merci',
+  },
   robots: { index: false, follow: true },
   alternates: {
     canonical: '/soutenir/merci',
