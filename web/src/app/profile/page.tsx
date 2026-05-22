@@ -3,8 +3,9 @@
 import Link from 'next/link';
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import type { DashboardData } from '@/lib/api';
-import { fetchCurrentUser, fetchDashboard, updateDisplayName } from '@/lib/api';
-import { buildAuthUrl, getAccessToken, getStoredUser, logoutSession, updateStoredUserDisplayName } from '@/lib/auth';
+import { fetchCurrentUser, fetchDashboard, updateDisplayName, changePassword } from '@/lib/api';
+import { buildAuthUrl, getAccessToken, getStoredUser, logoutAllDevices, logoutSession, updateStoredUserDisplayName } from '@/lib/auth';
+import { resolveApiErrorMessage } from '@/lib/auth-errors';
 import { showToast } from '@/lib/toast-store';
 import { formatTrack } from '@/lib/tracks';
 import { Badge } from '@/components/ui/Badge';
@@ -160,6 +161,24 @@ export default function ProfilePage() {
           );
         }}
       />
+
+      {hasToken && fromApi ? (
+        <SecuritySection
+          provider={user.provider ?? storedUser?.provider}
+          onLogoutAll={async () => {
+            await logoutAllDevices();
+            setHasToken(false);
+            setFromApi(false);
+            const demo = await fetchDashboard();
+            setData(demo);
+            showToast({
+              kind: 'success',
+              title: 'Sessions fermées',
+              body: 'Tous tes appareils ont été déconnectés.',
+            });
+          }}
+        />
+      ) : null}
 
       <QuickLinksCard />
 
@@ -541,6 +560,185 @@ function AccountField({ label, value }: { label: string; value: string }) {
       </dt>
       <dd style={{ marginTop: '0.25rem', fontWeight: 700 }}>{value}</dd>
     </div>
+  );
+}
+
+function SecuritySection({
+  provider,
+  onLogoutAll,
+}: {
+  provider?: string;
+  onLogoutAll: () => Promise<void>;
+}) {
+  const isLocalAccount = !provider || provider === 'LOCAL' || provider === 'EMAIL';
+  const [isLoggingOutAll, setIsLoggingOutAll] = useState(false);
+
+  async function handleLogoutAll() {
+    setIsLoggingOutAll(true);
+    try {
+      await onLogoutAll();
+    } finally {
+      setIsLoggingOutAll(false);
+    }
+  }
+
+  return (
+    <Card style={{ marginTop: '1.25rem' }}>
+      <span className="section-eyebrow">Sécurité</span>
+      <h2 style={{ fontSize: '1.15rem', fontWeight: 800, marginTop: '0.35rem' }}>Compte et sessions</h2>
+
+      {isLocalAccount ? (
+        <PasswordChangeForm />
+      ) : (
+        <p className="muted" style={{ marginTop: '0.75rem', fontSize: '0.9rem', lineHeight: 1.5 }}>
+          Connexion via {formatProvider(provider ?? '')} — le mot de passe se gère depuis ce fournisseur.
+        </p>
+      )}
+
+      <div style={{ marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px solid var(--border)' }}>
+        <p style={{ fontWeight: 700 }}>Déconnecter tous les appareils</p>
+        <p className="muted" style={{ marginTop: '0.35rem', fontSize: '0.88rem', lineHeight: 1.5 }}>
+          Révoque toutes les sessions actives (web, mobile, autres navigateurs).
+        </p>
+        <button
+          type="button"
+          className="btn btn-secondary btn-sm"
+          style={{ marginTop: '0.75rem' }}
+          disabled={isLoggingOutAll}
+          onClick={() => void handleLogoutAll()}
+        >
+          {isLoggingOutAll ? 'Déconnexion…' : 'Déconnecter tous les appareils'}
+        </button>
+      </div>
+    </Card>
+  );
+}
+
+function PasswordChangeForm() {
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+
+  async function handleSubmit(event: FormEvent) {
+    event.preventDefault();
+    setError(null);
+
+    if (!currentPassword.trim()) {
+      setError('Indique ton mot de passe actuel.');
+      return;
+    }
+    if (newPassword.length < 8) {
+      setError('Le nouveau mot de passe doit contenir au moins 8 caractères.');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setError('Les deux mots de passe ne correspondent pas.');
+      return;
+    }
+
+    const token = getAccessToken();
+    if (!token) {
+      setError('Connecte-toi pour modifier ton mot de passe.');
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      await changePassword(token, currentPassword, newPassword);
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      showToast({
+        kind: 'success',
+        title: 'Mot de passe mis à jour',
+        body: 'Utilise ton nouveau mot de passe lors de ta prochaine connexion.',
+      });
+    } catch (caught) {
+      setError(resolveApiErrorMessage(caught, 'password'));
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '0.75rem', marginTop: '1rem' }}>
+      <p className="muted" style={{ margin: 0, fontSize: '0.88rem' }}>
+        Modifie ton mot de passe de connexion e-mail.
+      </p>
+      <label htmlFor="profile-current-password" className="muted" style={{ fontSize: '0.78rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+        Mot de passe actuel
+      </label>
+      <input
+        id="profile-current-password"
+        type="password"
+        value={currentPassword}
+        onChange={(event) => {
+          setCurrentPassword(event.target.value);
+          if (error) setError(null);
+        }}
+        autoComplete="current-password"
+        aria-invalid={Boolean(error)}
+        style={{
+          padding: '0.55rem 0.75rem',
+          borderRadius: 'var(--radius-md)',
+          border: `1px solid ${error ? '#dc2626' : 'var(--border)'}`,
+          background: 'var(--surface)',
+          color: 'var(--fg)',
+        }}
+      />
+      <label htmlFor="profile-new-password" className="muted" style={{ fontSize: '0.78rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+        Nouveau mot de passe
+      </label>
+      <input
+        id="profile-new-password"
+        type="password"
+        value={newPassword}
+        onChange={(event) => {
+          setNewPassword(event.target.value);
+          if (error) setError(null);
+        }}
+        autoComplete="new-password"
+        minLength={8}
+        style={{
+          padding: '0.55rem 0.75rem',
+          borderRadius: 'var(--radius-md)',
+          border: '1px solid var(--border)',
+          background: 'var(--surface)',
+          color: 'var(--fg)',
+        }}
+      />
+      <label htmlFor="profile-confirm-password" className="muted" style={{ fontSize: '0.78rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+        Confirmer le nouveau mot de passe
+      </label>
+      <input
+        id="profile-confirm-password"
+        type="password"
+        value={confirmPassword}
+        onChange={(event) => {
+          setConfirmPassword(event.target.value);
+          if (error) setError(null);
+        }}
+        autoComplete="new-password"
+        minLength={8}
+        style={{
+          padding: '0.55rem 0.75rem',
+          borderRadius: 'var(--radius-md)',
+          border: '1px solid var(--border)',
+          background: 'var(--surface)',
+          color: 'var(--fg)',
+        }}
+      />
+      {error ? (
+        <p role="alert" style={{ margin: 0, color: '#dc2626', fontSize: '0.88rem', fontWeight: 600 }}>
+          {error}
+        </p>
+      ) : null}
+      <button type="submit" className="btn btn-sm" disabled={isSaving} style={{ justifySelf: 'start' }}>
+        {isSaving ? 'Enregistrement…' : 'Changer le mot de passe'}
+      </button>
+    </form>
   );
 }
 

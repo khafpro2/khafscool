@@ -39,6 +39,7 @@ import {
   inferLevelFromModules,
 } from '@/lib/design';
 import { toastBadgeUnlocked, toastModuleCompleted } from '@/lib/gamification-toasts';
+import { scoreGameOrder } from '@/lib/points';
 
 export function CourseDetailClient({ slug }: { slug: string }) {
   const router = useRouter();
@@ -162,6 +163,11 @@ export function CourseDetailClient({ slug }: { slug: string }) {
         : 0,
     [activeModule, activeQuestionResults]
   );
+  const estimatedActiveGameScore = useMemo(() => {
+    if (!activeModule?.game?.correctOrder?.length || !activeGameOrder?.length) return 0;
+    if (!gameTouched[activeModule.id]) return 0;
+    return scoreGameOrder(activeGameOrder, activeModule.game.correctOrder);
+  }, [activeGameOrder, activeModule, gameTouched]);
 
   const resetActiveQuizState = useCallback(() => {
     setAnswers((current) => {
@@ -568,6 +574,7 @@ export function CourseDetailClient({ slug }: { slug: string }) {
                       onSelectAnswer={handleSelectAnswer}
                       onCheckAnswer={handleCheckAnswer}
                       onRevealAll={handleRevealAllQuestions}
+                      estimatedGameScore={estimatedActiveGameScore}
                       onFinishQuiz={() => {
                         document
                           .getElementById('course-unit-submit')

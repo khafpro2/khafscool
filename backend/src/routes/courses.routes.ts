@@ -35,6 +35,7 @@ export async function coursesRoutes(app: FastifyInstance) {
   app.get('/users/me/progress', { preHandler: requireAuth }, courses.getUserProgress);
   app.get('/users/me/dashboard', { preHandler: requireAuth }, courses.getDashboard);
   app.patch<{ Body: unknown }>('/users/me', { preHandler: requireAuth }, auth.updateCurrentUserProfile);
+  app.patch<{ Body: unknown }>('/users/me/password', { preHandler: requireAuth }, auth.changeCurrentUserPassword);
   app.get('/quests/weekly', { preHandler: requireAuth }, courses.getWeeklyQuests);
   app.post<{ Body: CertificationSprintRequestBody }>(
     '/sprints/certification/start',

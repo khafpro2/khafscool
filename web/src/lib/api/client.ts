@@ -196,6 +196,25 @@ export async function updateDisplayName(token: string, displayName: string): Pro
   return data.user;
 }
 
+export async function changePassword(
+  token: string,
+  currentPassword: string,
+  newPassword: string
+): Promise<{ ok: true }> {
+  return apiRequest<{ ok: true }>('/users/me/password', {
+    method: 'PATCH',
+    headers: authHeader(token),
+    body: JSON.stringify({ currentPassword, newPassword }),
+  });
+}
+
+export async function logoutAllSessions(token: string): Promise<{ ok: true; revokedCount: number }> {
+  return apiRequest<{ ok: true; revokedCount: number }>('/auth/logout-all', {
+    method: 'POST',
+    headers: authHeader(token),
+  });
+}
+
 export async function fetchDashboard(token?: string): Promise<DashboardData> {
   try {
     if (token) {

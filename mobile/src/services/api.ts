@@ -54,6 +54,19 @@ export async function updateDisplayName(displayName: string): Promise<AuthUser> 
   return data.user;
 }
 
+export async function changePassword(currentPassword: string, newPassword: string): Promise<{ ok: true }> {
+  return apiFetch<{ ok: true }>('/users/me/password', {
+    method: 'PATCH',
+    body: JSON.stringify({ currentPassword, newPassword }),
+  });
+}
+
+export async function logoutAllSessions(): Promise<{ ok: true; revokedCount: number }> {
+  return apiFetch<{ ok: true; revokedCount: number }>('/auth/logout-all', {
+    method: 'POST',
+  });
+}
+
 type RefreshedSession = {
   accessToken: string;
   refreshToken: string;

@@ -25,5 +25,6 @@ export async function authRoutes(app: FastifyInstance) {
   app.post<{ Body: unknown }>('/auth/login', auth.loginLocal);
   app.post<{ Body: unknown }>('/auth/refresh', auth.refreshTokens);
   app.post<{ Body: { refreshToken?: string } }>('/auth/logout', { preHandler: requireAuth }, auth.logout);
+  app.post('/auth/logout-all', { preHandler: requireAuth }, auth.logoutAllSessions);
   app.get('/auth/me', { preHandler: requireAuth }, auth.getCurrentUser);
 }

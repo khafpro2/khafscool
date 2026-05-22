@@ -72,7 +72,7 @@ function formatRateLimitMessage(retryAfterSeconds?: number): string {
 
 export function resolveApiErrorMessage(
   error: unknown,
-  context: 'login' | 'register' | 'quiz' | 'module' = 'login'
+  context: 'login' | 'register' | 'quiz' | 'module' | 'password' = 'login'
 ): string {
   if (error instanceof AuthRequestError) {
     if (error.code === 'RATE_LIMIT_EXCEEDED' || error.status === 429) {
@@ -97,6 +97,18 @@ export function resolveApiErrorMessage(
       return 'Vérifie que ton email est valide et que le mot de passe contient au moins 8 caractères.';
     }
 
+    if (error.code === 'INVALID_PASSWORD_REQUEST') {
+      return 'Le nouveau mot de passe doit contenir au moins 8 caractères.';
+    }
+
+    if (error.code === 'WRONG_CURRENT_PASSWORD') {
+      return 'Mot de passe actuel incorrect.';
+    }
+
+    if (error.code === 'PASSWORD_NOT_AVAILABLE') {
+      return 'Le changement de mot de passe n’est disponible que pour les comptes e-mail.';
+    }
+
     if (error.status >= 500) {
       return 'Le serveur est indisponible pour le moment. Réessaie dans quelques instants.';
     }
@@ -112,6 +124,10 @@ export function resolveApiErrorMessage(
 
   if (context === 'module') {
     return 'Impossible d’enregistrer l’unité pour le moment.';
+  }
+
+  if (context === 'password') {
+    return 'Impossible de modifier le mot de passe pour le moment.';
   }
 
   return context === 'login'

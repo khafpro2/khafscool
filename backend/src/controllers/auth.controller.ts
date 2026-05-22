@@ -4,6 +4,7 @@ import { AuthProvider } from '@prisma/client';
 import { oauthProviders, type OAuthProviderName } from '../config/oauth.js';
 import { prisma } from '../lib/prisma.js';
 import {
+  changePasswordSchema,
   formatZodErrors,
   loginSchema,
   refreshSchema,
@@ -17,6 +18,7 @@ import {
 } from '../services/oauth.service.js';
 import {
   createRefreshToken,
+  revokeAllUserRefreshTokens,
   revokeRefreshToken,
   rotateRefreshToken,
   signAccessToken,
@@ -211,6 +213,48 @@ export async function logout(
   reply: FastifyReply
 ) {
   if (req.body.refreshToken) await revokeRefreshToken(req.body.refreshToken);
+  return reply.send({ ok: true });
+}
+
+export async function logoutAllSessions(req: FastifyRequest, reply: FastifyReply) {
+  const revokedCount = await revokeAllUserRefreshTokens(req.user.sub);
+  return reply.send({ ok: true, revokedCount });
+}
+
+export async function changeCurrentUserPassword(req: FastifyRequest<{ Body: unknown }>, reply: FastifyReply) {
+  const parsedBody = changePasswordSchema.safeParse(req.body ?? {});
+  if (!parsedBody.success) {
+    return reply.status(400).send({
+      error: 'INVALID_PASSWORD_REQUEST',
+      details: formatZodErrors(parsedBody.error),
+    });
+  }
+
+  const user = await prisma.user.findUnique({ where: { id: req.user.sub } });
+  if (!user) return reply.status(404).send({ error: 'NOT_FOUND' });
+
+  if (user.provider !== AuthProvider.LOCAL || !user.passwordHash) {
+    return reply.status(400).send({
+      error: 'PASSWORD_NOT_AVAILABLE',
+      message: 'Le changement de mot de passe n’est disponible que pour les comptes e-mail.',
+    });
+  }
+
+  const { currentPassword, newPassword } = parsedBody.data;
+  const matches = await bcrypt.compare(currentPassword, user.passwordHash);
+  if (!matches) {
+    return reply.status(401).send({
+      error: 'WRONG_CURRENT_PASSWORD',
+      message: 'Mot de passe actuel incorrect.',
+    });
+  }
+
+  const passwordHash = await bcrypt.hash(newPassword, 12);
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { passwordHash },
+  });
+
   return reply.send({ ok: true });
 }
 

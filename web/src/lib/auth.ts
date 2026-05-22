@@ -131,6 +131,22 @@ export async function logoutSession() {
   }
 }
 
+export async function logoutAllDevices() {
+  const accessToken = getAccessToken();
+
+  try {
+    if (accessToken) {
+      let res = await sendLogoutAll(accessToken);
+      if (res.status === 401) {
+        const refreshed = await refreshSession();
+        if (refreshed) res = await sendLogoutAll(refreshed.accessToken);
+      }
+    }
+  } finally {
+    clearAuthTokens();
+  }
+}
+
 export function clearAuthTokens() {
   if (typeof window === 'undefined') return;
   window.localStorage.removeItem(ACCESS_KEY);
@@ -159,6 +175,17 @@ function sendLogout(accessToken: string, refreshToken: string) {
       Authorization: `Bearer ${accessToken}`,
     },
     body: JSON.stringify({ refreshToken }),
+    cache: 'no-store',
+  });
+}
+
+function sendLogoutAll(accessToken: string) {
+  return fetch(`${API_URL}/auth/logout-all`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${accessToken}`,
+    },
     cache: 'no-store',
   });
 }

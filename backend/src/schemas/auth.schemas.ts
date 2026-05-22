@@ -29,6 +29,15 @@ export const updateProfileSchema = z.object({
   displayName: displayNameField,
 });
 
+export const changePasswordSchema = z.object({
+  currentPassword: z
+    .string({ required_error: 'Mot de passe actuel requis' })
+    .min(1, 'Mot de passe actuel requis'),
+  newPassword: z
+    .string({ required_error: 'Nouveau mot de passe requis' })
+    .min(8, 'Le nouveau mot de passe doit contenir au moins 8 caractères'),
+});
+
 export function formatZodErrors(error: z.ZodError) {
   return error.issues.map((issue) => ({
     field: issue.path.join('.') || 'body',

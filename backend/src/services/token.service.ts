@@ -78,3 +78,11 @@ export async function revokeRefreshToken(plainToken: string) {
   const hash = hashToken(plainToken);
   await prisma.refreshToken.updateMany({ where: { tokenHash: hash }, data: { revoked: true } });
 }
+
+export async function revokeAllUserRefreshTokens(userId: string) {
+  const result = await prisma.refreshToken.updateMany({
+    where: { userId, revoked: false },
+    data: { revoked: true },
+  });
+  return result.count;
+}

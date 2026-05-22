@@ -2,6 +2,13 @@
 
 ## Unreleased — `cursor/progress-dashboard-auth-v2`
 
+- API : `PATCH /users/me/password` — changement mot de passe (Zod FR, bcrypt, comptes e-mail)
+- API : `POST /auth/logout-all` — révoque tous les refresh tokens de l’utilisateur
+- Web : profil — section Sécurité (mot de passe + « Déconnecter tous les appareils », toasts erreurs FR)
+- Mobile : profil — formulaire mot de passe et bouton déconnexion globale (API connectée)
+- Web : `QuizPanel` — récap score X/Y + points estimés avant validation d’unité
+- Tests : schéma/route mot de passe, logout-all, récap points quiz
+
 - Auth : « Se souvenir de moi » (web `/auth`, mobile WelcomeScreen) — refresh 7 j / 90 j, JWT accès 15 min documenté
 - Web : aide raccourcis clavier (? + lien) sur parcours/quiz — quiz + mini-scénario FR
 - API : rate limit FR structuré (429) sur `check-answer` et `complete` ; QuizPanel affiche l’erreur style auth

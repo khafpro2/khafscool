@@ -13,7 +13,7 @@ vi.mock('../src/lib/prisma.js', () => ({
 }));
 
 import { prisma } from '../src/lib/prisma.js';
-import { rotateRefreshToken } from '../src/services/token.service.js';
+import { rotateRefreshToken, revokeAllUserRefreshTokens } from '../src/services/token.service.js';
 
 const refreshToken = prisma.refreshToken;
 
@@ -69,5 +69,23 @@ describe('rotateRefreshToken', () => {
 
     expect(refreshToken.update).not.toHaveBeenCalled();
     expect(refreshToken.create).not.toHaveBeenCalled();
+  });
+});
+
+describe('revokeAllUserRefreshTokens', () => {
+  beforeEach(() => {
+    vi.mocked(refreshToken.updateMany).mockReset();
+  });
+
+  it('revokes all active refresh tokens for a user', async () => {
+    vi.mocked(refreshToken.updateMany).mockResolvedValue({ count: 4 });
+
+    const revokedCount = await revokeAllUserRefreshTokens('user-1');
+
+    expect(refreshToken.updateMany).toHaveBeenCalledWith({
+      where: { userId: 'user-1', revoked: false },
+      data: { revoked: true },
+    });
+    expect(revokedCount).toBe(4);
   });
 });

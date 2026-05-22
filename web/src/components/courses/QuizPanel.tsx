@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { BrandIcon } from '@/components/ui/BrandIcon';
 import { ProgressBar } from '@/components/ui/ProgressBar';
+import { modulePointsFromScores } from '@/lib/points';
 
 export const QUIZ_PASS_PERCENT = 50;
 
@@ -27,6 +28,7 @@ type QuizPanelProps = {
   onCheckAnswer: (questionId: string, selectedOption: string) => Promise<QuestionCheckResult>;
   onRevealAll: () => Promise<void>;
   onFinishQuiz?: () => void;
+  estimatedGameScore?: number;
 };
 
 const CORRECT_MESSAGES = [
@@ -75,6 +77,7 @@ export function QuizPanel({
   onSelectAnswer,
   onCheckAnswer,
   onFinishQuiz,
+  estimatedGameScore = 0,
 }: QuizPanelProps) {
   const questions = module.questions;
   const totalQuestions = questions.length;
@@ -93,6 +96,10 @@ export function QuizPanel({
   const estimatedScore = useMemo(
     () => computeQuizScorePercent(totalQuestions, questionResults),
     [questionResults, totalQuestions]
+  );
+  const estimatedPointsEarned = useMemo(
+    () => modulePointsFromScores(estimatedScore, estimatedGameScore),
+    [estimatedGameScore, estimatedScore]
   );
   const revealedCount = useMemo(
     () => questions.filter((question) => revealedQuestions.has(question.id)).length,
@@ -314,6 +321,7 @@ export function QuizPanel({
             correctCount={correctCount}
             totalQuestions={totalQuestions}
             estimatedScore={estimatedScore}
+            estimatedPointsEarned={estimatedPointsEarned}
             passPercent={QUIZ_PASS_PERCENT}
           />
         )}
@@ -541,11 +549,13 @@ function QuizRecap({
   correctCount,
   totalQuestions,
   estimatedScore,
+  estimatedPointsEarned,
   passPercent,
 }: {
   correctCount: number;
   totalQuestions: number;
   estimatedScore: number;
+  estimatedPointsEarned: number;
   passPercent: number;
 }) {
   const minCorrect = Math.ceil((passPercent / 100) * totalQuestions);
@@ -555,8 +565,14 @@ function QuizRecap({
     <div className={`quiz-recap${meetsMinimum ? ' quiz-recap-success' : ' quiz-recap-warning'}`}>
       <p style={{ fontWeight: 800 }}>Récapitulatif avant validation de l&apos;unité</p>
       <p className="muted" style={{ marginTop: '0.35rem', fontSize: '0.9rem', lineHeight: 1.5 }}>
-        {correctCount}/{totalQuestions} bonnes réponses · score quiz estimé{' '}
+        {correctCount}/{totalQuestions} bonnes réponses · score quiz{' '}
         <strong>{estimatedScore}%</strong>
+        {estimatedPointsEarned > 0 ? (
+          <>
+            {' '}
+            · <strong>+{estimatedPointsEarned} points</strong> estimés
+          </>
+        ) : null}
         {totalQuestions > 0 && (
           <>
             {' '}

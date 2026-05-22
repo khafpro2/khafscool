@@ -16,9 +16,10 @@ import type { AppThemeColors } from '../../lib/design';
 import { formatLevel, formatTrack, getRankInfo } from '../../lib/design';
 import { useThemedStyles } from '../../hooks/useThemedStyles';
 import { RecentActivitySection } from '../../components/profile/RecentActivitySection';
-import type { CompletedCourseSummary } from '../../services/progress';
+import type { CompletedCourseSummary, LearnerDashboard } from '../../services/progress';
+import { fetchLearnerDashboard } from '../../services/progress';
 import { clearTokens } from '../../services/auth';
-import { LearnerDashboard, fetchLearnerDashboard } from '../../services/progress';
+import { changePassword, logoutAllSessions, updateDisplayName } from '../../services/api';
 import {
   buildPointsRankNavSnapshot,
   formatLeaderboardRankLabel,
@@ -27,7 +28,6 @@ import {
 import { writeStreakNavCache } from '../../lib/streak-nav-badge';
 import { usePointsRankNav } from '../../hooks/usePointsRankNav';
 import { fetchLeaderboard } from '../../services/gamification';
-import { updateDisplayName } from '../../services/api';
 
 export function ProfileScreen() {
   const router = useRouter();
@@ -39,6 +39,12 @@ export function ProfileScreen() {
   const [displayNameDraft, setDisplayNameDraft] = useState('');
   const [displayNameError, setDisplayNameError] = useState<string | null>(null);
   const [isSavingName, setIsSavingName] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [isSavingPassword, setIsSavingPassword] = useState(false);
+  const [isLoggingOutAll, setIsLoggingOutAll] = useState(false);
 
   async function loadProfile() {
     setLoading(true);
@@ -108,6 +114,48 @@ export function ProfileScreen() {
   async function handleSignOut() {
     await clearTokens();
     router.replace('/');
+  }
+
+  async function handleLogoutAllDevices() {
+    setIsLoggingOutAll(true);
+    try {
+      await logoutAllSessions();
+    } catch {
+      // Révoque localement même si l’API échoue.
+    } finally {
+      await clearTokens();
+      setIsLoggingOutAll(false);
+      router.replace('/');
+    }
+  }
+
+  async function handleChangePassword() {
+    setPasswordError(null);
+
+    if (!currentPassword.trim()) {
+      setPasswordError('Indique ton mot de passe actuel.');
+      return;
+    }
+    if (newPassword.length < 8) {
+      setPasswordError('Le nouveau mot de passe doit contenir au moins 8 caractères.');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setPasswordError('Les deux mots de passe ne correspondent pas.');
+      return;
+    }
+
+    setIsSavingPassword(true);
+    try {
+      await changePassword(currentPassword, newPassword);
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch {
+      setPasswordError('Impossible de modifier le mot de passe. Vérifie ton mot de passe actuel.');
+    } finally {
+      setIsSavingPassword(false);
+    }
   }
 
   if (loading || !dashboard) {
@@ -324,6 +372,83 @@ export function ProfileScreen() {
         <Text style={styles.refreshText}>Rafraîchir le profil</Text>
       </Pressable>
 
+      {source === 'api' ? (
+        <View style={styles.securityCard}>
+          <Text style={styles.sectionTitle}>Sécurité</Text>
+          <Text style={styles.sectionHint}>Mot de passe et sessions actives</Text>
+
+          <Text style={styles.securityLabel}>Mot de passe actuel</Text>
+          <TextInput
+            value={currentPassword}
+            onChangeText={(text) => {
+              setCurrentPassword(text);
+              if (passwordError) setPasswordError(null);
+            }}
+            secureTextEntry
+            autoCapitalize="none"
+            autoCorrect={false}
+            accessibilityLabel="Mot de passe actuel"
+            style={[styles.securityInput, passwordError ? styles.nameEditInputError : null]}
+          />
+          <Text style={styles.securityLabel}>Nouveau mot de passe</Text>
+          <TextInput
+            value={newPassword}
+            onChangeText={(text) => {
+              setNewPassword(text);
+              if (passwordError) setPasswordError(null);
+            }}
+            secureTextEntry
+            autoCapitalize="none"
+            autoCorrect={false}
+            accessibilityLabel="Nouveau mot de passe"
+            style={styles.securityInput}
+          />
+          <Text style={styles.securityLabel}>Confirmer le mot de passe</Text>
+          <TextInput
+            value={confirmPassword}
+            onChangeText={(text) => {
+              setConfirmPassword(text);
+              if (passwordError) setPasswordError(null);
+            }}
+            secureTextEntry
+            autoCapitalize="none"
+            autoCorrect={false}
+            accessibilityLabel="Confirmer le mot de passe"
+            style={styles.securityInput}
+          />
+          {passwordError ? (
+            <Text style={styles.nameEditError} accessibilityRole="alert">
+              {passwordError}
+            </Text>
+          ) : (
+            <Text style={styles.nameEditHint}>Minimum 8 caractères pour les comptes e-mail.</Text>
+          )}
+          <Pressable
+            style={[styles.nameEditButton, isSavingPassword ? styles.nameEditButtonDisabled : null]}
+            onPress={() => void handleChangePassword()}
+            disabled={isSavingPassword}
+            accessibilityRole="button"
+            accessibilityLabel="Changer le mot de passe"
+          >
+            <Text style={styles.nameEditButtonText}>
+              {isSavingPassword ? 'Enregistrement…' : 'Changer le mot de passe'}
+            </Text>
+          </Pressable>
+
+          <Pressable
+            style={[styles.logoutAllButton, isLoggingOutAll ? styles.nameEditButtonDisabled : null]}
+            onPress={() => void handleLogoutAllDevices()}
+            disabled={isLoggingOutAll}
+            accessibilityRole="button"
+            accessibilityLabel="Déconnecter tous les appareils"
+          >
+            <Text style={styles.logoutAllText}>
+              {isLoggingOutAll ? 'Déconnexion…' : 'Déconnecter tous les appareils'}
+            </Text>
+          </Pressable>
+        </View>
+      ) : null}
+
       <Pressable onPress={handleSignOut} style={styles.signOutButton}>
         <Text style={styles.signOutText}>Déconnexion</Text>
       </Pressable>
@@ -535,5 +660,41 @@ function createStyles(colors: AppThemeColors) {
       borderColor: colors.border,
     },
     signOutText: { color: '#f87171', fontWeight: '800' },
+    securityCard: {
+      backgroundColor: colors.bgSoft,
+      borderRadius: 18,
+      padding: 16,
+      marginBottom: 10,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    securityLabel: {
+      color: colors.muted,
+      fontSize: 12,
+      fontWeight: '800',
+      textTransform: 'uppercase',
+      marginTop: 10,
+      marginBottom: 8,
+    },
+    securityInput: {
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: 12,
+      paddingHorizontal: 14,
+      paddingVertical: 12,
+      color: colors.fg,
+      fontSize: 16,
+      backgroundColor: colors.bg,
+    },
+    logoutAllButton: {
+      marginTop: 16,
+      padding: 14,
+      borderRadius: 14,
+      backgroundColor: colors.bg,
+      alignItems: 'center',
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    logoutAllText: { color: colors.fg, fontWeight: '800' },
   });
 }
