@@ -34,6 +34,8 @@ import type {
   CurrentUserResponse,
   DashboardApiResponse,
   DashboardData,
+  DonationCheckoutResponse,
+  DonationStatusResponse,
   LeaderboardResponse,
   PublicCourseCatalogItem,
   UserBadgesResult,
@@ -148,6 +150,18 @@ export function createBillingCheckout(token: string, plan: CheckoutPlan) {
     method: 'POST',
     headers: authHeader(token),
     body: JSON.stringify({ plan }),
+  });
+}
+
+export function fetchDonationStatus() {
+  return apiRequest<DonationStatusResponse>('/donations/status');
+}
+
+export function createDonationCheckout(amountCents: number, token?: string) {
+  return apiRequest<DonationCheckoutResponse>('/donations/create-checkout-session', {
+    method: 'POST',
+    headers: authHeader(token),
+    body: JSON.stringify({ amountCents }),
   });
 }
 

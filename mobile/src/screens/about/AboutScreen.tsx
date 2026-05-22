@@ -14,6 +14,7 @@ import { useAppTheme } from '../../context/ThemeContext';
 import type { AppThemeColors } from '../../lib/design';
 import { formatTrack, getTrackVisual } from '../../lib/design';
 import { useThemedStyles } from '../../hooks/useThemedStyles';
+import { WEB_URL } from '../../config';
 
 const GITHUB_REPO_URL = 'https://github.com/khafpro2/khafscool';
 
@@ -49,6 +50,10 @@ export function AboutScreen() {
 
   function openGitHub() {
     void Linking.openURL(GITHUB_REPO_URL);
+  }
+
+  function openSupportPage() {
+    void Linking.openURL(`${WEB_URL}/soutenir`);
   }
 
   return (
@@ -120,6 +125,9 @@ export function AboutScreen() {
         </Text>
         <Pressable style={styles.secondaryButton} onPress={openGitHub}>
           <Text style={styles.secondaryButtonText}>Voir le dépôt GitHub</Text>
+        </Pressable>
+        <Pressable style={styles.secondaryButton} onPress={openSupportPage}>
+          <Text style={styles.secondaryButtonText}>Soutenir le projet</Text>
         </Pressable>
       </View>
 

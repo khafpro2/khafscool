@@ -156,6 +156,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <Link href="/courses">Parcours</Link>
               <Link href="/resources">Ressources</Link>
               <Link href="/about">À propos</Link>
+              <Link href="/soutenir">Faire un don</Link>
               <Link href="/demo">Démo</Link>
               <Link href="/diagnostics" className="site-footer-tools">
                 Diagnostics

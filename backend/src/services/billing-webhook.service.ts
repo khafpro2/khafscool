@@ -1,5 +1,6 @@
 import type Stripe from 'stripe';
 import { prisma } from '../lib/prisma.js';
+import { handleDonationCheckoutCompleted } from './donations-webhook.service.js';
 
 export function planFromCheckoutMetadata(plan?: string | null) {
   if (!plan) return 'PRO';
@@ -34,6 +35,11 @@ function stripeId(value: string | { id: string } | null | undefined) {
 }
 
 export async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) {
+  if (session.metadata?.type === 'donation') {
+    await handleDonationCheckoutCompleted(session);
+    return;
+  }
+
   const userId = session.metadata?.userId;
   if (!userId) return;
 

@@ -26,6 +26,13 @@ Première release MVP **MDM Academy Pro** (branche `cursor/progress-dashboard-au
 
 ## Unreleased — `cursor/progress-dashboard-auth-v2`
 
+### Dons volontaires
+- API : `GET /donations/status`, `POST /donations/create-checkout-session` — dons one-shot Stripe ou fallback `DONATION_URL`
+- Webhook `checkout.session.completed` → table `Donation` (email optionnel, montant, `stripeSessionId`)
+- Web : page `/soutenir` (montants 5 € / 10 € / 20 € + libre), lien footer et section À propos
+- Mobile : profil et à propos — « Soutenir le projet » → `/soutenir`
+- Docs : `docs/DONATIONS.md`, variables `.env.example`
+
 - API : `GET /users/me/export` et `DELETE /users/me` — conformité RGPD minimale
 - Web : profil — section Données personnelles (export JSON + modal suppression FR)
 - Mobile : export Share + suppression compte sur profil (API connectée)

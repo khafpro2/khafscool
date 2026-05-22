@@ -27,7 +27,7 @@ Workflow : `.github/workflows/ci.yml`
 | --- | --- |
 | **build-test** | install, syntaxe smoke scripts, tests backend, typecheck mobile, build backend + web |
 | **integration** | Postgres service, `db:migrate` + `db:seed`, démarrage API, `pnpm smoke:api` |
-| **e2e-web** | Playwright Chromium, `pnpm --filter web test:e2e` (12 scénarios) |
+| **e2e-web** | Playwright Chromium, `pnpm --filter web test:e2e` (13 scénarios) |
 
 - [ ] Job **build-test** — vert
 - [ ] Job **integration** — vert
@@ -42,7 +42,8 @@ Workflow : `.github/workflows/ci.yml`
 - [ ] Compte démo local (`demo@ama.dev`) et compte API seed testés
 - [ ] Variables prod documentées dans [DEPLOYMENT.md](./DEPLOYMENT.md)
 - [ ] Export / suppression compte testés (`GET /users/me/export`, `DELETE /users/me`)
-- [ ] `pnpm --filter web test:e2e` — 12 scénarios verts
+- [ ] `bash scripts/verify-release.sh` — ou `SKIP_E2E=1 bash scripts/verify-release.sh` (sans Playwright)
+- [ ] `pnpm --filter web test:e2e` — 13 scénarios verts
 - [ ] `pnpm smoke:api` + `pnpm smoke:web` avec stack locale
 
 ---
@@ -53,6 +54,10 @@ Depuis la racine du monorepo :
 
 ```bash
 pnpm install --frozen-lockfile
+
+# Vérification release (generate + tests + build + E2E optionnel)
+bash scripts/verify-release.sh
+# SKIP_E2E=1 bash scripts/verify-release.sh
 
 # Tests unitaires backend
 pnpm --filter backend test
@@ -76,7 +81,7 @@ pnpm smoke:web
 - [ ] `pnpm smoke:api` (API + DB)
 - [ ] `pnpm smoke:web` (web accessible)
 - [ ] `pnpm --filter web build`
-- [ ] `pnpm --filter web test:e2e` (12 scénarios : auth, classement, catalogue, certificat, démo…)
+- [ ] `pnpm --filter web test:e2e` (13 scénarios : auth, profil export RGPD, classement, catalogue, certificat, démo…)
 - [ ] `pnpm --filter mobile typecheck`
 
 ---
@@ -100,6 +105,7 @@ pnpm smoke:web
 - [ ] **RGPD compte** — export JSON + suppression compte (web profil + mobile API)
 - [ ] **DemoModeBanner** — distinction « Mode démo local » / « Connecté à l’API »
 - [ ] **Récap quiz mobile** — score X/Y + points estimés avant validation d’unité
+- [ ] **Dons volontaires** — `/soutenir`, Stripe Checkout ou `DONATION_URL`, footer + mobile (formation toujours gratuite)
 
 ---
 
@@ -130,6 +136,7 @@ pnpm db:seed
 ### OAuth stub
 
 - Google, Apple et Microsoft OAuth nécessitent les variables `*_CLIENT_ID`, secrets et redirect URIs dans `.env`.
+- Guide production : [docs/OAUTH-PRODUCTION.md](./docs/OAUTH-PRODUCTION.md) (redirect URIs, dev vs prod).
 - Sans credentials, les boutons SSO restent visibles côté web mais le flux OAuth échouera côté API — l’auth **email/mot de passe** reste le chemin principal en dev.
 
 ### Mode démo

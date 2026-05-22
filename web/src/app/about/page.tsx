@@ -134,6 +134,9 @@ export default function AboutPage() {
           <Button href={GITHUB_REPO_URL} variant="secondary" size="sm">
             Voir le dépôt GitHub
           </Button>
+          <Button href="/soutenir" variant="secondary" size="sm">
+            Soutenir le projet
+          </Button>
           <Button href="/courses" size="sm">
             Commencer gratuitement
           </Button>

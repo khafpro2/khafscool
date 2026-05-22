@@ -6,6 +6,7 @@ import type { BillingWebhookRequest } from './controllers/billing.controller.js'
 import { authRoutes } from './routes/auth.routes.js';
 import { coursesRoutes } from './routes/courses.routes.js';
 import { billingRoutes } from './routes/billing.routes.js';
+import { donationsRoutes } from './routes/donations.routes.js';
 import { healthRoutes } from './routes/health.routes.js';
 
 assertProductionSecrets();
@@ -13,7 +14,7 @@ assertProductionSecrets();
 const app = Fastify({ logger: true });
 
 app.addHook('preParsing', async (request, _reply, payload) => {
-  if (request.url !== '/billing/webhook') {
+  if (request.url !== '/billing/webhook' && request.url !== '/donations/webhook') {
     return payload;
   }
 
@@ -35,6 +36,7 @@ await app.register(healthRoutes);
 await app.register(authRoutes);
 await app.register(coursesRoutes);
 await app.register(billingRoutes);
+await app.register(donationsRoutes);
 
 try {
   await app.listen({ port: env.port, host: '0.0.0.0' });

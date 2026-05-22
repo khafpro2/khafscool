@@ -10,4 +10,5 @@ export async function billingRoutes(app: FastifyInstance) {
     billing.createCheckout
   );
   app.post('/billing/webhook', billing.stripeWebhook);
+  app.post('/donations/webhook', billing.stripeWebhook);
 }

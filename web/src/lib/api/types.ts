@@ -247,6 +247,27 @@ export interface BillingCheckoutResponse {
   message?: string;
 }
 
+export type DonationMode = 'live' | 'fallback' | 'unavailable';
+
+export interface DonationStatusResponse {
+  mode: DonationMode;
+  stripe: {
+    configured: boolean;
+    checkoutEnabled: boolean;
+  };
+  fallbackUrl?: string | null;
+  suggestedAmountsCents: number[];
+  message?: string;
+}
+
+export interface DonationCheckoutResponse {
+  mode: 'live' | 'fallback';
+  checkoutUrl?: string;
+  amountCents: number;
+  sessionId?: string;
+  message?: string;
+}
+
 export interface UserBadge {
   slug: string;
   earnedAt?: string | null;

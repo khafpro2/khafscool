@@ -149,3 +149,13 @@ model Subscription {
   currentPeriodEnd     DateTime?
   user                 User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
+
+model Donation {
+  id              String   @id @default(uuid())
+  amountCents     Int
+  currency        String   @default("eur")
+  email           String?
+  userId          String?
+  stripeSessionId String   @unique
+  createdAt       DateTime @default(now())
+}

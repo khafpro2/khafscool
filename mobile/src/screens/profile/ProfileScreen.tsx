@@ -405,6 +405,12 @@ export function ProfileScreen() {
         <Text style={styles.linkCta}>Ouvrir les diagnostics →</Text>
       </Pressable>
 
+      <Pressable style={styles.linkCard} onPress={() => openWebPath('/soutenir')}>
+        <Text style={styles.linkTitle}>Soutenir le projet</Text>
+        <Text style={styles.linkHint}>Don volontaire — la formation reste 100 % gratuite</Text>
+        <Text style={styles.linkCta}>Faire un don →</Text>
+      </Pressable>
+
       <Pressable style={styles.linkCard} onPress={() => router.push('/about')}>
         <Text style={styles.linkTitle}>À propos</Text>
         <Text style={styles.linkHint}>Mission, vision et trois piliers MDM Academy</Text>
