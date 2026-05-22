@@ -50,6 +50,7 @@ export interface DashboardData {
     preparationScore?: number;
   };
   badges: string[];
+  isSupporter?: boolean;
   quests: { id: string; questKey?: string; label: string; progress: number; target: number; completed?: boolean }[];
   certificationSprint?: CertificationSprintSummary | null;
   courses: CourseSummary[];
@@ -303,6 +304,7 @@ export interface DashboardApiResponse {
   };
   learningStreak?: LearningStreak;
   badges: string[];
+  isSupporter?: boolean;
   quests: { id: string; label: string; progress: number; target: number; completed?: boolean }[];
   certificationSprint?: CertificationSprintSummary | null;
   courses: CourseSummary[];

@@ -169,6 +169,27 @@ cd mobile && npx tsc --noEmit
 
 Pour le développement local, voir le [README](./README.md).
 
+## Secrets GitHub (deploy preview)
+
+Workflow manuel : [`.github/workflows/deploy-preview.yml`](./.github/workflows/deploy-preview.yml) (`workflow_dispatch` uniquement — n’impacte pas la CI PR).
+
+| Secret | Usage |
+| ------ | ----- |
+| `VERCEL_TOKEN` | Déploiement web preview (`vercel deploy`) |
+| `VERCEL_ORG_ID` | ID organisation Vercel |
+| `VERCEL_PROJECT_ID` | ID projet Vercel (répertoire `web/`) |
+| `RAILWAY_TOKEN` | Déploiement API staging (`railway up`) |
+| `DATABASE_URL` | Postgres staging (Neon/Supabase) — aussi sur Railway |
+| `JWT_SECRET` / `JWT_REFRESH_SECRET` | Secrets JWT API staging |
+| `CORS_ORIGIN` | URL preview Vercel (`https://*.vercel.app` ou domaine fixe) |
+| `WEB_URL` | URL publique web (redirects Stripe dons : `/soutenir/merci`, `/soutenir/annule`) |
+| `STRIPE_SECRET_KEY` | Checkout dons live (optionnel staging) |
+| `STRIPE_WEBHOOK_SECRET` | Webhook `checkout.session.completed` sur l’API staging |
+| `STRIPE_DONATION_PRICE_ID_*` | Prix preset 5 € / 10 € / 20 € (optionnel) |
+| `DONATION_URL` | Fallback Buy Me a Coffee / PayPal si Stripe absent |
+
+Décommenter les étapes de déploiement dans le workflow une fois les secrets configurés dans **Settings → Secrets and variables → Actions**.
+
 ## Staging / preview (< 30 min)
 
 Objectif : une preview web Vercel + une API staging accessible, sans configurer de comptes cloud depuis ce dépôt.

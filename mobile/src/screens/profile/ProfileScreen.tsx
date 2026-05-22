@@ -289,6 +289,14 @@ export function ProfileScreen() {
         </View>
       ) : null}
 
+      {source === 'api' && data.isSupporter ? (
+        <View style={styles.supporterBanner}>
+          <Text style={styles.supporterText}>
+            {'\u{1F49A}'} Merci pour votre soutien — vous contribuez à faire vivre MDM Academy Pro.
+          </Text>
+        </View>
+      ) : null}
+
       <View style={[styles.statsRecapCard, { backgroundColor: rank.gradient[0] }]}>
         <Text style={styles.statsRecapEyebrow}>Récap progression</Text>
         <View style={styles.statsRecapRow}>
@@ -723,6 +731,15 @@ function createStyles(colors: AppThemeColors) {
       borderColor: colors.demoBannerBorder,
     },
     demoText: { color: colors.demoBannerText, lineHeight: 20 },
+    supporterBanner: {
+      backgroundColor: '#ecfdf5',
+      borderRadius: 14,
+      padding: 12,
+      marginBottom: 16,
+      borderWidth: 1,
+      borderColor: '#a7f3d0',
+    },
+    supporterText: { color: '#047857', lineHeight: 20, fontWeight: '700', fontSize: 14 },
     statsRecapCard: { borderRadius: 24, padding: 20, marginBottom: 24 },
     statsRecapEyebrow: {
       color: 'rgba(255,255,255,0.92)',

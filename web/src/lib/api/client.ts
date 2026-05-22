@@ -294,6 +294,7 @@ export async function fetchDashboard(token?: string): Promise<DashboardData> {
         user: data.user,
         stats: data.stats,
         badges: data.badges,
+        isSupporter: data.isSupporter ?? data.badges.includes('supporter'),
         quests: data.quests,
         certificationSprint: data.certificationSprint ?? null,
         courses: data.courses,

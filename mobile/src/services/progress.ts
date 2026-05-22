@@ -58,6 +58,7 @@ export interface LearnerProgress {
     level: string;
   };
   badges: string[];
+  isSupporter?: boolean;
   quests: { id: string; label: string; progress: number; target: number }[];
   courses: CourseSummary[];
   completedCourses?: CompletedCourseSummary[];
@@ -89,15 +90,18 @@ export async function fetchLearnerDashboard(): Promise<LearnerDashboard> {
         completedCourses?: CompletedCourseSummary[];
         learningStreak?: LearningStreak;
         recentActivity?: RecentActivityItem[];
+        isSupporter?: boolean;
       }>('/users/me/dashboard').catch(() => ({
         completedCourses: [],
         learningStreak: undefined,
         recentActivity: [],
+        isSupporter: false,
       })),
     ]);
     return {
       data: {
         ...progress,
+        isSupporter: dashboard.isSupporter ?? progress.badges.includes('supporter'),
         completedCourses: dashboard.completedCourses ?? [],
         learningStreak: dashboard.learningStreak,
         recentActivity: progress.recentActivity ?? dashboard.recentActivity ?? [],

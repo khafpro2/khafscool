@@ -37,4 +37,19 @@ test.describe('Page Soutenir', () => {
     await page.goto('/');
     await expect(page.getByRole('contentinfo').getByRole('link', { name: 'Faire un don' })).toBeVisible();
   });
+
+  test('affiche la page merci après don Stripe', async ({ page }) => {
+    await page.goto('/soutenir/merci?session_id=cs_test_123');
+    await expect(page.getByRole('heading', { level: 1, name: 'Merci pour votre soutien !' })).toBeVisible();
+    await expect(page.getByText('Paiement confirmé')).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Retour à l’accueil' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Voir les parcours' })).toBeVisible();
+  });
+
+  test('affiche la page annulation de don', async ({ page }) => {
+    await page.goto('/soutenir/annule');
+    await expect(page.getByRole('heading', { level: 1, name: 'Don annulé' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Revenir à la page Soutenir' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Retour à l’accueil' })).toBeVisible();
+  });
 });

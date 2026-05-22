@@ -1,5 +1,6 @@
 import { CourseTrack, UserLevel, type UserQuest } from '@prisma/client';
 import { prisma } from '../lib/prisma.js';
+import { isSupporterFromBadges } from './supporter-badge.service.js';
 
 export type CertificationSprintDays = 7 | 14;
 
@@ -976,6 +977,7 @@ export async function getDashboard(userId: string) {
     },
     learningStreak,
     badges: user.progress?.badges ?? [],
+    isSupporter: isSupporterFromBadges(user.progress?.badges),
     quests: user.quests,
     certificationSprint: await getCurrentCertificationSprint(userId),
     courses: coursesWithProgress,

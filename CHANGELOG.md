@@ -26,6 +26,13 @@ Première release MVP **MDM Academy Pro** (branche `cursor/progress-dashboard-au
 
 ## Unreleased — `cursor/progress-dashboard-auth-v2`
 
+### Dons — pages retour et badge Supporter
+- Web : `/soutenir/merci` et `/soutenir/annule` — contenu FR, liens accueil/parcours ; `?session_id=` sur merci
+- API Stripe : `success_url` / `cancel_url` vers ces pages
+- Webhook don : badge `supporter` si `userId` dans metadata checkout (don anonyme → pas de badge)
+- API dashboard : champ `isSupporter` ; affichage discret profil web + note mobile « Merci pour votre soutien »
+- CI : workflow stub `.github/workflows/deploy-preview.yml` (`workflow_dispatch` only) ; secrets listés dans `DEPLOYMENT.md`
+
 ### Dons volontaires
 - API : `GET /donations/status`, `POST /donations/create-checkout-session` — dons one-shot Stripe ou fallback `DONATION_URL`
 - Webhook `checkout.session.completed` → table `Donation` (email optionnel, montant, `stripeSessionId`)

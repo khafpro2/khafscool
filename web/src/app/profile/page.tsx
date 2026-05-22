@@ -86,6 +86,7 @@ export default function ProfilePage() {
   }
 
   const { user, stats, badges, courses, completedCourses = [], recentActivity = [] } = data;
+  const isSupporter = data.isSupporter ?? badges.includes('supporter');
   const displayName =
     displayNameOverride ?? user.displayName ?? storedUser?.displayName ?? 'Apprenant';
   const email = user.email ?? storedUser?.email ?? 'demo@ama.dev';
@@ -143,8 +144,23 @@ export default function ProfilePage() {
         rankPercent={rankPercent}
         remainingPoints={remainingPoints}
         hasToken={hasToken}
+        isSupporter={isSupporter}
         onLogout={handleLogout}
       />
+
+      {isSupporter ? (
+        <Card
+          style={{
+            marginTop: '1rem',
+            background: '#ecfdf5',
+            borderColor: '#a7f3d0',
+          }}
+        >
+          <p style={{ margin: 0, color: '#047857', fontWeight: 700 }}>
+            {'\u{1F49A}'} Supporter — merci pour votre contribution à MDM Academy Pro
+          </p>
+        </Card>
+      ) : null}
 
       <AccountDetailsCard
         displayName={displayName}
@@ -275,6 +291,7 @@ function ProfileHero({
   rankPercent,
   remainingPoints,
   hasToken,
+  isSupporter,
   onLogout,
 }: {
   displayName: string;
@@ -285,6 +302,7 @@ function ProfileHero({
   rankPercent: number;
   remainingPoints: number;
   hasToken: boolean;
+  isSupporter?: boolean;
   onLogout: () => void;
 }) {
   const initials = getInitials(displayName, email);

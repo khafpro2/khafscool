@@ -1,5 +1,6 @@
 import type Stripe from 'stripe';
 import { prisma } from '../lib/prisma.js';
+import { awardSupporterBadge } from './supporter-badge.service.js';
 
 export async function handleDonationCheckoutCompleted(session: Stripe.Checkout.Session) {
   if (session.metadata?.type !== 'donation') return;
@@ -18,13 +19,19 @@ export async function handleDonationCheckoutCompleted(session: Stripe.Checkout.S
     0;
   if (!amountCents || amountCents < 1) return;
 
+  const userId = session.metadata.userId ?? null;
+
   await prisma.donation.create({
     data: {
       amountCents,
       currency: (session.currency ?? 'eur').toLowerCase(),
       email: session.customer_details?.email ?? session.customer_email ?? null,
-      userId: session.metadata.userId ?? null,
+      userId,
       stripeSessionId,
     },
   });
+
+  if (userId) {
+    await awardSupporterBadge(userId);
+  }
 }
