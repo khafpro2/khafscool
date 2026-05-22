@@ -632,6 +632,34 @@ export const intuneIosEnrollmentQuestions: Record<string, SeedQuestion[]> = {
       explanation:
         'L’ADE garantit un enrôlement zero-touch supervisé — distinct de l’inscription BYOD via Company Portal.',
     },
+    {
+      type: 'SCENARIO',
+      prompt:
+        'Un profil ADE Intune doit masquer l’écran « Localiser mon iPhone » au Setup Assistant. Où configurer cette option ?',
+      options: opt(
+        'Dans le profil d’inscription des appareils ADE — paramètres Setup Assistant',
+        'Dans une politique de conformité iOS uniquement',
+        'Dans le portail Apple ID personnel de l’utilisateur',
+        'Via une app Jamf Self Service'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Les écrans masqués ou imposés se définissent dans le profil ADE ; la conformité intervient après l’enrôlement.',
+    },
+    {
+      type: 'TROUBLESHOOTING',
+      prompt:
+        'Piège : le jeton serveur MDM Apple dans Intune expire dans 5 jours. Risque principal si non renouvelé ?',
+      options: opt(
+        'Perte de synchronisation ABM et blocage des nouveaux enrôlements ADE',
+        'Suppression automatique de tous les profils Wi-Fi iOS',
+        'Désactivation du chiffrement BitLocker sur les PC',
+        'Réinitialisation des mots de passe Entra ID'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Sans jeton MDM valide, Intune ne peut plus synchroniser l’inventaire ABM ni recevoir de nouveaux appareils ADE.',
+    },
   ],
   'compliance-policies': [
     {

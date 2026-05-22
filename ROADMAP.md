@@ -14,8 +14,8 @@ Feuille de route produit et technique pour le monorepo Apple MDM Academy.
 ## v0.2 — Enrichissement
 
 - **OAuth production** — credentials Apple / Google / Microsoft, redirect URIs prod ([guide](./docs/OAUTH-PRODUCTION.md))
-- **Certificats PDF** — export personnalisé, métadonnées SEO, partage amélioré
-- **Contenus** — modules Intune avancés, parcours Apple supplémentaires, scénarios interactifs
+- **Certificats PDF** — export personnalisé *(bouton Télécharger PDF + @media print)*, métadonnées SEO, partage amélioré
+- **Contenus** — modules Intune avancés *(+2 questions ADE v0.2)*, parcours Apple supplémentaires, scénarios interactifs
 - **Analytics (optionnel)** — mesure d’usage avec consentement cookies respecté
 
 ## v1.0 — Production
