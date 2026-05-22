@@ -19,7 +19,7 @@ const GUIDED_STEPS: {
     title: 'Compte démo',
     icon: '\u{1F464}',
     description:
-      'Explore le catalogue, le tableau de bord et le classement sans inscription. L’identité affichée est demo@ama.dev (Technicien démo). Crée un compte sur /auth pour sauvegarder ta progression.',
+      'Explore le catalogue, le tableau de bord et le classement sans inscription. Crée un compte sur /auth pour sauvegarder ta progression.',
     href: '/courses',
     cta: 'Explorer sans compte',
   },

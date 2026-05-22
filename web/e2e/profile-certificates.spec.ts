@@ -6,7 +6,7 @@ test.describe('Profil — certificats', () => {
     await expect(page.getByRole('heading', { name: 'Parcours terminés' })).toBeVisible({
       timeout: 15_000,
     });
-    const certLink = page.getByRole('link', { name: /Voir le certificat/i }).first();
+    const certLink = page.locator('a[href*="/certificate"]').first();
     await expect(certLink).toBeVisible();
     await expect(certLink).toHaveAttribute('href', /\/courses\/[^/]+\/certificate$/);
   });
