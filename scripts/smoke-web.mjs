@@ -12,6 +12,11 @@ const pages = [
   { path: '/about', label: 'about', marker: 'Former les pros Apple et MDM' },
   { path: '/legal/confidentialite', label: 'legal-privacy', marker: 'Politique de confidentialité' },
   { path: '/legal/conditions', label: 'legal-terms', marker: 'Conditions d’utilisation' },
+  {
+    path: '/courses/apple-cert-prep/certificate',
+    label: 'certificate',
+    marker: 'Préparation de ton certificat',
+  },
   { path: '/badges', label: 'badges', marker: 'Mes super-badges' },
   { path: '/quests', label: 'quests', marker: 'Quêtes hebdo' },
   { path: '/sprint', label: 'sprint', marker: 'Accélère ta préparation certification' },

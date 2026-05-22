@@ -42,3 +42,24 @@ export const courseCompletePageMetadata: Metadata = {
     'Célébration de complétion : points gagnés, super-badge débloqué et prochaines étapes sur MDM Academy Pro.',
   robots: { index: false, follow: true },
 };
+
+export function buildCourseCertificateMetadata(
+  slug: string,
+  courseTitle?: string
+): Metadata {
+  const title = courseTitle ?? 'Parcours MDM';
+  const canonical = `/courses/${slug}/certificate`;
+
+  return {
+    title: `Certificat — ${title}`,
+    description: `Certificat imprimable de complétion du parcours ${title} sur MDM Academy Pro.`,
+    openGraph: {
+      locale: 'fr_FR',
+      title: `Certificat de complétion — ${title}`,
+      description: `Preuve de complétion du parcours ${title} (Apple MDM, Jamf ou Intune).`,
+      url: canonical,
+    },
+    alternates: { canonical },
+    robots: { index: false, follow: true },
+  };
+}

@@ -1,9 +1,26 @@
+import type { Metadata } from 'next';
 import { CourseCertificateClient } from '@/components/courses/CourseCertificateClient';
+import { getLearningPath } from '@/lib/learningPaths';
+import { buildCourseCertificateMetadata } from '@/lib/seo-metadata';
 
-export const metadata = {
-  title: 'Certificat de complétion — MDM Academy',
-  description: 'Certificat imprimable de complétion de parcours Apple MDM Academy.',
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const path = getLearningPath(slug);
+
+  if (!path) {
+    return {
+      title: 'Certificat introuvable',
+      description: 'Ce certificat MDM Academy n’existe pas ou le parcours n’est plus disponible.',
+      robots: { index: false, follow: true },
+    };
+  }
+
+  return buildCourseCertificateMetadata(slug, path.title);
+}
 
 export default async function CourseCertificatePage({
   params,

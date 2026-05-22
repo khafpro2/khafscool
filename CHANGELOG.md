@@ -7,6 +7,8 @@
 - Mobile : profil — certificats (lien web imprimable par parcours terminé)
 - `MERGE.md` — checklist pages légales, cookies, points/rang nav, certificats profil
 - Tests : logique consentement cookies, E2E bannière + profil certificats
+- Web : `/courses/[slug]/certificate` — métadonnées SEO dynamiques (canonical, Open Graph FR, noindex)
+- Smoke web : page certificat démo (`apple-cert-prep/certificate`)
 
 - Web : header discret points + rang classement (cache dashboard 5 min, liens profil/classement, thème sombre)
 - Web : pages légales FR `/legal/confidentialite` et `/legal/conditions` + liens footer
