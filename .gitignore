@@ -10,3 +10,5 @@ dist
 *.tsbuildinfo
 web/test-results
 web/playwright-report
+logs/*.log
+logs/autopilot.pid

@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "hooks": {
+    "afterFileEdit": [
+      {
+        "matcher": "web/src/**|mobile/src/**|shared/src/**",
+        "command": "bash .cursor/hooks/remind-verify.sh"
+      }
+    ]
+  }
+}
