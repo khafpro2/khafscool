@@ -12,6 +12,7 @@ import { PointsRankNavIndicator } from '@/components/layout/PointsRankNavIndicat
 import { StreakNavBadge } from '@/components/layout/StreakNavIndicator';
 import { Toaster } from '@/components/ui/Toast';
 import { Button } from '@/components/ui/Button';
+import { getContactEmail, getContactMailto } from '@/lib/contact';
 import { LEARNING_PATHS } from '@/lib/learningPaths';
 import { themeInitScript } from '@/lib/theme';
 import './globals.css';
@@ -88,6 +89,9 @@ export const viewport: Viewport = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const contactEmail = getContactEmail();
+  const contactMailto = getContactMailto();
+
   return (
     <html lang="fr" suppressHydrationWarning>
       <head>
@@ -156,6 +160,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <Link href="/courses">Parcours</Link>
               <Link href="/resources">Ressources</Link>
               <Link href="/about">À propos</Link>
+              <Link href={contactMailto}>Nous contacter</Link>
               <Link href="/soutenir">Faire un don</Link>
               <Link href="/demo">Démo</Link>
               <Link href="/diagnostics" className="site-footer-tools">
@@ -165,7 +170,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <Link href="/legal/conditions">Conditions</Link>
             </div>
             <div style={{ color: 'var(--muted)', fontSize: '0.8rem' }}>
-              Non affilié à Apple Inc., Jamf ou Microsoft.
+              Non affilié à Apple Inc., Jamf ou Microsoft. ·{' '}
+              <Link href={contactMailto} style={{ color: 'inherit' }}>
+                Support : {contactEmail}
+              </Link>
             </div>
           </div>
         </footer>

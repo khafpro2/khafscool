@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { getContactEmail, getContactMailto } from '@/lib/contact';
 
 export const metadata: Metadata = {
   title: 'Politique de confidentialité',
@@ -19,6 +20,9 @@ export const metadata: Metadata = {
 };
 
 export default function ConfidentialitePage() {
+  const contactEmail = getContactEmail();
+  const contactMailto = getContactMailto();
+
   return (
     <section className="legal-page" style={{ padding: '1rem 0 2.5rem' }}>
       <span className="section-eyebrow">Informations légales</span>
@@ -50,8 +54,27 @@ export default function ConfidentialitePage() {
         <h2 style={{ fontSize: '1.15rem', fontWeight: 800 }}>Conservation et sécurité</h2>
         <p className="muted" style={{ marginTop: '0.5rem' }}>
           Les données sont conservées tant que votre compte est actif. Vous pouvez demander la suppression de
-          votre compte en nous contactant. Nous appliquons des mesures techniques raisonnables pour protéger
-          l’accès à l’API et aux bases de données hébergeant votre progression.
+          votre compte en nous contactant à{' '}
+          <a href={contactMailto} style={{ fontWeight: 700 }}>
+            {contactEmail}
+          </a>
+          . Nous appliquons des mesures techniques raisonnables pour protéger l’accès à l’API et aux bases de
+          données hébergeant votre progression.
+        </p>
+      </Card>
+
+      <Card className="legal-card" style={{ marginTop: '1rem' }}>
+        <h2 style={{ fontSize: '1.15rem', fontWeight: 800 }}>Vos droits (RGPD)</h2>
+        <p className="muted" style={{ marginTop: '0.5rem' }}>
+          Conformément au Règlement général sur la protection des données (RGPD), vous disposez d’un droit
+          d’accès, de rectification, d’effacement, de limitation du traitement, de portabilité et d’opposition
+          concernant vos données personnelles. Pour exercer ces droits ou poser une question sur le traitement de
+          vos données, contactez-nous à{' '}
+          <a href={contactMailto} style={{ fontWeight: 700 }}>
+            {contactEmail}
+          </a>
+          . Vous pouvez également exporter ou supprimer votre compte depuis votre profil lorsque vous êtes
+          connecté.
         </p>
       </Card>
 

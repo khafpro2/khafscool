@@ -1,8 +1,12 @@
 'use client';
 
 import { DonationPanel } from '@/components/donations/DonationPanel';
+import { getContactEmail, getContactMailto } from '@/lib/contact';
 
 export function SoutenirPageClient() {
+  const contactEmail = getContactEmail();
+  const contactMailto = getContactMailto();
+
   return (
     <section style={{ padding: '1rem 0 2rem', maxWidth: 760 }}>
       <span className="section-eyebrow">Communauté</span>
@@ -16,6 +20,13 @@ export function SoutenirPageClient() {
       <div style={{ marginTop: '1.5rem' }}>
         <DonationPanel />
       </div>
+
+      <p className="muted" style={{ marginTop: '1.5rem', maxWidth: 640, fontSize: '0.95rem' }}>
+        Une question sur les dons ou le fonctionnement de la plateforme ?{' '}
+        <a href={contactMailto} style={{ fontWeight: 700 }}>
+          Support — {contactEmail}
+        </a>
+      </p>
     </section>
   );
 }

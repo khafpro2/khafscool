@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { BrandIcon } from '@/components/ui/BrandIcon';
 import { TrackIcon } from '@/components/ui/TrackIcon';
+import { getContactEmail, getContactMailto } from '@/lib/contact';
 import { getTrackVisual } from '@/lib/design';
 
 const GITHUB_REPO_URL = 'https://github.com/khafpro2/khafscool';
@@ -49,6 +50,9 @@ const PILLARS = [
 const ABOUT_GRADIENT = getTrackVisual('DEFAULT').gradient;
 
 export default function AboutPage() {
+  const contactEmail = getContactEmail();
+  const contactMailto = getContactMailto();
+
   return (
     <section style={{ padding: '1rem 0 2rem' }}>
       <div className="hero" style={{ background: ABOUT_GRADIENT, marginTop: 0 }}>
@@ -130,7 +134,18 @@ export default function AboutPage() {
           MDM Academy Pro reste gratuit pour tous les techniciens et administrateurs MDM. Le code source est
           public : signale un bug, propose une amélioration ou contribue aux parcours pédagogiques.
         </p>
+        <p className="muted" style={{ marginTop: '0.65rem', maxWidth: 680 }}>
+          Pour toute question, retour pédagogique ou demande relative à vos données personnelles, écrivez-nous
+          à{' '}
+          <a href={contactMailto} style={{ fontWeight: 700 }}>
+            {contactEmail}
+          </a>
+          .
+        </p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '1rem', alignItems: 'center' }}>
+          <Button href={contactMailto} variant="secondary" size="sm">
+            Nous contacter
+          </Button>
           <Button href={GITHUB_REPO_URL} variant="secondary" size="sm">
             Voir le dépôt GitHub
           </Button>

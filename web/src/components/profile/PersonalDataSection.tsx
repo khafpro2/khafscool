@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from 'react';
 import { deleteAccount, exportUserData } from '@/lib/api';
 import { buildAuthUrl, clearAuthTokens, getAccessToken } from '@/lib/auth';
+import { getContactEmail, getContactMailto } from '@/lib/contact';
 import { showToast } from '@/lib/toast-store';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -67,7 +68,7 @@ export function PersonalDataSection() {
       });
       window.location.href = buildAuthUrl('/');
     } catch {
-      setDeleteError('Impossible de supprimer le compte. Réessaie ou contacte le support.');
+      setDeleteError(`Impossible de supprimer le compte. Réessaie ou contacte le support à ${getContactEmail()}.`);
     } finally {
       setIsDeleting(false);
     }
@@ -82,7 +83,12 @@ export function PersonalDataSection() {
         </h2>
         <p className="muted" style={{ marginTop: '0.5rem', fontSize: '0.9rem', lineHeight: 1.5 }}>
           Télécharge une copie de ton profil, ta progression, tes badges et tes points. La suppression
-          efface définitivement ton compte et toutes les données associées.
+          efface définitivement ton compte et toutes les données associées. Pour exercer tes droits RGPD,
+          contacte{' '}
+          <a href={getContactMailto()} style={{ fontWeight: 700 }}>
+            {getContactEmail()}
+          </a>
+          .
         </p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem', marginTop: '1rem' }}>
           <button

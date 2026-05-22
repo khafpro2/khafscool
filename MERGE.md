@@ -16,6 +16,7 @@ Checklist à valider avant de fusionner la branche `cursor/progress-dashboard-au
   - `JWT_SECRET` et `JWT_REFRESH_SECRET` (≥ 32 caractères)
   - `NEXT_PUBLIC_API_URL` / `API_URL` (ex. `http://localhost:4000`)
   - `WEB_URL` (ex. `http://127.0.0.1:3000`)
+- **Contact HarmyTech** — support et RGPD : [KTHIAM@HARMYTECH.COM](mailto:KTHIAM@HARMYTECH.COM) (`CONTACT_EMAIL` / `NEXT_PUBLIC_CONTACT_EMAIL` web, `EXPO_PUBLIC_CONTACT_EMAIL` mobile)
 
 ---
 

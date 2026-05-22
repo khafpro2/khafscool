@@ -26,6 +26,10 @@ Première release MVP **MDM Academy Pro** (branche `cursor/progress-dashboard-au
 
 ## Unreleased — `cursor/progress-dashboard-auth-v2`
 
+### Contact HarmyTech
+- Email officiel `KTHIAM@HARMYTECH.COM` — footer, à propos, pages légales, profil RGPD, `/soutenir` (questions dons), mobile à propos
+- Variables optionnelles : `CONTACT_EMAIL`, `NEXT_PUBLIC_CONTACT_EMAIL`, `EXPO_PUBLIC_CONTACT_EMAIL` ; helper `web/src/lib/contact.ts`
+
 ### Dons — pages retour et badge Supporter
 - Web : `/soutenir/merci` et `/soutenir/annule` — contenu FR, liens accueil/parcours ; `?session_id=` sur merci
 - API Stripe : `success_url` / `cancel_url` vers ces pages

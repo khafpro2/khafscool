@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { getContactEmail, getContactMailto } from '@/lib/contact';
 
 export const metadata: Metadata = {
   title: 'Conditions d’utilisation',
@@ -19,6 +20,9 @@ export const metadata: Metadata = {
 };
 
 export default function ConditionsPage() {
+  const contactEmail = getContactEmail();
+  const contactMailto = getContactMailto();
+
   return (
     <section className="legal-page" style={{ padding: '1rem 0 2.5rem' }}>
       <span className="section-eyebrow">Informations légales</span>
@@ -61,6 +65,18 @@ export default function ConditionsPage() {
           Les contenus pédagogiques, la marque MDM Academy et l’interface sont protégés. Apple, Jamf et
           Microsoft sont des marques de leurs propriétaires respectifs ; MDM Academy Pro n’est affiliée à aucun
           éditeur. Le service est fourni « en l’état », sans garantie de disponibilité permanente.
+        </p>
+      </Card>
+
+      <Card className="legal-card" style={{ marginTop: '1rem' }}>
+        <h2 style={{ fontSize: '1.15rem', fontWeight: 800 }}>Contact</h2>
+        <p className="muted" style={{ marginTop: '0.5rem' }}>
+          Pour toute question sur l’utilisation du service, signaler un abus ou exercer vos droits relatifs aux
+          données personnelles, contactez l’équipe HarmyTech à{' '}
+          <a href={contactMailto} style={{ fontWeight: 700 }}>
+            {contactEmail}
+          </a>
+          .
         </p>
       </Card>
 

@@ -40,6 +40,13 @@ Voir le détail dans [CHANGELOG.md](./CHANGELOG.md) (branche `cursor/progress-da
 
 **Compte démo** — sans inscription, explore le catalogue, le classement et les parcours en mode local (`demo@ama.dev` affiché dans l’UI). Pour sauvegarder ta progression, crée un compte gratuit sur [`/auth`](http://127.0.0.1:3000/auth) ou suis le [guide démo](/demo).
 
+## Contact
+
+Projet **MDM Academy Pro** (HarmyTech). Pour le support, les retours pédagogiques ou l’exercice de vos droits RGPD :
+
+- **E-mail** : [KTHIAM@HARMYTECH.COM](mailto:KTHIAM@HARMYTECH.COM)
+- Variable optionnelle : `NEXT_PUBLIC_CONTACT_EMAIL` (web) / `EXPO_PUBLIC_CONTACT_EMAIL` (mobile)
+
 ## Stack
 
 
