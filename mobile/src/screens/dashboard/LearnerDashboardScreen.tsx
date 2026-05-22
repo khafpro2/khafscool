@@ -396,7 +396,7 @@ export function LearnerDashboardScreen({ onSignOut }: LearnerDashboardScreenProp
         <Text style={styles.supportEyebrow}>{'\u{1F49A}'} Soutenir le projet</Text>
         <Text style={styles.supportTitle}>Formation 100 % gratuite</Text>
         <Text style={styles.supportHint}>
-          Un don volontaire aide l&apos;hébergement — ouvre la page web /soutenir.
+          Un don volontaire aide l’hébergement — ouvre la page web /soutenir.
         </Text>
       </Pressable>
     </ScrollView>
