@@ -10,6 +10,14 @@ import { getAccessToken } from '@/lib/auth';
 
 const DEFAULT_AMOUNTS = [500, 1000, 2000];
 
+const DEFAULT_DONATION_STATUS: DonationStatusResponse = {
+  mode: 'unavailable',
+  stripe: { configured: false, checkoutEnabled: false },
+  fallbackUrl: null,
+  suggestedAmountsCents: DEFAULT_AMOUNTS,
+  message: 'Bientôt disponible — merci pour votre intérêt !',
+};
+
 function formatEuros(amountCents: number) {
   return new Intl.NumberFormat('fr-FR', {
     style: 'currency',
@@ -36,6 +44,7 @@ export function DonationPanel() {
   useEffect(() => {
     void fetchDonationStatus()
       .then(setStatus)
+      .catch(() => setStatus(DEFAULT_DONATION_STATUS))
       .finally(() => setLoadingStatus(false));
   }, []);
 
@@ -108,7 +117,7 @@ export function DonationPanel() {
       <Card variant="elevated">
         <span className="section-eyebrow">Don volontaire</span>
         <h2 style={{ fontSize: '1.35rem', fontWeight: 800, marginTop: '0.5rem' }}>
-          Soutenir MDM Academy Pro
+          Contribuer au projet
         </h2>
         <p className="muted" style={{ marginTop: '0.65rem', maxWidth: 680 }}>
           MDM Academy reste <strong>100 % gratuite</strong> : tous les parcours, quiz, badges et
@@ -131,95 +140,93 @@ export function DonationPanel() {
               {status?.message ?? 'Les dons en ligne seront activés prochainement.'}
             </p>
           </div>
-        ) : (
-          <>
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
-                gap: '0.75rem',
-                marginTop: '1.25rem',
+        ) : null}
+
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
+            gap: '0.75rem',
+            marginTop: '1.25rem',
+          }}
+        >
+          {suggestedAmounts.map((amount) => (
+            <button
+              key={amount}
+              type="button"
+              className={`donation-amount-card${
+                !useCustomAmount && selectedAmount === amount ? ' is-selected' : ''
+              }`}
+              onClick={() => {
+                setUseCustomAmount(false);
+                setSelectedAmount(amount);
               }}
+              disabled={submitting || mode === 'unavailable'}
+              aria-pressed={!useCustomAmount && selectedAmount === amount}
             >
-              {suggestedAmounts.map((amount) => (
-                <button
-                  key={amount}
-                  type="button"
-                  className={`donation-amount-card${
-                    !useCustomAmount && selectedAmount === amount ? ' is-selected' : ''
-                  }`}
-                  onClick={() => {
-                    setUseCustomAmount(false);
-                    setSelectedAmount(amount);
-                  }}
-                  disabled={submitting}
-                  aria-pressed={!useCustomAmount && selectedAmount === amount}
-                >
-                  <span className="donation-amount-value">{formatEuros(amount)}</span>
-                  <span className="donation-amount-label">Don unique</span>
-                </button>
-              ))}
-            </div>
+              <span className="donation-amount-value">{formatEuros(amount)}</span>
+              <span className="donation-amount-label">Don unique</span>
+            </button>
+          ))}
+        </div>
 
-            <label style={{ display: 'block', marginTop: '1rem' }}>
-              <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>Montant libre (€)</span>
-              <input
-                type="number"
-                min={1}
-                max={1000}
-                step={1}
-                value={customAmount}
-                placeholder="Ex. 15"
-                onChange={(event) => {
-                  setUseCustomAmount(true);
-                  setCustomAmount(event.target.value);
-                }}
-                onFocus={() => setUseCustomAmount(true)}
-                style={{
-                  marginTop: '0.35rem',
-                  maxWidth: 200,
-                  padding: '0.55rem 0.75rem',
-                  borderRadius: 'var(--radius-md)',
-                  border: '1px solid var(--border)',
-                  background: 'var(--surface)',
-                  color: 'var(--fg)',
-                }}
-                disabled={submitting}
-              />
-            </label>
+        <label style={{ display: 'block', marginTop: '1rem' }}>
+          <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>Montant libre (€)</span>
+          <input
+            type="number"
+            min={1}
+            max={1000}
+            step={1}
+            value={customAmount}
+            placeholder="Ex. 15"
+            onChange={(event) => {
+              setUseCustomAmount(true);
+              setCustomAmount(event.target.value);
+            }}
+            onFocus={() => setUseCustomAmount(true)}
+            style={{
+              marginTop: '0.35rem',
+              maxWidth: 200,
+              padding: '0.55rem 0.75rem',
+              borderRadius: 'var(--radius-md)',
+              border: '1px solid var(--border)',
+              background: 'var(--surface)',
+              color: 'var(--fg)',
+            }}
+            disabled={submitting || mode === 'unavailable'}
+          />
+        </label>
 
-            {error ? (
-              <p role="alert" style={{ color: 'var(--danger)', marginTop: '0.75rem' }}>
-                {error}
-              </p>
-            ) : null}
+        {error ? (
+          <p role="alert" style={{ color: 'var(--danger)', marginTop: '0.75rem' }}>
+            {error}
+          </p>
+        ) : null}
 
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '1.25rem' }}>
-              {mode === 'live' ? (
-                <Button
-                  type="button"
-                  size="lg"
-                  onClick={() => void handleDonate()}
-                  disabled={submitting}
-                >
-                  {submitting ? 'Redirection…' : 'Donner via Stripe'}
-                </Button>
-              ) : fallbackUrl ? (
-                <a
-                  href={fallbackUrl}
-                  className="btn btn-lg"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Faire un don (lien externe)
-                </a>
-              ) : null}
-              <Button href="/courses" variant="secondary" size="lg">
-                Continuer gratuitement
-              </Button>
-            </div>
-          </>
-        )}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '1.25rem' }}>
+          {mode === 'live' ? (
+            <Button
+              type="button"
+              size="lg"
+              onClick={() => void handleDonate()}
+              disabled={submitting}
+            >
+              {submitting ? 'Redirection…' : 'Donner via Stripe'}
+            </Button>
+          ) : fallbackUrl ? (
+            <a
+              href={fallbackUrl}
+              className="btn btn-lg"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Faire un don (lien externe)
+            </a>
+          ) : null}
+          <Button href="/courses" variant="secondary" size="lg">
+            Continuer gratuitement
+          </Button>
+        </div>
       </Card>
 
       <Card variant="soft">
