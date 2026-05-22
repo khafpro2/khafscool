@@ -5,6 +5,10 @@ vi.mock('../src/lib/prisma.js', () => ({
     user: {
       findUnique: vi.fn(),
     },
+    donation: {
+      aggregate: vi.fn(),
+      findFirst: vi.fn(),
+    },
   },
 }));
 
@@ -21,6 +25,7 @@ vi.mock('../src/lib/stripe.js', () => ({
 import {
   buildDonationStatusResponse,
   createDonationCheckout,
+  getDonationStats,
   parseDonationCheckoutRequest,
 } from '../src/controllers/donations.controller.js';
 import { prisma } from '../src/lib/prisma.js';
@@ -46,6 +51,8 @@ function makeRequest(body: unknown, userId?: string) {
 describe('donations checkout', () => {
   beforeEach(() => {
     vi.mocked(prisma.user.findUnique).mockReset();
+    vi.mocked(prisma.donation.aggregate).mockReset();
+    vi.mocked(prisma.donation.findFirst).mockReset();
     createDonationCheckoutSession.mockReset();
     delete process.env.STRIPE_SECRET_KEY;
     delete process.env.DONATION_URL;
@@ -122,6 +129,51 @@ describe('donations checkout', () => {
       checkoutUrl: 'https://checkout.stripe.com/c/pay/cs_test_donation',
       amountCents: 2000,
       sessionId: 'cs_test_donation',
+    });
+  });
+});
+
+describe('donation stats', () => {
+  beforeEach(() => {
+    vi.mocked(prisma.donation.aggregate).mockReset();
+    vi.mocked(prisma.donation.findFirst).mockReset();
+  });
+
+  it('returns aggregate donation stats', async () => {
+    vi.mocked(prisma.donation.aggregate).mockResolvedValue({
+      _count: { _all: 3 },
+      _sum: { amountCents: 3500 },
+    } as never);
+    vi.mocked(prisma.donation.findFirst).mockResolvedValue({
+      createdAt: new Date('2026-05-22T12:00:00.000Z'),
+    } as never);
+
+    const reply = makeReply();
+    await getDonationStats({} as FastifyRequest, reply);
+
+    expect(reply.send).toHaveBeenCalledWith({
+      totalCount: 3,
+      totalAmountCents: 3500,
+      currency: 'eur',
+      lastDonationAt: '2026-05-22T12:00:00.000Z',
+    });
+  });
+
+  it('returns zero totals when no donations exist', async () => {
+    vi.mocked(prisma.donation.aggregate).mockResolvedValue({
+      _count: { _all: 0 },
+      _sum: { amountCents: null },
+    } as never);
+    vi.mocked(prisma.donation.findFirst).mockResolvedValue(null);
+
+    const reply = makeReply();
+    await getDonationStats({} as FastifyRequest, reply);
+
+    expect(reply.send).toHaveBeenCalledWith({
+      totalCount: 0,
+      totalAmountCents: 0,
+      currency: 'eur',
+      lastDonationAt: null,
     });
   });
 });

@@ -12,6 +12,7 @@ MDM Academy Pro reste **100 % gratuit**. Les dons sont optionnels et servent uni
 | `STRIPE_DONATION_PRICE_ID_10` | Non | Price ID Stripe pour 10 €. |
 | `STRIPE_DONATION_PRICE_ID_20` | Non | Price ID Stripe pour 20 €. |
 | `DONATION_URL` | Non | Lien externe (Buy Me a Coffee, PayPal, etc.) si Stripe n’est pas configuré. |
+| `ADMIN_API_KEY` | Non | Clé pour `GET /admin/donations/stats` (en-tête `X-Admin-Api-Key`). Sans clé : 503. |
 | `WEB_URL` | Oui (prod) | URL du front pour les redirections success/cancel (`/soutenir`). |
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Non | Clé publique (`pk_test_…`) — réservée à une future intégration Elements ; Checkout redirect n’en a pas besoin. |
 
@@ -23,6 +24,7 @@ Copier les valeurs depuis `.env.example` à la racine du monorepo.
 | --- | --- | --- |
 | `GET /donations/status` | Non | Mode `live` / `fallback` / `unavailable` + montants suggérés |
 | `POST /donations/create-checkout-session` | Optionnelle | Crée une session Stripe Checkout (`{ amountCents }`) |
+| `GET /admin/donations/stats` | `X-Admin-Api-Key` | Agrégats lecture seule : nombre de dons, total centimes, dernière date |
 | `POST /donations/webhook` | Signature Stripe | Alias de `/billing/webhook` — enregistre les dons |
 
 Corps checkout :
@@ -59,6 +61,28 @@ Si `STRIPE_SECRET_KEY` est vide mais `DONATION_URL` est renseigné, le web et le
 ```env
 DONATION_URL=https://buymeacoffee.com/votre-page
 ```
+
+## Statistiques admin (lecture seule)
+
+Endpoint protégé pour le suivi interne (pas d’UI admin dans le MVP) :
+
+```bash
+curl -s -H "X-Admin-Api-Key: $ADMIN_API_KEY" \
+  http://localhost:4000/admin/donations/stats
+```
+
+Réponse exemple :
+
+```json
+{
+  "totalCount": 12,
+  "totalAmountCents": 18500,
+  "currency": "eur",
+  "lastDonationAt": "2026-05-22T14:30:00.000Z"
+}
+```
+
+Sans `ADMIN_API_KEY` configurée, l’API renvoie `503 ADMIN_API_DISABLED`. Clé incorrecte → `401 ADMIN_API_UNAUTHORIZED`.
 
 ## Base de données
 

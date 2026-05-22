@@ -73,6 +73,26 @@ export async function getDonationStatus(_req: FastifyRequest, reply: FastifyRepl
   return reply.send(buildDonationStatusResponse());
 }
 
+export async function getDonationStats(_req: FastifyRequest, reply: FastifyReply) {
+  const [aggregate, latest] = await Promise.all([
+    prisma.donation.aggregate({
+      _count: { _all: true },
+      _sum: { amountCents: true },
+    }),
+    prisma.donation.findFirst({
+      orderBy: { createdAt: 'desc' },
+      select: { createdAt: true },
+    }),
+  ]);
+
+  return reply.send({
+    totalCount: aggregate._count._all,
+    totalAmountCents: aggregate._sum.amountCents ?? 0,
+    currency: 'eur',
+    lastDonationAt: latest?.createdAt.toISOString() ?? null,
+  });
+}
+
 export async function createDonationCheckout(
   req: FastifyRequest<{ Body: unknown }>,
   reply: FastifyReply
