@@ -4,10 +4,15 @@ import { FormEvent, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { API_URL, login, register } from '@/lib/api';
 import {
+  ACCESS_TOKEN_TTL_MINUTES,
   getAccessToken,
   logoutSession,
+  readRememberMePreference,
+  REFRESH_REMEMBER_MAX_AGE_SEC,
+  REFRESH_SESSION_MAX_AGE_SEC,
   sanitizeRedirectPath,
   storeAuthTokens,
+  writeRememberMePreference,
 } from '@/lib/auth';
 import { resolveAuthErrorMessage } from '@/lib/auth-errors';
 import { Badge } from '@/components/ui/Badge';
@@ -53,10 +58,12 @@ export default function AuthPage() {
   const [error, setError] = useState<string | null>(null);
   const [hasSession, setHasSession] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
 
   useEffect(() => {
     setRedirectPath(readRedirectFromLocation());
     setHasSession(Boolean(getAccessToken()));
+    setRememberMe(readRememberMePreference());
   }, []);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -67,9 +74,9 @@ export default function AuthPage() {
     try {
       const auth =
         mode === 'login'
-          ? await login(email, password)
+          ? await login(email, password, rememberMe)
           : await register(email, password, displayName || email.split('@')[0]);
-      storeAuthTokens(auth);
+      storeAuthTokens(auth, { rememberMe: mode === 'register' ? true : rememberMe });
       setHasSession(true);
       router.push(redirectPath);
     } catch (error) {
@@ -187,6 +194,37 @@ export default function AuthPage() {
                 style={inputStyle}
               />
             </label>
+
+            {mode === 'login' ? (
+              <label
+                style={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '0.55rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(event) => {
+                    const next = event.target.checked;
+                    setRememberMe(next);
+                    writeRememberMePreference(next);
+                  }}
+                  style={{ marginTop: '0.2rem' }}
+                />
+                <span>
+                  Se souvenir de moi
+                  <span className="muted" style={{ display: 'block', fontWeight: 500, fontSize: '0.85rem', marginTop: '0.2rem' }}>
+                    Jeton d’accès renouvelé toutes les {ACCESS_TOKEN_TTL_MINUTES} min. Sans cette option, la
+                    session expire au bout de {Math.round(REFRESH_SESSION_MAX_AGE_SEC / 86400)} jours ; avec, jusqu’à{' '}
+                    {Math.round(REFRESH_REMEMBER_MAX_AGE_SEC / 86400)} jours.
+                  </span>
+                </span>
+              </label>
+            ) : null}
 
             {error && (
               <p

@@ -4,7 +4,25 @@ import { env } from '../config/env.js';
 import { prisma } from '../lib/prisma.js';
 
 const ACCESS_TTL = '15m';
-const REFRESH_DAYS = 30;
+
+/** Durée par défaut (OAuth, inscription). */
+export const REFRESH_TTL_DAYS_DEFAULT = 30;
+/** Session courte sans « Se souvenir de moi ». */
+export const REFRESH_TTL_DAYS_SESSION = 7;
+/** Session prolongée avec « Se souvenir de moi ». */
+export const REFRESH_TTL_DAYS_REMEMBER = 90;
+
+export type RefreshTokenOptions = {
+  rememberMe?: boolean;
+  /** Conserve la date d’expiration lors d’une rotation de jeton. */
+  expiresAt?: Date;
+};
+
+function refreshDaysFor(options?: RefreshTokenOptions): number {
+  if (options?.rememberMe === true) return REFRESH_TTL_DAYS_REMEMBER;
+  if (options?.rememberMe === false) return REFRESH_TTL_DAYS_SESSION;
+  return REFRESH_TTL_DAYS_DEFAULT;
+}
 
 export interface AccessPayload {
   sub: string;
@@ -23,10 +41,15 @@ function hashToken(token: string): string {
   return crypto.createHash('sha256').update(token).digest('hex');
 }
 
-export async function createRefreshToken(userId: string) {
+export async function createRefreshToken(userId: string, options?: RefreshTokenOptions) {
   const plainToken = crypto.randomBytes(48).toString('hex');
-  const expiresAt = new Date();
-  expiresAt.setDate(expiresAt.getDate() + REFRESH_DAYS);
+  const expiresAt =
+    options?.expiresAt ??
+    (() => {
+      const date = new Date();
+      date.setDate(date.getDate() + refreshDaysFor(options));
+      return date;
+    })();
 
   await prisma.refreshToken.create({
     data: {
@@ -47,7 +70,7 @@ export async function rotateRefreshToken(oldPlain: string) {
   }
 
   await prisma.refreshToken.update({ where: { id: existing.id }, data: { revoked: true } });
-  const refresh = await createRefreshToken(existing.userId);
+  const refresh = await createRefreshToken(existing.userId, { expiresAt: existing.expiresAt });
   return { ...refresh, userId: existing.userId };
 }
 

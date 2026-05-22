@@ -2,6 +2,12 @@
 
 ## Unreleased — `cursor/progress-dashboard-auth-v2`
 
+- Auth : « Se souvenir de moi » (web `/auth`, mobile WelcomeScreen) — refresh 7 j / 90 j, JWT accès 15 min documenté
+- Web : aide raccourcis clavier (? + lien) sur parcours/quiz — quiz + mini-scénario FR
+- API : rate limit FR structuré (429) sur `check-answer` et `complete` ; QuizPanel affiche l’erreur style auth
+- Web : `/mvp` — polish FR aligné thème Pro (grilles, dark mode, cartes glass)
+- Tests : TTL refresh remember-me, rate limit quiz, schéma login `rememberMe`
+
 - API : `PATCH /users/me` — mise à jour du `displayName` (Zod FR, auth requise)
 - Web : `/profile` — formulaire FR pour modifier le nom affiché, validation et toast succès
 - Web : menu mobile — points et rang (`SiteMobileNav`, parité header desktop)

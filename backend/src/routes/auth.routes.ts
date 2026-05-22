@@ -1,6 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import rateLimit from '@fastify/rate-limit';
 import * as auth from '../controllers/auth.controller.js';
+import { buildFrenchRateLimitBody } from '../lib/rate-limit.js';
 import { requireAuth } from '../middleware/auth.middleware.js';
 import type { OAuthProviderName } from '../config/oauth.js';
 
@@ -9,11 +10,7 @@ export async function authRoutes(app: FastifyInstance) {
     max: 10,
     timeWindow: '1 minute',
     hook: 'preHandler',
-    errorResponseBuilder: (_request, context) => ({
-      error: 'RATE_LIMIT_EXCEEDED',
-      message: 'Trop de tentatives. Réessayez dans une minute.',
-      retryAfter: context.after,
-    }),
+    errorResponseBuilder: buildFrenchRateLimitBody,
   });
 
   app.get<{ Params: { provider: OAuthProviderName }; Querystring: { redirect?: string } }>(

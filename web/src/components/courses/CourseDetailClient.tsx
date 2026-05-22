@@ -5,7 +5,9 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { CourseDetail, CourseProgressData, CourseProgressModule } from '@/lib/api';
 import { checkModuleAnswer, completeModule, fetchCourse, fetchCourseProgress } from '@/lib/api';
+import { AuthRequestError, resolveApiErrorMessage } from '@/lib/auth-errors';
 import { buildAuthUrl, getAccessToken } from '@/lib/auth';
+import { KeyboardShortcutsHelp } from '@/components/courses/KeyboardShortcutsHelp';
 import { formatTrack } from '@/lib/tracks';
 import {
   InteractiveMiniGame,
@@ -295,7 +297,11 @@ export function CourseDetailClient({ slug }: { slug: string }) {
         setProgress(updatedProgress);
         setUsesProgressFallback(false);
         return;
-      } catch {
+      } catch (error) {
+        if (error instanceof AuthRequestError) {
+          setResult(resolveApiErrorMessage(error, 'module'));
+          return;
+        }
         setResult(
           `Score local : ${correctCount}/${activeModule.questions.length} (${localScore}%). L’enregistrement backend a échoué, mais l’unité reste testable.`
         );
@@ -533,6 +539,12 @@ export function CourseDetailClient({ slug }: { slug: string }) {
                     </Card>
                   ) : isActiveModule ? (
                     <>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '0.75rem' }}>
+                      <KeyboardShortcutsHelp
+                        hasQuiz={module.questions.length > 0}
+                        hasMinigame={Boolean(module.game?.steps.length)}
+                      />
+                    </div>
                     {module.game && gameOrders[module.id] && (
                       <InteractiveMiniGame
                         game={module.game}

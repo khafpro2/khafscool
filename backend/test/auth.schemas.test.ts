@@ -26,6 +26,16 @@ describe('auth schemas', () => {
     ).toBe(true);
   });
 
+  it('accepts optional rememberMe on login', () => {
+    expect(
+      loginSchema.safeParse({
+        email: 'user@example.com',
+        password: 'secret123',
+        rememberMe: false,
+      }).success
+    ).toBe(true);
+  });
+
   it('requires refresh token', () => {
     expect(refreshSchema.safeParse({}).success).toBe(false);
   });

@@ -58,6 +58,10 @@ async function apiRequest<T>(path: string, init: RequestInit = {}) {
 
     if (!res.ok) {
       recordApiFailure();
+      const contentType = res.headers.get('content-type') ?? '';
+      if (contentType.includes('application/json')) {
+        await throwAuthRequestError(res);
+      }
       throw new Error(`Erreur API ${res.status}`);
     }
 
@@ -127,8 +131,8 @@ async function authRequest<T>(path: string, body: unknown): Promise<T> {
   }
 }
 
-export function login(email: string, password: string) {
-  return authRequest<AuthResponse>('/auth/login', { email, password });
+export function login(email: string, password: string, rememberMe = true) {
+  return authRequest<AuthResponse>('/auth/login', { email, password, rememberMe });
 }
 
 export function register(email: string, password: string, displayName: string) {

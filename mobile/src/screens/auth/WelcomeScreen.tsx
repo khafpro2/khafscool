@@ -41,6 +41,7 @@ export function WelcomeScreen({ onAuthSuccess }: WelcomeScreenProps) {
   const [displayName, setDisplayName] = useState('');
   const [loading, setLoading] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
+  const [rememberMe, setRememberMe] = useState(true);
 
   async function handleEmailAuth() {
     const trimmedEmail = email.trim();
@@ -55,7 +56,7 @@ export function WelcomeScreen({ onAuthSuccess }: WelcomeScreenProps) {
     try {
       const auth =
         mode === 'login'
-          ? await loginWithEmail(trimmedEmail, password)
+          ? await loginWithEmail(trimmedEmail, password, rememberMe)
           : await registerWithEmail(
               trimmedEmail,
               password,
@@ -173,6 +174,26 @@ export function WelcomeScreen({ onAuthSuccess }: WelcomeScreenProps) {
           editable={!isBusy}
         />
 
+        {mode === 'login' ? (
+          <Pressable
+            style={styles.rememberRow}
+            onPress={() => setRememberMe((current) => !current)}
+            disabled={isBusy}
+            accessibilityRole="checkbox"
+            accessibilityState={{ checked: rememberMe }}
+          >
+            <View style={[styles.rememberBox, rememberMe && styles.rememberBoxChecked]}>
+              {rememberMe ? <Text style={styles.rememberCheck}>✓</Text> : null}
+            </View>
+            <Text style={styles.rememberLabel}>
+              Se souvenir de moi{' '}
+              <Text style={styles.rememberHint}>
+                (session prolongée ; jeton d’accès renouvelé toutes les 15 min)
+              </Text>
+            </Text>
+          </Pressable>
+        ) : null}
+
         {formError ? <Text style={styles.error}>{formError}</Text> : null}
 
         <Pressable
@@ -258,6 +279,30 @@ function createStyles(colors: AppThemeColors) {
       marginBottom: 10,
     },
     error: { color: '#f87171', fontSize: 14, marginBottom: 10 },
+    rememberRow: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      gap: 10,
+      marginBottom: 10,
+    },
+    rememberBox: {
+      width: 22,
+      height: 22,
+      borderRadius: 6,
+      borderWidth: 1.5,
+      borderColor: colors.border,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginTop: 2,
+      backgroundColor: colors.bgSoft,
+    },
+    rememberBoxChecked: {
+      borderColor: colors.accent,
+      backgroundColor: colors.accent,
+    },
+    rememberCheck: { color: '#fff', fontSize: 14, fontWeight: '800' },
+    rememberLabel: { flex: 1, color: colors.fg, fontSize: 14, fontWeight: 600, lineHeight: 20 },
+    rememberHint: { color: colors.muted, fontWeight: 500, fontSize: 12 },
     primaryCta: {
       backgroundColor: colors.accent,
       padding: 16,

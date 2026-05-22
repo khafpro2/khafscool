@@ -84,9 +84,19 @@ async function findOrCreateOAuthUser(provider: OAuthProviderName, profile: { sub
   return user;
 }
 
-function tokenResponse(user: { id: string; email: string | null; displayName: string | null; provider: AuthProvider }, refresh: { plainToken: string }) {
+function tokenResponse(
+  user: { id: string; email: string | null; displayName: string | null; provider: AuthProvider },
+  refresh: { plainToken: string },
+  rememberMe?: boolean
+) {
   const accessToken = signAccessToken({ sub: user.id, email: user.email });
-  return { accessToken, refreshToken: refresh.plainToken, user: sanitizeUser(user) };
+  return {
+    accessToken,
+    refreshToken: refresh.plainToken,
+    user: sanitizeUser(user),
+    rememberMe: rememberMe ?? true,
+    accessTokenTtlMinutes: 15,
+  };
 }
 
 export async function startOAuth(
@@ -152,8 +162,8 @@ export async function registerLocal(req: FastifyRequest<{ Body: unknown }>, repl
     },
   });
 
-  const refresh = await createRefreshToken(user.id);
-  return reply.status(201).send(tokenResponse(user, refresh));
+  const refresh = await createRefreshToken(user.id, { rememberMe: true });
+  return reply.status(201).send(tokenResponse(user, refresh, true));
 }
 
 export async function loginLocal(req: FastifyRequest<{ Body: unknown }>, reply: FastifyReply) {
@@ -165,15 +175,16 @@ export async function loginLocal(req: FastifyRequest<{ Body: unknown }>, reply: 
     });
   }
 
-  const { email, password } = parsedBody.data;
+  const { email, password, rememberMe } = parsedBody.data;
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user?.passwordHash) return reply.status(401).send({ error: 'INVALID_CREDENTIALS' });
 
   const ok = await bcrypt.compare(password, user.passwordHash);
   if (!ok) return reply.status(401).send({ error: 'INVALID_CREDENTIALS' });
 
-  const refresh = await createRefreshToken(user.id);
-  return reply.send(tokenResponse(user, refresh));
+  const persistSession = rememberMe !== false;
+  const refresh = await createRefreshToken(user.id, { rememberMe: persistSession });
+  return reply.send(tokenResponse(user, refresh, persistSession));
 }
 
 export async function refreshTokens(req: FastifyRequest<{ Body: unknown }>, reply: FastifyReply) {

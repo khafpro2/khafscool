@@ -63,13 +63,26 @@ function formatRetryDelay(seconds: number): string {
   return minutes === 1 ? '1 minute' : `${minutes} minutes`;
 }
 
-export function resolveAuthErrorMessage(error: unknown, mode: 'login' | 'register'): string {
+function formatRateLimitMessage(retryAfterSeconds?: number): string {
+  if (retryAfterSeconds) {
+    return `Trop de tentatives. Réessaie dans ${formatRetryDelay(retryAfterSeconds)}.`;
+  }
+  return 'Trop de tentatives. Patiente une minute avant de réessayer.';
+}
+
+export function resolveApiErrorMessage(
+  error: unknown,
+  context: 'login' | 'register' | 'quiz' | 'module' = 'login'
+): string {
   if (error instanceof AuthRequestError) {
     if (error.code === 'RATE_LIMIT_EXCEEDED' || error.status === 429) {
-      if (error.retryAfterSeconds) {
-        return `Trop de tentatives. Réessaie dans ${formatRetryDelay(error.retryAfterSeconds)}.`;
+      if (context === 'quiz') {
+        return `Limite de vérification du quiz atteinte. ${formatRateLimitMessage(error.retryAfterSeconds)}`;
       }
-      return 'Trop de tentatives. Patiente une minute avant de réessayer.';
+      if (context === 'module') {
+        return `Limite de validation d’unité atteinte. ${formatRateLimitMessage(error.retryAfterSeconds)}`;
+      }
+      return formatRateLimitMessage(error.retryAfterSeconds);
     }
 
     if (error.code === 'INVALID_CREDENTIALS') {
@@ -93,7 +106,19 @@ export function resolveAuthErrorMessage(error: unknown, mode: 'login' | 'registe
     return 'Impossible de joindre le serveur. Vérifie que l’API est démarrée (pnpm dev:stack).';
   }
 
-  return mode === 'login'
+  if (context === 'quiz') {
+    return 'Impossible de vérifier cette réponse pour le moment.';
+  }
+
+  if (context === 'module') {
+    return 'Impossible d’enregistrer l’unité pour le moment.';
+  }
+
+  return context === 'login'
     ? 'Connexion impossible pour le moment. Réessaie dans quelques instants.'
     : 'Inscription impossible pour le moment. Réessaie dans quelques instants.';
+}
+
+export function resolveAuthErrorMessage(error: unknown, mode: 'login' | 'register'): string {
+  return resolveApiErrorMessage(error, mode);
 }

@@ -75,22 +75,20 @@ const OFFICIAL_LINKS = [
 
 export default function MvpPage() {
   return (
-    <section style={{ padding: '1rem 0 2.5rem' }}>
-      <div className="hero">
+    <section className="mvp-page" style={{ padding: '1rem 0 2.5rem' }}>
+      <div className="hero auth-hero-compact">
         <span className="hero-eyebrow">MVP testable</span>
-        <h1>Roadmap MVP pour reviewers et testeurs</h1>
-        <p style={{ marginTop: '0.75rem' }}>
+        <h1 style={{ fontSize: 'clamp(1.75rem, 3vw, 2.25rem)' }}>Roadmap MVP pour reviewers et testeurs</h1>
+        <p style={{ marginTop: '0.65rem', maxWidth: 640 }}>
           Vue d’ensemble des fonctionnalités livrées et des prochaines étapes — authentification, apprentissage
-          gamifié et sprint certification — 100 % gratuit.
+          gamifié et sprint certification — 100 % gratuit sur MDM Academy Pro.
         </p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '1.25rem' }}>
-          <Button href="/auth" variant="secondary">
-            Commencer le test
-          </Button>
+          <Button href="/auth">Commencer le test</Button>
           <Button href="/dashboard" variant="dark">
             Tableau de bord
           </Button>
-          <Button href="/diagnostics" variant="ghost" style={{ color: '#fff', borderColor: 'rgba(255,255,255,0.4)' }}>
+          <Button href="/diagnostics" variant="ghost">
             Diagnostics
           </Button>
         </div>
@@ -106,15 +104,9 @@ export default function MvpPage() {
             Release MVP
           </Badge>
         </div>
-        <div
-          style={{
-            display: 'grid',
-            gap: '1rem',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
-          }}
-        >
+        <div className="mvp-grid">
           {DELIVERED.map((item) => (
-            <Card key={item.title} variant="soft">
+            <Card key={item.title} variant="soft" className="auth-card-glass">
               <Badge tone="success" icon="\u2714\uFE0F">
                 Livré
               </Badge>
@@ -138,15 +130,9 @@ export default function MvpPage() {
             Planifié
           </Badge>
         </div>
-        <div
-          style={{
-            display: 'grid',
-            gap: '1rem',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
-          }}
-        >
+        <div className="mvp-grid">
           {UPCOMING.map((item) => (
-            <Card key={item.title} variant="flat" style={{ background: '#f5f5f7' }}>
+            <Card key={item.title} variant="flat" className="mvp-upcoming-card">
               <Badge tone="outline" icon="\u{1F4C5}">
                 À venir
               </Badge>
@@ -157,13 +143,13 @@ export default function MvpPage() {
         </div>
       </section>
 
-      <Card style={{ marginTop: '2rem' }}>
+      <Card className="auth-card-glass" style={{ marginTop: '2rem' }}>
         <p className="section-eyebrow">Checklist</p>
         <h2 style={{ fontSize: '1.5rem', fontWeight: 800, marginTop: '0.35rem' }}>Scénario de revue court</h2>
         <p className="muted" style={{ marginTop: '0.5rem' }}>
           Enchaîne ces étapes connecté, puis répète sans session pour valider les fallbacks démo.
         </p>
-        <ol style={{ display: 'grid', gap: '0.85rem', marginTop: '1rem', paddingLeft: '1.25rem' }}>
+        <ol className="mvp-checklist">
           {TEST_CHECKLIST.map((item) => (
             <li key={item.href}>
               <Button href={item.href} variant="ghost" size="sm" style={{ padding: 0, fontWeight: 800 }}>
@@ -175,14 +161,14 @@ export default function MvpPage() {
         </ol>
       </Card>
 
-      <Card variant="soft" style={{ marginTop: '1.5rem', borderColor: '#f0cf7a', background: '#fff8e6' }}>
+      <Card variant="soft" className="mvp-references-card" style={{ marginTop: '1.5rem' }}>
         <p className="section-eyebrow">Références</p>
         <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginTop: '0.35rem' }}>Sources de vérité externes</h2>
         <p className="muted" style={{ marginTop: '0.45rem' }}>
           Contenus pédagogiques originaux. Pour une revue métier ou certification, vérifie les exigences à jour
           auprès des éditeurs.
         </p>
-        <ul style={{ display: 'grid', gap: '0.5rem', listStyle: 'none', marginTop: '1rem' }}>
+        <ul className="mvp-links">
           {OFFICIAL_LINKS.map((link) => (
             <li key={link.href}>
               <a href={link.href} rel="noopener noreferrer" target="_blank" style={{ fontWeight: 800 }}>

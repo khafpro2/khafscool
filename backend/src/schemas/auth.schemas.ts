@@ -16,6 +16,7 @@ export const registerSchema = z.object({  email: z.string({ required_error: 'Adr
 export const loginSchema = z.object({
   email: z.string({ required_error: 'Adresse e-mail requise' }).email('Adresse e-mail invalide'),
   password: z.string({ required_error: 'Mot de passe requis' }).min(1, 'Mot de passe requis'),
+  rememberMe: z.boolean().optional(),
 });
 
 export const refreshSchema = z.object({

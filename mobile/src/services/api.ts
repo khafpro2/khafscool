@@ -18,11 +18,15 @@ export interface AuthResponse {
   user: AuthUser;
 }
 
-export async function loginWithEmail(email: string, password: string): Promise<AuthResponse> {
+export async function loginWithEmail(
+  email: string,
+  password: string,
+  rememberMe = true
+): Promise<AuthResponse> {
   const res = await fetch(`${API_URL}/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify({ email, password, rememberMe }),
   });
   if (!res.ok) throw new Error(`Login failed ${res.status}`);
   return res.json() as Promise<AuthResponse>;

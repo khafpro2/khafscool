@@ -8,6 +8,8 @@ export interface AuthUser {
 export interface AuthResponse {
   accessToken: string;
   refreshToken: string;
+  rememberMe?: boolean;
+  accessTokenTtlMinutes?: number;
   user: AuthUser;
 }
 

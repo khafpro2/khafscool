@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent, type CSSProperties, type RefObject } from 'react';
 import type { CourseModule } from '@/lib/api';
+import { resolveApiErrorMessage } from '@/lib/auth-errors';
 import { getTrackVisual } from '@/lib/design';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -80,6 +81,7 @@ export function QuizPanel({
   const trackVisual = getTrackVisual(track);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [checkingQuestionId, setCheckingQuestionId] = useState<string | null>(null);
+  const [checkError, setCheckError] = useState<string | null>(null);
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
   const feedbackRef = useRef<HTMLDivElement>(null);
@@ -135,6 +137,7 @@ export function QuizPanel({
 
     setCheckingQuestionId(currentQuestionId);
     setFeedbackMessage(null);
+    setCheckError(null);
     setShowConfetti(false);
 
     try {
@@ -148,6 +151,8 @@ export function QuizPanel({
         window.setTimeout(() => setShowConfetti(false), 1200);
       }
       feedbackRef.current?.focus({ preventScroll: true });
+    } catch (error) {
+      setCheckError(resolveApiErrorMessage(error, 'quiz'));
     } finally {
       setCheckingQuestionId(null);
     }
@@ -218,6 +223,12 @@ export function QuizPanel({
             <span aria-hidden>{'\u{1F525}'}</span> Série de {streak} bonnes réponses
           </p>
         )}
+
+        {checkError ? (
+          <p className="form-alert-error" role="alert" style={{ marginTop: '0.75rem' }}>
+            {checkError}
+          </p>
+        ) : null}
 
         {currentQuestion && (
           <QuizQuestionStep

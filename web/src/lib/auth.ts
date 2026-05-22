@@ -4,16 +4,45 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
 const ACCESS_KEY = 'ama_access';
 const REFRESH_KEY = 'ama_refresh';
 const USER_KEY = 'ama_user';
+const REMEMBER_KEY = 'ama_remember_me';
+
+/** Jeton d’accès JWT — renouvelé automatiquement via le refresh token. */
+export const ACCESS_TOKEN_TTL_MINUTES = 15;
+/** Durée refresh sans « Se souvenir de moi » (alignée backend). */
+export const REFRESH_SESSION_MAX_AGE_SEC = 60 * 60 * 24 * 7;
+/** Durée refresh avec « Se souvenir de moi » (alignée backend). */
+export const REFRESH_REMEMBER_MAX_AGE_SEC = 60 * 60 * 24 * 90;
 
 type RefreshedSession = Pick<AuthResponse, 'accessToken' | 'refreshToken'>;
 
-export function storeAuthTokens(auth: AuthResponse) {
+export type StoreAuthOptions = {
+  rememberMe?: boolean;
+};
+
+export function readRememberMePreference(): boolean {
+  if (typeof window === 'undefined') return true;
+  const raw = window.localStorage.getItem(REMEMBER_KEY);
+  if (raw === '0') return false;
+  return true;
+}
+
+export function writeRememberMePreference(rememberMe: boolean) {
   if (typeof window === 'undefined') return;
+  window.localStorage.setItem(REMEMBER_KEY, rememberMe ? '1' : '0');
+}
+
+export function storeAuthTokens(auth: AuthResponse, options?: StoreAuthOptions) {
+  if (typeof window === 'undefined') return;
+  const rememberMe = options?.rememberMe ?? auth.rememberMe ?? readRememberMePreference();
+  writeRememberMePreference(rememberMe);
+
+  const refreshMaxAge = rememberMe ? REFRESH_REMEMBER_MAX_AGE_SEC : REFRESH_SESSION_MAX_AGE_SEC;
+
   window.localStorage.setItem(ACCESS_KEY, auth.accessToken);
   window.localStorage.setItem(REFRESH_KEY, auth.refreshToken);
   window.localStorage.setItem(USER_KEY, JSON.stringify(auth.user));
   setCookie(ACCESS_KEY, auth.accessToken, 60 * 60);
-  setCookie(REFRESH_KEY, auth.refreshToken, 60 * 60 * 24 * 30);
+  setCookie(REFRESH_KEY, auth.refreshToken, refreshMaxAge);
 }
 
 export function getAccessToken() {
@@ -49,6 +78,7 @@ export function getAuthTokenPresence() {
       accessTokenLocal: false,
       refreshTokenCookie: false,
       refreshTokenLocal: false,
+      rememberMe: true,
     };
   }
 
@@ -57,6 +87,7 @@ export function getAuthTokenPresence() {
     accessTokenLocal: Boolean(window.localStorage.getItem(ACCESS_KEY)),
     refreshTokenCookie: Boolean(readCookie(REFRESH_KEY)),
     refreshTokenLocal: Boolean(window.localStorage.getItem(REFRESH_KEY)),
+    rememberMe: readRememberMePreference(),
   };
 }
 
@@ -111,10 +142,13 @@ export function clearAuthTokens() {
 
 function storeSessionTokens(session: RefreshedSession) {
   if (typeof window === 'undefined') return;
+  const rememberMe = readRememberMePreference();
+  const refreshMaxAge = rememberMe ? REFRESH_REMEMBER_MAX_AGE_SEC : REFRESH_SESSION_MAX_AGE_SEC;
+
   window.localStorage.setItem(ACCESS_KEY, session.accessToken);
   window.localStorage.setItem(REFRESH_KEY, session.refreshToken);
   setCookie(ACCESS_KEY, session.accessToken, 60 * 60);
-  setCookie(REFRESH_KEY, session.refreshToken, 60 * 60 * 24 * 30);
+  setCookie(REFRESH_KEY, session.refreshToken, refreshMaxAge);
 }
 
 function sendLogout(accessToken: string, refreshToken: string) {
