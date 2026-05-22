@@ -18,18 +18,10 @@ function subscribeDemoBanner(listener: () => void) {
   };
 }
 
-function getDemoBannerSnapshot() {
-  return {
-    demoMode: isDemoModeActive(),
-    hasToken: Boolean(getAccessToken()),
-  };
-}
-
 function useDemoBannerState() {
-  return useSyncExternalStore(subscribeDemoBanner, getDemoBannerSnapshot, () => ({
-    demoMode: false,
-    hasToken: false,
-  }));
+  const demoMode = useSyncExternalStore(subscribeDemoBanner, () => isDemoModeActive(), () => false);
+  const hasToken = useSyncExternalStore(subscribeDemoBanner, () => Boolean(getAccessToken()), () => false);
+  return { demoMode, hasToken };
 }
 
 export function DemoModeBanner() {

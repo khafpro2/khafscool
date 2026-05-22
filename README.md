@@ -301,7 +301,7 @@ Le body doit contenir `track` (`APPLE`, `JAMF` ou `INTUNE`) et peut contenir `da
 
 ## OAuth (développement)
 
-En dev, le callback OAuth simule un profil utilisateur sans appeler les API fournisseurs. Configurez les variables `*_CLIENT_ID` pour la production.
+En dev, le callback OAuth simule un profil utilisateur sans appeler les API fournisseurs. Pour la production (redirect URIs, variables env, dev vs prod), voir [docs/OAUTH-PRODUCTION.md](./docs/OAUTH-PRODUCTION.md).
 
 ## Tests et build
 
@@ -338,7 +338,7 @@ Roadmap post-PR #6 (ne pas merger sans revue — voir [MERGE.md](./MERGE.md) et 
 
 1. **Fusion PR #6** — valider CI (build-test, integration, e2e-web), checklist [MERGE.md](./MERGE.md)
 2. **Déploiement** — web sur Vercel + API sur Railway/Fly (variables `DATABASE_URL`, JWT, `NEXT_PUBLIC_API_URL`, `WEB_URL`)
-3. **OAuth production** — credentials Apple / Google / Microsoft et redirect URIs prod
+3. **OAuth production** — credentials Apple / Google / Microsoft et redirect URIs prod ([guide](./docs/OAUTH-PRODUCTION.md))
 4. **Certificats** — personnalisation PDF/impression et métadonnées SEO certificats
 5. **Analytics (optionnel)** — consentement cookies respecté, pas de traceur tiers par défaut
 

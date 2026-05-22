@@ -112,18 +112,45 @@ eas build --platform all --profile production
 
 Configurer `EXPO_PUBLIC_*` dans le profil EAS. Tester la connexion API sur appareil physique (pas `localhost`).
 
-## Checklist avant mise en production
+## Checklist go-live (production)
+
+Contrôles minimum avant d’ouvrir le trafic réel :
+
+| Contrôle | Variable / action | Attendu |
+| -------- | ----------------- | ------- |
+| Base de données | `DATABASE_URL` | Postgres managé (Neon, Supabase…), SSL activé |
+| Secrets JWT | `JWT_SECRET`, `JWT_REFRESH_SECRET` | Valeurs uniques, ≥ 32 caractères, **jamais** les défauts dev |
+| Schéma BDD | `pnpm --filter backend exec prisma migrate deploy` | Migrations appliquées sur l’environnement cible |
+| URL API (web) | `NEXT_PUBLIC_API_URL` | URL HTTPS publique de l’API, sans slash final |
+| URL API (mobile) | `EXPO_PUBLIC_API_URL` | **Même** API que le web |
+| CORS | `CORS_ORIGIN` | Domaine Vercel exact (ex. `https://app.votredomaine.com`) |
+| Santé API | `GET /health` | Réponse HTTP 200 |
+| OAuth (si SSO live) | `*_CLIENT_ID`, secrets, `*_REDIRECT_URI` | Voir [docs/OAUTH-PRODUCTION.md](./docs/OAUTH-PRODUCTION.md) |
+| Contenu | seed ou import | Parcours disponibles selon votre stratégie |
+| CI / release | `bash scripts/verify-release.sh` | Tests backend, build web, E2E (ou `SKIP_E2E=1`) |
+
+Checklist détaillée :
 
 - [ ] `DATABASE_URL` pointe vers Postgres managé (SSL activé)
-- [ ] `JWT_SECRET` et `JWT_REFRESH_SECRET` uniques et robustes
+- [ ] `JWT_SECRET` et `JWT_REFRESH_SECRET` uniques et robustes (prod ≠ dev)
 - [ ] `prisma migrate deploy` exécuté sur l’environnement cible
-- [ ] `NEXT_PUBLIC_API_URL` et `EXPO_PUBLIC_API_URL` alignés sur la même API
-- [ ] CORS API autorise le domaine Vercel
+- [ ] `NEXT_PUBLIC_API_URL` et `EXPO_PUBLIC_API_URL` alignés sur la même API HTTPS
+- [ ] `CORS_ORIGIN` autorise le domaine Vercel (pas de wildcard en prod)
 - [ ] `/health` répond 200
 - [ ] Parcours seedés ou importés selon votre stratégie contenu
-- [ ] CI verte (`backend` tests, `web` build, `mobile` `tsc`)
+- [ ] CI verte ou `scripts/verify-release.sh` exécuté localement
 
 ## Vérifications locales (pré-déploiement)
+
+Script tout-en-un (équivalent CI partiel) :
+
+```bash
+bash scripts/verify-release.sh
+# Sans E2E Playwright (plus rapide) :
+SKIP_E2E=1 bash scripts/verify-release.sh
+```
+
+Ou manuellement :
 
 ```bash
 pnpm --filter backend test
