@@ -35,6 +35,18 @@ Workflow : `.github/workflows/ci.yml`
 
 ---
 
+## Release 0.1.0 — checklist pre-merge
+
+- [ ] Version monorepo `@ama/shared`, backend, web, mobile : **0.1.0**
+- [ ] [CHANGELOG.md](./CHANGELOG.md) — section `[0.1.0]` à jour
+- [ ] Compte démo local (`demo@ama.dev`) et compte API seed testés
+- [ ] Variables prod documentées dans [DEPLOYMENT.md](./DEPLOYMENT.md)
+- [ ] Export / suppression compte testés (`GET /users/me/export`, `DELETE /users/me`)
+- [ ] `pnpm --filter web test:e2e` — 12 scénarios verts
+- [ ] `pnpm smoke:api` + `pnpm smoke:web` avec stack locale
+
+---
+
 ## Tests locaux recommandés
 
 Depuis la racine du monorepo :
@@ -85,6 +97,9 @@ pnpm smoke:web
 - [ ] **Guide démo `/demo`** — parcours guidé 6 étapes, bandeau `demo@ama.dev`, BrandIcon, dark mode
 - [ ] **Open Graph parcours** — image dynamique titre + piste sur `/courses/[slug]`
 - [ ] **Mobile profil stats** — carte récap points, rang, streak et #classement
+- [ ] **RGPD compte** — export JSON + suppression compte (web profil + mobile API)
+- [ ] **DemoModeBanner** — distinction « Mode démo local » / « Connecté à l’API »
+- [ ] **Récap quiz mobile** — score X/Y + points estimés avant validation d’unité
 
 ---
 
@@ -138,6 +153,7 @@ pnpm db:seed
 - [ ] `/courses/apple-cert-prep/complete` — partage et lien certificat
 - [ ] `/courses/apple-cert-prep/certificate` — certificat imprimable (mode démo OK)
 - [ ] `/profile` — section certificats (parcours terminés → certificat, empty state FR)
+- [ ] `/profile` — export JSON + suppression compte (modal confirmation SUPPRIMER)
 - [ ] Bannière cookies — affichée une fois, masquée après « J'ai compris », lien `/legal/confidentialite`
 - [ ] Mobile : écran victoire → certificat web + partage natif (`EXPO_PUBLIC_WEB_URL` pointant vers le web local)
 - [ ] Mobile : profil → carte récap points/rang/streak + certificats (`WEB_URL/courses/[slug]/certificate`)

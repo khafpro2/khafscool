@@ -2,9 +2,12 @@ import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   Linking,
+  Modal,
   Pressable,
   ScrollView,
+  Share,
   StyleSheet,
   Text,
   TextInput,
@@ -19,7 +22,7 @@ import { RecentActivitySection } from '../../components/profile/RecentActivitySe
 import type { CompletedCourseSummary, LearnerDashboard } from '../../services/progress';
 import { fetchLearnerDashboard } from '../../services/progress';
 import { clearTokens } from '../../services/auth';
-import { changePassword, logoutAllSessions, updateDisplayName } from '../../services/api';
+import { changePassword, deleteAccount, exportUserData, logoutAllSessions, updateDisplayName } from '../../services/api';
 import {
   buildPointsRankNavSnapshot,
   formatLeaderboardRankLabel,
@@ -45,6 +48,11 @@ export function ProfileScreen() {
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [isSavingPassword, setIsSavingPassword] = useState(false);
   const [isLoggingOutAll, setIsLoggingOutAll] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState('');
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   async function loadProfile() {
     setLoading(true);
@@ -126,6 +134,41 @@ export function ProfileScreen() {
       await clearTokens();
       setIsLoggingOutAll(false);
       router.replace('/');
+    }
+  }
+
+  async function handleExportData() {
+    setIsExporting(true);
+    try {
+      const data = await exportUserData();
+      await Share.share({
+        message: JSON.stringify(data, null, 2),
+        title: 'Export MDM Academy',
+      });
+    } catch {
+      Alert.alert('Export impossible', 'Réessaie dans un instant ou vérifie ta connexion à l’API.');
+    } finally {
+      setIsExporting(false);
+    }
+  }
+
+  async function handleDeleteAccount() {
+    setDeleteError(null);
+    if (deleteConfirm.trim() !== 'SUPPRIMER') {
+      setDeleteError('Saisis exactement SUPPRIMER pour confirmer.');
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      await deleteAccount('SUPPRIMER');
+      await clearTokens();
+      setShowDeleteModal(false);
+      router.replace('/');
+    } catch {
+      setDeleteError('Impossible de supprimer le compte. Réessaie.');
+    } finally {
+      setIsDeleting(false);
     }
   }
 
@@ -449,9 +492,90 @@ export function ProfileScreen() {
         </View>
       ) : null}
 
+      {source === 'api' ? (
+        <View style={styles.personalDataCard}>
+          <Text style={styles.sectionTitle}>Données personnelles</Text>
+          <Text style={styles.sectionHint}>
+            Export JSON et suppression de compte (RGPD)
+          </Text>
+          <Pressable
+            style={[styles.nameEditButton, isExporting ? styles.nameEditButtonDisabled : null]}
+            onPress={() => void handleExportData()}
+            disabled={isExporting}
+            accessibilityRole="button"
+            accessibilityLabel="Exporter mes données"
+          >
+            <Text style={styles.nameEditButtonText}>
+              {isExporting ? 'Export…' : 'Exporter mes données (JSON)'}
+            </Text>
+          </Pressable>
+          <Pressable
+            style={styles.deleteAccountButton}
+            onPress={() => {
+              setDeleteConfirm('');
+              setDeleteError(null);
+              setShowDeleteModal(true);
+            }}
+            accessibilityRole="button"
+            accessibilityLabel="Supprimer mon compte"
+          >
+            <Text style={styles.deleteAccountText}>Supprimer mon compte</Text>
+          </Pressable>
+        </View>
+      ) : null}
+
       <Pressable onPress={handleSignOut} style={styles.signOutButton}>
         <Text style={styles.signOutText}>Déconnexion</Text>
       </Pressable>
+
+      <Modal
+        visible={showDeleteModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => !isDeleting && setShowDeleteModal(false)}
+      >
+        <View style={styles.modalBackdrop}>
+          <View style={styles.modalCard}>
+            <Text style={styles.modalTitle}>Supprimer définitivement mon compte ?</Text>
+            <Text style={styles.modalHint}>
+              Action irréversible — progression, badges et quêtes seront effacés.
+            </Text>
+            <Text style={styles.securityLabel}>Saisis SUPPRIMER pour confirmer</Text>
+            <TextInput
+              value={deleteConfirm}
+              onChangeText={(text) => {
+                setDeleteConfirm(text);
+                if (deleteError) setDeleteError(null);
+              }}
+              autoCapitalize="characters"
+              autoCorrect={false}
+              accessibilityLabel="Confirmation suppression compte"
+              style={[styles.securityInput, deleteError ? styles.nameEditInputError : null]}
+            />
+            {deleteError ? (
+              <Text style={styles.nameEditError} accessibilityRole="alert">
+                {deleteError}
+              </Text>
+            ) : null}
+            <Pressable
+              style={[styles.deleteConfirmButton, isDeleting ? styles.nameEditButtonDisabled : null]}
+              onPress={() => void handleDeleteAccount()}
+              disabled={isDeleting}
+            >
+              <Text style={styles.deleteConfirmText}>
+                {isDeleting ? 'Suppression…' : 'Confirmer la suppression'}
+              </Text>
+            </Pressable>
+            <Pressable
+              style={styles.modalCancelButton}
+              onPress={() => setShowDeleteModal(false)}
+              disabled={isDeleting}
+            >
+              <Text style={styles.modalCancelText}>Annuler</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 }
@@ -696,5 +820,48 @@ function createStyles(colors: AppThemeColors) {
       borderColor: colors.border,
     },
     logoutAllText: { color: colors.fg, fontWeight: '800' },
+    personalDataCard: {
+      backgroundColor: colors.bgSoft,
+      borderRadius: 18,
+      padding: 16,
+      marginBottom: 10,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    deleteAccountButton: {
+      marginTop: 12,
+      padding: 14,
+      borderRadius: 14,
+      backgroundColor: '#fef2f2',
+      alignItems: 'center',
+      borderWidth: 1,
+      borderColor: '#fecaca',
+    },
+    deleteAccountText: { color: '#dc2626', fontWeight: '800' },
+    modalBackdrop: {
+      flex: 1,
+      backgroundColor: 'rgba(15, 23, 42, 0.55)',
+      justifyContent: 'center',
+      padding: 24,
+    },
+    modalCard: {
+      backgroundColor: colors.bg,
+      borderRadius: 18,
+      padding: 20,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    modalTitle: { color: colors.fg, fontSize: 18, fontWeight: '800' },
+    modalHint: { color: colors.muted, marginTop: 10, lineHeight: 20, fontSize: 14 },
+    deleteConfirmButton: {
+      marginTop: 16,
+      padding: 14,
+      borderRadius: 14,
+      backgroundColor: '#dc2626',
+      alignItems: 'center',
+    },
+    deleteConfirmText: { color: '#fff', fontWeight: '800' },
+    modalCancelButton: { marginTop: 10, padding: 12, alignItems: 'center' },
+    modalCancelText: { color: colors.accent, fontWeight: '700' },
   });
 }

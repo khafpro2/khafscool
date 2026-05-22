@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { ProfilePageSkeleton } from '@/components/ui/Skeleton';
+import { PersonalDataSection } from '@/components/profile/PersonalDataSection';
 import { RecentActivitySection } from '@/components/profile/RecentActivitySection';
 import { TrailCard } from '@/components/ui/TrailCard';
 import {
@@ -179,6 +180,8 @@ export default function ProfilePage() {
           }}
         />
       ) : null}
+
+      {hasToken && fromApi ? <PersonalDataSection /> : null}
 
       <QuickLinksCard />
 

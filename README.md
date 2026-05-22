@@ -334,8 +334,17 @@ Ce fichier est géré par l’IDE (hors dépôt git) ; le README documente son e
 
 ## Prochaines étapes
 
-- Brancher SDK natifs SSO (Apple, Google, MSAL)
+Roadmap post-PR #6 (ne pas merger sans revue — voir [MERGE.md](./MERGE.md) et [DEPLOYMENT.md](./DEPLOYMENT.md)) :
+
+1. **Fusion PR #6** — valider CI (build-test, integration, e2e-web), checklist [MERGE.md](./MERGE.md)
+2. **Déploiement** — web sur Vercel + API sur Railway/Fly (variables `DATABASE_URL`, JWT, `NEXT_PUBLIC_API_URL`, `WEB_URL`)
+3. **OAuth production** — credentials Apple / Google / Microsoft et redirect URIs prod
+4. **Certificats** — personnalisation PDF/impression et métadonnées SEO certificats
+5. **Analytics (optionnel)** — consentement cookies respecté, pas de traceur tiers par défaut
+
+Évolutions techniques ultérieures :
+
+- SDK natifs SSO (Apple, Google, MSAL) sur mobile
 - Contenus avancés Intune et modules Apple supplémentaires
-- Stripe Checkout réel + webhooks
-- Finaliser l'expérience mobile complète
+- Stripe Checkout réel + webhooks (billing dormant aujourd’hui)
 

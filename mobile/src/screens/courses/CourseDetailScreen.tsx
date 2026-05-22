@@ -30,6 +30,11 @@ import {
 
 type ModuleStatus = 'completed' | 'in_progress' | 'locked';
 
+const QUIZ_PASS_PERCENT = 50;
+
+function modulePointsFromScores(quizScore: number, gameScore: number) {
+  return Math.round(quizScore * 0.1 + gameScore * 0.2);
+}
 
 export function CourseDetailScreen() {
   const router = useRouter();
@@ -530,6 +535,24 @@ export function CourseDetailScreen() {
                         </View>
                       );
                     })()}
+                    {activeModule &&
+                    activeModule.questions.every((item) => revealedQuestions.has(item.id)) ? (
+                      <QuizRecap
+                        correctCount={Object.values(questionResults).filter((r) => r.correct).length}
+                        totalQuestions={activeModule.questions.length}
+                        estimatedScore={computeQuizScorePercent(
+                          activeModule.questions.length,
+                          questionResults
+                        )}
+                        estimatedPoints={modulePointsFromScores(
+                          computeQuizScorePercent(activeModule.questions.length, questionResults),
+                          activeModule.game ? 100 : 0
+                        )}
+                        passPercent={QUIZ_PASS_PERCENT}
+                        styles={styles}
+                        colors={colors}
+                      />
+                    ) : null}
                     {localResult ? <Text style={styles.localResult}>{localResult}</Text> : null}
                     <Pressable
                       disabled={!canSubmit || submitting}
@@ -628,6 +651,52 @@ function computeQuizScorePercent(
   if (!totalQuestions) return 0;
   const correct = Object.values(results).filter((result) => result.correct).length;
   return Math.round((correct / totalQuestions) * 100);
+}
+
+function QuizRecap({
+  correctCount,
+  totalQuestions,
+  estimatedScore,
+  estimatedPoints,
+  passPercent,
+  styles,
+  colors,
+}: {
+  correctCount: number;
+  totalQuestions: number;
+  estimatedScore: number;
+  estimatedPoints: number;
+  passPercent: number;
+  styles: ReturnType<typeof createStyles>;
+  colors: AppThemeColors;
+}) {
+  const minCorrect = Math.ceil((passPercent / 100) * totalQuestions);
+  const meetsMinimum = estimatedScore >= passPercent;
+
+  return (
+    <View
+      style={[
+        styles.quizRecap,
+        meetsMinimum ? styles.quizRecapSuccess : styles.quizRecapWarning,
+      ]}
+    >
+      <Text style={[styles.quizRecapTitle, { color: colors.fg }]}>
+        Récapitulatif avant validation de l&apos;unité
+      </Text>
+      <Text style={[styles.quizRecapBody, { color: colors.muted }]}>
+        {correctCount}/{totalQuestions} bonnes réponses · score quiz {estimatedScore}%
+        {estimatedPoints > 0 ? ` · +${estimatedPoints} points estimés` : ''}
+        {totalQuestions > 0
+          ? ` · objectif recommandé ${minCorrect}/${totalQuestions} (${passPercent}%+)`
+          : ''}
+      </Text>
+      {!meetsMinimum ? (
+        <Text style={styles.quizRecapHint}>
+          Tu peux valider l&apos;unité, mais revoir les explications améliorera ton score.
+        </Text>
+      ) : null}
+    </View>
+  );
 }
 
 function ProgressBar({
@@ -766,6 +835,23 @@ function createStyles(colors: AppThemeColors) {
   quizFeedback: { marginTop: 8, fontWeight: '700', fontSize: 14 },
   quizFeedbackSuccess: { color: colors.success },
   quizFeedbackError: { color: colors.warning },
+  quizRecap: {
+    marginTop: 12,
+    padding: 14,
+    borderRadius: 14,
+    borderWidth: 1,
+  },
+  quizRecapSuccess: {
+    backgroundColor: '#ecfdf5',
+    borderColor: '#6ee7b7',
+  },
+  quizRecapWarning: {
+    backgroundColor: '#fffbeb',
+    borderColor: '#fcd34d',
+  },
+  quizRecapTitle: { fontWeight: '800', fontSize: 15 },
+  quizRecapBody: { marginTop: 6, fontSize: 13, lineHeight: 19 },
+  quizRecapHint: { marginTop: 8, fontSize: 13, color: '#92400e', lineHeight: 18 },
   option: {
     flexDirection: 'row',
     alignItems: 'center',

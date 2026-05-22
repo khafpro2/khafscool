@@ -1,9 +1,39 @@
 # Changelog
 
+## [0.1.0] — 2026-05-22
+
+Première release MVP **MDM Academy Pro** (branche `cursor/progress-dashboard-auth-v2`, PR #6).
+
+### Compte et conformité
+- API : `GET /users/me/export` — export JSON (profil, progression, badges, points, quêtes)
+- API : `DELETE /users/me` — suppression compte avec confirmation `SUPPRIMER` (cascade Prisma)
+- Web + mobile : section « Données personnelles » sur le profil (export + suppression)
+
+### Auth et sécurité
+- Changement mot de passe, déconnexion globale, « Se souvenir de moi »
+- Profil : édition du nom affiché (web + mobile)
+
+### Parcours et gamification
+- 3 pistes Apple / Jamf / Intune, quiz, mini-scénarios, badges, quêtes, sprint, classement
+- Certificats imprimables, partage de réussite, récap quiz avant validation (web + mobile)
+- Toasts gamification, thème sombre, PWA, pages légales et cookies FR
+
+### Mobile
+- Onglets natifs badges, quêtes, sprint, classement, diagnostics, profil enrichi
+
+### Docs
+- `DEPLOYMENT.md`, `MERGE.md`, roadmap README
+
 ## Unreleased — `cursor/progress-dashboard-auth-v2`
 
-- API : `PATCH /users/me/password` — changement mot de passe (Zod FR, bcrypt, comptes e-mail)
-- API : `POST /auth/logout-all` — révoque tous les refresh tokens de l’utilisateur
+- API : `GET /users/me/export` et `DELETE /users/me` — conformité RGPD minimale
+- Web : profil — section Données personnelles (export JSON + modal suppression FR)
+- Mobile : export Share + suppression compte sur profil (API connectée)
+- Mobile : récap quiz fin d’unité (parité web)
+- Web : `DemoModeBanner` — « Mode démo local » vs « Connecté à l’API »
+- Version monorepo `0.1.0`, `MERGE.md` checklist release, roadmap README
+
+- API : `PATCH /users/me/password` — changement mot de passe (Zod FR, bcrypt, comptes e-mail)- API : `POST /auth/logout-all` — révoque tous les refresh tokens de l’utilisateur
 - Web : profil — section Sécurité (mot de passe + « Déconnecter tous les appareils », toasts erreurs FR)
 - Mobile : profil — formulaire mot de passe et bouton déconnexion globale (API connectée)
 - Web : `QuizPanel` — récap score X/Y + points estimés avant validation d’unité

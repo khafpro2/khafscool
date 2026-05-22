@@ -67,6 +67,35 @@ export async function logoutAllSessions(): Promise<{ ok: true; revokedCount: num
   });
 }
 
+export type UserDataExport = {
+  exportedAt: string;
+  profile: {
+    id: string;
+    email: string | null;
+    displayName: string | null;
+    provider: string;
+    createdAt: string;
+  };
+  progress: {
+    points: number;
+    level: string;
+    badges: string[];
+  } | null;
+  moduleProgress: unknown[];
+  quests: unknown[];
+};
+
+export async function exportUserData(): Promise<UserDataExport> {
+  return apiFetch<UserDataExport>('/users/me/export');
+}
+
+export async function deleteAccount(confirm: 'SUPPRIMER'): Promise<{ ok: true }> {
+  return apiFetch<{ ok: true }>('/users/me', {
+    method: 'DELETE',
+    body: JSON.stringify({ confirm }),
+  });
+}
+
 type RefreshedSession = {
   accessToken: string;
   refreshToken: string;

@@ -38,6 +38,12 @@ export const changePasswordSchema = z.object({
     .min(8, 'Le nouveau mot de passe doit contenir au moins 8 caractères'),
 });
 
+export const deleteAccountSchema = z.object({
+  confirm: z.literal('SUPPRIMER', {
+    errorMap: () => ({ message: 'Saisis SUPPRIMER pour confirmer la suppression' }),
+  }),
+});
+
 export function formatZodErrors(error: z.ZodError) {
   return error.issues.map((issue) => ({
     field: issue.path.join('.') || 'body',

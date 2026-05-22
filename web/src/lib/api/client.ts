@@ -215,6 +215,60 @@ export async function logoutAllSessions(token: string): Promise<{ ok: true; revo
   });
 }
 
+export type UserDataExport = {
+  exportedAt: string;
+  profile: {
+    id: string;
+    email: string | null;
+    displayName: string | null;
+    avatarUrl: string | null;
+    provider: string;
+    createdAt: string;
+    updatedAt: string;
+  };
+  progress: {
+    points: number;
+    level: string;
+    badges: string[];
+  } | null;
+  moduleProgress: Array<{
+    moduleSlug: string;
+    moduleTitle: string;
+    courseSlug: string;
+    courseTitle: string;
+    track: string;
+    quizScore: number | null;
+    gameScore: number | null;
+    completedAt: string | null;
+  }>;
+  quests: Array<{
+    questKey: string;
+    label: string;
+    target: number;
+    progress: number;
+    completed: boolean;
+    rewardClaimed: boolean;
+    weekStart: string;
+  }>;
+  subscription: unknown;
+};
+
+export async function exportUserData(token: string): Promise<UserDataExport> {
+  const data = await apiRequest<UserDataExport>('/users/me/export', {
+    headers: authHeader(token),
+  });
+  clearDemoMode();
+  return data;
+}
+
+export async function deleteAccount(token: string, confirm: 'SUPPRIMER'): Promise<{ ok: true }> {
+  return apiRequest<{ ok: true }>('/users/me', {
+    method: 'DELETE',
+    headers: authHeader(token),
+    body: JSON.stringify({ confirm }),
+  });
+}
+
 export async function fetchDashboard(token?: string): Promise<DashboardData> {
   try {
     if (token) {

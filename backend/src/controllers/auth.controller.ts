@@ -5,6 +5,7 @@ import { oauthProviders, type OAuthProviderName } from '../config/oauth.js';
 import { prisma } from '../lib/prisma.js';
 import {
   changePasswordSchema,
+  deleteAccountSchema,
   formatZodErrors,
   loginSchema,
   refreshSchema,
@@ -282,4 +283,86 @@ export async function updateCurrentUserProfile(req: FastifyRequest<{ Body: unkno
   });
 
   return reply.send({ user: sanitizeUser(user) });
+}
+
+export async function exportCurrentUserData(req: FastifyRequest, reply: FastifyReply) {
+  const user = await prisma.user.findUnique({
+    where: { id: req.user.sub },
+    include: {
+      progress: true,
+      moduleProgress: {
+        include: {
+          module: {
+            select: {
+              slug: true,
+              title: true,
+              course: { select: { slug: true, title: true, track: true } },
+            },
+          },
+        },
+        orderBy: { completedAt: 'asc' },
+      },
+      quests: { orderBy: { weekStart: 'desc' } },
+      subscription: true,
+    },
+  });
+
+  if (!user) return reply.status(404).send({ error: 'NOT_FOUND' });
+
+  return reply.send({
+    exportedAt: new Date().toISOString(),
+    profile: {
+      id: user.id,
+      email: user.email,
+      displayName: user.displayName,
+      avatarUrl: user.avatarUrl,
+      provider: user.provider,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    },
+    progress: user.progress
+      ? {
+          points: user.progress.points,
+          level: user.progress.level,
+          badges: user.progress.badges,
+        }
+      : null,
+    moduleProgress: user.moduleProgress.map((row) => ({
+      moduleSlug: row.module.slug,
+      moduleTitle: row.module.title,
+      courseSlug: row.module.course.slug,
+      courseTitle: row.module.course.title,
+      track: row.module.course.track,
+      quizScore: row.quizScore,
+      gameScore: row.gameScore,
+      completedAt: row.completedAt,
+    })),
+    quests: user.quests.map((quest) => ({
+      questKey: quest.questKey,
+      label: quest.label,
+      target: quest.target,
+      progress: quest.progress,
+      completed: quest.completed,
+      rewardClaimed: quest.rewardClaimed,
+      weekStart: quest.weekStart,
+    })),
+    subscription: user.subscription,
+  });
+}
+
+export async function deleteCurrentUser(req: FastifyRequest<{ Body: unknown }>, reply: FastifyReply) {
+  const parsedBody = deleteAccountSchema.safeParse(req.body ?? {});
+  if (!parsedBody.success) {
+    return reply.status(400).send({
+      error: 'INVALID_DELETE_REQUEST',
+      details: formatZodErrors(parsedBody.error),
+    });
+  }
+
+  const user = await prisma.user.findUnique({ where: { id: req.user.sub } });
+  if (!user) return reply.status(404).send({ error: 'NOT_FOUND' });
+
+  await prisma.user.delete({ where: { id: user.id } });
+
+  return reply.send({ ok: true });
 }
