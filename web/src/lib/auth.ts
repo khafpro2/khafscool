@@ -35,6 +35,13 @@ export function getStoredUser(): AuthUser | null {
   }
 }
 
+export function updateStoredUserDisplayName(displayName: string) {
+  if (typeof window === 'undefined') return;
+  const user = getStoredUser();
+  if (!user) return;
+  window.localStorage.setItem(USER_KEY, JSON.stringify({ ...user, displayName }));
+}
+
 export function getAuthTokenPresence() {
   if (typeof window === 'undefined') {
     return {

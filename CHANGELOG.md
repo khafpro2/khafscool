@@ -2,6 +2,13 @@
 
 ## Unreleased — `cursor/progress-dashboard-auth-v2`
 
+- API : `PATCH /users/me` — mise à jour du `displayName` (Zod FR, auth requise)
+- Web : `/profile` — formulaire FR pour modifier le nom affiché, validation et toast succès
+- Web : menu mobile — points et rang (`SiteMobileNav`, parité header desktop)
+- Web : certificat — CSS impression amélioré (marges, sans nav/footer, logo MDM Academy Pro)
+- Mobile : profil — champ nom affiché éditable (API connectée)
+- Tests : schéma + route profil, E2E profil démo et bouton impression certificat
+
 - Web : `/demo` — parcours guidé FR en 6 étapes (compte démo, parcours, quiz, quêtes, classement, certificat), BrandIcon, dark mode, bandeau credentials
 - Web : Open Graph dynamique par parcours (`/courses/[slug]/opengraph-image`, titre + piste, fallback générique)
 - Mobile : profil — carte récap points, rang, streak et #classement

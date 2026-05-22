@@ -180,14 +180,16 @@ export function CourseCertificateClient({ slug }: { slug: string }) {
 
   return (
     <section className="certificate-page">
-      <Breadcrumbs
-        items={[
+      <div className="no-print">
+        <Breadcrumbs
+          items={[
           { label: 'Accueil', href: '/' },
           { label: 'Parcours', href: '/courses' },
           { label: course.title, href: `/courses/${slug}` },
           { label: 'Certificat' },
         ]}
-      />
+        />
+      </div>
       <div className="certificate-toolbar no-print">
         <div>
           <Link href={`/courses/${slug}/complete`} style={{ fontWeight: 700 }}>
@@ -200,7 +202,12 @@ export function CourseCertificateClient({ slug }: { slug: string }) {
           )}
         </div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem' }}>
-          <Button type="button" onClick={() => window.print()} icon={'\u{1F5A8}\uFE0F'}>
+          <Button
+            type="button"
+            onClick={() => window.print()}
+            icon={'\u{1F5A8}\uFE0F'}
+            aria-label="Imprimer le certificat ou l'enregistrer en PDF"
+          >
             Imprimer / Enregistrer en PDF
           </Button>
           {usesDemo && (
@@ -216,10 +223,10 @@ export function CourseCertificateClient({ slug }: { slug: string }) {
           <header className="certificate-document__header">
             <div className="certificate-document__brand">
               <span className="certificate-document__logo" aria-hidden>
-                {'\u{1F34F}'}
+                <BrandIcon brand="jamf" size="lg" variant="onColor" />
               </span>
               <div>
-                <p className="certificate-document__org">Apple MDM Academy</p>
+                <p className="certificate-document__org">MDM Academy Pro</p>
                 <p className="certificate-document__tagline">Certificat de complétion</p>
               </div>
             </div>
@@ -285,7 +292,7 @@ export function CourseCertificateClient({ slug }: { slug: string }) {
 
           <footer className="certificate-document__footer">
             <div className="certificate-document__seal" aria-hidden>
-              <span>{'\u{1F6E1}\uFE0F'}</span>
+              <BrandIcon brand="jamf" size="md" />
               <span>MDM Pro</span>
             </div>
             <p className="certificate-document__legal">

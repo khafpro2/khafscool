@@ -42,6 +42,14 @@ export async function registerWithEmail(
   return res.json() as Promise<AuthResponse>;
 }
 
+export async function updateDisplayName(displayName: string): Promise<AuthUser> {
+  const data = await apiFetch<{ user: AuthUser }>('/users/me', {
+    method: 'PATCH',
+    body: JSON.stringify({ displayName }),
+  });
+  return data.user;
+}
+
 type RefreshedSession = {
   accessToken: string;
   refreshToken: string;

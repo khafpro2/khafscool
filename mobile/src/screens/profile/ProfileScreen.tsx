@@ -7,6 +7,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   View,
 } from 'react-native';
 import { preferenceLabel, useAppTheme } from '../../context/ThemeContext';
@@ -26,6 +27,7 @@ import {
 import { writeStreakNavCache } from '../../lib/streak-nav-badge';
 import { usePointsRankNav } from '../../hooks/usePointsRankNav';
 import { fetchLeaderboard } from '../../services/gamification';
+import { updateDisplayName } from '../../services/api';
 
 export function ProfileScreen() {
   const router = useRouter();
@@ -34,6 +36,9 @@ export function ProfileScreen() {
   const pointsRankNav = usePointsRankNav();
   const [dashboard, setDashboard] = useState<LearnerDashboard | null>(null);
   const [loading, setLoading] = useState(true);
+  const [displayNameDraft, setDisplayNameDraft] = useState('');
+  const [displayNameError, setDisplayNameError] = useState<string | null>(null);
+  const [isSavingName, setIsSavingName] = useState(false);
 
   async function loadProfile() {
     setLoading(true);
@@ -52,6 +57,49 @@ export function ProfileScreen() {
   useEffect(() => {
     void loadProfile();
   }, []);
+
+  useEffect(() => {
+    if (dashboard) {
+      setDisplayNameDraft(dashboard.data.user.displayName ?? '');
+    }
+  }, [dashboard?.data.user.displayName]);
+
+  async function handleSaveDisplayName() {
+    const trimmed = displayNameDraft.trim();
+    if (!trimmed) {
+      setDisplayNameError('Le nom d\'affichage est requis');
+      return;
+    }
+    if (trimmed.length > 100) {
+      setDisplayNameError('Le nom d\'affichage ne peut pas dépasser 100 caractères');
+      return;
+    }
+    if (trimmed === (dashboard?.data.user.displayName ?? '').trim()) {
+      setDisplayNameError(null);
+      return;
+    }
+
+    setIsSavingName(true);
+    setDisplayNameError(null);
+    try {
+      const user = await updateDisplayName(trimmed);
+      setDashboard((current) =>
+        current
+          ? {
+              ...current,
+              data: {
+                ...current.data,
+                user: { ...current.data.user, displayName: user.displayName ?? trimmed },
+              },
+            }
+          : current
+      );
+    } catch {
+      setDisplayNameError('Impossible d\'enregistrer le nom. Réessaie.');
+    } finally {
+      setIsSavingName(false);
+    }
+  }
 
   function openWebPath(path: string) {
     void Linking.openURL(`${WEB_URL}${path}`);
@@ -90,7 +138,46 @@ export function ProfileScreen() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.eyebrow}>Mon profil</Text>
-      <Text style={styles.title}>{displayName}</Text>
+      {source === 'api' ? (
+        <View style={styles.nameEditCard}>
+          <Text style={styles.nameEditLabel}>Nom affiché</Text>
+          <TextInput
+            value={displayNameDraft}
+            onChangeText={(text) => {
+              setDisplayNameDraft(text);
+              if (displayNameError) setDisplayNameError(null);
+            }}
+            maxLength={100}
+            autoCapitalize="words"
+            autoCorrect={false}
+            accessibilityLabel="Nom affiché"
+            style={[
+              styles.nameEditInput,
+              displayNameError ? styles.nameEditInputError : null,
+            ]}
+          />
+          {displayNameError ? (
+            <Text style={styles.nameEditError} accessibilityRole="alert">
+              {displayNameError}
+            </Text>
+          ) : (
+            <Text style={styles.nameEditHint}>Visible sur le profil et les certificats web.</Text>
+          )}
+          <Pressable
+            style={[styles.nameEditButton, isSavingName ? styles.nameEditButtonDisabled : null]}
+            onPress={() => void handleSaveDisplayName()}
+            disabled={isSavingName}
+            accessibilityRole="button"
+            accessibilityLabel="Enregistrer le nom affiché"
+          >
+            <Text style={styles.nameEditButtonText}>
+              {isSavingName ? 'Enregistrement…' : 'Enregistrer'}
+            </Text>
+          </Pressable>
+        </View>
+      ) : (
+        <Text style={styles.title}>{displayName}</Text>
+      )}
 
       <Pressable
         style={styles.themeCard}
@@ -320,6 +407,47 @@ function createStyles(colors: AppThemeColors) {
     loadingText: { marginTop: 12, color: colors.muted, fontSize: 15 },
     eyebrow: { color: colors.accent, fontSize: 13, fontWeight: '700', marginBottom: 4, textTransform: 'uppercase' },
     title: { color: colors.fg, fontSize: 28, fontWeight: '800', marginBottom: 16 },
+    nameEditCard: {
+      backgroundColor: colors.bgSoft,
+      borderRadius: colors.radiusLg,
+      padding: 16,
+      marginBottom: 16,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    nameEditLabel: {
+      color: colors.muted,
+      fontSize: 12,
+      fontWeight: '800',
+      textTransform: 'uppercase',
+      marginBottom: 8,
+    },
+    nameEditInput: {
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: 12,
+      paddingHorizontal: 14,
+      paddingVertical: 12,
+      color: colors.fg,
+      fontSize: 17,
+      fontWeight: '700',
+      backgroundColor: colors.bg,
+    },
+    nameEditInputError: {
+      borderColor: '#dc2626',
+    },
+    nameEditHint: { color: colors.muted, marginTop: 8, fontSize: 13, lineHeight: 18 },
+    nameEditError: { color: '#dc2626', marginTop: 8, fontSize: 13, fontWeight: '700' },
+    nameEditButton: {
+      marginTop: 12,
+      alignSelf: 'flex-start',
+      backgroundColor: colors.accent,
+      borderRadius: 12,
+      paddingHorizontal: 16,
+      paddingVertical: 10,
+    },
+    nameEditButtonDisabled: { opacity: 0.6 },
+    nameEditButtonText: { color: '#fff', fontWeight: '800', fontSize: 15 },
     themeCard: {
       backgroundColor: colors.bgSoft,
       borderRadius: colors.radiusLg,

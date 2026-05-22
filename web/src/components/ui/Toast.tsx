@@ -10,6 +10,7 @@ const KIND_META: Record<
   points: { icon: '\u2B50', label: 'Points gagnés', className: 'toast--points' },
   badge: { icon: '\u{1F3C6}', label: 'Badge débloqué', className: 'toast--badge' },
   quest: { icon: '\u{1F3AF}', label: 'Quête accomplie', className: 'toast--quest' },
+  success: { icon: '\u2713', label: 'Succès', className: 'toast--success' },
 };
 
 export function Toaster() {

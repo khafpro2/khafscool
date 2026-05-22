@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { QuestNavDot } from '@/components/layout/QuestNavIndicator';
+import { PointsRankNavIndicator } from '@/components/layout/PointsRankNavIndicator';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { LEARNING_PATHS } from '@/lib/learningPaths';
 
@@ -109,6 +110,10 @@ export function SiteMobileNav() {
           <button type="button" className="site-nav-drawer-close" onClick={close}>
             Fermer
           </button>
+        </div>
+
+        <div className="site-nav-drawer-points-rank no-print">
+          <PointsRankNavIndicator />
         </div>
 
         <div className="site-nav-drawer-section">

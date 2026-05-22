@@ -8,6 +8,7 @@ import {
   loginSchema,
   refreshSchema,
   registerSchema,
+  updateProfileSchema,
 } from '../schemas/auth.schemas.js';
 import {
   buildAuthorizeUrl,
@@ -209,4 +210,21 @@ export async function getCurrentUser(req: FastifyRequest, reply: FastifyReply) {
   });
   if (!user) return reply.status(404).send({ error: 'NOT_FOUND' });
   return reply.send({ user: sanitizeUser(user), progress: user.progress, subscription: user.subscription });
+}
+
+export async function updateCurrentUserProfile(req: FastifyRequest<{ Body: unknown }>, reply: FastifyReply) {
+  const parsedBody = updateProfileSchema.safeParse(req.body ?? {});
+  if (!parsedBody.success) {
+    return reply.status(400).send({
+      error: 'INVALID_PROFILE_REQUEST',
+      details: formatZodErrors(parsedBody.error),
+    });
+  }
+
+  const user = await prisma.user.update({
+    where: { id: req.user.sub },
+    data: { displayName: parsedBody.data.displayName },
+  });
+
+  return reply.send({ user: sanitizeUser(user) });
 }

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { loginSchema, refreshSchema, registerSchema } from '../src/schemas/auth.schemas.js';
+import { loginSchema, refreshSchema, registerSchema, updateProfileSchema } from '../src/schemas/auth.schemas.js';
 
 describe('auth schemas', () => {
   it('rejects invalid register payloads with French messages', () => {
@@ -28,5 +28,10 @@ describe('auth schemas', () => {
 
   it('requires refresh token', () => {
     expect(refreshSchema.safeParse({}).success).toBe(false);
+  });
+
+  it('validates update profile displayName', () => {
+    expect(updateProfileSchema.safeParse({ displayName: 'Camille' }).success).toBe(true);
+    expect(updateProfileSchema.safeParse({ displayName: '' }).success).toBe(false);
   });
 });

@@ -19,6 +19,7 @@ import {
 } from './demo-data';
 import type {
   AuthResponse,
+  AuthUser,
   BillingCheckoutResponse,
   BillingStatusResponse,
   CertificationSprintDays,
@@ -179,6 +180,16 @@ export async function fetchCurrentUser(token?: string): Promise<CurrentUserRespo
   } catch {
     return null;
   }
+}
+
+export async function updateDisplayName(token: string, displayName: string): Promise<AuthUser> {
+  const data = await apiRequest<{ user: AuthUser }>('/users/me', {
+    method: 'PATCH',
+    headers: authHeader(token),
+    body: JSON.stringify({ displayName }),
+  });
+  clearDemoMode();
+  return data.user;
 }
 
 export async function fetchDashboard(token?: string): Promise<DashboardData> {

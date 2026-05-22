@@ -1,10 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import type { DashboardData } from '@/lib/api';
-import { fetchCurrentUser, fetchDashboard } from '@/lib/api';
-import { buildAuthUrl, getAccessToken, getStoredUser, logoutSession } from '@/lib/auth';
+import { fetchCurrentUser, fetchDashboard, updateDisplayName } from '@/lib/api';
+import { buildAuthUrl, getAccessToken, getStoredUser, logoutSession, updateStoredUserDisplayName } from '@/lib/auth';
+import { showToast } from '@/lib/toast-store';
 import { formatTrack } from '@/lib/tracks';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -24,6 +25,7 @@ export default function ProfilePage() {
   const [fromApi, setFromApi] = useState(false);
   const [hasToken, setHasToken] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [displayNameOverride, setDisplayNameOverride] = useState<string | null>(null);
 
   useEffect(() => {
     const token = getAccessToken();
@@ -82,7 +84,8 @@ export default function ProfilePage() {
   }
 
   const { user, stats, badges, courses, completedCourses = [], recentActivity = [] } = data;
-  const displayName = user.displayName ?? storedUser?.displayName ?? 'Apprenant';
+  const displayName =
+    displayNameOverride ?? user.displayName ?? storedUser?.displayName ?? 'Apprenant';
   const email = user.email ?? storedUser?.email ?? 'demo@ama.dev';
   const rank = getRankInfo(stats.points);
   const previousFloor = rank.minPoints;
@@ -149,6 +152,13 @@ export default function ProfilePage() {
         points={stats.points}
         provider={user.provider ?? storedUser?.provider}
         hasToken={hasToken}
+        canEdit={hasToken && fromApi}
+        onDisplayNameSaved={(nextName) => {
+          setDisplayNameOverride(nextName);
+          setData((current) =>
+            current ? { ...current, user: { ...current.user, displayName: nextName } } : current
+          );
+        }}
       />
 
       <QuickLinksCard />
@@ -376,6 +386,8 @@ function AccountDetailsCard({
   points,
   provider,
   hasToken,
+  canEdit,
+  onDisplayNameSaved,
 }: {
   displayName: string;
   email: string;
@@ -384,6 +396,8 @@ function AccountDetailsCard({
   points: number;
   provider?: string;
   hasToken: boolean;
+  canEdit?: boolean;
+  onDisplayNameSaved?: (displayName: string) => void;
 }) {
   const memberSince = hasToken ? 'Synchronisé avec ton compte' : 'Mode démo local';
 
@@ -398,7 +412,11 @@ function AccountDetailsCard({
           gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
         }}
       >
-        <AccountField label="Nom affiché" value={displayName} />
+        {canEdit ? (
+          <DisplayNameField initialValue={displayName} onSaved={onDisplayNameSaved} />
+        ) : (
+          <AccountField label="Nom affiché" value={displayName} />
+        )}
         <AccountField label="E-mail" value={email} />
         <AccountField label="Rang MDM" value={rankName} />
         <AccountField label="Niveau" value={level} />
@@ -407,6 +425,111 @@ function AccountDetailsCard({
         {provider ? <AccountField label="Connexion" value={formatProvider(provider)} /> : null}
       </dl>
     </Card>
+  );
+}
+
+function DisplayNameField({
+  initialValue,
+  onSaved,
+}: {
+  initialValue: string;
+  onSaved?: (displayName: string) => void;
+}) {
+  const [value, setValue] = useState(initialValue);
+  const [error, setError] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    setValue(initialValue);
+  }, [initialValue]);
+
+  async function handleSubmit(event: FormEvent) {
+    event.preventDefault();
+    const trimmed = value.trim();
+
+    if (!trimmed) {
+      setError('Le nom d\'affichage est requis');
+      return;
+    }
+    if (trimmed.length > 100) {
+      setError('Le nom d\'affichage ne peut pas dépasser 100 caractères');
+      return;
+    }
+    if (trimmed === initialValue.trim()) {
+      setError(null);
+      return;
+    }
+
+    const token = getAccessToken();
+    if (!token) {
+      setError('Connecte-toi pour modifier ton nom');
+      return;
+    }
+
+    setIsSaving(true);
+    setError(null);
+
+    try {
+      const user = await updateDisplayName(token, trimmed);
+      updateStoredUserDisplayName(user.displayName ?? trimmed);
+      onSaved?.(user.displayName ?? trimmed);
+      showToast({
+        kind: 'success',
+        title: 'Nom mis à jour',
+        body: 'Ton nom affiché a été enregistré.',
+      });
+    } catch {
+      setError('Impossible d\'enregistrer le nom. Réessaie dans un instant.');
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  return (
+    <div style={{ gridColumn: '1 / -1' }}>
+      <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '0.5rem' }}>
+        <label htmlFor="profile-display-name" className="muted" style={{ fontSize: '0.78rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+          Nom affiché
+        </label>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center' }}>
+          <input
+            id="profile-display-name"
+            type="text"
+            value={value}
+            onChange={(event) => {
+              setValue(event.target.value);
+              if (error) setError(null);
+            }}
+            maxLength={100}
+            autoComplete="nickname"
+            aria-invalid={Boolean(error)}
+            aria-describedby={error ? 'profile-display-name-error' : undefined}
+            style={{
+              flex: '1 1 220px',
+              minWidth: 0,
+              padding: '0.55rem 0.75rem',
+              borderRadius: 'var(--radius-md)',
+              border: `1px solid ${error ? '#dc2626' : 'var(--border)'}`,
+              background: 'var(--surface)',
+              color: 'var(--fg)',
+              fontWeight: 600,
+            }}
+          />
+          <button type="submit" className="btn btn-sm" disabled={isSaving}>
+            {isSaving ? 'Enregistrement…' : 'Enregistrer'}
+          </button>
+        </div>
+        {error ? (
+          <p id="profile-display-name-error" role="alert" style={{ margin: 0, color: '#dc2626', fontSize: '0.88rem', fontWeight: 600 }}>
+            {error}
+          </p>
+        ) : (
+          <p className="muted" style={{ margin: 0, fontSize: '0.82rem' }}>
+            Visible sur ton profil, le classement et les certificats.
+          </p>
+        )}
+      </form>
+    </div>
   );
 }
 
