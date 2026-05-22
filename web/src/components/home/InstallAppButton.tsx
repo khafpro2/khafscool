@@ -62,7 +62,7 @@ export function InstallAppButton() {
         fontWeight: 600,
       }}
     >
-      Installer l&apos;app
+      Installer l'app
     </Button>
   );
 }

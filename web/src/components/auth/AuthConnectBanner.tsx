@@ -21,7 +21,7 @@ export function AuthConnectBanner({
         <span className="pill pill-warning" style={{ margin: 0 }}>
           Mode démo
         </span>
-        <strong style={{ color: '#8a5a00', fontSize: '0.95rem' }}>Données d&apos;exemple uniquement</strong>
+        <strong style={{ color: '#8a5a00', fontSize: '0.95rem' }}>Données d'exemple uniquement</strong>
       </div>
       <p style={{ margin: 0, color: '#6b4a00', lineHeight: 1.5 }}>{message}</p>
       <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', marginTop: '0.85rem' }}>

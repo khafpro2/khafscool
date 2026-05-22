@@ -393,7 +393,7 @@ export function CourseDetailScreen() {
                 {isLocked ? (
                   <View style={styles.lockedBox}>
                     <Text style={styles.lockedText}>
-                      Termine l&apos;unité précédente pour débloquer le quiz ({module.questions.length}{' '}
+                      Termine l'unité précédente pour débloquer le quiz ({module.questions.length}{' '}
                       question{module.questions.length > 1 ? 's' : ''}).
                     </Text>
                   </View>
@@ -681,7 +681,7 @@ function QuizRecap({
       ]}
     >
       <Text style={[styles.quizRecapTitle, { color: colors.fg }]}>
-        Récapitulatif avant validation de l&apos;unité
+        Récapitulatif avant validation de l'unité
       </Text>
       <Text style={[styles.quizRecapBody, { color: colors.muted }]}>
         {correctCount}/{totalQuestions} bonnes réponses · score quiz {estimatedScore}%
@@ -692,7 +692,7 @@ function QuizRecap({
       </Text>
       {!meetsMinimum ? (
         <Text style={styles.quizRecapHint}>
-          Tu peux valider l&apos;unité, mais revoir les explications améliorera ton score.
+          Tu peux valider l'unité, mais revoir les explications améliorera ton score.
         </Text>
       ) : null}
     </View>

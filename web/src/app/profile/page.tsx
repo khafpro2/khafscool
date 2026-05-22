@@ -115,7 +115,7 @@ export default function ProfilePage() {
           </p>
           <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', marginTop: '0.85rem' }}>
             <Button href={buildAuthUrl('/profile')} size="sm">
-              Se connecter ou s&apos;inscrire
+              Se connecter ou s'inscrire
             </Button>
             <Button href="/dashboard" variant="ghost" size="sm">
               Mon apprentissage
@@ -270,12 +270,12 @@ export default function ProfilePage() {
       ) : (
         <Card variant="soft" className="profile-certificates-empty" style={{ marginTop: '1.25rem' }}>
           <span className="section-eyebrow">Certificats</span>
-          <h2 style={{ fontSize: '1.15rem', fontWeight: 800, marginTop: '0.35rem' }}>Aucun certificat pour l&apos;instant</h2>
+          <h2 style={{ fontSize: '1.15rem', fontWeight: 800, marginTop: '0.35rem' }}>Aucun certificat pour l'instant</h2>
           <p className="muted" style={{ marginTop: '0.35rem' }}>
-            Termine les 3 unités d&apos;un parcours pour débloquer ton certificat de complétion imprimable.
+            Termine les 3 unités d'un parcours pour débloquer ton certificat de complétion imprimable.
           </p>
           <Button href="/dashboard" style={{ marginTop: '0.85rem' }}>
-            Reprendre l&apos;apprentissage
+            Reprendre l'apprentissage
           </Button>
         </Card>
       )}

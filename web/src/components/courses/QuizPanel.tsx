@@ -563,7 +563,7 @@ function QuizRecap({
 
   return (
     <div className={`quiz-recap${meetsMinimum ? ' quiz-recap-success' : ' quiz-recap-warning'}`}>
-      <p style={{ fontWeight: 800 }}>Récapitulatif avant validation de l&apos;unité</p>
+      <p style={{ fontWeight: 800 }}>Récapitulatif avant validation de l'unité</p>
       <p className="muted" style={{ marginTop: '0.35rem', fontSize: '0.9rem', lineHeight: 1.5 }}>
         {correctCount}/{totalQuestions} bonnes réponses · score quiz{' '}
         <strong>{estimatedScore}%</strong>
@@ -582,7 +582,7 @@ function QuizRecap({
       </p>
       {!meetsMinimum && (
         <p style={{ marginTop: '0.5rem', fontSize: '0.88rem', color: '#92400e' }}>
-          Tu peux valider l&apos;unité, mais revoir les explications améliorera ton score et tes points.
+          Tu peux valider l'unité, mais revoir les explications améliorera ton score et tes points.
         </p>
       )}
     </div>

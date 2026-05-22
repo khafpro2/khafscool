@@ -142,9 +142,9 @@ export function AboutScreen() {
       </View>
 
       <View style={[styles.ctaCard, { backgroundColor: colors.accentSoft, borderColor: colors.border }]}>
-        <Text style={styles.cardTitle}>Prêt à t&apos;exercer ?</Text>
+        <Text style={styles.cardTitle}>Prêt à t'exercer ?</Text>
         <Text style={styles.cardText}>
-          Choisis une piste Apple, Jamf ou Intune et débloque tes premiers badges dès aujourd&apos;hui.
+          Choisis une piste Apple, Jamf ou Intune et débloque tes premiers badges dès aujourd'hui.
         </Text>
         <Pressable style={styles.primaryButton} onPress={() => router.push('/(tabs)/courses')}>
           <Text style={styles.primaryButtonText}>Commencer gratuitement</Text>

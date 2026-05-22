@@ -55,7 +55,7 @@ export default async function DonationMerciPage({ searchParams }: MerciPageProps
       )}
 
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '1.5rem' }}>
-        <Button href="/">Retour à l&apos;accueil</Button>
+        <Button href="/">Retour à l'accueil</Button>
         <Button href="/courses" variant="secondary">
           Voir les parcours
         </Button>

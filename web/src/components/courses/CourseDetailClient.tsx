@@ -539,7 +539,7 @@ export function CourseDetailClient({ slug }: { slug: string }) {
                   {isLockedModule ? (
                     <Card variant="soft" style={{ marginTop: '1rem' }}>
                       <p className="muted" style={{ fontSize: '0.9rem' }}>
-                        Termine l&apos;unité précédente pour débloquer le quiz ({module.questions.length} question
+                        Termine l'unité précédente pour débloquer le quiz ({module.questions.length} question
                         {module.questions.length > 1 ? 's' : ''}).
                       </p>
                     </Card>

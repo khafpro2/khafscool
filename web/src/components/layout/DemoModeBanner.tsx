@@ -70,7 +70,7 @@ export function DemoModeBanner() {
         padding: '0.45rem 1rem',
       }}
     >
-      Connecté à l&apos;API — progression synchronisée avec ton compte
+      Connecté à l'API — progression synchronisée avec ton compte
     </div>
   );
 }

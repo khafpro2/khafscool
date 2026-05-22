@@ -24,7 +24,7 @@ export function SoutenirPageClient() {
       <p className="muted" style={{ marginTop: '1.5rem', maxWidth: 640, fontSize: '0.95rem' }}>
         Une question sur les dons ou le fonctionnement de la plateforme ?{' '}
         <a href={contactMailto} style={{ fontWeight: 700 }}>
-          Support — {contactEmail}
+          Assistance — {contactEmail}
         </a>
       </p>
     </section>

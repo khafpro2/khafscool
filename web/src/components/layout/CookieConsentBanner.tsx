@@ -32,7 +32,7 @@ export function CookieConsentBanner() {
           </p>
           <p id="cookie-consent-desc" className="cookie-consent-banner__text">
             MDM Academy utilise uniquement le stockage local de votre navigateur pour la session, le thème et la
-            progression pédagogique. Aucun traceur publicitaire tiers n&apos;est employé.
+            progression pédagogique. Aucun traceur publicitaire tiers n'est employé.
           </p>
         </div>
         <div className="cookie-consent-banner__actions">
@@ -40,7 +40,7 @@ export function CookieConsentBanner() {
             En savoir plus
           </Link>
           <button type="button" className="btn btn-primary btn-sm" onClick={accept}>
-            J&apos;ai compris
+            J'ai compris
           </button>
         </div>
       </div>

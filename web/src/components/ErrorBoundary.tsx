@@ -42,7 +42,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
         >
           <h1 style={{ fontSize: '1.25rem', marginBottom: '0.75rem' }}>Une erreur est survenue</h1>
           <p style={{ color: 'var(--muted, #6b7280)', marginBottom: '1.25rem' }}>
-            L&apos;application a rencontré un problème inattendu. Recharge la page pour réessayer.
+            L'application a rencontré un problème inattendu. Recharge la page pour réessayer.
           </p>
           <button
             type="button"

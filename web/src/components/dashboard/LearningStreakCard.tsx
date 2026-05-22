@@ -13,7 +13,7 @@ export function LearningStreakCard({ streak }: { streak: LearningStreak }) {
   return (
     <Card className="dashboard-callout dashboard-callout-streak dashboard-fade-in">
       <span className="dashboard-callout-eyebrow">
-        <span aria-hidden>{'\u{1F525}'}</span> Série d&apos;apprentissage
+        <span aria-hidden>{'\u{1F525}'}</span> Série d'apprentissage
       </span>
       <div className="stat-grid dashboard-streak-grid">
         <StreakMetric label="Jours consécutifs" value={String(streak.currentDays)} highlight />

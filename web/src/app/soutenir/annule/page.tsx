@@ -26,14 +26,14 @@ export default function DonationAnnulePage() {
         Don annulé
       </h1>
       <p className="muted" style={{ marginTop: '0.65rem', maxWidth: 640, lineHeight: 1.6 }}>
-        Aucun paiement n&apos;a été effectué. Vous pouvez reprendre quand vous le souhaitez — MDM Academy Pro
+        Aucun paiement n'a été effectué. Vous pouvez reprendre quand vous le souhaitez — MDM Academy Pro
         reste entièrement gratuit, avec ou sans don.
       </p>
 
       <Card variant="soft" style={{ marginTop: '1.25rem' }}>
         <p style={{ margin: 0, fontWeight: 700 }}>Pas de souci</p>
         <p className="muted" style={{ marginTop: '0.5rem', fontSize: '0.9rem', lineHeight: 1.5 }}>
-          Votre progression, vos badges et l&apos;accès aux parcours ne changent pas. Un don reste toujours
+          Votre progression, vos badges et l'accès aux parcours ne changent pas. Un don reste toujours
           optionnel.
         </p>
       </Card>
@@ -41,7 +41,7 @@ export default function DonationAnnulePage() {
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '1.5rem' }}>
         <Button href="/soutenir">Revenir à la page Soutenir</Button>
         <Button href="/" variant="secondary">
-          Retour à l&apos;accueil
+          Retour à l'accueil
         </Button>
         <Button href="/courses" variant="ghost">
           Voir les parcours

@@ -175,9 +175,9 @@ export default function AboutPage() {
           }}
         >
           <div>
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 800 }}>Prêt à t&apos;exercer ?</h2>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 800 }}>Prêt à t'exercer ?</h2>
             <p className="muted" style={{ marginTop: '0.35rem' }}>
-              Choisis une piste Apple, Jamf ou Intune et débloque tes premiers badges dès aujourd&apos;hui.
+              Choisis une piste Apple, Jamf ou Intune et débloque tes premiers badges dès aujourd'hui.
             </p>
           </div>
           <Button href="/courses" size="lg">
