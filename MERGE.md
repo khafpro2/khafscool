@@ -27,7 +27,7 @@ Workflow : `.github/workflows/ci.yml`
 | --- | --- |
 | **build-test** | install, syntaxe smoke scripts, tests backend, typecheck mobile, build backend + web |
 | **integration** | Postgres service, `db:migrate` + `db:seed`, démarrage API, `pnpm smoke:api` |
-| **e2e-web** | Playwright Chromium, `pnpm --filter web test:e2e` (11 scénarios) |
+| **e2e-web** | Playwright Chromium, `pnpm --filter web test:e2e` (12 scénarios) |
 
 - [ ] Job **build-test** — vert
 - [ ] Job **integration** — vert
@@ -64,7 +64,7 @@ pnpm smoke:web
 - [ ] `pnpm smoke:api` (API + DB)
 - [ ] `pnpm smoke:web` (web accessible)
 - [ ] `pnpm --filter web build`
-- [ ] `pnpm --filter web test:e2e` (11 scénarios : auth, classement, catalogue, certificat…)
+- [ ] `pnpm --filter web test:e2e` (12 scénarios : auth, classement, catalogue, certificat, démo…)
 - [ ] `pnpm --filter mobile typecheck`
 
 ---
@@ -82,6 +82,9 @@ pnpm smoke:web
 - [ ] **Bannière cookies** — consentement localStorage, lien confidentialité, pas de traceur tiers
 - [ ] **Header points + rang** — indicateur discret (cache session 5 min, liens profil/classement)
 - [ ] **Profil certificats** — parcours 100 % → lien `/courses/[slug]/certificate` (web + mobile)
+- [ ] **Guide démo `/demo`** — parcours guidé 6 étapes, bandeau `demo@ama.dev`, BrandIcon, dark mode
+- [ ] **Open Graph parcours** — image dynamique titre + piste sur `/courses/[slug]`
+- [ ] **Mobile profil stats** — carte récap points, rang, streak et #classement
 
 ---
 
@@ -128,6 +131,7 @@ pnpm db:seed
 - [ ] `/courses` — catalogue des 3 parcours + filtre piste (`?track=APPLE|JAMF|INTUNE`) et recherche
 - [ ] `/leaderboard` — classement + filtre piste (`?track=`)
 - [ ] `/resources` — liens officiels Apple, Jamf, Intune (pas de ServiceNow)
+- [ ] `/demo` — guide 6 étapes, bandeau compte démo, liens parcours/quiz/quêtes/classement/certificat
 - [ ] `/auth` — inscription / connexion email
 - [ ] `/dashboard` — progression après connexion ou démo
 - [ ] `/diagnostics` — santé API et tokens (outil mainteneur)
@@ -136,7 +140,7 @@ pnpm db:seed
 - [ ] `/profile` — section certificats (parcours terminés → certificat, empty state FR)
 - [ ] Bannière cookies — affichée une fois, masquée après « J'ai compris », lien `/legal/confidentialite`
 - [ ] Mobile : écran victoire → certificat web + partage natif (`EXPO_PUBLIC_WEB_URL` pointant vers le web local)
-- [ ] Mobile : profil → certificats (ouverture `WEB_URL/courses/[slug]/certificate`)
+- [ ] Mobile : profil → carte récap points/rang/streak + certificats (`WEB_URL/courses/[slug]/certificate`)
 - [ ] Mobile : filtres piste sur catalogue parcours et écran classement
 
 ---

@@ -2,6 +2,10 @@
 
 ## Unreleased — `cursor/progress-dashboard-auth-v2`
 
+- Web : `/demo` — parcours guidé FR en 6 étapes (compte démo, parcours, quiz, quêtes, classement, certificat), BrandIcon, dark mode, bandeau credentials
+- Web : Open Graph dynamique par parcours (`/courses/[slug]/opengraph-image`, titre + piste, fallback générique)
+- Mobile : profil — carte récap points, rang, streak et #classement
+- Tests : E2E smoke page `/demo`
 - Web : bannière consentement cookies FR (localStorage, lien `/legal/confidentialite`, pas de traceur tiers)
 - Web : profil — section certificats (parcours terminés → `/courses/[slug]/certificate`, empty state FR, dark mode)
 - Mobile : profil — certificats (lien web imprimable par parcours terminé)

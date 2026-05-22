@@ -18,12 +18,20 @@ import { RecentActivitySection } from '../../components/profile/RecentActivitySe
 import type { CompletedCourseSummary } from '../../services/progress';
 import { clearTokens } from '../../services/auth';
 import { LearnerDashboard, fetchLearnerDashboard } from '../../services/progress';
+import {
+  buildPointsRankNavSnapshot,
+  formatLeaderboardRankLabel,
+  writePointsRankNavCache,
+} from '../../lib/points-rank-nav-badge';
 import { writeStreakNavCache } from '../../lib/streak-nav-badge';
+import { usePointsRankNav } from '../../hooks/usePointsRankNav';
+import { fetchLeaderboard } from '../../services/gamification';
 
 export function ProfileScreen() {
   const router = useRouter();
   const { colors, preference, cyclePreference } = useAppTheme();
   const styles = useThemedStyles(createStyles);
+  const pointsRankNav = usePointsRankNav();
   const [dashboard, setDashboard] = useState<LearnerDashboard | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -32,6 +40,12 @@ export function ProfileScreen() {
     const result = await fetchLearnerDashboard();
     setDashboard(result);
     writeStreakNavCache(result.data.learningStreak);
+    if (result.source === 'api') {
+      const leaderboard = await fetchLeaderboard();
+      writePointsRankNavCache(
+        buildPointsRankNavSnapshot(result.data.progress.points, leaderboard.data.currentUserRank),
+      );
+    }
     setLoading(false);
   }
 
@@ -60,8 +74,18 @@ export function ProfileScreen() {
   const { data, source } = dashboard;
   const displayName = data.user.displayName ?? 'Apprenant';
   const rank = getRankInfo(data.progress.points);
+  const previousFloor = rank.minPoints;
+  const ceiling = rank.nextPoints ?? Math.max(previousFloor + 100, data.progress.points + 100);
+  const span = Math.max(1, ceiling - previousFloor);
+  const progressInRank = Math.max(0, Math.min(span, data.progress.points - previousFloor));
+  const rankPercent = Math.round((progressInRank / span) * 100);
+  const remainingPoints = rank.nextPoints != null ? Math.max(0, rank.nextPoints - data.progress.points) : 0;
   const completedCourses = data.completedCourses ?? [];
   const recentActivity = data.recentActivity ?? [];
+  const leaderboardLabel =
+    source === 'api' && pointsRankNav
+      ? formatLeaderboardRankLabel(pointsRankNav.leaderboardRank)
+      : 'Non classé';
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -87,30 +111,46 @@ export function ProfileScreen() {
         </View>
       ) : null}
 
-      {data.learningStreak ? (
-        <View style={styles.streakCard}>
-          <Text style={styles.streakEyebrow}>{'\u{1F525}'} Série d'apprentissage</Text>
-          <Text style={styles.streakValue}>
-            {data.learningStreak.currentDays} jour{data.learningStreak.currentDays > 1 ? 's' : ''} consécutif{data.learningStreak.currentDays > 1 ? 's' : ''}
-          </Text>
-          <Text style={styles.streakMeta}>
-            Meilleure série : {data.learningStreak.longestDays} jour{data.learningStreak.longestDays > 1 ? 's' : ''}
-          </Text>
-        </View>
-      ) : null}
-
-      <View style={[styles.heroCard, { backgroundColor: rank.gradient[0] }]}>
-        <Text style={styles.heroEyebrow}>
-          {rank.icon} Rang {rank.name}
-        </Text>
-        <View style={styles.statsRow}>
+      <View style={[styles.statsRecapCard, { backgroundColor: rank.gradient[0] }]}>
+        <Text style={styles.statsRecapEyebrow}>Récap progression</Text>
+        <View style={styles.statsRecapRow}>
           <Stat label="Points" value={String(data.progress.points)} styles={styles} />
-          <Stat label="Niveau" value={formatLevel(data.progress.level)} styles={styles} />
+          <Stat label="Rang" value={rank.name} styles={styles} />
+          <Stat label="Classement" value={leaderboardLabel} styles={styles} />
         </View>
-        <Text style={styles.heroMeta}>
-          {data.progress.completedModules}/{data.progress.totalModules} unités · score moyen{' '}
-          {data.progress.averageScore} %
+        {data.learningStreak ? (
+          <View style={styles.statsRecapStreak}>
+            <Text style={styles.statsRecapStreakText}>
+              {'\u{1F525}'} {data.learningStreak.currentDays} jour
+              {data.learningStreak.currentDays > 1 ? 's' : ''} consécutif
+              {data.learningStreak.currentDays > 1 ? 's' : ''}
+              {' · '}
+              record {data.learningStreak.longestDays} j
+            </Text>
+          </View>
+        ) : null}
+        <ProgressBar
+          progress={rankPercent}
+          fillColor="#FFCE5B"
+          trackColor="rgba(255,255,255,0.22)"
+          styles={styles}
+        />
+        <Text style={styles.statsRecapMeta}>
+          {rank.nextName
+            ? `${remainingPoints} pts pour ${rank.nextName}`
+            : 'Rang maximal atteint'}
+          {' · '}
+          Niv. {formatLevel(data.progress.level)} · {data.progress.completedModules}/
+          {data.progress.totalModules} unités
         </Text>
+        <Pressable
+          style={styles.statsRecapLink}
+          onPress={() => router.push('/leaderboard')}
+          accessibilityRole="button"
+          accessibilityLabel="Voir le classement complet"
+        >
+          <Text style={styles.statsRecapLinkText}>Voir le classement →</Text>
+        </Pressable>
       </View>
 
       <RecentActivitySection items={recentActivity} />
@@ -252,6 +292,26 @@ function Stat({
   );
 }
 
+function ProgressBar({
+  progress,
+  fillColor = '#34C759',
+  trackColor = '#E5E5EA',
+  styles,
+}: {
+  progress: number;
+  fillColor?: string;
+  trackColor?: string;
+  styles: ReturnType<typeof createStyles>;
+}) {
+  const safeProgress = Math.max(0, Math.min(progress, 100));
+
+  return (
+    <View style={[styles.progressTrack, { backgroundColor: trackColor }]}>
+      <View style={[styles.progressFill, { width: `${safeProgress}%`, backgroundColor: fillColor }]} />
+    </View>
+  );
+}
+
 function createStyles(colors: AppThemeColors) {
   return StyleSheet.create({
     container: { flex: 1, backgroundColor: colors.bg },
@@ -271,17 +331,6 @@ function createStyles(colors: AppThemeColors) {
     themeTitle: { color: colors.fg, fontSize: 17, fontWeight: '800' },
     themeValue: { color: colors.accent, fontWeight: '800', marginTop: 6, fontSize: 15 },
     themeHint: { color: colors.muted, marginTop: 4, fontSize: 13 },
-    streakCard: {
-      backgroundColor: colors.demoBannerBg,
-      borderRadius: 18,
-      padding: 16,
-      marginBottom: 16,
-      borderWidth: 1,
-      borderColor: colors.demoBannerBorder,
-    },
-    streakEyebrow: { color: colors.demoBannerText, fontSize: 12, fontWeight: '800', textTransform: 'uppercase' },
-    streakValue: { color: colors.fg, fontSize: 22, fontWeight: '800', marginTop: 6 },
-    streakMeta: { color: colors.muted, marginTop: 4, fontSize: 13, fontWeight: '600' },
     demoBanner: {
       backgroundColor: colors.demoBannerBg,
       borderRadius: 14,
@@ -291,13 +340,25 @@ function createStyles(colors: AppThemeColors) {
       borderColor: colors.demoBannerBorder,
     },
     demoText: { color: colors.demoBannerText, lineHeight: 20 },
-    heroCard: { borderRadius: 24, padding: 20, marginBottom: 24 },
-    heroEyebrow: { color: 'rgba(255,255,255,0.92)', fontSize: 13, fontWeight: '800', marginBottom: 12 },
-    statsRow: { flexDirection: 'row', gap: 12 },
-    stat: { flex: 1 },
-    statValue: { color: '#FFFFFF', fontSize: 28, fontWeight: '800' },
-    statLabel: { color: 'rgba(255,255,255,0.82)', marginTop: 4 },
-    heroMeta: { color: 'rgba(255,255,255,0.78)', marginTop: 12, lineHeight: 18, fontSize: 13 },
+    statsRecapCard: { borderRadius: 24, padding: 20, marginBottom: 24 },
+    statsRecapEyebrow: {
+      color: 'rgba(255,255,255,0.92)',
+      fontSize: 12,
+      fontWeight: '800',
+      textTransform: 'uppercase',
+      marginBottom: 12,
+    },
+    statsRecapRow: { flexDirection: 'row', gap: 8 },
+    stat: { flex: 1, minWidth: 0 },
+    statValue: { color: '#FFFFFF', fontSize: 22, fontWeight: '800' },
+    statLabel: { color: 'rgba(255,255,255,0.82)', marginTop: 4, fontSize: 12 },
+    statsRecapStreak: { marginTop: 12 },
+    statsRecapStreakText: { color: 'rgba(255,255,255,0.9)', fontSize: 14, fontWeight: '700' },
+    progressTrack: { height: 8, borderRadius: 999, overflow: 'hidden', marginTop: 14 },
+    progressFill: { height: '100%', borderRadius: 999 },
+    statsRecapMeta: { color: 'rgba(255,255,255,0.78)', marginTop: 10, lineHeight: 18, fontSize: 13 },
+    statsRecapLink: { marginTop: 12, alignSelf: 'flex-start' },
+    statsRecapLinkText: { color: '#FFCE5B', fontWeight: '800', fontSize: 14 },
     sectionTitle: { color: colors.fg, fontSize: 20, fontWeight: '800' },
     sectionHint: { color: colors.muted, marginTop: 2, marginBottom: 12, fontSize: 13 },
     completedList: { gap: 10, marginBottom: 24 },

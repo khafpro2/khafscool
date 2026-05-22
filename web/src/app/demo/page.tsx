@@ -1,93 +1,94 @@
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { BrandIcon } from '@/components/ui/BrandIcon';
+import type { BrandId } from '@/lib/brands';
 
-const WITHOUT_ACCOUNT_STEPS = [
+const DEMO_EMAIL = 'demo@ama.dev';
+const DEMO_DISPLAY_NAME = 'Technicien démo';
+
+const GUIDED_STEPS: {
+  brand?: BrandId;
+  cta: string;
+  description: string;
+  href: string;
+  icon?: string;
+  title: string;
+}[] = [
   {
-    title: 'Catalogue public',
-    description: 'Parcours Apple, Jamf et Intune consultables sans session pour valider le contenu 3×3 unités.',
+    title: 'Compte démo',
+    icon: '\u{1F464}',
+    description:
+      'Explore le catalogue, le tableau de bord et le classement sans inscription. L’identité affichée est demo@ama.dev (Technicien démo). Crée un compte sur /auth pour sauvegarder ta progression.',
     href: '/courses',
-    cta: 'Explorer le catalogue',
+    cta: 'Explorer sans compte',
   },
   {
-    title: 'Ressources officielles',
-    description: 'Liens Apple, Jamf et Microsoft pour comparer les références pendant la revue.',
-    href: '/resources',
-    cta: 'Ouvrir les ressources',
-  },
-  {
-    title: 'Commencer gratuitement',
-    description: 'Créer un compte ou explorer le catalogue sans engagement — tous les parcours sont accessibles.',
-    href: '/auth',
-    cta: 'Créer un compte',
-  },
-];
-
-const WITH_ACCOUNT_STEPS = [
-  {
-    title: 'Authentification',
-    description: 'Créer un compte local ou se connecter, puis vérifier que la session redirige vers le tableau de bord.',
-    href: '/auth',
-    cta: 'Créer une session',
-  },
-  {
-    title: 'Tableau de bord',
-    description: 'Contrôler progression, badges, quêtes, actions rapides et reprise de parcours connectée.',
-    href: '/dashboard',
-    cta: 'Ouvrir le tableau de bord',
-  },
-  {
-    title: 'Sprint certification',
-    description: 'Démarrer un sprint de certification 7 ou 14 jours et vérifier son suivi dans le tableau de bord.',
-    href: '/sprint',
-    cta: 'Tester un sprint',
-  },
-  {
-    title: 'Progression parcours',
-    description: 'Ouvrir un parcours, viser une unité et confirmer les statuts à faire / en cours / terminé.',
+    title: 'Parcours MDM',
+    brand: 'apple',
+    description:
+      'Ouvre un parcours Apple, Jamf ou Intune — 3 unités chacun, statuts à faire / en cours / terminé et reprise automatique.',
     href: '/courses/apple-cert-prep',
-    cta: 'Continuer un parcours',
+    cta: 'Ouvrir le parcours Apple',
+  },
+  {
+    title: 'Quiz et mini-scénarios',
+    brand: 'jamf',
+    description:
+      'Valide une unité avec le QCM et le mini-jeu interactif. Les points et badges se mettent à jour dans le tableau de bord.',
+    href: '/courses/jamf-pro-foundations',
+    cta: 'Tester un quiz Jamf',
+  },
+  {
+    title: 'Quêtes hebdo',
+    icon: '\u{1F3AF}',
+    description:
+      'Consulte les défis de la semaine, filtre par piste (Apple / Jamf / Intune) et vérifie la progression des récompenses bonus.',
+    href: '/quests',
+    cta: 'Voir les quêtes',
   },
   {
     title: 'Classement',
-    description: 'Comparer ta progression à la communauté et vérifier ton rang.',
+    icon: '\u{1F3C6}',
+    description:
+      'Compare ta progression à la communauté, filtre par piste et repère ton rang (#) dans le header ou sur cette page.',
     href: '/leaderboard',
-    cta: 'Voir le classement',
+    cta: 'Ouvrir le classement',
+  },
+  {
+    title: 'Certificat de complétion',
+    brand: 'microsoft',
+    description:
+      'Termine les 3 unités d’un parcours pour débloquer le certificat imprimable (mode démo OK sur apple-cert-prep).',
+    href: '/courses/apple-cert-prep/certificate',
+    cta: 'Voir un certificat démo',
   },
 ];
 
-const PRIMARY_ROUTES = [
-  { href: '/auth', label: 'Connexion' },
+const QUICK_ROUTES = [
   { href: '/dashboard', label: 'Tableau de bord' },
   { href: '/badges', label: 'Badges' },
-  { href: '/quests', label: 'Quêtes' },
   { href: '/sprint', label: 'Sprint' },
-  { href: '/courses', label: 'Catalogue' },
-  { href: '/leaderboard', label: 'Classement' },
   { href: '/resources', label: 'Ressources' },
-];
-
-const TOOL_ROUTES = [
-  { href: '/diagnostics', label: 'Diagnostics API' },
-  { href: '/mvp', label: 'Résumé MVP' },
+  { href: '/diagnostics', label: 'Diagnostics' },
 ];
 
 export default function DemoPage() {
   return (
-    <section style={{ padding: '1rem 0 2.5rem' }}>
+    <section className="demo-page" style={{ padding: '1rem 0 2.5rem' }}>
       <div className="hero">
         <span className="hero-eyebrow">Guide de démonstration</span>
-        <h1>Tester Apple MDM Academy sans te perdre</h1>
-        <p style={{ marginTop: '0.75rem' }}>
-          Parcours guidé pour valider le MVP en français : surfaces publiques, scénario connecté, prérequis API/DB
-          et accès directs aux routes principales.
+        <h1>Tester Apple MDM Academy en 6 étapes</h1>
+        <p style={{ marginTop: '0.75rem', maxWidth: 720 }}>
+          Parcours guidé en français pour valider le MVP : compte démo, parcours, quiz, quêtes, classement et
+          certificat — avec liens directs et support du thème sombre.
         </p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '1.25rem' }}>
           <Button href="/courses" variant="secondary">
-            Tester sans compte
+            Commencer sans compte
           </Button>
           <Button href="/auth" variant="dark">
-            Tester avec compte
+            Créer une session
           </Button>
           <Button href="/diagnostics" variant="warm">
             Vérifier API / DB
@@ -95,7 +96,59 @@ export default function DemoPage() {
         </div>
       </div>
 
-      <section
+      <div className="demo-credentials-banner" role="note" aria-label="Identifiants compte démo">
+        <div className="demo-credentials-banner__inner">
+          <Badge tone="neutral" icon="\u{1F4E7}">
+            Compte démo
+          </Badge>
+          <p className="demo-credentials-banner__title">
+            <strong>{DEMO_DISPLAY_NAME}</strong> · <code>{DEMO_EMAIL}</code>
+          </p>
+          <p className="demo-credentials-banner__hint">
+            Mode local sans mot de passe — données de démonstration dans le navigateur. Connecte-toi sur{' '}
+            <a href="/auth">/auth</a> pour enregistrer ta progression réelle après le seed.
+          </p>
+        </div>
+      </div>
+
+      <Card as="section" className="demo-guided-card" style={{ marginTop: '1.5rem' }}>
+        <p className="section-eyebrow">Parcours guidé</p>
+        <h2 style={{ fontSize: '1.35rem', fontWeight: 800, marginTop: '0.35rem' }}>
+          6 étapes pour une revue complète
+        </h2>
+        <p className="muted" style={{ marginTop: '0.5rem' }}>
+          Suis l’ordre recommandé ou clique directement sur une étape. Chaque lien ouvre la surface à valider.
+        </p>
+        <ol className="demo-guided-list">
+          {GUIDED_STEPS.map((step, index) => (
+            <li key={step.title} className="demo-guided-step">
+              <Card variant="flat" className="demo-guided-step__inner">
+                <div className="demo-guided-step__row">
+                  <span className="demo-guided-step__index" aria-hidden>
+                    {index + 1}
+                  </span>
+                  <div className="demo-guided-step__icon" aria-hidden>
+                    {step.brand ? (
+                      <BrandIcon brand={step.brand} size="md" />
+                    ) : (
+                      <span className="demo-guided-step__emoji">{step.icon}</span>
+                    )}
+                  </div>
+                  <div className="demo-guided-step__body">
+                    <h3 className="demo-guided-step__title">{step.title}</h3>
+                    <p className="muted demo-guided-step__description">{step.description}</p>
+                    <Button href={step.href} size="sm" style={{ marginTop: '0.55rem' }}>
+                      {step.cta}
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+            </li>
+          ))}
+        </ol>
+      </Card>
+
+      <div
         style={{
           display: 'grid',
           gap: '1rem',
@@ -103,110 +156,50 @@ export default function DemoPage() {
           marginTop: '1.5rem',
         }}
       >
-        <DemoFlowCard
-          description="Commence ici pour valider les contenus et fallbacks visibles par un reviewer non connecté."
-          steps={WITHOUT_ACCOUNT_STEPS}
-          title="Tester sans compte"
-        />
-        <DemoFlowCard
-          description="Utilise ensuite un compte local pour confirmer les flux qui dépendent du token navigateur."
-          steps={WITH_ACCOUNT_STEPS}
-          title="Tester avec compte"
-        />
-      </section>
+        <Card variant="soft" className="demo-prereq-card">
+          <Badge tone="neutral" icon="\u{1F6E1}">
+            Prérequis revue
+          </Badge>
+          <h2 style={{ fontSize: '1.2rem', fontWeight: 800, marginTop: '0.75rem' }}>Statut requis avant revue</h2>
+          <p className="muted" style={{ marginTop: '0.5rem' }}>
+            Le backend et la base doivent répondre pour tester inscription, tableau de bord et sprint connecté.
+            La page diagnostics vérifie API, Prisma, catalogue (3 parcours) et tokens locaux sans afficher de secret.
+          </p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '1rem' }}>
+            <Button href="/diagnostics">Ouvrir les diagnostics</Button>
+            <Button href="/mvp" variant="dark">
+              Lire le résumé MVP
+            </Button>
+          </div>
+        </Card>
 
-      <Card variant="soft" style={{ marginTop: '1.5rem', borderColor: '#85bfff', background: '#eef6ff' }}>
-        <Badge tone="neutral" icon="\u{1F6E1}">
-          Prérequis revue
-        </Badge>
-        <h2 style={{ fontSize: '1.35rem', fontWeight: 800, marginTop: '0.75rem' }}>Statut requis avant revue</h2>
-        <p className="muted" style={{ marginTop: '0.5rem' }}>
-          Le backend et la base doivent répondre pour tester inscription, tableau de bord et sprint connecté.
-          La page diagnostics vérifie API, Prisma, catalogue (3 parcours) et tokens locaux sans afficher de secret.
-        </p>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '1rem' }}>
-          <Button href="/diagnostics">Ouvrir les diagnostics</Button>
-          <Button href="/mvp" variant="dark">
-            Lire le résumé MVP
+        <Card className="demo-tracks-card">
+          <p className="section-eyebrow">Trois pistes MDM</p>
+          <div className="demo-tracks-row">
+            <BrandIcon brand="apple" size="lg" />
+            <BrandIcon brand="jamf" size="lg" />
+            <BrandIcon brand="microsoft" size="lg" />
+          </div>
+          <p className="muted" style={{ marginTop: '0.75rem' }}>
+            Apple Device Support, Jamf Pro et Microsoft Intune — quiz, badges et sprints gratuits.
+          </p>
+          <Button href="/courses" variant="secondary" size="sm" style={{ marginTop: '0.85rem' }}>
+            Voir le catalogue
           </Button>
-        </div>
-      </Card>
+        </Card>
+      </div>
 
       <Card style={{ marginTop: '1.5rem' }}>
         <p className="section-eyebrow">Accès rapides</p>
-        <h2 style={{ fontSize: '1.35rem', fontWeight: 800, marginTop: '0.35rem' }}>Routes principales</h2>
-        <p className="muted" style={{ marginTop: '0.5rem' }}>
-          Reprends un test interrompu ou vérifie une route précise.
-        </p>
+        <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginTop: '0.35rem' }}>Routes complémentaires</h2>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '1rem' }}>
-          {PRIMARY_ROUTES.map((route) => (
+          {QUICK_ROUTES.map((route) => (
             <Button key={route.href} href={route.href} variant="dark" size="sm">
-              {route.label}
-            </Button>
-          ))}
-        </div>
-        <p className="muted" style={{ marginTop: '1.25rem', fontSize: '0.85rem' }}>
-          Outils internes (revue technique)
-        </p>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '0.5rem' }}>
-          {TOOL_ROUTES.map((route) => (
-            <Button key={route.href} href={route.href} variant="ghost" size="sm">
               {route.label}
             </Button>
           ))}
         </div>
       </Card>
     </section>
-  );
-}
-
-function DemoFlowCard({
-  description,
-  steps,
-  title,
-}: {
-  description: string;
-  steps: { cta: string; description: string; href: string; title: string }[];
-  title: string;
-}) {
-  return (
-    <Card as="article">
-      <p className="section-eyebrow">{title}</p>
-      <p className="muted" style={{ marginTop: '0.35rem' }}>{description}</p>
-      <ol style={{ display: 'grid', gap: '1rem', marginTop: '1.25rem', listStyle: 'none', padding: 0 }}>
-        {steps.map((step, index) => (
-          <li key={step.title}>
-            <Card variant="flat" style={{ background: '#f8fafd' }}>
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.85rem' }}>
-                <span
-                  aria-hidden
-                  style={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: '50%',
-                    background: 'var(--accent)',
-                    color: '#fff',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontWeight: 800,
-                    flexShrink: 0,
-                  }}
-                >
-                  {index + 1}
-                </span>
-                <div style={{ minWidth: 0 }}>
-                  <h3 style={{ fontSize: '1rem', fontWeight: 800 }}>{step.title}</h3>
-                  <p className="muted" style={{ marginTop: '0.2rem', fontSize: '0.9rem' }}>{step.description}</p>
-                  <Button href={step.href} size="sm" style={{ marginTop: '0.5rem' }}>
-                    {step.cta}
-                  </Button>
-                </div>
-              </div>
-            </Card>
-          </li>
-        ))}
-      </ol>
-    </Card>
   );
 }
