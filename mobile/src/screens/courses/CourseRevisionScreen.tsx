@@ -43,7 +43,7 @@ export function CourseRevisionScreen() {
         if (cancelled) return;
 
         setCourseTitle(course.title);
-        setTrack(course.track);
+        setTrack(course.track as 'APPLE' | 'JAMF' | 'INTUNE');
         setSections(buildRevisionSections(course.modules));
 
         try {
