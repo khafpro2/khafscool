@@ -4,9 +4,13 @@ import { useEffect, useMemo, useState } from 'react';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { CardBrandIcons } from '@/components/donations/CardBrandIcons';
 import { createDonationCheckout, fetchDonationStatus } from '@/lib/api/client';
 import type { DonationStatusResponse } from '@/lib/api/types';
 import { getAccessToken } from '@/lib/auth';
+
+const DONATIONS_DOCS_URL =
+  'https://github.com/khafpro2/khafscool/blob/main/docs/DONATIONS.md';
 
 const DEFAULT_AMOUNTS = [500, 1000, 2000];
 
@@ -93,6 +97,15 @@ export function DonationPanel() {
 
   const mode = status?.mode ?? 'unavailable';
   const fallbackUrl = status?.fallbackUrl;
+  const stripeConfigured = status?.stripe.configured ?? false;
+  const checkoutEnabled = mode === 'live';
+  const cardCheckoutUnavailable = !checkoutEnabled && !fallbackUrl;
+
+  const payButtonLabel = submitting
+    ? 'Redirection vers Stripe…'
+    : effectiveAmountCents != null
+      ? `Payer ${formatEuros(effectiveAmountCents)} par carte`
+      : 'Payer par carte';
 
   return (
     <div style={{ display: 'grid', gap: '1.25rem' }}>
@@ -114,19 +127,31 @@ export function DonationPanel() {
         </Card>
       ) : null}
 
-      <Card variant="elevated">
-        <span className="section-eyebrow">Don volontaire</span>
+      <Card variant="elevated" id="carte" style={{ scrollMarginTop: '5rem' }}>
+        <div
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'flex-start',
+            justifyContent: 'space-between',
+            gap: '0.75rem',
+          }}
+        >
+          <span className="section-eyebrow">Don par carte bancaire</span>
+          <CardBrandIcons />
+        </div>
         <h2 style={{ fontSize: '1.35rem', fontWeight: 800, marginTop: '0.5rem' }}>
-          Contribuer au projet
+          Carte bancaire (Visa, Mastercard…)
         </h2>
         <p className="muted" style={{ marginTop: '0.65rem', maxWidth: 680 }}>
-          MDM Academy reste <strong>100 % gratuite</strong> : tous les parcours, quiz, badges et
-          certificats sont accessibles sans abonnement. Un don est <strong>optionnel</strong> et aide
-          à couvrir l’hébergement, la maintenance et de nouveaux contenus pédagogiques.
+          Paiement <strong>sécurisé via Stripe</strong> — don unique, sans abonnement. MDM Academy reste{' '}
+          <strong>100 % gratuite</strong> : tous les parcours, quiz, badges et certificats restent accessibles
+          sans paywall.
         </p>
 
-        {mode === 'unavailable' ? (
+        {cardCheckoutUnavailable ? (
           <div
+            role="status"
             style={{
               marginTop: '1rem',
               padding: '0.85rem 1rem',
@@ -135,10 +160,30 @@ export function DonationPanel() {
               border: '1px solid var(--border)',
             }}
           >
-            <p style={{ fontWeight: 700 }}>Bientôt disponible</p>
-            <p className="muted" style={{ marginTop: '0.35rem' }}>
-              {status?.message ?? 'Les dons en ligne seront activés prochainement.'}
+            <p style={{ fontWeight: 700 }}>
+              {stripeConfigured
+                ? 'Paiement par carte temporairement indisponible'
+                : 'Paiement par carte non activé'}
             </p>
+            <p className="muted" style={{ marginTop: '0.35rem' }}>
+              {stripeConfigured
+                ? (status?.message ??
+                  'Stripe est configuré mais le checkout n’est pas disponible pour le moment.')
+                : 'Sans clé Stripe (`STRIPE_SECRET_KEY`), aucun paiement CB n’est proposé — pas de fausse promesse côté interface.'}
+            </p>
+            {!stripeConfigured ? (
+              <p className="muted" style={{ marginTop: '0.5rem' }}>
+                Configuration test ou live :{' '}
+                <a
+                  href={DONATIONS_DOCS_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ fontWeight: 700 }}
+                >
+                  docs/DONATIONS.md
+                </a>
+              </p>
+            ) : null}
           </div>
         ) : null}
 
@@ -161,7 +206,7 @@ export function DonationPanel() {
                 setUseCustomAmount(false);
                 setSelectedAmount(amount);
               }}
-              disabled={submitting || mode === 'unavailable'}
+              disabled={submitting || cardCheckoutUnavailable}
               aria-pressed={!useCustomAmount && selectedAmount === amount}
             >
               <span className="donation-amount-value">{formatEuros(amount)}</span>
@@ -193,7 +238,7 @@ export function DonationPanel() {
               background: 'var(--surface)',
               color: 'var(--fg)',
             }}
-            disabled={submitting || mode === 'unavailable'}
+            disabled={submitting || cardCheckoutUnavailable}
           />
         </label>
 
@@ -204,14 +249,14 @@ export function DonationPanel() {
         ) : null}
 
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '1.25rem' }}>
-          {mode === 'live' ? (
+          {checkoutEnabled ? (
             <Button
               type="button"
               size="lg"
               onClick={() => void handleDonate()}
               disabled={submitting}
             >
-              {submitting ? 'Redirection…' : 'Donner via Stripe'}
+              {payButtonLabel}
             </Button>
           ) : fallbackUrl ? (
             <a
@@ -227,6 +272,13 @@ export function DonationPanel() {
             Continuer gratuitement
           </Button>
         </div>
+
+        {checkoutEnabled ? (
+          <p className="muted" style={{ marginTop: '0.85rem', fontSize: '0.88rem' }}>
+            Redirection vers Stripe Checkout — cartes Visa, Mastercard, Amex et autres moyens activés sur
+            votre compte Stripe.
+          </p>
+        ) : null}
       </Card>
 
       <Card variant="soft">

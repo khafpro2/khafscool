@@ -31,7 +31,8 @@ Release **MDM Academy Pro v0.2** (branche `cursor/progress-dashboard-auth-v2`, P
 - **+2 questions exam-style** par parcours (module final) — 126 QCM seed total
 
 ### Dons, conformité et DX
-- Dons Stripe `/soutenir`, badge Supporter, pages merci/annule
+- Dons Stripe `/soutenir#carte` — section **carte bancaire** prioritaire (Visa/Mastercard, Checkout), badge Supporter, pages merci/annule
+- **Virement bancaire SEPA** — section `/soutenir#virement` (web) + cartes natives mobile ; coordonnées Revolut HarmyTech, copie IBAN/BIC, variables `DONATION_BANK_*`
 - Export/suppression compte RGPD, auth enrichie, rate limit quiz FR
 - `scripts/dev-stack.sh`, Postgres Docker port **5433**, diagnostics OAuth
 

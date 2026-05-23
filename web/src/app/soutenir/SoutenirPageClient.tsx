@@ -1,5 +1,6 @@
 'use client';
 
+import { BankTransferPanel } from '@/components/donations/BankTransferPanel';
 import { DonationPanel } from '@/components/donations/DonationPanel';
 import { getContactEmail, getContactMailto } from '@/lib/contact';
 
@@ -17,8 +18,9 @@ export function SoutenirPageClient() {
         Un don optionnel pour faire vivre la plateforme — sans jamais limiter l’accès à la formation.
       </p>
 
-      <div style={{ marginTop: '1.5rem' }}>
+      <div className="donation-methods-grid" style={{ marginTop: '1.5rem' }}>
         <DonationPanel />
+        <BankTransferPanel />
       </div>
 
       <p className="muted" style={{ marginTop: '1.5rem', maxWidth: 640, fontSize: '0.95rem' }}>

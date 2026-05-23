@@ -35,6 +35,8 @@ describe('donation checkout session URLs', () => {
 
     expect(sessionsCreate).toHaveBeenCalledWith(
       expect.objectContaining({
+        mode: 'payment',
+        payment_method_types: ['card'],
         success_url: 'https://app.example.com/soutenir/merci?session_id={CHECKOUT_SESSION_ID}',
         cancel_url: 'https://app.example.com/soutenir/annule',
         metadata: expect.objectContaining({

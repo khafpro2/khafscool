@@ -13,7 +13,8 @@
     "./lesson-markdown": "./src/lesson-markdown.ts",
     "./reading-time": "./src/reading-time.ts",
     "./revision-sheet": "./src/revision-sheet.ts",
-    "./practice-exam": "./src/practice-exam.ts"
+    "./practice-exam": "./src/practice-exam.ts",
+    "./donation-bank": "./src/donation-bank.ts"
   },
   "scripts": {
     "build": "tsc",

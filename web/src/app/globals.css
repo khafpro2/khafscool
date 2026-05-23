@@ -3554,6 +3554,42 @@ html[data-theme='dark'] .analytics-opt-in-banner {
   font-weight: 700;
 }
 
+.donation-methods-grid {
+  display: grid;
+  gap: 1.25rem;
+  align-items: start;
+}
+@media (min-width: 900px) {
+  .donation-methods-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.donation-card-brand {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 3.25rem;
+  padding: 0.2rem 0.45rem;
+  border-radius: var(--radius-sm, 4px);
+  border: 1px solid var(--border);
+  background: var(--bg-soft);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.donation-card-brand--visa {
+  font-style: italic;
+}
+.donation-card-brand--mastercard {
+  font-size: 0.58rem;
+}
+.donation-card-brand--amex {
+  font-size: 0.58rem;
+}
+
 /* Leçons markdown enrichies */
 .lesson-content {
   margin-top: 1rem;

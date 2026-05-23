@@ -91,6 +91,7 @@ export async function createDonationCheckoutSession(params: {
 
   return stripe.checkout.sessions.create({
     mode: 'payment',
+    payment_method_types: ['card'],
     line_items: [lineItem],
     success_url: `${webUrl}/soutenir/merci?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${webUrl}/soutenir/annule`,
