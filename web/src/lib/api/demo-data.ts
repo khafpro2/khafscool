@@ -187,8 +187,8 @@ export function mockDashboard(): DashboardData {
     certificationSprint: mockCertificationSprint(),
     courses: [
       { id: '1', slug: 'apple-cert-prep', title: 'Parcours Apple — Device Support & MDM', track: 'APPLE', progressPercent: 33, totalModules: 4, completedModules: 1 },
-      { id: '2', slug: 'jamf-pro-foundations', title: 'Fondamentaux Jamf Pro', track: 'JAMF', progressPercent: 0, totalModules: 3, completedModules: 0 },
-      { id: '3', slug: 'intune-ios-enrollment', title: 'Microsoft Intune — Enrôlement iOS/iPadOS', track: 'INTUNE', progressPercent: 0, totalModules: 3, completedModules: 0 },
+      { id: '2', slug: 'jamf-pro-foundations', title: 'Fondamentaux Jamf Pro', track: 'JAMF', progressPercent: 0, totalModules: 4, completedModules: 0 },
+      { id: '3', slug: 'intune-ios-enrollment', title: 'Microsoft Intune — Enrôlement iOS/iPadOS', track: 'INTUNE', progressPercent: 0, totalModules: 4, completedModules: 0 },
     ],
     completedCourses: [
       {
@@ -529,6 +529,27 @@ export const DEMO_COURSES: CourseDetail[] = [
           correctOrder: [1, 2, 3],
         },
       },
+      {
+        id: 'demo-jamf-module-4',
+        slug: 'api-automation-advanced-policies',
+        title: 'Automatisation et extension API',
+        summary:
+          'Automatiser Jamf Pro via API REST, extension attributes et politiques récurrentes.',
+        questions: toDemoQuestions(
+          'api-automation-advanced-policies',
+          jamfProFoundationsQuestions['api-automation-advanced-policies']
+        ),
+        game: {
+          type: 'API_AUTOMATION_RUNBOOK',
+          scenario: 'Préparer un export automatique des Mac non conformes OS avant audit ISO.',
+          steps: [
+            { id: 1, label: 'Obtenir un token OAuth API Jamf avec scopes lecture inventaire' },
+            { id: 2, label: 'Interroger computers-inventory avec filtres OS et check-in' },
+            { id: 3, label: 'Publier le CSV et ouvrir tickets remédiation sur Smart Group' },
+          ],
+          correctOrder: [1, 2, 3],
+        },
+      },
     ],
   },
   {
@@ -595,6 +616,26 @@ export const DEMO_COURSES: CourseDetail[] = [
             { id: 1, label: 'Créer et assigner une politique App Protection iOS/iPadOS' },
             { id: 2, label: 'Configurer Conditional Access exigeant apps approuvées ou appareil conforme' },
             { id: 3, label: 'Valider l’accès et le conteneur de données sur un iPhone pilote' },
+          ],
+          correctOrder: [1, 2, 3],
+        },
+      },
+      {
+        id: 'demo-intune-module-4',
+        slug: 'vpp-abm-business-apps',
+        title: 'Apps métier et Apple Business Manager dans Intune',
+        summary: 'VPP, apps store/LOB et diagnostic Pending sur flotte supervisée Intune.',
+        questions: toDemoQuestions(
+          'vpp-abm-business-apps',
+          intuneIosEnrollmentQuestions['vpp-abm-business-apps']
+        ),
+        game: {
+          type: 'VPP_DEPLOY_RUNBOOK',
+          scenario: 'Déployer Teams en Required sur 200 iPhone supervisés via VPP et Intune.',
+          steps: [
+            { id: 1, label: 'Valider tokens Push, ADE et VPP dans Intune et ABM' },
+            { id: 2, label: 'Assigner l’app Required au groupe dynamique iOS corporate' },
+            { id: 3, label: 'Contrôler App install status sur pilote puis production' },
           ],
           correctOrder: [1, 2, 3],
         },

@@ -6,8 +6,8 @@ describe('seed content stats', () => {
     const stats = getContentStats();
 
     expect(stats.courses).toBe(3);
-    expect(stats.modules).toBe(10);
-    expect(stats.totalQuestions).toBe(100);
+    expect(stats.modules).toBe(12);
+    expect(stats.totalQuestions).toBe(120);
 
     for (const count of Object.values(stats.questionsPerModule)) {
       expect(count).toBe(10);

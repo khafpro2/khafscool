@@ -1023,6 +1023,144 @@ export const jamfProFoundationsQuestions: Record<string, SeedQuestion[]> = {
         'Token MDM lie ABM à Jamf pour sync inventaire et ADE. Token expiré ou mal réimporté bloque nouveaux appareils sans affecter nécessairement existants. ABM doit assigner iPhone au serveur Jamf correct. Supprimer PreStage serait destructif. Vérifiez date expiration dans les deux consoles. Test : assigner iPhone labo ABM et observer apparition Jamf sous 15 min. Critique avant réception 200 iPhone.',
     },
   ],
+  'api-automation-advanced-policies': [
+    {
+      type: 'KNOWLEDGE',
+      prompt: 'Quel mécanisme d’authentification privilégier pour l’API REST Jamf Pro moderne en automation ?',
+      options: opt(
+        'OAuth client credentials (Bearer token) avec scopes minimum',
+        'Mot de passe admin Jamf en clair dans le script cron',
+        'Session cookie navigateur copié depuis Jamf Admin',
+        'Compte Apple ID personnel de l’utilisateur'
+      ),
+      correctOption: 'a',
+      explanation:
+        'OAuth API Clients permet rotation, scopes granulaires et audit distinct des comptes humains. Ne jamais hardcoder mot de passe admin.',
+    },
+    {
+      type: 'SCENARIO',
+      prompt:
+        'Un script exporte l’inventaire Mac non conformes OS chaque lundi. Quel endpoint Jamf Pro v1 utiliser en priorité ?',
+      options: opt(
+        'GET /api/v1/computers-inventory avec filtres sur osVersion et reportDate',
+        'Classic API /JSSResource/users uniquement',
+        'Endpoint Jamf Connect cloud sans lien inventaire',
+        'Apple Configurator USB export'
+      ),
+      correctOption: 'a',
+      explanation:
+        'computers-inventory est l’API enrichie recommandée pour reporting et filtres ; Classic API reste legacy pour certains objets.',
+    },
+    {
+      type: 'KNOWLEDGE',
+      prompt: 'À quoi sert un Extension Attribute (EA) calculé par script dans Jamf Pro ?',
+      options: opt(
+        'Enrichir l’inventaire avec une valeur custom pour Smart Groups et conformité',
+        'Remplacer le certificat Push Apple',
+        'Désactiver FileVault à distance sans MDM',
+        'Convertir un iPhone en appareil Android'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Les EA remontent des signaux locaux (patch, agent EDR, certificat) et alimentent membership dynamique Smart Groups.',
+    },
+    {
+      type: 'TROUBLESHOOTING',
+      prompt:
+        'Piège : un EA exécute un scan disque complet à chaque check-in. Symptôme utilisateur le plus probable ?',
+      options: opt(
+        'Mac/iPhone lent, check-in MDM rallongé, utilisateurs se plaignent de lenteur',
+        'Activation Lock déclenché automatiquement',
+        'Smart Group vide systématiquement',
+        'Certificat Push renouvelé seul'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Scripts EA lourds dégradent l’expérience ; préférez scripts légers ou fréquence limitée.',
+    },
+    {
+      type: 'SCENARIO',
+      prompt:
+        '45 iPhone affichent Teams VPP Pending après changement proxy vendredi. Action automation la plus pertinente après correction réseau ?',
+      options: opt(
+        'Repush InstallApplication ou RefreshMobileDevice via API sur Smart Group concerné',
+        'EraseDevice via API sur les 45 appareils immédiatement',
+        'Supprimer le certificat Push Jamf',
+        'Désinstaller Jamf Pro du serveur'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Pending massif + cause réseau résolue → repush MDM ciblé, pas wipe. API permet bulk sur Smart Group après validation.',
+    },
+    {
+      type: 'KNOWLEDGE',
+      prompt: 'Quelle différence entre politique Jamf « Enrollment Complete » et « Ongoing » pour l’automation ?',
+      options: opt(
+        'Enrollment Complete = bootstrap initial ; Ongoing = maintenance récurrente et correction drift',
+        'Ongoing ne s’exécute qu’une seule fois à vie',
+        'Enrollment Complete remplace le certificat APNs',
+        'Aucune différence en Jamf Cloud'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Ongoing planifie scripts/paquets périodiques ; Enrollment Complete cible le fenêtre post-enrôlement uniquement.',
+    },
+    {
+      type: 'SCENARIO',
+      prompt:
+        'Direction exige journalisation de chaque wipe MDM déclenché par script. Quelle bonne pratique API ?',
+      options: opt(
+        'Pipeline CI avec approbation, compte API dédié, logs centralisés — interdire wipe ad hoc',
+        'Partager le token OAuth dans un canal Teams public',
+        'Utiliser compte admin personnel sans traçabilité',
+        'Désactiver toute API Jamf'
+      ),
+      correctOption: 'a',
+      explanation:
+        'EraseDevice est destructif ; garde-fous workflow + compte service + audit trail sont obligatoires en enterprise.',
+    },
+    {
+      type: 'KNOWLEDGE',
+      prompt: 'Que faire face à une réponse HTTP 429 lors d’appels API Jamf Cloud en batch ?',
+      options: opt(
+        'Backoff exponentiel, pagination plus petite, étaler les requêtes',
+        'Relancer immédiatement 10 000 requêtes par seconde',
+        'Changer le topic certificat Push',
+        'Effacer l’inventaire Jamf'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Jamf Cloud rate-limit ; respecter limites et batch intelligemment évite blocage automation.',
+    },
+    {
+      type: 'TROUBLESHOOTING',
+      prompt:
+        'Webhook Jamf configuré mais Slack ne reçoit rien quand Smart Group membership change. Première vérification ?',
+      options: opt(
+        'URL endpoint HTTPS accessible, certificat TLS valide, secret webhook et logs Jamf Pro',
+        'Réinstallation Safari sur Mac admin',
+        'Renouvellement token VPP ABM',
+        'Changement mot de passe utilisateur final iPhone'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Webhooks exigent endpoint reachable, 200 OK, parfois auth header ; tester avec curl depuis labo.',
+    },
+    {
+      type: 'SCENARIO',
+      prompt:
+        'Audit ISO dans 48 h — 200 Mac, export non conformes OS requis. Solution la plus scalable ?',
+      options: opt(
+        'Script planifié OAuth → computers-inventory filtré → CSV/Power BI automatique',
+        'Capture manuelle écran par écran dans Jamf Admin',
+        'Demander à chaque utilisateur son numéro de version macOS par email',
+        'Désactiver Smart Groups existants'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Automation API standardise reporting, réduit erreur humaine et prépare audits récurrents sans effort manuel.',
+    },
+  ],
 };
 
 export const intuneIosEnrollmentQuestions: Record<string, SeedQuestion[]> = {
@@ -1450,6 +1588,144 @@ export const intuneIosEnrollmentQuestions: Record<string, SeedQuestion[]> = {
       correctOption: 'a',
       explanation:
         'COPE combine MDM complet (conformité, profils, supervision) et MAM pour defense-in-depth. CA enforce compliant device pour accès M365 ; MAM ajoute PIN app et bloc copie. Shared Apple ID viole bonnes pratiques. Exclusions CA créent failles audit. Pilote 10 devices valide copier-coller bloqué et accès Teams. Modèle standard entreprises finance/santé avec flotte Apple.',
+    },
+  ],
+  'vpp-abm-business-apps': [
+    {
+      type: 'KNOWLEDGE',
+      prompt: 'Quel token Apple distinct faut-il synchroniser dans Intune pour distribuer des apps VPP depuis ABM ?',
+      options: opt(
+        'Token VPP (Apps and Books) — en plus du Push cert et du Enrollment Program Token',
+        'Uniquement le certificat Push MDM suffit pour toutes les apps',
+        'Token Exchange Online',
+        'Clé BitLocker recovery'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Trois artefacts : Push (commandes MDM), ADE token (inventaire/enrollment), VPP token (licences apps). Ne pas les confondre.',
+    },
+    {
+      type: 'SCENARIO',
+      prompt:
+        'Où assigner une app iOS store achetée via ABM en mode Required à 200 iPhone corporate ?',
+      options: opt(
+        'Intune → Apps → iOS app → Assignments → Required sur groupe dynamique iOS corporate',
+        'Apple ID personnel de chaque employé dans App Store',
+        'Profil Wi-Fi uniquement',
+        'Conditional Access sans app assignment'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Required pousse InstallApplication automatiquement aux appareils du groupe assigné.',
+    },
+    {
+      type: 'KNOWLEDGE',
+      prompt: 'Quelle assignation licence VPP convient le mieux à des iPad partagés en classe ?',
+      options: opt(
+        'Device-based — licence liée à l’appareil',
+        'User-based avec compte Gmail personnel',
+        'Aucune licence VPP nécessaire',
+        'Licence liée au numéro IMEI Android'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Device-based évite dépendance compte utilisateur sur flottes partagées retail/éducation.',
+    },
+    {
+      type: 'TROUBLESHOOTING',
+      prompt:
+        '30 iPhone affichent Teams « Pending install » depuis 3 h sur le même site Wi-Fi. Première piste ?',
+      options: opt(
+        'Filtrage réseau/proxy vers CDN Apple ou check-in MDM stale — avant wipe',
+        'Révoquer toutes licences M365',
+        'Changer le modèle iPhone',
+        'Désactiver supervision ABM'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Pending prolongé sur périmètre homogène → infra réseau ou MDM push, pas panne unitaire.',
+    },
+    {
+      type: 'SCENARIO',
+      prompt:
+        'Une app métier B2B privée doit être déployée sur iPhone supervisés. Flux correct ?',
+      options: opt(
+        'App accordée dans ABM → sync VPP Intune → assignation Required au groupe cible',
+        'Email IPA non signé aux utilisateurs',
+        'Installation via TestFlight public sans gouvernance',
+        'SideLoad depuis site web inconnu'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Apps B2B passent par ABM/VPP/MDM ; IPA ad hoc non gouverné viole politique sécurité.',
+    },
+    {
+      type: 'KNOWLEDGE',
+      prompt: 'Où consulter le statut d’installation des apps iOS déployées par Intune ?',
+      options: opt(
+        'Apps → Monitor → App install status (par app et par appareil)',
+        'Entra ID → Sign-in logs uniquement',
+        'Apple Configurator sur Windows',
+        'Jamf Pro Server Settings'
+      ),
+      correctOption: 'a',
+      explanation:
+        'App install status centralise Installed, Pending, Failed pour triage admin.',
+    },
+    {
+      type: 'TROUBLESHOOTING',
+      prompt:
+        'Piège : toute la flotte échoue à installer une app VPP depuis hier soir. Cause la plus probable ?',
+      options: opt(
+        'Token VPP expiré, app retirée du catalogue ABM ou certificat Push expiré',
+        'Un seul iPhone a une coque incompatible',
+        'Mode sombre iOS désactivé',
+        'Mot de passe PIN trop long'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Échec synchronisé global → artefact infra (token, Push, catalogue), pas device isolé.',
+    },
+    {
+      type: 'SCENARIO',
+      prompt:
+        'App LOB iOS interne (.ipa) — prérequis avant assignation Required sur pilote ?',
+      options: opt(
+        'IPA signé entreprise, espace disque suffisant, iOS version compatible, profils réseau/SCEP si app interne',
+        'Jailbreak activé sur iPhone',
+        'Compte Apple ID enfant',
+        'Désinstallation Intune Company Portal obligatoire'
+      ),
+      correctOption: 'a',
+      explanation:
+        'LOB exige packaging signé et prérequis réseau ; tester sur pilote supervisé avant masse.',
+    },
+    {
+      type: 'KNOWLEDGE',
+      prompt: 'Différence entre app Required et Available dans Intune pour iOS ?',
+      options: opt(
+        'Required = push auto ; Available = install manuelle via Company Portal / portail apps',
+        'Available force wipe immédiat',
+        'Required ne fonctionne que sur Mac',
+        'Aucune différence'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Required standard flotte corporate identique ; Available pour apps optionnelles ou self-service.',
+    },
+    {
+      type: 'SCENARIO',
+      prompt:
+        'Réception 200 iPhone ABM — checklist apps avant J-Day. Élément indispensable ?',
+      options: opt(
+        'Tokens Push + ADE + VPP valides, licences suffisantes, pilote 10 devices Installed, flux réseau Apple OK',
+        'Apple ID personnel partagé pour toute l’entreprise',
+        'Désactiver Conditional Access',
+        'Retirer profil SCEP pour accélérer'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Runbook réception : triple token, licences VPP, pilote install status, réseau CDN Apple — évite 200 tickets Pending.',
     },
   ],
 };

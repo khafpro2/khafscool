@@ -330,7 +330,7 @@ const DEMO_COURSES: Record<string, CourseDetail> = {
     title: 'Fondamentaux Jamf Pro',
     track: 'JAMF',
     description: 'Inventaire, smart groups, politiques et bonnes pratiques MDM.',
-    totalModules: 3,
+    totalModules: 4,
     completedModules: 0,
     progressPercent: 0,
     modules: [
@@ -367,6 +367,19 @@ const DEMO_COURSES: Record<string, CourseDetail> = {
           )
         ),
       },
+      {
+        id: 'demo-jamf-module-4',
+        slug: 'api-automation-advanced-policies',
+        title: 'Automatisation et extension API',
+        summary: 'API Jamf Pro, extension attributes et politiques récurrentes à l’échelle.',
+        questions: demoModuleQuestions(
+          'api-automation-advanced-policies',
+          toDemoQuestions(
+            'api-automation-advanced-policies',
+            jamfProFoundationsQuestions['api-automation-advanced-policies']
+          )
+        ),
+      },
     ],
   },
   'intune-ios-enrollment': {
@@ -375,7 +388,7 @@ const DEMO_COURSES: Record<string, CourseDetail> = {
     title: 'Microsoft Intune — Enrôlement iOS/iPadOS',
     track: 'INTUNE',
     description: 'ADE, conformité et App Protection pour flottes Apple.',
-    totalModules: 3,
+    totalModules: 4,
     completedModules: 0,
     progressPercent: 0,
     modules: [
@@ -410,6 +423,16 @@ const DEMO_COURSES: Record<string, CourseDetail> = {
             'app-protection-conditional-access',
             intuneIosEnrollmentQuestions['app-protection-conditional-access']
           )
+        ),
+      },
+      {
+        id: 'demo-intune-module-4',
+        slug: 'vpp-abm-business-apps',
+        title: 'Apps métier et Apple Business Manager dans Intune',
+        summary: 'VPP, apps store/LOB et diagnostic Pending sur flotte supervisée.',
+        questions: demoModuleQuestions(
+          'vpp-abm-business-apps',
+          toDemoQuestions('vpp-abm-business-apps', intuneIosEnrollmentQuestions['vpp-abm-business-apps'])
         ),
       },
     ],

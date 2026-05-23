@@ -42,12 +42,13 @@ export const LEARNING_PATHS: LearningPathDefinition[] = [
     brand: 'jamf',
     title: 'Fondamentaux Jamf Pro',
     shortTitle: 'Jamf Pro',
-    durationMinutes: 45,
-    totalModules: 3,
+    durationMinutes: 60,
+    totalModules: 4,
     objectives: [
       'Cibler des appareils avec smart groups et déployer des politiques pilotes',
       'Lire l’inventaire Jamf et prioriser la conformité du parc',
       'Enrôler une flotte supervisée via Apple Business Manager',
+      'Automatiser exports et scripts avancés via l’API Jamf Pro',
     ],
   },
   {
@@ -56,12 +57,13 @@ export const LEARNING_PATHS: LearningPathDefinition[] = [
     brand: 'microsoft',
     title: 'Microsoft Intune — Enrôlement iOS/iPadOS',
     shortTitle: 'Microsoft Intune',
-    durationMinutes: 45,
-    totalModules: 3,
+    durationMinutes: 60,
+    totalModules: 4,
     objectives: [
       'Configurer l’enrôlement automatisé (ADE) pour iPhone et iPad',
       'Déployer politiques de conformité et actions correctives',
       'Protéger les apps M365 avec App Protection et Conditional Access',
+      'Distribuer apps VPP et apps métier via ABM et Intune',
     ],
   },
 ];

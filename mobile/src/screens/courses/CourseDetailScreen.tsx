@@ -17,6 +17,7 @@ import { formatTrack, getTrackVisual } from '../../lib/design';
 import { useThemedStyles } from '../../hooks/useThemedStyles';
 import { toastBadgeUnlocked, toastModuleCompleted } from '../../lib/gamification-toasts';
 import { LessonContent } from '../../components/LessonContent';
+import { ModuleObjectives } from '../../components/ModuleObjectives';
 import { countLessonWords, formatReadingTimeLabel } from '@ama/shared/reading-time';
 import { findGlossaryTermInText, glossaryMobilePath } from '@ama/shared/glossary';
 import {
@@ -398,6 +399,10 @@ export function CourseDetailScreen() {
                     <Text style={styles.readingBadgeText}>{readingLabel}</Text>
                   </View>
                 ) : null}
+                <ModuleObjectives
+                  learningObjectives={module.learningObjectives}
+                  keyTakeaways={module.keyTakeaways}
+                />
                 {moduleProgress?.completedAt ? (
                   <Text style={styles.moduleCompletedAt}>
                     Terminée le {new Date(moduleProgress.completedAt).toLocaleDateString('fr-FR')}

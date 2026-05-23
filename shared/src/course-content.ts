@@ -628,6 +628,111 @@ Maîtriser ABM + Push + PreStage garantit une flotte Jamf supervisée, reproduct
         gameInstructions:
           'Ordonnez les étapes pour intégrer vingt Mac neufs depuis Apple Business Manager jusqu’à la validation du premier appareil géré.',
       },
+      'api-automation-advanced-policies': {
+        summary:
+          'Automatiser Jamf Pro via l’API REST, scripts avancés et politiques récurrentes pour industrialiser conformité, reporting et remédiation à l’échelle.',
+        learningObjectives: [
+          'Obtenir un token OAuth Jamf Pro et interroger les endpoints inventaire modernes (computers-inventory, mobile-devices-inventory).',
+          'Concevoir des extension attributes et scripts de politique pour remonter des signaux conformité custom.',
+          'Chaîner politiques récurrentes, webhooks et exports planifiés pour alimenter SIEM ou Power BI.',
+          'Appliquer une gouvernance API (scopes minimum, rotation token, rate limits) en production.',
+          'Remédier à un incident de masse (apps VPP Pending, profils SCEP expirés) via Smart Group + API sans clics manuels.',
+        ],
+        keyTakeaways: [
+          'L’API Jamf Pro v1 privilégie OAuth Bearer et filtres OData-like sur l’inventaire enrichi.',
+          'Extension attributes + Smart Groups transforment des scripts locaux en critères de déploiement.',
+          'Automatiser les exports avant un audit évite les CSV manuels et les erreurs de périmètre.',
+          'Toute action API destructive (wipe, unmanage) exige garde-fous et compte de service dédié.',
+        ],
+        lessonContent: `## Automatisation et extension API Jamf Pro
+
+Une fois les fondamentaux Smart Groups, inventaire et ADE maîtrisés, l’administrateur Jamf Pro passe à l’**industrialisation** : scripts récurrents, extension attributes calculés, appels API planifiés et webhooks qui alimentent la gouvernance sécurité sans multiplier les clics dans Jamf Admin. Ce module couvre les patterns utilisés sur des parcs de 200 à plusieurs milliers d’appareils Apple.
+
+### Pourquoi automatiser Jamf Pro ?
+
+Les tâches répétitives — export Mac non conformes OS, relance politique sur appareils stale, corrélation inventaire ABM vs Jamf — consomment des heures si elles restent manuelles. L’**API REST Jamf Pro** (developer.jamf.com) et les **politiques récurrentes** permettent de codifier ces runbooks. Objectifs typiques : réduire le temps de préparation audit ISO, accélérer remédiation post-incident PKI, et synchroniser Jamf avec CMDB ou Entra ID via middleware.
+
+Documentation : [Jamf Pro API Overview](https://developer.jamf.com/jamf-pro/docs/jamf-pro-api-overview)
+
+### Authentification OAuth et bonnes pratiques
+
+Jamf Pro Cloud et les versions récentes On-Prem supportent **OAuth client credentials** : créez une API Client dans Settings → System → API Clients and Keys, assignez des scopes minimum (Read Computers, Read Mobile Devices, Update Mobile Device Commands selon besoin). Échangez client_id/client_secret contre un Bearer token via \`POST /api/oauth/token\`.
+
+Ne stockez jamais le secret dans un script Git en clair : utilisez Azure Key Vault, HashiCorp Vault ou variables CI chiffrées. Rotation trimestrielle du client API. Compte de service dédié « automation-jamf » distinct des comptes admin humains — traçabilité audit.
+
+### Endpoints inventaire modernes
+
+Privilégiez **computers-inventory** et **mobile-devices-inventory** (API v1) plutôt que la Classic API \`/JSSResource/computers\` héritée. Exemple de filtre : appareils macOS 14+ avec dernière check-in > 7 jours :
+
+\`GET /api/v1/computers-inventory?section=General&filter=general.lastReportedIp ne null and general.reportDate lt "2026-05-01"\`
+
+Pour iPhone : \`mobile-devices-inventory\` expose supervision, osVersion, installedMobileApplications. Export JSON → script Python/Node → CSV Power BI. Planifiez via cron GitLab CI ou Azure Automation.
+
+### Extension attributes et scripts avancés
+
+Les **extension attributes (EA)** exécutent un script sur l’appareil au check-in et remontent une valeur texte dans l’inventaire. Cas d’usage : version agent EDR, statut patch mensuel, présence certificat client Wi-Fi dans Trousseau.
+
+Bonnes pratiques EA :
+
+- Scripts **légers** (< 5 s) pour ne pas ralentir check-in.
+- Gestion d’erreur explicite (retourner « UNKNOWN » plutôt que vide).
+- Smart Group « EA patch level != current » pour cibler politique corrective.
+
+Combinez EA avec politique **Ongoing** exécutée quotidiennement sur Smart Group conformité — plus fiable qu’un one-shot oublié.
+
+### Politiques récurrentes, webhooks et Self Service API
+
+Les politiques Jamf déclenchées **Ongoing** avec fréquence (daily/weekly) maintiennent état désiré : purge caches, renouvellement certificat via script, reinstall agent si version < X. **Enrollment Complete** reste pour bootstrap ; **Ongoing** pour drift correction.
+
+Jamf Pro supporte **webhooks** (Settings → Webhooks) notifiant un endpoint HTTPS lors d’événements (Smart Computer Group membership change, MDM command failure). Intégrez à Slack, ServiceNow ou SIEM.
+
+Self Service peut déclencher politiques approuvées ; côté API, \`POST /api/v1/mdm/commands\` envoie InstallApplication, DeviceLock ou EraseDevice — **uniquement** via pipeline validé (change ticket, double approbation pour wipe).
+
+### Cas pratique : 200 iPhone — apps VPP bloquées en Pending
+
+Lundi matin, 45 iPhone d’un Smart Group « Retail Paris » affichent Teams VPP Pending dans Jamf. L’admin :
+
+1. API : liste \`mobile-devices-inventory\` filtrée par Smart Group ID, extrait UDID concernés.
+2. Vérifie licences VPP et token ABM — OK.
+3. Correlèle avec ticket réseau : proxy bloque CDN Apple depuis vendredi.
+4. Après ouverture flux réseau, envoie **RefreshMobileDevice** ou repush InstallApplication via API sur le Smart Group, pas 45 wipes.
+
+Documente runbook : symptôme Pending massif + Safari OK → réseau avant MDM.
+
+### Scripts macOS et politiques avancées
+
+Sur Mac, politiques peuvent déployer **scripts bash/zsh** avec paramètres, exécution root, priorité Before/After autres actions. Pattern : script vérifie version agent → si obsolète, télécharge pkg interne. Logs dans /var/log/jamf.log — centralisez via SIEM si requis.
+
+**FileVault escrow** et **Bootstrap Token** sur Apple Silicon Mac nécessitent politiques ordonnées ; testez sur Smart Group pilote avant API bulk trigger.
+
+### Gouvernance, rate limits et sécurité API
+
+Jamf Cloud applique rate limits ; batch vos requêtes (pagination 100–1000). Implémentez backoff exponentiel sur HTTP 429. Journalisez chaque appel automation (qui, quoi, combien d’appareils impactés).
+
+Interdisez scripts ad hoc wipe depuis poste admin ; pipeline CI avec revue code. Séparez environnements labo vs production (JSS URL distinctes, tokens distincts).
+
+### Reporting conformité automatisé
+
+Pipeline hebdomadaire type :
+
+1. Token OAuth → export inventaire Mac/iOS non conformes OS.
+2. Join avec export ABM (appareils non assignés Jamf).
+3. Email récap au CISO + création tickets Jira pour top 10 écarts.
+
+Ce pattern remplace la capture d’écran manuelle avant comité mensuel.
+
+> **Bonne pratique :** Versionnez vos scripts automation dans Git avec README (scopes API, owner, fréquence). Testez sur Smart Group « Labo » avant production. Référence : [Jamf Pro API](https://developer.jamf.com/jamf-pro/docs/jamf-pro-api-overview) et glossaire MDM (Smart Group, check-in, VPP).
+
+### Limites et pièges fréquents
+
+- Classic API vs v1 : mélanger les deux complique la maintenance — standardisez v1 pour inventaire.
+- Token OAuth expiré en batch nocturne : alerte si job échoue deux nuits consécutives.
+- Commande EraseDevice via API sans garde-fou : risque juridique — exiger approbation workflow.
+
+En maîtrisant API, extension attributes et politiques récurrentes, vous transformez Jamf Pro en plateforme MDM programmable, prête pour parcs enterprise et audits exigeants.`,
+        gameInstructions:
+          'Ordonnez un runbook automation : token OAuth, export inventaire non conforme, ticket remédiation, puis repush politique sur Smart Group.',
+      },
     },
   },
   'intune-ios-enrollment': {
@@ -941,6 +1046,131 @@ Préparez FAQ : pourquoi PIN Outlook séparé du code iPhone, pourquoi copier-co
 En combinant App Protection et Conditional Access, Intune sécurise M365 sur iOS même lorsque l’organisation ne possède pas entièrement l’appareil — pilier des déploiements hybrides Apple + Microsoft.`,
         gameInstructions:
           'Ordonnez le déploiement Outlook/Teams protégés : politique App Protection, Conditional Access, puis validation sur iPhone pilote.',
+      },
+      'vpp-abm-business-apps': {
+        summary:
+          'Connecter Apple Business Manager à Intune, synchroniser VPP et déployer apps métier, store et LOB sur iPhone/iPad supervisés.',
+        learningObjectives: [
+          'Lier le token VPP Apple (Apps and Books) à Intune et synchroniser le catalogue ABM.',
+          'Assigner des apps VPP en mode device ou user et les pousser via Required vs Available.',
+          'Diagnostiquer états Pending, Failed ou Missing sur apps iOS dans le portail Intune.',
+          'Publier une app métier iOS (LOB) ou une app B2B privée avec certificat et profil géré.',
+          'Coordonner renouvellement token VPP, certificat Push et profils SCEP avant déploiement de 200 iPhone.',
+        ],
+        keyTakeaways: [
+          'Le token VPP ABM est distinct du certificat Push MDM et du Enrollment Program Token.',
+          'Apps Required s’installent automatiquement ; Available passent par Company Portal ou App Store géré.',
+          'Un échec massif d’installation pointe vers token VPP expiré, réseau ou licence insuffisante.',
+          'Les apps LOB iOS exigent packaging .ipa signé et espace de stockage suffisant sur l’appareil.',
+        ],
+        lessonContent: `## Apps métier et Apple Business Manager dans Intune
+
+Après ADE, conformité et App Protection, la dernière brique d’un déploiement iOS enterprise est le **catalogue applicatif** : Microsoft Teams, Outlook, apps métier internes et outils sectoriels distribués sans Apple ID personnel. Intune s’appuie sur **Apple Business Manager (ABM)** et le programme **VPP (Volume Purchase Program)** — aujourd’hui « Apps and Books » — pour assigner licences et pousser InstallApplication aux appareils supervisés.
+
+### Architecture ABM → VPP → Intune
+
+Trois artefacts distincts ne doivent pas être confondus :
+
+1. **Certificat Apple MDM Push** — canal APNs pour commandes MDM temps réel.
+2. **Enrollment Program Token** — synchronisation inventaire ABM et profils ADE.
+3. **Token VPP (Apps and Books)** — téléchargé depuis Intune, importé dans ABM pour lier achats volume au tenant Microsoft.
+
+Sans token VPP valide, Intune ne voit pas les apps achetées dans ABM ; les déploiements store échouent silencieusement ou restent en attente.
+
+Documentation : [Apps iOS/iPadOS Intune](https://learn.microsoft.com/fr-fr/mem/intune/apps/apps-add) | [Apple Business Manager](https://support.apple.com/fr-fr/guide/apple-business-manager/)
+
+### Synchroniser VPP dans le centre d’administration Intune
+
+Chemin : **Apps → iOS/iPadOS → iOS/iPadOS apps → Add → App type Apple VPP**. Téléchargez le token depuis Intune (Tenant Administration → Connectors and tokens → Apple tokens), importez-le dans ABM sous **Preferences → MDM Server Assignment** ou section Apps and Books selon workflow.
+
+Une fois synchronisé, les apps achetées (gratuites ou payantes) apparaissent dans Intune. Assignez licences **device** (flotte partagée, retail, éducation) ou **user** (Managed Apple ID, BYOD corporate avec compte).
+
+Renouvelez le token VPP avant expiration — même discipline que Push cert et ADE token. Calendrier partagé IT recommandé.
+
+### Required vs Available et expérience utilisateur
+
+**Required** : Intune pousse l’app automatiquement aux appareils du groupe assigné — standard pour flotte 200 iPhone corporate identiques.
+
+**Available** : l’utilisateur installe depuis **Company Portal** ou portail des apps — utile pour apps optionnelles ou BYOD.
+
+**Uninstall on unenroll** : option pour retirer app si appareil sort du périmètre MDM — alignez avec politique RH et wipe.
+
+Sur appareil **supervisé** ADE, Required évite tickets « je ne trouve pas l’app » ; vérifiez espace disque et réseau avant escalade.
+
+### Apps store, B2B privées et LOB
+
+**Store apps** : Teams, Authenticator, apps éditeur public — flux VPP standard.
+
+**Apps B2B privées** : éditeur vous accorde accès via Apple Business Manager ; app invisible sur App Store public. Import dans ABM puis sync Intune.
+
+**Line-of-business (LOB)** : package \`.ipa\` signé entreprise uploadé directement dans Intune. Taille limitée ; mise à jour manuelle ou pipeline CI signant nouvelle version. Testez sur iPhone pilote supervisé : installation, lancement, compatibilité iOS cible.
+
+Ne distribuez jamais d’IPA non signé ou sideload ad hoc hors gouvernance — risque sécurité et rejet audit.
+
+### Cas pratique : déploiement 200 iPhone finance
+
+Entreprise finance : 200 iPhone 15 Pro supervisés ADE Intune. Catalogue : Outlook, Authenticator (Required), app trading B2B privée (Required), app RH Available via Company Portal.
+
+Séquence admin :
+
+1. Tokens Push, ADE et VPP validés.
+2. Groupes dynamiques « iOS Corporate France ».
+3. Apps assignées Required avec deadline 7 jours.
+4. Pilote 10 iPhone : statut **Installed** dans Intune device install status.
+
+Jour J production : 30 appareils restent **Pending install**. Triage :
+
+- 25 sur même site → proxy bloque \`*.apple.com\` CDN — ticket réseau.
+- 5 sans check-in 48 h → profil Wi-Fi SCEP expiré — repush profil certificat.
+
+Pas de wipe massif. Corrélation **Monitor → App install status** par app et par groupe.
+
+### Diagnostic Pending, Failed et Missing
+
+Dans Intune : **Apps → Monitor → App install status**. Filtrez par app et groupe. Causes fréquentes :
+
+| Symptôme | Piste |
+|----------|-------|
+| Pending prolongé | Réseau, proxy, espace disque, check-in stale |
+| Failed | Licence VPP épuisée, app retirée ABM, incompatibilité iOS |
+| Missing après wipe ADE | Délai normal 15–30 min post setup ; forcer sync |
+| Échec global synchronisé | Token VPP expiré ou certificat Push |
+
+Côté appareil : Réglages → Général → Gestion des appareils → profil MDM présent. Date/heure automatiques. Test LTE vs Wi-Fi corporate.
+
+### Intune, Managed Apps et wipe sélectif
+
+Les apps déployées via MDM sont **Managed Apps**. Lors d’un départ employé, **selective wipe** (MAM) ou retrait appareil efface données corporate dans Outlook/Teams ; apps VPP Required se réinstallent au prochain cycle si appareil reste inscrit.
+
+Coordonnez avec conformité : appareil jailbreaké → wipe complet après approbation sécurité, pas simple repush app.
+
+### PKI, Wi-Fi et prérequis réseau apps
+
+Apps métier internes appellent souvent API backend via VPN ou Wi-Fi 802.1X. Déployez **profil SCEP** puis **Wi-Fi** avant apps LOB qui authentifient au réseau interne. Intune signale conflits profils dans Device configuration.
+
+Conditional Access peut exiger appareil conforme **et** app protégée avant accès données — triple couche standard Zero Trust.
+
+### Gouvernance catalogue et communication
+
+Maintenez inventaire apps approuvées (nom, bundle ID, owner métier, mode Required/Available). Revue trimestrielle licences VPP : récupérez licences appareils restitués.
+
+Communication utilisateurs : « Les apps entreprise s’installent automatiquement après configuration iPhone — laissez le Wi-Fi actif 30 minutes ». FAQ Company Portal réduit tickets helpdesk.
+
+> **Bonne pratique :** Avant réception 200 appareils, validez triple token (Push, ADE, VPP), espace disque minimal 10 Go libre sur pilote, et flux réseau vers Apple CDN. Documentez bundle ID et version cible dans runbook. Glossaire : VPP, supervision, check-in MDM.
+
+### Renouvellement et automatisation
+
+Planifiez alertes 30 jours avant expiration token VPP. Script PowerShell Microsoft Graph ou export planifié app install status pour comité mensuel. Intune ne remplace pas CMDB — exportez vers ServiceNow si requis.
+
+### Limites et pièges
+
+- Confondre token VPP et Enrollment Program Token — deux imports ABM différents.
+- Assigner app Required à groupe contenant appareils non supervisés — comportement divergent.
+- Oublier compatibilité iOS minimum de l’app LOB après upgrade OS fleet-wide.
+
+En maîtrisant ABM, VPP et déploiement apps Intune, vous complétez la chaîne Zero Trust Apple + Microsoft : appareil supervisé, conforme, protégé et équipé des applications métier sans friction utilisateur.`,
+        gameInstructions:
+          'Ordonnez le déploiement d’une app VPP Required sur 200 iPhone : tokens valides, assignation groupe, pilote, puis monitoring install status.',
       },
     },
   },

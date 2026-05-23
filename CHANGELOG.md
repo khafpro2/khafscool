@@ -43,6 +43,10 @@ Première release MVP **MDM Academy Pro** (branche `cursor/progress-dashboard-au
 - **Objectifs module actif (web)** — panneau repliable `ModuleObjectives` sous le titre : objectifs d’apprentissage + points clés (FR, dark mode)
 - **Liens glossaire auto** — `@ama/shared/lesson-markdown` + `@ama/shared/glossary` : termes MDM liés dans les leçons (`/resources/glossaire#terme`, mobile scroll) ; max 1 lien/terme/paragraphe ; quiz : lien « Voir dans le glossaire » après validation
 - **Module 4 Apple** — parcours `apple-cert-prep` : « Gestion des apps et VPP » (leçon 800+ mots, 10 questions) ; catalogue **4 modules** pour ce parcours (`MODULES_BY_COURSE`, seed)
+- **Module 4 Jamf** — parcours `jamf-pro-foundations` : « Automatisation et extension API » (leçon 800+ mots, 10 questions MDM Jamf)
+- **Module 4 Intune** — parcours `intune-ios-enrollment` : « Apps métier et Apple Business Manager dans Intune » (même structure)
+- **Parité catalogue** — `MODULES_BY_COURSE` : **4 modules** pour les 3 parcours ; TrailCard / mobile « 4 modules · 10 Q/module » ; tests seed **12 modules, 120 questions**
+- **Objectifs module actif (mobile)** — panneau repliable `ModuleObjectives` sur module actif (parité web)
 - Docs : Postgres Docker — port hôte **5433** vs conteneur **5432** (`README`, `DEPLOYMENT`, `compose.yaml`, `backend/.env.example`)
 - API : `GET /auth/oauth/status` — état Google / Apple / Microsoft (`configured` | `stub` | `disabled`)
 - Web : `/diagnostics` — section OAuth FR (lecture `/auth/oauth/status`)

@@ -275,6 +275,24 @@ async function main() {
           solution: { correctOrder: [1, 2, 3] },
         },
       },
+      {
+        slug: 'api-automation-advanced-policies',
+        title: 'Automatisation et extension API',
+        ...modulePedagogy('jamf-pro-foundations', 'api-automation-advanced-policies'),
+        sortOrder: 4,
+        questions: jamfProFoundationsQuestions['api-automation-advanced-policies'],
+        game: {
+          type: 'API_AUTOMATION_RUNBOOK',
+          scenario:
+            'Préparer un export automatique des Mac non conformes OS avant un audit ISO.',
+          steps: [
+            { id: 1, label: 'Obtenir un token OAuth API Jamf avec scopes lecture inventaire' },
+            { id: 2, label: 'Interroger computers-inventory avec filtres OS et check-in' },
+            { id: 3, label: 'Publier le CSV et ouvrir tickets remédiation sur Smart Group' },
+          ],
+          solution: { correctOrder: [1, 2, 3] },
+        },
+      },
     ],
   });
 
@@ -335,6 +353,24 @@ async function main() {
             { id: 1, label: 'Créer et assigner une politique App Protection iOS/iPadOS' },
             { id: 2, label: 'Configurer Conditional Access exigeant apps approuvées ou appareil conforme' },
             { id: 3, label: 'Valider l’accès et le conteneur de données sur un iPhone pilote' },
+          ],
+          solution: { correctOrder: [1, 2, 3] },
+        },
+      },
+      {
+        slug: 'vpp-abm-business-apps',
+        title: 'Apps métier et Apple Business Manager dans Intune',
+        ...modulePedagogy('intune-ios-enrollment', 'vpp-abm-business-apps'),
+        sortOrder: 4,
+        questions: intuneIosEnrollmentQuestions['vpp-abm-business-apps'],
+        game: {
+          type: 'VPP_DEPLOY_RUNBOOK',
+          scenario:
+            'Déployer Microsoft Teams en Required sur 200 iPhone supervisés via VPP et Intune.',
+          steps: [
+            { id: 1, label: 'Valider tokens Push, ADE et VPP dans Intune et ABM' },
+            { id: 2, label: 'Assigner l’app Required au groupe dynamique iOS corporate' },
+            { id: 3, label: 'Contrôler App install status sur pilote puis production' },
           ],
           solution: { correctOrder: [1, 2, 3] },
         },

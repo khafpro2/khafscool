@@ -8,6 +8,8 @@ export const QUESTIONS_PER_MODULE = 10;
 /** Modules par parcours lorsque différent du défaut MVP (3). */
 export const MODULES_BY_COURSE: Partial<Record<CourseSlug, number>> = {
   'apple-cert-prep': 4,
+  'jamf-pro-foundations': 4,
+  'intune-ios-enrollment': 4,
 };
 
 export function getCourseModuleCount(slug: CourseSlug): number {
