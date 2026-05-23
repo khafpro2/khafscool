@@ -184,6 +184,16 @@ Réponse exemple :
 
 Sans `ADMIN_API_KEY` configurée, l’API renvoie `503 ADMIN_API_DISABLED`. Clé incorrecte → `401 ADMIN_API_UNAUTHORIZED`.
 
+## Notifications email (stub)
+
+Après un webhook Stripe `checkout.session.completed` validé pour un don (`metadata.type === 'donation'`), le backend enregistre la ligne `Donation` puis émet un **log stub** :
+
+```
+[donation] payment confirmed — email notification stub { stripeSessionId, amountCents, currency, email, userId }
+```
+
+Aucun envoi SendGrid (ou autre) n’est requis pour l’instant — la fonction `logDonationConfirmation` dans `donations-webhook.service.ts` sert de point d’extension pour brancher un provider email plus tard.
+
 ## Base de données
 
 Le webhook crée une ligne dans la table `Donation` :

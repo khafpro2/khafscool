@@ -65,6 +65,12 @@ Première release MVP **MDM Academy Pro** (branche `cursor/progress-dashboard-au
 
 ## Unreleased — `cursor/progress-dashboard-auth-v2`
 
+### Badge Supporter, FAQ dons, notifications stub
+- **Badge Supporter** — galerie web/mobile (`ALL_BADGE_SLUGS`) + critères déblocage ; CTA « Soutenir le projet » sur la carte verrouillée
+- **FAQ dons FR** — section 5 questions sur `/soutenir` (gratuité, remboursement, reçu fiscal, badge, destination)
+- **Notifications email (stub)** — `logDonationConfirmation` après webhook Stripe OK (`console.info`, doc `DONATIONS.md`)
+- **Refactor** — `mapCoursesWithProgress` + `computeModuleAggregateStats` dans `gamification.service.ts`
+
 ### PayPal par défaut (khafpro)
 - **`DEFAULT_DONATION_PAYPAL_URL`** — `@ama/shared/donation-methods` : `https://www.paypal.com/paypalme/khafpro` (comme IBAN Revolut HarmyTech) ; override via `DONATION_PAYPAL_URL` / `NEXT_PUBLIC_*` / `EXPO_PUBLIC_*`
 - Web `/soutenir#paypal` + mobile : bouton **Donner avec PayPal** actif par défaut ; référence optionnelle « MDM Academy »

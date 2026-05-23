@@ -225,6 +225,7 @@ export const ALL_BADGE_SLUGS = [
   'jamf-engineer',
   'intune-professional',
   'practice-exam-pass',
+  'supporter',
 ] as const;
 
 export type BadgeSlug = (typeof ALL_BADGE_SLUGS)[number];
@@ -240,6 +241,8 @@ const BADGE_CRITERIA: Record<string, string> = {
   'jamf-engineer': 'Termine au moins une unité du parcours Jamf Pro.',
   'intune-professional': 'Termine au moins une unité du parcours Microsoft Intune.',
   'practice-exam-pass': 'Réussis un examen blanc avec au moins 70 % après avoir terminé un parcours.',
+  supporter:
+    'Fais un don depuis /soutenir (carte Stripe, PayPal ou virement) en étant connecté à ton compte.',
 };
 
 export function getBadgeTrack(slug: string): string {
@@ -248,4 +251,12 @@ export function getBadgeTrack(slug: string): string {
 
 export function getBadgeCriteria(slug: string): string {
   return BADGE_CRITERIA[slug] ?? 'Complète le parcours associé pour débloquer ce super-badge.';
+}
+
+export function getBadgeCtaHref(slug: string): string {
+  return slug === 'supporter' ? '/soutenir' : '/courses';
+}
+
+export function getBadgeCtaLabel(slug: string): string {
+  return slug === 'supporter' ? 'Soutenir le projet' : 'Voir le parcours';
 }

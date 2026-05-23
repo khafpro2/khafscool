@@ -8,6 +8,8 @@ import { getAccessToken } from '@/lib/auth';
 import {
   ALL_BADGE_SLUGS,
   getBadgeCriteria,
+  getBadgeCtaHref,
+  getBadgeCtaLabel,
   getBadgeTrack,
   getBadgeVisual,
   getTrackVisual,
@@ -376,8 +378,8 @@ function LockedBadgeCard({ slug }: { slug: string }) {
           </h3>
           <p style={{ marginTop: '0.3rem', fontSize: '0.9rem' }}>{criteria}</p>
         </div>
-        <Button href="/courses" size="sm" variant="secondary">
-          Voir le parcours
+        <Button href={getBadgeCtaHref(slug)} size="sm" variant="secondary">
+          {getBadgeCtaLabel(slug)}
         </Button>
       </div>
     </Card>

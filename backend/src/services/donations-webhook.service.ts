@@ -2,6 +2,19 @@ import type Stripe from 'stripe';
 import { prisma } from '../lib/prisma.js';
 import { awardSupporterBadge } from './supporter-badge.service.js';
 
+export type DonationConfirmationPayload = {
+  stripeSessionId: string;
+  amountCents: number;
+  currency: string;
+  email: string | null;
+  userId: string | null;
+};
+
+/** Stub notification — log only until SendGrid (or similar) is wired. */
+export function logDonationConfirmation(payload: DonationConfirmationPayload) {
+  console.info('[donation] payment confirmed — email notification stub', payload);
+}
+
 export async function handleDonationCheckoutCompleted(session: Stripe.Checkout.Session) {
   if (session.metadata?.type !== 'donation') return;
 
@@ -21,14 +34,25 @@ export async function handleDonationCheckoutCompleted(session: Stripe.Checkout.S
 
   const userId = session.metadata.userId ?? null;
 
+  const email = session.customer_details?.email ?? session.customer_email ?? null;
+  const currency = (session.currency ?? 'eur').toLowerCase();
+
   await prisma.donation.create({
     data: {
       amountCents,
-      currency: (session.currency ?? 'eur').toLowerCase(),
-      email: session.customer_details?.email ?? session.customer_email ?? null,
+      currency,
+      email,
       userId,
       stripeSessionId,
     },
+  });
+
+  logDonationConfirmation({
+    stripeSessionId,
+    amountCents,
+    currency,
+    email,
+    userId,
   });
 
   if (userId) {

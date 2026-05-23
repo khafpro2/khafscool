@@ -78,6 +78,18 @@ test.describe('Page Soutenir', () => {
     await expect(page.getByTestId('paypal-donate-button')).toHaveAttribute('href', MOCK_PAYPAL_URL);
   });
 
+  test('affiche la FAQ dons (5 questions)', async ({ page }) => {
+    await page.goto('/soutenir');
+    await expect(page.getByRole('heading', { level: 2, name: 'FAQ dons' })).toBeVisible({
+      timeout: 15_000,
+    });
+    await expect(page.getByText('La plateforme est-elle vraiment gratuite ?')).toBeVisible();
+    await expect(page.getByText('Puis-je obtenir un reçu fiscal ?')).toBeVisible();
+    await expect(
+      page.getByText('MDM Academy Pro n’est pas configurée comme association', { exact: false })
+    ).toBeVisible();
+  });
+
   test('expose le lien footer « Faire un don »', async ({ page }) => {
     await page.goto('/');
     const footerLink = page.getByRole('contentinfo').getByRole('link', { name: 'Faire un don' });

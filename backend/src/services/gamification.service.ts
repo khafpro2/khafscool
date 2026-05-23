@@ -770,6 +770,63 @@ export async function getCurrentCertificationSprint(userId: string) {
   return currentQuest ? sprintSummary(currentQuest, now) : null;
 }
 
+type CourseRowForProgress = {
+  id: string;
+  slug: string;
+  title: string;
+  track: CourseTrack;
+  modules: {
+    id: string;
+    slug: string;
+    title: string;
+    progresses: { completedAt: Date | null }[];
+  }[];
+};
+
+function mapCoursesWithProgress(courses: CourseRowForProgress[]) {
+  return courses.map((course) => {
+    const total = course.modules.length;
+    const done = course.modules.filter((module) =>
+      module.progresses.some((progress) => progress.completedAt)
+    ).length;
+    const nextModule = course.modules.find(
+      (module) => !module.progresses.some((progress) => progress.completedAt)
+    );
+
+    return {
+      id: course.id,
+      slug: course.slug,
+      title: course.title,
+      track: course.track,
+      totalModules: total,
+      completedModules: done,
+      progressPercent: total ? Math.round((done / total) * 100) : 0,
+      nextModule: nextModule
+        ? { id: nextModule.id, slug: nextModule.slug, title: nextModule.title }
+        : null,
+    };
+  });
+}
+
+function computeModuleAggregateStats(
+  moduleProgress: { completedAt: Date | null; quizScore: number | null }[]
+) {
+  const completed = moduleProgress.filter((progress) => progress.completedAt).length;
+  const averageQuizScore =
+    moduleProgress.length > 0
+      ? Math.round(
+          moduleProgress.reduce((sum, progress) => sum + (progress.quizScore ?? 0), 0) /
+            moduleProgress.length
+        )
+      : 0;
+
+  return {
+    modulesCompleted: completed,
+    averageQuizScore,
+    timeSpentMinutes: completed * 12,
+  };
+}
+
 export async function getCourseProgress(userId: string, slug: string) {
   const course = await prisma.course.findUnique({
     where: { slug },
@@ -870,24 +927,7 @@ export async function getUserProgress(userId: string) {
       }))
     )
   );
-  const coursesWithProgress = courses.map((course) => {
-    const total = course.modules.length;
-    const done = course.modules.filter((module) => module.progresses.some((progress) => progress.completedAt)).length;
-    const nextModule = course.modules.find((module) => !module.progresses.some((progress) => progress.completedAt));
-
-    return {
-      id: course.id,
-      slug: course.slug,
-      title: course.title,
-      track: course.track,
-      totalModules: total,
-      completedModules: done,
-      progressPercent: total ? Math.round((done / total) * 100) : 0,
-      nextModule: nextModule
-        ? { id: nextModule.id, slug: nextModule.slug, title: nextModule.title }
-        : null,
-    };
-  });
+  const coursesWithProgress = mapCoursesWithProgress(courses);
 
   const tracks = Object.values(CourseTrack).map((track) => {
     const trackCourses = courses.filter((course) => course.track === track);
@@ -1013,23 +1053,7 @@ export async function getDashboard(userId: string) {
     fetchRecentCompletedModules(userId),
   ]);
 
-  const coursesWithProgress = courses.map((c) => {
-    const total = c.modules.length;
-    const done = c.modules.filter((m) => m.progresses.some((p) => p.completedAt)).length;
-    const nextModule = c.modules.find((m) => !m.progresses.some((p) => p.completedAt));
-    return {
-      id: c.id,
-      slug: c.slug,
-      title: c.title,
-      track: c.track,
-      totalModules: total,
-      completedModules: done,
-      progressPercent: total ? Math.round((done / total) * 100) : 0,
-      nextModule: nextModule
-        ? { id: nextModule.id, slug: nextModule.slug, title: nextModule.title }
-        : null,
-    };
-  });
+  const coursesWithProgress = mapCoursesWithProgress(courses);
 
   const preparationByTrack = Object.values(CourseTrack).map((track) => {
     const trackCourses = coursesWithProgress.filter((course) => course.track === track);
@@ -1043,13 +1067,7 @@ export async function getDashboard(userId: string) {
     };
   });
 
-  const completed = user.moduleProgress.filter((p) => p.completedAt).length;
-  const avgQuiz =
-    user.moduleProgress.length > 0
-      ? Math.round(
-          user.moduleProgress.reduce((s, p) => s + (p.quizScore ?? 0), 0) / user.moduleProgress.length
-        )
-      : 0;
+  const moduleStats = computeModuleAggregateStats(user.moduleProgress);
 
   const learningStreak = await computeLearningStreak(userId);
 
@@ -1062,9 +1080,9 @@ export async function getDashboard(userId: string) {
     stats: {
       points: user.progress?.points ?? 0,
       level: user.progress?.level ?? 'NOVICE',
-      modulesCompleted: completed,
-      timeSpentMinutes: completed * 12,
-      averageQuizScore: avgQuiz,
+      modulesCompleted: moduleStats.modulesCompleted,
+      timeSpentMinutes: moduleStats.timeSpentMinutes,
+      averageQuizScore: moduleStats.averageQuizScore,
       preparationScore: await computePreparationByTrack(userId, CourseTrack.APPLE),
       preparationByTrack,
     },
