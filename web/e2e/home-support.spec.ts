@@ -6,9 +6,9 @@ test.describe('Accueil — soutenir le projet', () => {
 
     const card = page.getByTestId('home-support-modes');
     await expect(card).toBeVisible();
-    await expect(card.getByText('Carte bancaire')).toBeVisible();
-    await expect(card.getByText('PayPal')).toBeVisible();
-    await expect(card.getByText('Virement SEPA')).toBeVisible();
+    await expect(card.getByText('Carte bancaire', { exact: true })).toBeVisible();
+    await expect(card.getByText('PayPal', { exact: true })).toBeVisible();
+    await expect(card.getByText('Virement SEPA', { exact: true })).toBeVisible();
 
     const cta = page.getByRole('link', { name: 'Faire un don' });
     await expect(cta).toBeVisible();
