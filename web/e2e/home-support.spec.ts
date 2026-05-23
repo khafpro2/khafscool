@@ -18,5 +18,15 @@ test.describe('Accueil — soutenir le projet', () => {
     const cta = section.getByRole('link', { name: 'Choisir mode de paiement' });
     await expect(cta).toBeVisible();
     await expect(cta).toHaveAttribute('href', '/soutenir?amount=10');
+
+    const modes = section.getByTestId('home-support-modes');
+    await expect(modes).toBeVisible();
+    await expect(section.getByTestId('home-support-mode-carte')).toBeVisible();
+    await expect(section.getByTestId('home-support-mode-paypal')).toBeVisible();
+    await expect(section.getByTestId('home-support-mode-virement')).toBeVisible();
+    await expect(section.getByTestId('home-support-mode-paypal')).toHaveAttribute(
+      'href',
+      '/soutenir?amount=10#paypal',
+    );
   });
 });

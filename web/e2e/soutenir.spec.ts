@@ -76,7 +76,8 @@ test.describe('Page Soutenir', () => {
     await page.goto('/soutenir?amount=10#virement');
     await expect(page.getByTestId('donation-mode-virement')).toHaveClass(/is-selected/, { timeout: 15_000 });
     await expect(page.getByTestId('bank-iban')).toContainText('FR76 2823 3000 0193 2563 3272 239');
-    await expect(page.getByRole('button', { name: 'Copier l’IBAN' })).toBeVisible();
+    await expect(page.getByTestId('bank-copy-iban-button')).toBeVisible();
+    await expect(page.getByTestId('bank-copy-iban-button')).toHaveText('Copier IBAN');
     await expect(page.getByTestId('bank-reference')).toContainText('Soutien MDM Academy - 10€');
   });
 
@@ -87,8 +88,22 @@ test.describe('Page Soutenir', () => {
     const paypalButton = page.getByTestId('paypal-donate-button');
     await expect(paypalButton).toBeVisible();
     await expect(paypalButton).toHaveAttribute('href', /10/);
-    await expect(paypalButton).toContainText('10');
+    await expect(paypalButton).toHaveText('Ouvrir PayPal');
     await expect(page.getByText('Montant 10', { exact: false })).toBeVisible();
+  });
+
+  test('cliquer sur PayPal change le CTA visible', async ({ page }) => {
+    await page.goto('/soutenir?amount=10');
+    await expect(page.getByTestId('donation-choice-grid')).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByTestId('donation-mode-carte')).toHaveClass(/is-selected/);
+    await expect(page.getByRole('link', { name: 'Faire un don (lien externe)' })).toBeVisible();
+    await expect(page.getByTestId('paypal-donate-button')).toHaveCount(0);
+
+    await page.getByTestId('donation-mode-paypal').click();
+    await expect(page.getByTestId('donation-mode-paypal')).toHaveClass(/is-selected/);
+    await expect(page.getByTestId('paypal-donate-button')).toBeVisible();
+    await expect(page.getByTestId('paypal-donate-button')).toHaveText('Ouvrir PayPal');
+    await expect(page.getByRole('link', { name: 'Faire un don (lien externe)' })).toHaveCount(0);
   });
 
   test('affiche la FAQ dons (5 questions)', async ({ page }) => {
@@ -139,7 +154,8 @@ test.describe('Page Soutenir — paiement CB Stripe', () => {
 
     await page.goto('/soutenir?amount=10#carte');
     await expect(page.getByTestId('stripe-donate-button')).toBeVisible({ timeout: 15_000 });
-    await expect(page.getByTestId('stripe-donate-button')).toContainText('10');
+    await expect(page.getByTestId('stripe-donate-button')).toContainText('Payer');
+    await expect(page.getByTestId('stripe-donate-button')).toContainText('par carte');
     await expect(page.getByText('Redirection vers Stripe Checkout', { exact: false })).toBeVisible();
   });
 

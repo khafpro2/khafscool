@@ -15,13 +15,9 @@ import type { AppThemeColors } from '../../lib/design';
 import { formatIbanDisplay, getDonationBankDetails } from '../../lib/donation-bank';
 import { getDonationPaypalUrl } from '../../lib/donation-paypal';
 
-type PaymentMode = 'carte' | 'paypal' | 'virement';
+import { DONATION_PAYMENT_MODES, type DonationPaymentModeId } from '@ama/shared/donation-payment-modes';
 
-const PAYMENT_MODES: { id: PaymentMode; icon: string; label: string }[] = [
-  { id: 'carte', icon: '💳', label: 'Carte bancaire' },
-  { id: 'paypal', icon: '🅿️', label: 'PayPal' },
-  { id: 'virement', icon: '🏦', label: 'Virement SEPA' },
-];
+type PaymentMode = DonationPaymentModeId;
 
 export function DonationChoiceSection() {
   const { colors } = useAppTheme();
@@ -129,8 +125,8 @@ export function DonationChoiceSection() {
       ) : null}
 
       <Text style={styles.stepTitle}>2. Choisissez un mode de paiement</Text>
-      <View style={styles.modeRow}>
-        {PAYMENT_MODES.map(({ id, icon, label }) => {
+      <View style={styles.modeRow} accessibilityRole="radiogroup" accessibilityLabel="Mode de paiement">
+        {DONATION_PAYMENT_MODES.map(({ id, icon, label, hint }) => {
           const selected = paymentMode === id;
           return (
             <Pressable
@@ -138,10 +134,12 @@ export function DonationChoiceSection() {
               style={[styles.modeChip, selected && styles.chipSelected]}
               onPress={() => setPaymentMode(id)}
               accessibilityRole="radio"
-              accessibilityState={{ selected }}
+              accessibilityState={{ checked: selected }}
             >
+              {selected ? <Text style={styles.modeCheck}>✓</Text> : null}
               <Text style={styles.modeIcon}>{icon}</Text>
               <Text style={[styles.modeLabel, selected && styles.chipTextSelected]}>{label}</Text>
+              <Text style={styles.modeHint}>{hint}</Text>
             </Pressable>
           );
         })}
@@ -159,7 +157,7 @@ export function DonationChoiceSection() {
           </Text>
           <Pressable style={styles.primaryButton} onPress={openCardCheckout}>
             <Text style={styles.primaryButtonText}>
-              {formattedAmount ? `Donner ${formattedAmount}` : 'Donner par carte'}
+              {formattedAmount ? `Payer ${formattedAmount} par carte` : 'Payer par carte'}
             </Text>
           </Pressable>
           <Text style={styles.hint}>Redirection vers la page web /soutenir (Stripe Checkout).</Text>
@@ -173,11 +171,7 @@ export function DonationChoiceSection() {
           {paypalLink ? (
             <>
               <Pressable style={styles.primaryButton} onPress={openPayPal}>
-                <Text style={styles.primaryButtonText}>
-                  {paypalLink.amountInUrl && formattedAmount
-                    ? `Donner ${formattedAmount} avec PayPal`
-                    : 'Donner avec PayPal'}
-                </Text>
+                <Text style={styles.primaryButtonText}>Ouvrir PayPal</Text>
               </Pressable>
               <Text style={styles.hint}>
                 {paypalLink.amountInUrl && formattedAmount
@@ -201,7 +195,7 @@ export function DonationChoiceSection() {
             <Text style={styles.bankValue}>{formatIbanDisplay(bankDetails.iban)}</Text>
           </View>
           <Pressable style={styles.primaryButton} onPress={() => void shareBankDetails()}>
-            <Text style={styles.primaryButtonText}>Partager les coordonnées</Text>
+            <Text style={styles.primaryButtonText}>Copier IBAN</Text>
           </Pressable>
           <Pressable style={styles.secondaryButton} onPress={openWebVirement}>
             <Text style={styles.secondaryButtonText}>Voir sur le web</Text>
@@ -243,6 +237,7 @@ function createStyles(colors: AppThemeColors) {
       backgroundColor: colors.bgSoft,
     },
     modeChip: {
+      position: 'relative',
       flex: 1,
       minWidth: 100,
       paddingHorizontal: 12,
@@ -254,8 +249,23 @@ function createStyles(colors: AppThemeColors) {
       alignItems: 'center',
     },
     chipSelected: {
-      borderColor: colors.accent,
+      borderColor: '#2563EB',
       backgroundColor: colors.accentSoft,
+    },
+    modeCheck: {
+      position: 'absolute',
+      top: 6,
+      right: 6,
+      width: 18,
+      height: 18,
+      borderRadius: 9,
+      backgroundColor: '#2563EB',
+      color: '#FFFFFF',
+      fontSize: 11,
+      fontWeight: '800',
+      textAlign: 'center',
+      lineHeight: 18,
+      overflow: 'hidden',
     },
     amountChipText: {
       color: colors.fg,
@@ -271,6 +281,13 @@ function createStyles(colors: AppThemeColors) {
       fontWeight: '800',
       fontSize: 13,
       textAlign: 'center',
+    },
+    modeHint: {
+      color: colors.muted,
+      fontSize: 11,
+      textAlign: 'center',
+      marginTop: 2,
+      lineHeight: 15,
     },
     customInput: {
       marginTop: 4,

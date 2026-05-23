@@ -9,6 +9,11 @@ import {
   PRESET_DONATION_AMOUNTS_CENTS,
 } from '@ama/shared/donation-amounts';
 import { buildBankTransferShareText } from '@ama/shared/donation-bank';
+import {
+  DONATION_PAYMENT_MODES,
+  isDonationPaymentModeId,
+  type DonationPaymentModeId,
+} from '@ama/shared/donation-payment-modes';
 import { DEFAULT_DONATION_PAYPAL_REFERENCE } from '@ama/shared/donation-methods';
 import { CardBrandIcons } from '@/components/donations/CardBrandIcons';
 import { Badge } from '@/components/ui/Badge';
@@ -34,33 +39,7 @@ const DEFAULT_DONATION_STATUS: DonationStatusResponse = {
   message: 'Bientôt disponible — merci pour votre intérêt !',
 };
 
-type PaymentMode = 'carte' | 'paypal' | 'virement';
-
-const PAYMENT_MODES: {
-  id: PaymentMode;
-  icon: string;
-  label: string;
-  hint: string;
-}[] = [
-  {
-    id: 'carte',
-    icon: '💳',
-    label: 'Carte bancaire',
-    hint: 'Stripe — Visa, Mastercard…',
-  },
-  {
-    id: 'paypal',
-    icon: '🅿️',
-    label: 'PayPal',
-    hint: 'Don sécurisé via PayPal',
-  },
-  {
-    id: 'virement',
-    icon: '🏦',
-    label: 'Virement SEPA',
-    hint: 'IBAN Revolut — copie en un clic',
-  },
-];
+type PaymentMode = DonationPaymentModeId;
 
 function PayPalWordmark() {
   return (
@@ -123,8 +102,7 @@ function CopyField({ label, value, copyValue, copyLabel, testId }: CopyFieldProp
 
 function parseHashMode(hash: string): PaymentMode | null {
   const value = hash.replace(/^#/, '').toLowerCase();
-  if (value === 'carte' || value === 'paypal' || value === 'virement') return value;
-  return null;
+  return isDonationPaymentModeId(value) ? value : null;
 }
 
 export function DonationChoiceGrid() {
@@ -135,6 +113,7 @@ export function DonationChoiceGrid() {
   const [customAmount, setCustomAmount] = useState('');
   const [useCustomAmount, setUseCustomAmount] = useState(false);
   const [paymentMode, setPaymentMode] = useState<PaymentMode>('carte');
+  const [ibanCopied, setIbanCopied] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -199,6 +178,21 @@ export function DonationChoiceGrid() {
   const stripeConfigured = status?.stripe.configured ?? false;
   const checkoutEnabled = mode === 'live';
   const cardCheckoutUnavailable = !checkoutEnabled && !fallbackUrl;
+
+  useEffect(() => {
+    if (!ibanCopied) return;
+    const timer = window.setTimeout(() => setIbanCopied(false), 2200);
+    return () => window.clearTimeout(timer);
+  }, [ibanCopied]);
+
+  async function handleCopyIban() {
+    try {
+      await navigator.clipboard.writeText(bankDetails.iban);
+      setIbanCopied(true);
+    } catch {
+      setIbanCopied(false);
+    }
+  }
 
   async function handleStripeDonate() {
     setError(null);
@@ -317,27 +311,35 @@ export function DonationChoiceGrid() {
           2. Choisissez un mode de paiement
         </h2>
         <div className="donation-mode-grid" role="radiogroup" aria-label="Mode de paiement">
-          {PAYMENT_MODES.map(({ id, icon, label, hint }) => (
-            <button
-              key={id}
-              type="button"
-              role="radio"
-              aria-checked={paymentMode === id}
-              id={id}
-              className={`donation-mode-card${paymentMode === id ? ' is-selected' : ''}`}
-              onClick={() => {
-                setPaymentMode(id);
-                setError(null);
-              }}
-              data-testid={`donation-mode-${id}`}
-            >
-              <span className="donation-mode-icon" aria-hidden>
-                {icon}
-              </span>
-              <span className="donation-mode-label">{label}</span>
-              <span className="donation-mode-hint">{hint}</span>
-            </button>
-          ))}
+          {DONATION_PAYMENT_MODES.map(({ id, icon, label, hint }) => {
+            const selected = paymentMode === id;
+            return (
+              <button
+                key={id}
+                type="button"
+                role="radio"
+                aria-checked={selected}
+                id={id}
+                className={`donation-mode-card${selected ? ' is-selected' : ''}`}
+                onClick={() => {
+                  setPaymentMode(id);
+                  setError(null);
+                }}
+                data-testid={`donation-mode-${id}`}
+              >
+                {selected ? (
+                  <span className="donation-mode-check" aria-hidden>
+                    ✓
+                  </span>
+                ) : null}
+                <span className="donation-mode-icon" aria-hidden>
+                  {icon}
+                </span>
+                <span className="donation-mode-label">{label}</span>
+                <span className="donation-mode-hint">{hint}</span>
+              </button>
+            );
+          })}
         </div>
       </section>
 
@@ -399,7 +401,7 @@ export function DonationChoiceGrid() {
                   disabled={submitting || effectiveAmountCents == null}
                   data-testid="stripe-donate-button"
                 >
-                  {submitting ? 'Redirection vers Stripe…' : `Donner ${formattedAmount}`}
+                  {submitting ? 'Redirection vers Stripe…' : `Payer ${formattedAmount} par carte`}
                 </Button>
               ) : fallbackUrl ? (
                 <a href={fallbackUrl} className="btn btn-lg" target="_blank" rel="noopener noreferrer">
@@ -439,9 +441,7 @@ export function DonationChoiceGrid() {
                   rel="noopener noreferrer"
                   data-testid="paypal-donate-button"
                 >
-                  {paypalLink.amountInUrl && formattedAmount
-                    ? `Donner ${formattedAmount} avec PayPal`
-                    : 'Donner avec PayPal'}
+                  Ouvrir PayPal
                 </a>
                 <p className="muted donation-action-hint">
                   {paypalLink.amountInUrl && formattedAmount
@@ -468,6 +468,17 @@ export function DonationChoiceGrid() {
               Un don par virement est <strong>100 % volontaire</strong>. Indiquez la référence ci-dessous pour
               faciliter le suivi.
             </p>
+
+            <div className="donation-action-buttons" style={{ marginTop: '1rem' }}>
+              <Button
+                type="button"
+                size="lg"
+                onClick={() => void handleCopyIban()}
+                data-testid="bank-copy-iban-button"
+              >
+                {ibanCopied ? 'IBAN copié !' : 'Copier IBAN'}
+              </Button>
+            </div>
 
             <div style={{ marginTop: '1rem' }}>
               <CopyField

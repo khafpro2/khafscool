@@ -65,6 +65,13 @@ Première release MVP **MDM Academy Pro** (branche `cursor/progress-dashboard-au
 
 ## Unreleased — `cursor/progress-dashboard-auth-v2`
 
+### UX dons — sélecteur de mode de paiement
+- **`DonationChoiceGrid` (web)** — 3 cartes mode (`role="radiogroup"`) : Carte bancaire, PayPal, Virement bancaire ; bordure `#2563EB` + checkmark ; CTA contextuels « Payer X € par carte », « Ouvrir PayPal », « Copier IBAN »
+- **Accueil** — `SupportProjectCard` : liste des 3 modes avec liens vers `/soutenir?amount=10#…`
+- **Mobile** — `DonationChoiceSection` : chips modes identiques (hints + checkmark)
+- **`@ama/shared/donation-payment-modes`** — constantes partagées labels/hints FR
+- Tests e2e : clic PayPal change le CTA visible ; accueil modes listés
+
 ### UX dons — grille choix montant et mode
 - **`DonationChoiceGrid` (web)** — `/soutenir` : montants 5 € / 10 € / 20 € / Autre puis 3 cartes mode (carte Stripe, PayPal, virement SEPA) ; CTA « Donner X € », PayPal avec `?amount=` si possible, référence virement « MDM Academy - X€ » ; bordure accent `#2563EB` ; FAQ conservée en bas
 - **Accueil** — `SupportProjectCard` : 3 chips montants + lien « Choisir mode de paiement » → `/soutenir?amount=10`

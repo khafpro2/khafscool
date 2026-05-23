@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { PRESET_DONATION_AMOUNTS_CENTS } from '@ama/shared/donation-amounts';
+import { DONATION_PAYMENT_MODES } from '@ama/shared/donation-payment-modes';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 
@@ -39,6 +40,28 @@ export function SupportProjectCard() {
                   data-testid={`home-support-amount-${euros}`}
                 >
                   {label}
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <p className="home-support-amounts-label">Modes de paiement</p>
+            <div className="home-support-modes" data-testid="home-support-modes">
+              {DONATION_PAYMENT_MODES.map(({ id, icon, label, hint }) => (
+                <Link
+                  key={id}
+                  href={`/soutenir?amount=10#${id}`}
+                  className="home-support-mode"
+                  data-testid={`home-support-mode-${id}`}
+                >
+                  <span className="home-support-mode-icon" aria-hidden>
+                    {icon}
+                  </span>
+                  <span>
+                    <span className="home-support-mode-label">{label}</span>
+                    <p className="home-support-mode-hint">{hint}</p>
+                  </span>
                 </Link>
               ))}
             </div>
