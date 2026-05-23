@@ -2,6 +2,7 @@ import { Stack } from 'expo-router';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ApiHealthPoller } from '../src/components/ApiHealthPoller';
 import { ApiStatusBanner } from '../src/components/ApiStatusBanner';
+import { DonateDeepLinkHandler } from '../src/components/DonateDeepLinkHandler';
 import { Toaster } from '../src/components/Toast';
 import { ThemeProvider } from '../src/context/ThemeContext';
 
@@ -11,6 +12,7 @@ export default function RootLayout() {
     <ThemeProvider>
     <ApiHealthPoller />
     <ApiStatusBanner />
+    <DonateDeepLinkHandler />
     <Toaster />
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="index" />

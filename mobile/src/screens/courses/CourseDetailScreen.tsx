@@ -685,6 +685,17 @@ export function CourseDetailScreen() {
         );
       })() : null}
 
+      <Pressable
+        style={styles.supportHintRow}
+        onPress={() => router.push({ pathname: '/donate', params: { amount: '5' } })}
+        accessibilityRole="link"
+      >
+        <Text style={styles.supportHintText}>
+          Ce contenu vous aide ?{' '}
+          <Text style={styles.supportHintLink}>Soutenir le projet</Text>
+        </Text>
+      </Pressable>
+
       <View style={styles.footerCard}>
         <Text style={styles.footerTitle}>Besoin du parcours complet ?</Text>
         <Text style={styles.footerText}>
@@ -1071,6 +1082,21 @@ function createStyles(colors: AppThemeColors) {
     paddingVertical: 10,
   },
   secondaryButtonText: { color: colors.accent, fontWeight: '700' },
+  supportHintRow: {
+    marginTop: 4,
+    marginBottom: 4,
+    paddingVertical: 8,
+  },
+  supportHintText: {
+    color: colors.muted,
+    fontSize: 13,
+    lineHeight: 20,
+    textAlign: 'center',
+  },
+  supportHintLink: {
+    color: colors.accent,
+    fontWeight: '700',
+  },
   footerCard: {
     backgroundColor: colors.bgSoft,
     borderRadius: 18,

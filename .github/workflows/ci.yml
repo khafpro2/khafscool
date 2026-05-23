@@ -15,15 +15,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Enable pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 22
-
-      - name: Enable pnpm
-        run: |
-          corepack enable
-          corepack prepare pnpm@9.15.0 --activate
+          cache: pnpm
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -31,11 +32,18 @@ jobs:
       - name: Validate smoke scripts syntax
         run: node --check scripts/smoke-api.mjs scripts/smoke-web.mjs
 
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Audit dependencies
+        run: pnpm audit --audit-level high
+        continue-on-error: true
+
       - name: Test backend
         run: pnpm --filter backend test
 
-      - name: Typecheck mobile
-        run: pnpm --filter mobile exec tsc --noEmit
+      - name: Smoke donations (backend)
+        run: pnpm --filter backend test -- donations
 
       - name: Build backend
         run: pnpm --filter backend build
@@ -73,15 +81,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Enable pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 22
-
-      - name: Enable pnpm
-        run: |
-          corepack enable
-          corepack prepare pnpm@9.15.0 --activate
+          cache: pnpm
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -115,15 +124,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Enable pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 22
-
-      - name: Enable pnpm
-        run: |
-          corepack enable
-          corepack prepare pnpm@9.15.0 --activate
+          cache: pnpm
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile

@@ -19,13 +19,41 @@ import { DONATION_PAYMENT_MODES, type DonationPaymentModeId } from '@ama/shared/
 
 type PaymentMode = DonationPaymentModeId;
 
-export function DonationChoiceSection() {
+type DonationChoiceSectionProps = {
+  initialAmountEuros?: string;
+  initialPaymentMode?: DonationPaymentModeId;
+};
+
+function resolveInitialAmountCents(initialAmountEuros?: string): {
+  selectedAmount: number;
+  useCustomAmount: boolean;
+  customAmount: string;
+} {
+  if (!initialAmountEuros?.trim()) {
+    return { selectedAmount: 1000, useCustomAmount: false, customAmount: '' };
+  }
+  const parsed = Number.parseInt(initialAmountEuros.trim(), 10);
+  if (!Number.isFinite(parsed) || parsed < 1 || parsed > 1000) {
+    return { selectedAmount: 1000, useCustomAmount: false, customAmount: '' };
+  }
+  const cents = parsed * 100;
+  if ((PRESET_DONATION_AMOUNTS_CENTS as readonly number[]).includes(cents)) {
+    return { selectedAmount: cents, useCustomAmount: false, customAmount: '' };
+  }
+  return { selectedAmount: 1000, useCustomAmount: true, customAmount: String(parsed) };
+}
+
+export function DonationChoiceSection({
+  initialAmountEuros,
+  initialPaymentMode,
+}: DonationChoiceSectionProps) {
+  const initialAmount = resolveInitialAmountCents(initialAmountEuros);
   const { colors } = useAppTheme();
   const styles = useThemedStyles(createStyles);
-  const [selectedAmount, setSelectedAmount] = useState<number>(1000);
-  const [customAmount, setCustomAmount] = useState('');
-  const [useCustomAmount, setUseCustomAmount] = useState(false);
-  const [paymentMode, setPaymentMode] = useState<PaymentMode>('carte');
+  const [selectedAmount, setSelectedAmount] = useState<number>(initialAmount.selectedAmount);
+  const [customAmount, setCustomAmount] = useState(initialAmount.customAmount);
+  const [useCustomAmount, setUseCustomAmount] = useState(initialAmount.useCustomAmount);
+  const [paymentMode, setPaymentMode] = useState<PaymentMode>(initialPaymentMode ?? 'carte');
 
   const bankDetails = getDonationBankDetails();
   const paypalBaseUrl = getDonationPaypalUrl();

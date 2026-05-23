@@ -1,6 +1,6 @@
 {
   "name": "apple-mdm-academy",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "private": true,
   "scripts": {
     "dev": "turbo run dev",
@@ -8,7 +8,8 @@
     "setup": "bash scripts/setup.sh",
     "build": "turbo run build",
     "test": "turbo run test",
-    "typecheck": "pnpm --filter backend exec tsc --noEmit && pnpm --filter web exec tsc --noEmit && pnpm --filter mobile exec tsc --noEmit",
+    "typecheck": "pnpm --filter @ama/shared typecheck && pnpm --filter backend exec tsc --noEmit && pnpm --filter web exec tsc --noEmit && pnpm --filter mobile exec tsc --noEmit",
+    "audit:ci": "pnpm audit --audit-level high || true",
     "check": "pnpm test && pnpm typecheck && pnpm build",
     "db:up": "docker compose up -d postgres",
     "db:down": "docker compose down",

@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.2.1] — 2026-05-24
+
+Release patch **MDM Academy Pro v0.2.1** — polish dons multi-modes (PR #6, branche `cursor/progress-dashboard-auth-v2`).
+
+### Dons — montants, modes et redirect
+- **Web** — `/donate` redirige vers `/soutenir` (query `?amount=` et fragment `#carte` / `#paypal` / `#virement` préservés)
+- **UX dons** — grille montants 5 € / 10 € / 20 € / Autre + choix mode (carte Stripe, PayPal, virement SEPA) ; CTA contextuels ; bordure accent `#2563EB`
+- **Accueil** — `SupportProjectCard` : chips montants + liens vers `/soutenir?amount=10#…`
+- **Mobile** — `DonationChoiceSection` sur `/donate` : parité montants/modes avec le web
+- **Deep link mobile** — universal link style `/donate` et `/soutenir` → écran natif `DonateScreen` (scheme `applemdmacademy://` + associated domains via `EXPO_PUBLIC_WEB_URL`)
+- **Stripe Checkout** — spinner sur « Payer X € par carte » ; message d’erreur FR si l’API échoue
+- **FAQ** — badge Supporter : attribution manuelle PayPal/virement via KTHIAM@HARMYTECH.COM
+- **Parcours** — micro-CTA discret « Ce contenu vous aide ? Soutenir le projet » → `/soutenir?amount=5` (web sidebar, mobile `/donate?amount=5`)
+- **CI** — smoke `pnpm --filter backend test -- donations`
+- Tests e2e : `donate-redirect.spec.ts`, `soutenir.spec.ts`, `home-support.spec.ts`
+
 ## [0.2.0] — 2026-05-23
 
 Release **MDM Academy Pro v0.2** (branche `cursor/progress-dashboard-auth-v2`, PR #6) — contenu enrichi, 4 modules par piste, glossaire, révision et examen blanc.
@@ -66,26 +82,13 @@ Première release MVP **MDM Academy Pro** (branche `cursor/progress-dashboard-au
 ## Unreleased — `cursor/progress-dashboard-auth-v2`
 
 ### Redirect dons, checkout Stripe et liens
-- **Web** — `/donate` redirige vers `/soutenir` (query `?amount=` et fragment `#carte` / `#paypal` / `#virement` préservés)
-- **Nav / footer** — lien « Faire un don » → `/soutenir` (plus seulement `#paypal`)
-- **Stripe Checkout** — spinner sur « Payer X € par carte » pendant `create-checkout-session` ; message d’erreur FR si l’API échoue
-- **FAQ** — badge Supporter : attribution manuelle PayPal/virement via KTHIAM@HARMYTECH.COM
-- Tests e2e : `donate-redirect.spec.ts`, spinner et erreur checkout dans `soutenir.spec.ts`
+- _(livré en 0.2.1 — voir section ci-dessus)_
 
 ### UX dons — sélecteur de mode de paiement
-- **`DonationChoiceGrid` (web)** — 3 cartes mode (`role="radiogroup"`) : Carte bancaire, PayPal, Virement bancaire ; bordure `#2563EB` + checkmark ; CTA contextuels « Payer X € par carte », « Ouvrir PayPal », « Copier IBAN »
-- **Accueil** — `SupportProjectCard` : liste des 3 modes avec liens vers `/soutenir?amount=10#…`
-- **Mobile** — `DonationChoiceSection` : chips modes identiques (hints + checkmark)
-- **`@ama/shared/donation-payment-modes`** — constantes partagées labels/hints FR
-- Tests e2e : clic PayPal change le CTA visible ; accueil modes listés
+- _(livré en 0.2.1 — voir section ci-dessus)_
 
 ### UX dons — grille choix montant et mode
-- **`DonationChoiceGrid` (web)** — `/soutenir` : montants 5 € / 10 € / 20 € / Autre puis 3 cartes mode (carte Stripe, PayPal, virement SEPA) ; CTA « Donner X € », PayPal avec `?amount=` si possible, référence virement « MDM Academy - X€ » ; bordure accent `#2563EB` ; FAQ conservée en bas
-- **Accueil** — `SupportProjectCard` : 3 chips montants + lien « Choisir mode de paiement » → `/soutenir?amount=10`
-- **Mobile** — `DonationChoiceSection` sur `/donate` : même pattern chips montants + 3 modes
-- **Query `?amount=`** — pré-sélection montant sur `/soutenir` (web + deep link mobile)
-- **`@ama/shared/donation-amounts`** — helpers `formatDonationEuros`, `buildPaypalUrlWithAmount`, `buildDonationBankReference`
-- Tests e2e : `soutenir.spec.ts`, `home-support.spec.ts`
+- _(livré en 0.2.1 — voir section ci-dessus)_
 
 ### Badge Supporter, FAQ dons, notifications stub
 - **Badge Supporter** — galerie web/mobile (`ALL_BADGE_SLUGS`) + critères déblocage ; CTA « Soutenir le projet » sur la carte verrouillée

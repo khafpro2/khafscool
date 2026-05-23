@@ -5,8 +5,14 @@ import { DonationChoiceSection } from '../../components/donations/DonationChoice
 import { CONTACT_EMAIL, CONTACT_MAILTO } from '../../config';
 import { useThemedStyles } from '../../hooks/useThemedStyles';
 import type { AppThemeColors } from '../../lib/design';
+import type { DonationPaymentModeId } from '@ama/shared/donation-payment-modes';
 
-export function DonateScreen() {
+type DonateScreenProps = {
+  initialAmountEuros?: string;
+  initialPaymentMode?: DonationPaymentModeId;
+};
+
+export function DonateScreen({ initialAmountEuros, initialPaymentMode }: DonateScreenProps) {
   const router = useRouter();
   const styles = useThemedStyles(createStyles);
 
@@ -29,7 +35,10 @@ export function DonateScreen() {
         </Text>
       </View>
 
-      <DonationChoiceSection />
+      <DonationChoiceSection
+        initialAmountEuros={initialAmountEuros}
+        initialPaymentMode={initialPaymentMode}
+      />
 
       <View style={styles.footerCard}>
         <Text style={styles.footerTitle}>Une question sur les dons ?</Text>

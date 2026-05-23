@@ -917,6 +917,13 @@ export function CourseDetailClient({ slug }: { slug: string }) {
               </Button>
             </div>
           </Card>
+
+          <p className="muted" style={{ fontSize: '0.82rem', textAlign: 'center', margin: 0 }}>
+            Ce contenu vous aide ?{' '}
+            <Link href="/soutenir?amount=5" style={{ fontWeight: 700 }}>
+              Soutenir le projet
+            </Link>
+          </p>
         </aside>
       </div>
     </section>

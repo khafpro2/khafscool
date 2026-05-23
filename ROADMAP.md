@@ -21,6 +21,7 @@ Feuille de route produit et technique pour le monorepo Apple MDM Academy.
 - [x] **Certificat** — impression PDF + partage Web Share (web)
 - [x] **Quiz renforcés** — +2 questions exam-style par parcours (126 QCM seed)
 - [x] **Durée de lecture** — `@ama/shared/reading-time` sur modules et hero parcours
+- [x] **Dons multi-modes** — montants 5/10/20 €, choix carte/PayPal/virement (web `/soutenir`, mobile `/donate`), redirect `/donate`, micro-CTA parcours
 - [ ] **OAuth production** — credentials Apple / Google / Microsoft ([guide](./docs/OAUTH-PRODUCTION.md))
 - [ ] **Analytics (optionnel)** — mesure d’usage avec consentement cookies respecté
 
