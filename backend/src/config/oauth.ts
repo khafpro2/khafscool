@@ -30,6 +30,45 @@ function cfg(
   };
 }
 
+export type OAuthProviderStatus = 'configured' | 'stub' | 'disabled';
+
+function envFlag(name: string): boolean {
+  return process.env[name]?.trim().toLowerCase() === 'true';
+}
+
+function isAppleConfigured(): boolean {
+  const clientId = process.env.APPLE_CLIENT_ID?.trim();
+  const teamId = process.env.APPLE_TEAM_ID?.trim();
+  const keyId = process.env.APPLE_KEY_ID?.trim();
+  const privateKey = process.env.APPLE_PRIVATE_KEY?.trim();
+  return Boolean(clientId && teamId && keyId && privateKey);
+}
+
+function isProviderConfigured(name: OAuthProviderName): boolean {
+  const upper = name.toUpperCase();
+  const clientId = process.env[`${upper}_CLIENT_ID`]?.trim();
+  const clientSecret = process.env[`${upper}_CLIENT_SECRET`]?.trim();
+  if (name === 'apple') return isAppleConfigured();
+  return Boolean(clientId && clientSecret);
+}
+
+export function getOAuthProviderStatus(name: OAuthProviderName): OAuthProviderStatus {
+  const upper = name.toUpperCase();
+  if (envFlag(`${upper}_OAUTH_DISABLED`) || envFlag('OAUTH_DISABLED')) {
+    return 'disabled';
+  }
+  if (isProviderConfigured(name)) return 'configured';
+  return 'stub';
+}
+
+export function getOAuthStatusSnapshot(): Record<OAuthProviderName, OAuthProviderStatus> {
+  return {
+    apple: getOAuthProviderStatus('apple'),
+    google: getOAuthProviderStatus('google'),
+    microsoft: getOAuthProviderStatus('microsoft'),
+  };
+}
+
 export const oauthProviders: Record<OAuthProviderName, OAuthProviderConfig> = {
   apple: cfg(
     'apple',

@@ -27,6 +27,11 @@ Première release MVP **MDM Academy Pro** (branche `cursor/progress-dashboard-au
 ## Unreleased — `cursor/progress-dashboard-auth-v2`
 
 ### Sprint v0.2 (en cours)
+- Docs : Postgres Docker — port hôte **5433** vs conteneur **5432** (`README`, `DEPLOYMENT`, `compose.yaml`, `backend/.env.example`)
+- API : `GET /auth/oauth/status` — état Google / Apple / Microsoft (`configured` | `stub` | `disabled`)
+- Web : `/diagnostics` — section OAuth FR (lecture `/auth/oauth/status`)
+- Web : bannière analytics opt-in (stub, clé `analytics-opt-in`, après cookies) — « Aucun tracking tiers pour l'instant » + lien confidentialité
+- Contenu Jamf : +1 question quiz module 2 (`inventory-basics`) — délai inventaire FileVault
 - Contenu Intune : +2 questions quiz ADE (`ade-enrollment-basics`) — profil Setup Assistant, renouvellement jeton MDM
 - Certificat : bouton « Télécharger PDF » + aide impression navigateur (`@media print` existant)
 - API : `GET /admin/donations/stats` protégée par `X-Admin-Api-Key` — agrégats lecture seule ; doc `docs/DONATIONS.md`

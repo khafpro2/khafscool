@@ -8,6 +8,8 @@ test.describe('Diagnostics — page enrichie', () => {
     });
     await expect(page.getByText('Liste des contrôles')).toBeVisible();
     await expect(page.getByText('Santé API (/health)')).toBeVisible();
+    await expect(page.getByText('OAuth SSO (/auth/oauth/status)')).toBeVisible();
+    await expect(page.getByText('État des fournisseurs SSO')).toBeVisible();
     await expect(page.getByRole('link', { name: /Docs stack locale/i })).toBeVisible();
     await expect(page.getByText('Démarrage dev-stack')).toBeVisible();
   });

@@ -69,6 +69,25 @@ eas secret:create --name EXPO_PUBLIC_API_URL --value https://api.votredomaine.co
 
 ## Base de données
 
+### Postgres Docker (développement local)
+
+`compose.yaml` expose PostgreSQL 16 sur le port **hôte 5433**, mappé vers le port **conteneur 5432** :
+
+| Côté | Port | Usage |
+| ---- | ---- | ----- |
+| Hôte (`localhost`) | **5433** | Valeur dans `DATABASE_URL` pour l’API et Prisma |
+| Conteneur Docker | **5432** | Port interne — ne pas utiliser dans `DATABASE_URL` depuis la machine hôte |
+
+Exemple `backend/.env` :
+
+```env
+DATABASE_URL=postgresql://postgres:postgres@localhost:5433/apple_mdm_academy
+```
+
+Utilisateur / mot de passe / base : `postgres` / `postgres` / `apple_mdm_academy` (voir `compose.yaml`).
+
+### Postgres managé (production / staging)
+
 1. Créer une instance Postgres (Neon, Supabase, etc.).
 2. Copier `DATABASE_URL` dans l’API.
 3. Appliquer les migrations **avant** le premier trafic :

@@ -13,6 +13,7 @@ export async function authRoutes(app: FastifyInstance) {
     errorResponseBuilder: buildFrenchRateLimitBody,
   });
 
+  app.get('/auth/oauth/status', auth.getOAuthStatus);
   app.get<{ Params: { provider: OAuthProviderName }; Querystring: { redirect?: string } }>(
     '/auth/:provider/start',
     auth.startOAuth

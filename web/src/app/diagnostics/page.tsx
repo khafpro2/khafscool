@@ -29,6 +29,14 @@ const quickLinks = [
   { href: '/mvp', label: 'MVP' },
 ];
 
+type OAuthProviderStatus = 'configured' | 'stub' | 'disabled';
+
+type OAuthStatusSnapshot = {
+  apple: OAuthProviderStatus;
+  google: OAuthProviderStatus;
+  microsoft: OAuthProviderStatus;
+};
+
 const initialEndpointCheck: EndpointCheck = {
   detail: 'Vérification en cours…',
   status: 'pending',
@@ -39,6 +47,8 @@ export default function DiagnosticsPage() {
   const [apiVersion, setApiVersion] = useState<string | null>(null);
   const [databaseCheck, setDatabaseCheck] = useState<EndpointCheck>(initialEndpointCheck);
   const [catalogCheck, setCatalogCheck] = useState<EndpointCheck>(initialEndpointCheck);
+  const [oauthStatus, setOauthStatus] = useState<OAuthStatusSnapshot | null>(null);
+  const [oauthCheck, setOauthCheck] = useState<EndpointCheck>(initialEndpointCheck);
   const [tokenPresence, setTokenPresence] = useState(() => ({
     accessTokenCookie: false,
     accessTokenLocal: false,
@@ -52,11 +62,18 @@ export default function DiagnosticsPage() {
   }, []);
 
   async function runEndpointChecks() {
-    const [health, database, catalog] = await Promise.all([checkHealth(), checkDatabase(), checkCatalog()]);
+    const [health, database, catalog, oauth] = await Promise.all([
+      checkHealth(),
+      checkDatabase(),
+      checkCatalog(),
+      checkOAuthStatus(),
+    ]);
     setHealthCheck(health.check);
     setApiVersion(health.version);
     setDatabaseCheck(database);
     setCatalogCheck(catalog);
+    setOauthStatus(oauth.snapshot);
+    setOauthCheck(oauth.check);
   }
 
   const hasAnyToken = Object.values(tokenPresence).some(Boolean);
@@ -97,6 +114,12 @@ export default function DiagnosticsPage() {
         detail: catalogCheck.detail,
       },
       {
+        id: 'oauth-status',
+        label: 'OAuth SSO (/auth/oauth/status)',
+        status: oauthCheck.status,
+        detail: oauthCheck.detail,
+      },
+      {
         id: 'api-url',
         label: 'URL API configurée (web)',
         status: apiUrlConfigured ? 'ok' : 'error',
@@ -124,6 +147,8 @@ export default function DiagnosticsPage() {
       apiUrlConfigured,
       apiVersion,
       authClientStatus,
+      oauthCheck.detail,
+      oauthCheck.status,
       catalogCheck.detail,
       catalogCheck.status,
       databaseCheck.detail,
@@ -230,6 +255,40 @@ export default function DiagnosticsPage() {
       </section>
 
       <Card style={{ marginTop: '1rem' }}>
+        <p className="section-eyebrow">OAuth</p>
+        <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginTop: '0.35rem' }}>État des fournisseurs SSO</h2>
+        <p className="muted" style={{ marginTop: '0.35rem' }}>
+          Lecture seule depuis <code>/auth/oauth/status</code>. En dev sans credentials, le mode <strong>stub</strong>{' '}
+          simule un profil utilisateur. Voir <code>docs/OAUTH-PRODUCTION.md</code> pour la mise en prod.
+        </p>
+        {oauthStatus ? (
+          <ul style={{ display: 'grid', gap: '0.65rem', marginTop: '1rem', padding: 0, listStyle: 'none' }}>
+            {(['google', 'apple', 'microsoft'] as const).map((provider) => (
+              <li
+                key={provider}
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  gap: '0.75rem',
+                  alignItems: 'center',
+                  padding: '0.65rem 0.85rem',
+                  borderRadius: 12,
+                  background: 'var(--accent-soft)',
+                }}
+              >
+                <strong style={{ fontSize: '0.92rem', textTransform: 'capitalize' }}>{provider}</strong>
+                <Badge tone={oauthStatusTone(oauthStatus[provider])}>{oauthStatusLabel(oauthStatus[provider])}</Badge>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="muted" style={{ marginTop: '0.85rem' }}>
+            {oauthCheck.detail}
+          </p>
+        )}
+      </Card>
+
+      <Card style={{ marginTop: '1rem' }}>
         <p className="section-eyebrow">Stack locale</p>
         <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginTop: '0.35rem' }}>Démarrage dev-stack</h2>
         <p className="muted" style={{ marginTop: '0.35rem' }}>
@@ -264,9 +323,13 @@ export default function DiagnosticsPage() {
           Si la carte base de données reste en erreur, vérifie ces points sans partager tes variables d’environnement.
         </p>
         <ul style={{ color: 'var(--muted)', display: 'grid', gap: '0.45rem', marginTop: '0.85rem', paddingLeft: '1.25rem' }}>
-          <li>Lance Docker Desktop si tu utilises le Postgres du projet (<code>pnpm db:up</code>).</li>
           <li>
-            Vérifie que <code>DATABASE_URL</code> côté backend pointe vers la bonne base locale.
+            Lance Docker Desktop si tu utilises le Postgres du projet (<code>pnpm db:up</code>) — port hôte{' '}
+            <code>5433</code> par défaut (<code>compose.yaml</code>).
+          </li>
+          <li>
+            Vérifie que <code>DATABASE_URL</code> côté backend utilise le port hôte (<code>5433</code>) et la base{' '}
+            <code>apple_mdm_academy</code>.
           </li>
           <li>Applique les migrations : <code>pnpm db:migrate</code>.</li>
           <li>Charge les données de démo : <code>pnpm db:seed</code> (3 parcours × 3 unités).</li>
@@ -312,6 +375,42 @@ export default function DiagnosticsPage() {
       </p>
     </section>
   );
+}
+
+async function checkOAuthStatus(): Promise<{ check: EndpointCheck; snapshot: OAuthStatusSnapshot | null }> {
+  try {
+    const res = await fetch(`${API_URL}/auth/oauth/status`, { cache: 'no-store' });
+    if (!res.ok) {
+      return {
+        check: { detail: `Erreur HTTP ${res.status} sur /auth/oauth/status.`, status: 'error' },
+        snapshot: null,
+      };
+    }
+
+    const data = (await res.json()) as OAuthStatusSnapshot;
+    const providers = ['google', 'apple', 'microsoft'] as const;
+    const configured = providers.filter((p) => data[p] === 'configured').length;
+    const stub = providers.filter((p) => data[p] === 'stub').length;
+    const disabled = providers.filter((p) => data[p] === 'disabled').length;
+
+    const detail =
+      configured > 0
+        ? `${configured} fournisseur(s) configuré(s), ${stub} en stub, ${disabled} désactivé(s).`
+        : `Mode dev : ${stub} stub, ${disabled} désactivé(s) — credentials OAuth non requis.`;
+
+    return {
+      check: { detail, status: configured > 0 ? 'ok' : 'warning' },
+      snapshot: data,
+    };
+  } catch {
+    return {
+      check: {
+        detail: 'Statut OAuth indisponible. Vérifie que le backend répond sur /auth/oauth/status.',
+        status: 'error',
+      },
+      snapshot: null,
+    };
+  }
 }
 
 async function checkHealth(): Promise<{ check: EndpointCheck; version: string | null }> {
@@ -463,6 +562,18 @@ function TokenPresence({ label, present }: { label: string; present: boolean }) 
       </strong>
     </div>
   );
+}
+
+function oauthStatusLabel(status: OAuthProviderStatus) {
+  if (status === 'configured') return 'Configuré';
+  if (status === 'stub') return 'Stub (dev)';
+  return 'Désactivé';
+}
+
+function oauthStatusTone(status: OAuthProviderStatus): 'success' | 'warning' | 'neutral' {
+  if (status === 'configured') return 'success';
+  if (status === 'stub') return 'warning';
+  return 'neutral';
 }
 
 function statusLabel(status: CheckStatus) {

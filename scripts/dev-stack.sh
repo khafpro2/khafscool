@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
-echo "==> PostgreSQL (docker compose, port 5432)…"
+echo "==> PostgreSQL (docker compose, hôte :5433 → conteneur :5432)…"
 pnpm db:up
 
 echo "==> Migrations et seed (si première install ou schéma modifié)…"

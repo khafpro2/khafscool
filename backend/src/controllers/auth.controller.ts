@@ -1,7 +1,7 @@
 import bcrypt from 'bcrypt';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { AuthProvider } from '@prisma/client';
-import { oauthProviders, type OAuthProviderName } from '../config/oauth.js';
+import { getOAuthStatusSnapshot, oauthProviders, type OAuthProviderName } from '../config/oauth.js';
 import { prisma } from '../lib/prisma.js';
 import {
   changePasswordSchema,
@@ -100,6 +100,10 @@ function tokenResponse(
     rememberMe: rememberMe ?? true,
     accessTokenTtlMinutes: 15,
   };
+}
+
+export async function getOAuthStatus(_req: FastifyRequest, reply: FastifyReply) {
+  return reply.send(getOAuthStatusSnapshot());
 }
 
 export async function startOAuth(

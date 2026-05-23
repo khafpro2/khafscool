@@ -14,6 +14,7 @@ export function CookieConsentBanner() {
   function accept() {
     writeCookieConsent();
     setVisible(false);
+    window.dispatchEvent(new Event('ama:cookie-consent'));
   }
 
   if (!visible) return null;

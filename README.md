@@ -154,7 +154,20 @@ eas secret:create --name EXPO_PUBLIC_API_URL --value https://api.votredomaine.co
 
 Sur appareil physique en dev local : `EXPO_PUBLIC_API_URL=http://<votre-ip-lan>:4000 pnpm --filter mobile dev`.
 
-La configuration Docker démarre PostgreSQL 16 sur `localhost:5432` avec la base `apple_mdm_academy` et l'utilisateur `postgres` / `postgres`, ce qui correspond au `DATABASE_URL` de `.env.example`. Si un PostgreSQL local occupe déjà le port 5432, mappez `5433:5432` dans `compose.yaml` et ajustez `DATABASE_URL` (voir commentaires dans `.env.example`). Pour arrêter la base locale :
+La configuration Docker mappe le port **hôte 5433** vers le port **conteneur 5432** (port interne PostgreSQL). Dans `DATABASE_URL`, utilisez toujours le port **hôte** (`5433` par défaut) — jamais `5432` sauf si vous avez changé le mapping dans `compose.yaml`.
+
+| Où | Port | Rôle |
+| --- | --- | --- |
+| Machine locale (`localhost`) | **5433** | Port à mettre dans `DATABASE_URL` (ex. `backend/.env`) |
+| Conteneur Docker | **5432** | Port interne Postgres — ne pas utiliser depuis l’API hors Docker |
+
+Exemple `backend/.env` :
+
+```env
+DATABASE_URL=postgresql://postgres:postgres@localhost:5433/apple_mdm_academy
+```
+
+Si aucun PostgreSQL natif n’occupe le port 5432, vous pouvez mapper `5432:5432` dans `compose.yaml` et ajuster `DATABASE_URL` en conséquence (voir commentaires dans `compose.yaml` et `backend/.env.example`). Pour arrêter la base locale :
 
 ```bash
 pnpm db:down

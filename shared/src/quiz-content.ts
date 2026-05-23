@@ -457,6 +457,20 @@ export const jamfProFoundationsQuestions: Record<string, SeedQuestion[]> = {
       explanation:
         'Les recherches sauvegardées et exports CSV alimentent les revues de conformité sans action destructive sur le parc.',
     },
+    {
+      type: 'TROUBLESHOOTING',
+      prompt:
+        'Piège : un Smart Group « Mac conformes FileVault » inclut 200 appareils, mais 12 Mac récents n’y figurent pas malgré FileVault activé. Cause la plus probable ?',
+      options: opt(
+        'Délai d’inventaire : le statut FileVault n’a pas encore été remonté au prochain check-in MDM',
+        'FileVault désactive automatiquement la gestion Jamf',
+        'Les Smart Groups ne peuvent pas filtrer sur le chiffrement',
+        'Jamf Pro ne remonte jamais l’état FileVault'
+      ),
+      correctOption: 'a',
+      explanation:
+        'L’inventaire Jamf se met à jour à chaque check-in. Un Mac nouvellement chiffré peut mettre quelques minutes à apparaître dans le critère de conformité.',
+    },
   ],
   'enrollment-apple-integration': [
     {

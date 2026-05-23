@@ -8,6 +8,7 @@ import { SiteMobileNav } from '@/components/layout/SiteMobileNav';
 import { SiteNavLinks } from '@/components/layout/SiteNavLinks';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { CookieConsentBanner } from '@/components/layout/CookieConsentBanner';
+import { AnalyticsOptInBanner } from '@/components/layout/AnalyticsOptInBanner';
 import { PointsRankNavIndicator } from '@/components/layout/PointsRankNavIndicator';
 import { StreakNavBadge } from '@/components/layout/StreakNavIndicator';
 import { Toaster } from '@/components/ui/Toast';
@@ -151,6 +152,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </main>
         <Toaster />
         <CookieConsentBanner />
+        <AnalyticsOptInBanner />
         <footer className="site-footer">
           <div className="container site-footer-inner">
             <div>
