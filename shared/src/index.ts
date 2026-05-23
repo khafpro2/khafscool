@@ -8,3 +8,4 @@ export * from './reading-time';
 export * from './revision-sheet';
 export * from './practice-exam';
 export * from './donation-bank';
+export * from './donation-methods';

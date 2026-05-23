@@ -59,6 +59,7 @@ describe('donations checkout', () => {
     createDonationCheckoutSession.mockReset();
     delete process.env.STRIPE_SECRET_KEY;
     delete process.env.DONATION_URL;
+    delete process.env.DONATION_PAYPAL_URL;
   });
 
   it('validates amountCents bounds', () => {
@@ -76,10 +77,17 @@ describe('donations checkout', () => {
         configured: false,
         checkoutEnabled: false,
       },
+      paypal: { status: 'unavailable' },
       fallbackUrl: 'https://buymeacoffee.com/mdm-academy',
       suggestedAmountsCents: [500, 1000, 2000],
       message: 'Paiement externe — la formation reste 100 % gratuite.',
     });
+  });
+
+  it('exposes paypal configured when DONATION_PAYPAL_URL is set', () => {
+    process.env.DONATION_PAYPAL_URL = 'https://paypal.me/mdm-academy';
+
+    expect(buildDonationStatusResponse().paypal).toEqual({ status: 'configured' });
   });
 
   it('returns fallback checkout URL when Stripe is not configured', async () => {

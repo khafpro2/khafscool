@@ -253,11 +253,16 @@ export interface BillingCheckoutResponse {
 
 export type DonationMode = 'live' | 'fallback' | 'unavailable';
 
+export type DonationPaypalStatus = 'configured' | 'unavailable';
+
 export interface DonationStatusResponse {
   mode: DonationMode;
   stripe: {
     configured: boolean;
     checkoutEnabled: boolean;
+  };
+  paypal?: {
+    status: DonationPaypalStatus;
   };
   fallbackUrl?: string | null;
   suggestedAmountsCents: number[];

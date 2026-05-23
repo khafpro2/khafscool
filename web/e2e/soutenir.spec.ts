@@ -5,6 +5,7 @@ const API_BASE = 'http://localhost:4000';
 const mockDonationStatusFallback = {
   mode: 'fallback' as const,
   stripe: { configured: false, checkoutEnabled: false },
+  paypal: { status: 'unavailable' as const },
   fallbackUrl: 'https://example.com/don',
   suggestedAmountsCents: [500, 1000, 2000],
   message: 'Dons via lien externe en attendant Stripe.',
@@ -13,6 +14,7 @@ const mockDonationStatusFallback = {
 const mockDonationStatusLive = {
   mode: 'live' as const,
   stripe: { configured: true, checkoutEnabled: true },
+  paypal: { status: 'configured' as const },
   fallbackUrl: null,
   suggestedAmountsCents: [500, 1000, 2000],
 };
@@ -20,10 +22,13 @@ const mockDonationStatusLive = {
 const mockDonationStatusUnavailable = {
   mode: 'unavailable' as const,
   stripe: { configured: false, checkoutEnabled: false },
+  paypal: { status: 'unavailable' as const },
   fallbackUrl: null,
   suggestedAmountsCents: [500, 1000, 2000],
   message: 'Bientôt disponible — merci pour votre intérêt !',
 };
+
+const MOCK_PAYPAL_URL = 'https://www.paypal.com/donate/?hosted_button_id=e2e_mock';
 
 test.describe('Page Soutenir', () => {
   test.beforeEach(async ({ page }) => {
@@ -60,6 +65,16 @@ test.describe('Page Soutenir', () => {
     await expect(page.getByTestId('bank-iban')).toContainText('FR76 2823 3000 0193 2563 3272 239');
     await expect(page.getByRole('button', { name: 'Copier l’IBAN' })).toBeVisible();
     await expect(page.getByTestId('bank-reference')).toHaveText('Soutien MDM Academy');
+  });
+
+  test('affiche la section PayPal quand l’URL est configurée (mock env)', async ({ page }) => {
+    await page.goto('/soutenir#paypal');
+    await expect(page.getByRole('heading', { level: 2, name: 'PayPal (don volontaire)' })).toBeVisible({
+      timeout: 15_000,
+    });
+    await expect(page.getByText('sécurisée par PayPal', { exact: false })).toBeVisible();
+    await expect(page.getByTestId('paypal-donate-button')).toBeVisible();
+    await expect(page.getByTestId('paypal-donate-button')).toHaveAttribute('href', MOCK_PAYPAL_URL);
   });
 
   test('expose le lien footer « Faire un don »', async ({ page }) => {

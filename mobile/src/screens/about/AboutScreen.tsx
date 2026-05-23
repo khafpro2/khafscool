@@ -16,6 +16,7 @@ import { formatTrack, getTrackVisual } from '../../lib/design';
 import { useThemedStyles } from '../../hooks/useThemedStyles';
 import { BankTransferCard } from '../../components/donations/BankTransferCard';
 import { CardPaymentCard } from '../../components/donations/CardPaymentCard';
+import { PayPalCard } from '../../components/donations/PayPalCard';
 import { CONTACT_EMAIL, CONTACT_MAILTO, WEB_URL } from '../../config';
 
 const GITHUB_REPO_URL = 'https://github.com/khafpro2/khafscool';
@@ -139,11 +140,12 @@ export function AboutScreen() {
           <Text style={styles.secondaryButtonText}>Voir le dépôt GitHub</Text>
         </Pressable>
         <Pressable style={styles.secondaryButton} onPress={openSupportPage}>
-          <Text style={styles.secondaryButtonText}>Soutenir le projet (carte / virement)</Text>
+          <Text style={styles.secondaryButtonText}>Soutenir le projet (carte / PayPal / virement)</Text>
         </Pressable>
       </View>
 
       <CardPaymentCard />
+      <PayPalCard />
       <BankTransferCard />
 
       <View style={[styles.ctaCard, { backgroundColor: colors.accentSoft, borderColor: colors.border }]}>

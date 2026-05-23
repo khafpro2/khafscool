@@ -1,3 +1,7 @@
+import {
+  getDonationPaypalStatus,
+  normalizeDonationPaypalUrl,
+} from '@ama/shared/donation-methods';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import { prisma } from '../lib/prisma.js';
@@ -27,10 +31,22 @@ export function parseDonationCheckoutRequest(body: unknown) {
   return donationCheckoutSchema.safeParse(body ?? {});
 }
 
+function getDonationPaypalUrlFromEnv() {
+  return normalizeDonationPaypalUrl(process.env.DONATION_PAYPAL_URL);
+}
+
+function buildPaypalStatusBlock() {
+  const paypalUrl = getDonationPaypalUrlFromEnv();
+  return {
+    status: getDonationPaypalStatus(paypalUrl),
+  } as const;
+}
+
 export function buildDonationStatusResponse() {
   const stripeConfigured = isStripeConfigured();
   const checkoutEnabled = donationCheckoutReady();
   const fallbackUrl = getDonationFallbackUrl();
+  const paypal = buildPaypalStatusBlock();
 
   if (checkoutEnabled) {
     return {
@@ -39,6 +55,7 @@ export function buildDonationStatusResponse() {
         configured: true,
         checkoutEnabled: true,
       },
+      paypal,
       fallbackUrl,
       suggestedAmountsCents: [...DONATION_PRESET_AMOUNTS_CENTS],
     };
@@ -51,6 +68,7 @@ export function buildDonationStatusResponse() {
         configured: stripeConfigured,
         checkoutEnabled: false,
       },
+      paypal,
       fallbackUrl,
       suggestedAmountsCents: [...DONATION_PRESET_AMOUNTS_CENTS],
       message: 'Paiement externe — la formation reste 100 % gratuite.',
@@ -63,6 +81,7 @@ export function buildDonationStatusResponse() {
       configured: stripeConfigured,
       checkoutEnabled: false,
     },
+    paypal,
     fallbackUrl: null,
     suggestedAmountsCents: [...DONATION_PRESET_AMOUNTS_CENTS],
     message: 'Bientôt disponible — merci pour votre intérêt !',

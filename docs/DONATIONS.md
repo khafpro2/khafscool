@@ -23,7 +23,10 @@ Sans `STRIPE_SECRET_KEY`, la section affiche un message explicite (pas de fausse
 | `STRIPE_DONATION_PRICE_ID_5` | Non | Price ID Stripe pour 5 € (sinon `price_data` dynamique). |
 | `STRIPE_DONATION_PRICE_ID_10` | Non | Price ID Stripe pour 10 €. |
 | `STRIPE_DONATION_PRICE_ID_20` | Non | Price ID Stripe pour 20 €. |
-| `DONATION_URL` | Non | Lien externe (Buy Me a Coffee, PayPal, etc.) si Stripe n’est pas configuré. |
+| `DONATION_URL` | Non | Lien externe (Buy Me a Coffee, etc.) si Stripe n’est pas configuré. |
+| `DONATION_PAYPAL_URL` | Non | Lien PayPal Donate ou PayPal.Me (backend `GET /donations/status`). |
+| `NEXT_PUBLIC_DONATION_PAYPAL_URL` | Non | Même lien côté web (`/soutenir#paypal`). Prioritaire sur `DONATION_PAYPAL_URL` côté client. |
+| `EXPO_PUBLIC_DONATION_PAYPAL_URL` | Non | Lien PayPal sur l’écran À propos (mobile). |
 | `DONATION_BANK_BENEFICIARY` | Non | Bénéficiaire du virement SEPA (défaut : Khalifa Thiam). |
 | `DONATION_BANK_IBAN` | Non | IBAN sans espaces (défaut : compte Revolut HarmyTech). |
 | `DONATION_BANK_BIC` | Non | BIC/SWIFT (défaut : `REVOFRP2`). |
@@ -43,7 +46,7 @@ Copier les valeurs depuis `.env.example` à la racine du monorepo.
 
 | Route | Auth | Rôle |
 | --- | --- | --- |
-| `GET /donations/status` | Non | Mode `live` / `fallback` / `unavailable` + montants suggérés |
+| `GET /donations/status` | Non | Mode `live` / `fallback` / `unavailable` + montants suggérés + `paypal.status` |
 | `POST /donations/create-checkout-session` | Optionnelle | Crée une session Stripe Checkout (`{ amountCents }`) |
 | `GET /admin/donations/stats` | `X-Admin-Api-Key` | Agrégats lecture seule : nombre de dons, total centimes, dernière date |
 | `GET /admin/donations/export.csv` | `X-Admin-Api-Key` | Export CSV de tous les dons (id, montant, email, userId, session Stripe, date) |
@@ -89,6 +92,35 @@ Montants suggérés : `500`, `1000`, `2000` (5 €, 10 €, 20 €). Montant lib
 4. Mettre à jour `STRIPE_WEBHOOK_SECRET` avec le secret **live** (`whsec_…`).
 5. Vérifier `WEB_URL=https://votre-domaine.fr` pour les redirections `/soutenir/merci` et `/soutenir/annule`.
 6. Tester un petit montant réel depuis `/soutenir#carte` avant communication publique.
+
+## PayPal (don volontaire)
+
+En complément de Stripe et du virement SEPA, la page `/soutenir#paypal` propose un **don via PayPal** (montant libre sur la page PayPal).
+
+### Créer le lien
+
+1. **PayPal Donate (bouton hébergé)** — [PayPal Donations](https://www.paypal.com/fr/business/tools/donate-button) :
+   - Créer un bouton « Don » pour votre association ou activité.
+   - Copier l’URL générée, par ex. `https://www.paypal.com/donate/?hosted_button_id=XXXXXXXX`.
+2. **PayPal.Me** — [paypal.me](https://www.paypal.me/) :
+   - Créer votre page personnelle, ex. `https://paypal.me/votreNom`.
+
+### Variables d’environnement
+
+```env
+# Backend (statut API) + fallback serveur
+DONATION_PAYPAL_URL=https://www.paypal.com/donate/?hosted_button_id=XXXXXXXX
+
+# Web — affichage /soutenir#paypal (recommandé en production Vercel)
+NEXT_PUBLIC_DONATION_PAYPAL_URL=https://www.paypal.com/donate/?hosted_button_id=XXXXXXXX
+
+# Mobile — écran À propos
+EXPO_PUBLIC_DONATION_PAYPAL_URL=https://www.paypal.com/donate/?hosted_button_id=XXXXXXXX
+```
+
+Sans URL valide (`https` + domaine `paypal.com` ou `paypal.me`), la section affiche **« PayPal bientôt disponible »** — pas de fausse promesse.
+
+L’API `GET /donations/status` expose `paypal.status` : `configured` ou `unavailable`.
 
 ## Fallback sans Stripe
 
@@ -155,9 +187,9 @@ Migration : `20260522120000_add_donations`.
 
 ## Pages
 
-- Web : `/soutenir` — section prioritaire **carte bancaire** (`#carte`, Stripe Checkout) + **virement bancaire** (`#virement`) côte à côte sur grand écran
+- Web : `/soutenir` — **carte bancaire** (`#carte`, Stripe Checkout) + **PayPal** (`#paypal`) + **virement bancaire** (`#virement`)
 - Footer et `/about` : lien « Faire un don » / « Soutenir le projet »
-- Mobile : profil et à propos → carte **Carte bancaire** (redirect `/soutenir#carte`) + carte virement native ; lien `/soutenir#virement`
+- Mobile : profil et à propos → carte **Carte bancaire** (redirect `/soutenir#carte`) + carte **PayPal** + carte virement native ; lien `/soutenir#virement`
 
 ## Tests
 

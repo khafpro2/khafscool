@@ -2,6 +2,7 @@
 
 import { BankTransferPanel } from '@/components/donations/BankTransferPanel';
 import { DonationPanel } from '@/components/donations/DonationPanel';
+import { PayPalPanel } from '@/components/donations/PayPalPanel';
 import { getContactEmail, getContactMailto } from '@/lib/contact';
 
 export function SoutenirPageClient() {
@@ -20,6 +21,7 @@ export function SoutenirPageClient() {
 
       <div className="donation-methods-grid" style={{ marginTop: '1.5rem' }}>
         <DonationPanel />
+        <PayPalPanel />
         <BankTransferPanel />
       </div>
 

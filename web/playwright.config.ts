@@ -16,6 +16,12 @@ export default defineConfig({
     url: 'http://127.0.0.1:3000',
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
+    env: {
+      ...process.env,
+      NEXT_PUBLIC_DONATION_PAYPAL_URL:
+        process.env.NEXT_PUBLIC_DONATION_PAYPAL_URL ??
+        'https://www.paypal.com/donate/?hosted_button_id=e2e_mock',
+    },
   },
   projects: [
     {
