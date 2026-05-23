@@ -230,7 +230,7 @@ export function CourseCompleteClient({
               Temps de lecture
             </p>
             <p style={{ fontSize: '1.5rem', fontWeight: 900, marginTop: '0.2rem' }}>
-              ~{totalReadingMinutes} min
+              ~{totalReadingMinutes} min de lecture
             </p>
           </div>
           <div>

@@ -195,7 +195,7 @@ export function CourseCompleteScreen() {
           </View>
           <View style={styles.recapMetric}>
             <Text style={styles.recapLabel}>Temps de lecture</Text>
-            <Text style={styles.recapValue}>~{totalReadingMinutes} min</Text>
+            <Text style={styles.recapValue}>~{totalReadingMinutes} min de lecture</Text>
           </View>
           <View style={styles.recapMetric}>
             <Text style={styles.recapLabel}>Questions quiz</Text>
