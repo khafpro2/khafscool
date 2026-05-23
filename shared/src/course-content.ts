@@ -23,6 +23,8 @@ export const COURSE_PEDAGOGY: Record<string, CoursePedagogy> = {
 
 Vous apprendrez à identifier les symptômes matériels et logiciels les plus fréquents, à documenter vos interventions selon les bonnes pratiques atelier, et à éviter les gestes destructifs prématurés. Le contenu relie explicitement Activation Lock, supervision MDM et procédures SAV conformes aux recommandations Apple.
 
+**Ce que vous saurez faire :** Diagnostiquer un Mac ou un iPhone bloqué selon la méthode Apple sans effacer de données prématurément ; vérifier les sauvegardes chiffrées avant toute restauration ; traiter Activation Lock et supervision ABM dans un scénario réaliste de 200 iPhones d'entreprise ; documenter chaque intervention SAV de façon conforme RGPD ; et préparer méthodiquement l'examen Device Support avec des runbooks reproductibles en atelier.
+
 Prérequis : familiarité de base avec macOS et iOS/iPadOS, accès à un Mac de diagnostic et à quelques appareils de test. Aucune expérience MDM préalable n'est exigée, mais une connaissance des profils de configuration et de l'enrôlement automatisé (ADE) sera un atout pour la dernière partie du parcours.`,
     modules: {
       'device-support-basics': {
@@ -33,6 +35,7 @@ Prérequis : familiarité de base avec macOS et iOS/iPadOS, accès à un Mac de 
           'Vérifier l’existence de sauvegardes chiffrées et documenter numéro de série, version OS et étapes déjà tentées.',
           'Comprendre Activation Lock, Find My et les voies légitimes de retrait via ABM ou console MDM.',
           'Relier un appareil supervisé à son profil MDM et interpréter les informations d’inventaire de base.',
+          'Piloter la réception d’une vague de 200 iPhones : vérifier ABM, ADE et premier check-in MDM avec l’équipe déploiement.',
         ],
         keyTakeaways: [
           'Toujours éliminer alimentation, espace disque et redémarrage forcé avant les gestes destructifs.',
@@ -72,6 +75,24 @@ Apple Business Manager centralise l’achat d’appareils et leur affectation au
 
 Chaque ticket doit contenir : numéro de série, version du système, description précise des symptômes, étapes déjà tentées et résultat des tests non destructifs. Ne stockez jamais les mots de passe iCloud ou codes de déverrouillage en clair. Pour les erreurs de restauration (4013, 4014), vérifiez câble certifié, port USB et stabilité de la connexion avant de conclure à une panne matérielle.
 
+### Cas pratique : réception de 200 iPhones en entreprise
+
+Une filiale retail reçoit 200 iPhone 15 via un revendeur Apple autorisé. Les numéros de série apparaissent dans Apple Business Manager sous 48 à 72 heures. L'équipe IT assigne les appareils au serveur MDM (Jamf Pro ou Intune) et active un profil ADE supervisé avec enrôlement MDM obligatoire. Le technicien support de premier niveau intervient lors des premières livraisons : confirmer l'écran Remote Management à l'assistant de configuration, vérifier l'état Managed dans la console MDM, tester le Wi-Fi d'entreprise et l'installation des apps VPP (Microsoft Teams, app métier interne).
+
+Lorsqu'un collaborateur signale « mon iPhone ne s'allume plus », le technicien applique la séquence non destructive (charge, redémarrage forcé) avant d'escalader vers l'admin MDM ou le SAV Apple. Si l'appareil doit être restitué (départ employé), coordonner avec l'équipe MDM pour un wipe sélectif ou une réinitialisation supervisée — jamais un effacement local non tracé qui laisserait Activation Lock actif.
+
+### Supervision Apple et différences utilisateur final
+
+Un appareil **supervisé** via ADE accepte des restrictions que l'utilisateur ne peut pas contourner : suppression du profil MDM, installation d'apps non approuvées, modification de certains réglages réseau. Le technicien L1 doit savoir expliquer ces différences sans promettre un « déverrouillage » hors procédure. Sur iOS, Réglages → Général → Informations → Supervision confirme l'état.
+
+> **Bonne pratique :** Avant toute restauration sur un appareil d'entreprise, capturez numéro de série, UDID (via Finder ou console MDM) et état Find My / Activation Lock dans le ticket — jamais les identifiants en clair. Référez-vous au [Guide Apple Business Manager](https://support.apple.com/fr-fr/guide/apple-business-manager/) pour les procédures de retrait organisationnel et de recyclage parc.
+
+### Coordination support L1 et administrateur MDM
+
+Le support terrain et l'admin MDM partagent un runbook commun : le L1 documente symptômes et tests non destructifs ; l'admin MDM vérifie check-in, profils en échec et commandes en attente. Cette séparation évite les restaurations massives qui casseraient la conformité d'une flotte de 200 appareils. En cas de doute sur la propriété ABM, consultez le portail ABM avant toute réinitialisation.
+
+
+
 En résumé, le technicien Device Support efficace combine rigueur diagnostic, respect des données utilisateur et conscience du cadre MDM dans lequel évolue l’appareil.`,
         gameInstructions:
           'Ordonnez les étapes de dépannage d’un Mac bloqué au démarrage pour appliquer la logique « vérifier l’espace disque, puis mode sans échec, puis réinstallation conservatoire ».',
@@ -84,6 +105,7 @@ En résumé, le technicien Device Support efficace combine rigueur diagnostic, r
           'Utiliser redémarrage forcé, mode récupération et outils Apple Configurator sans effacer prématurément.',
           'Analyser check-in MDM, profils et journaux sur appareils supervisés connectés à un Mac.',
           'Prioriser les causes logicielles courantes avant une restauration complète.',
+          'Diagnostiquer une perte de check-in MDM groupée après maintenance certificat Push ou renouvellement jeton ABM.',
         ],
         keyTakeaways: [
           'Oublier le réseau et resaisir les identifiants règle la majorité des échecs Wi-Fi d’entreprise.',
@@ -135,7 +157,24 @@ Les journaux MDM côté serveur complètent le triage : statut des commandes en 
 4. Analyser journaux locaux si le problème persiste.
 5. Envisager restauration supervisée uniquement après sauvegarde validée.
 
-Cette séquence respecte les contraintes de sécurité tout en minimisant l’impact utilisateur.`,
+Cette séquence respecte les contraintes de sécurité tout en minimisant l’impact utilisateur.
+### Cas pratique : 200 iPhones — échec Wi-Fi après migration PKI
+
+Une entreprise de 200 iPhones supervisés Jamf Pro migre sa PKI interne un vendredi soir. Lundi matin, 40 appareils ne joignent plus le Wi-Fi 802.1X. Le support L1 vérifie d'abord date/heure automatiques et oublie le réseau sur trois appareils pilotes. L'admin MDM confirme que les profils SCEP ont échoué : certificats expirés ou CA incorrecte dans le payload.
+
+La remédiation passe par un redéploiement du profil SCEP puis du profil Wi-Fi sur un Smart Group « Wi-Fi non conforme », pas par 40 restaurations individuelles. Les apps VPP restées « En attente » sur le même périmètre indiquent souvent un blocage réseau vers les CDN Apple (gsp/appldnld) — à distinguer d'un problème MDM Push.
+
+### Apps VPP et états « En attente »
+
+Les apps Volume Purchase Program (VPP) déployées via MDM nécessitent une licence assignée au device ou à l'utilisateur et une connectivité vers les serveurs Apple. Si Safari fonctionne mais Teams MDM reste en attente, suspectez filtrage proxy, DNS interne ou restriction de contenu. Vérifiez dans Jamf ou Intune le statut de la commande InstallApplication et les logs côté appareil via Console macOS.
+
+> **Bonne pratique :** Ne supprimez jamais le profil MDM manuellement sur un iPhone supervisé. Préférez une commande Refresh cellular plans, une resynchronisation forcée ou une politique de réinstallation profil depuis la console. Documentation : [Supervision des appareils Apple](https://support.apple.com/fr-fr/HT208305).
+
+### Perte groupée de check-in MDM
+
+Si plusieurs iPhones perdent simultanément le check-in après maintenance serveur, vérifiez en priorité le certificat Push APNs MDM (expiration, mauvais topic). Un changement de certificat mal importé peut nécessiter un réenrôlement. Croisez la date de dernière check-in dans la console avec l'historique des changements certificats côté admin.
+
+`,
         gameInstructions:
           'Classez les vérifications à effectuer sur un iPad qui ne synchronise plus le MDM, de la connectivité locale jusqu’à la resynchronisation serveur.',
       },
@@ -147,6 +186,7 @@ Cette séquence respecte les contraintes de sécurité tout en minimisant l’im
           'Appliquer les bonnes pratiques de sauvegarde chiffrée et de restauration sur Mac et iOS.',
           'Identifier les gestes interdits ou non conformes en atelier (contournement Activation Lock, ouverture sans ESD).',
           'Structurer un runbook de diagnostic conforme aux attentes certification Device Support.',
+          'Expliquer à un responsable MDM pourquoi une restauration locale peut nécessiter un réenrôlement ADE sur appareil supervisé.',
         ],
         keyTakeaways: [
           'Apple Diagnostics précède le remplacement de composants : documentez les codes.',
@@ -199,6 +239,23 @@ Les certificats Push MDM, la supervision et les restrictions de l’assistant de
 ### Préparation active à l’examen
 
 Entraînez-vous sur des scénarios chronométrés : symptôme → hypothèses → tests → conclusion. Relisez les guides officiels Apple Support, pratiquez sur un Mac et un iPhone de labo, et mémorisez les combinaisons de touches par famille de produits. Évitez les « raccourcis » appris sur des forums non officiels : l’examen valorise la conformité procédurale.
+### Cas pratique : MacBook en SAV avec profil MDM actif
+
+Un MacBook Pro corporate revient en atelier pour clavier défectueux. Le technicien ACMT doit coordonner avec l'admin MDM : le profil de gestion survive-t-il à la réparation ? En général oui si le disque n'est pas effacé, mais un remplacement carte logique ou SSD peut imposer un réenrôlement ADE. Documentez numéro de série, état FileVault (clé escrowed dans Jamf/Intune) et autorisation wipe si le disque doit être remplacé.
+
+Avant restitution, validez clavier, trackpad, caméra, Wi-Fi entreprise et présence du profil MDM. Retirez tout compte admin atelier temporaire. Le client entreprise attend une traçabilité complète — l'examen Device Support teste cette rigueur procédurale.
+
+### ADE, tokens et continuité après restauration
+
+Sur appareil supervisé via Automated Device Enrollment, une restauration complète reprovisionne automatiquement le MDM si l'assignation ABM est toujours active. Le technicien doit connaître cette différence avec un Mac personnel où l'utilisateur peut refuser le profil. Le renouvellement annuel du jeton serveur MDM Apple dans ABM n'affecte pas les appareils déjà inscrits, mais bloque les nouveaux enrôlements si le jeton expire.
+
+> **Bonne pratique :** Conservez un runbook atelier imprimé : alimentation → Apple Diagnostics → codes erreur → ticket → escalade MDM si profil présent. Référence : [Apple Diagnostics sur Mac](https://support.apple.com/fr-fr/102436).
+
+### Préparation examen : scénarios MDM adjacents
+
+Les questions situées de l'examen peuvent mentionner supervision, Activation Lock organisationnel ou impact d'une restauration sur un parc géré. Entraînez-vous à expliquer pourquoi le contournement Activation Lock est interdit et quelles voies ABM/MDM sont légitimes. Cette articulation support ↔ MDM distingue un candidat mature d'un technicien consumer-only.
+
+
 
 En consolidant sécurité, diagnostics, restauration et documentation, vous alignez votre pratique quotidienne sur le référentiel Apple Device Support tout en restant crédible face à un administrateur MDM ou un responsable de parc.`,
         gameInstructions:
@@ -211,6 +268,8 @@ En consolidant sécurité, diagnostics, restauration et documentation, vous alig
 
 L’approche est pratique : chaque module s’appuie sur des scénarios réalistes (déploiement pilote, triage conformité, réception de matériel neuf) et sur les objets centraux de Jamf Pro — profils, extension attributes, politiques récurrentes, certificat Push et intégration ADE.
 
+**Ce que vous saurez faire :** Construire des Smart Groups pilotes et déployer des paquets par vagues sur un parc de 200 Mac ou iPhone ; exploiter l'inventaire Jamf et les extension attributes pour prioriser la remédiation ; renouveler certificat Push APNs et jeton ABM sans couper la gestion MDM ; configurer un PreStage ADE pour une réception de matériel neuf ; et interroger l'API Jamf Pro pour automatiser exports et audits de conformité.
+
 Prérequis : notions de gestion macOS/iOS, accès à une instance Jamf Pro (Cloud ou On-Prem) de labo, compte Apple Business Manager ou School Manager de test, et compréhension élémentaire des certificats et du protocole MDM Apple. Une expérience préalable avec des profils .mobileconfig est recommandée.`,
     modules: {
       'smart-groups-policies': {
@@ -221,6 +280,7 @@ Prérequis : notions de gestion macOS/iOS, accès à une instance Jamf Pro (Clou
           'Associer profils de configuration et politiques récurrentes à un périmètre pilote avant généralisation.',
           'Comprendre l’ordre d’exécution et le scope des politiques Jamf (Self Service, récurrence, limitations).',
           'Éviter les conflits de scope entre politiques et groupes statiques hérités.',
+          'Automatiser un export d’inventaire via l’API Jamf Pro (Bearer token) pour alimenter un tableau de bord conformité.',
         ],
         keyTakeaways: [
           'Un Smart Group pilote limite le blast radius avant déploiement massif.',
@@ -270,6 +330,25 @@ Nommez Smart Groups et politiques avec un préfixe site ou projet. Documentez le
 ### Self Service et expérience utilisateur
 
 Jamf Self Service permet aux utilisateurs d’installer des apps ou lancer des politiques approuvées sans ticket helpdesk. Associez les politiques sensibles à une catégorie Self Service pour réduire la charge support tout en conservant un scope Smart Group strict côté serveur. Sur iOS supervisé, les apps VPP déployées via politique apparaissent dans Self Service si configuré.
+### Cas pratique : déploiement par vagues sur 200 Mac
+
+Une ETI déploie un agent EDR sur 200 Mac via Jamf Pro. L'admin crée un Smart Group pilote de 10 Mac (mix Intel et Apple Silicon, macOS 14+), une politique Ongoing avec le .pkg, et valide les logs sur /var/log/jamf.log. Vague 2 : Smart Group « macOS 14 + site Paris » (50 Mac). Vague 3 : extension au reste du parc après 72 h sans incident.
+
+Chaque vague documente critères Smart Group, numéro de politique et fenêtre de maintenance. Un groupe d'exclusion retire les Mac de direction et les machines de labo développement.
+
+### API Jamf Pro : bases pour l'automatisation
+
+Jamf Pro expose une API REST (Bearer token OAuth ou compte API selon version). Cas d'usage courants : exporter l'inventaire computers-inventory, lister les membres d'un Smart Group, déclencher un MDM command Refresh. Exemple de flux : token via /api/oauth/token → GET /api/v1/computers-inventory?section=General&filter=osVersion ge "14.0". Automatiser évite les exports CSV manuels avant comité sécurité.
+
+Documentation : [Jamf Pro API Overview](https://developer.jamf.com/jamf-pro/docs/jamf-pro-api-overview)
+
+> **Bonne pratique :** Testez toujours profils SCEP + Wi-Fi 802.1X sur un Smart Group pilote avant déploiement global. Un certificat mal configuré casse l'accès réseau de centaines d'appareils simultanément — prévoyez une fenêtre de chevauchement PKI lors des renouvellements.
+
+### Self Service et apps VPP sur iOS supervisé
+
+Sur iPhone supervisé, les apps VPP assignées via politique Jamf peuvent apparaître dans Self Service si la catégorie est configurée. Cela réduit les tickets « je ne vois pas mon app » tout en conservant un scope Smart Group strict côté serveur. Vérifiez que les licences VPP sont assignées au bon token et au mode device-based pour les flottes partagées.
+
+
 
 En maîtrisant Smart Groups et politiques, vous industrialisez le déploiement MDM Jamf tout en gardant un contrôle fin sur les risques opérationnels.`,
         gameInstructions:
@@ -283,6 +362,7 @@ En maîtrisant Smart Groups et politiques, vous industrialisez le déploiement M
           'Interpréter statuts MDM, dernière check-in, version OS et espace disque.',
           'Utiliser extension attributes et Smart Groups de conformité pour détecter les écarts.',
           'Prioriser remédiation : agent MDM absent, OS obsolète, stockage saturé.',
+          'Corréler inventaire Jamf, apps VPP et statut de licence pour détecter les apps manquantes sur un Smart Group pilote.',
         ],
         keyTakeaways: [
           'Une check-in récente confirme que la commande MDM peut atteindre l’appareil.',
@@ -340,7 +420,28 @@ Les appareils assignés dans Apple Business Manager doivent apparaître dans Jam
 
 La **Advanced Computer Search** et **Advanced Mobile Device Search** permettent de croiser critères (OS, apps, EA, membership Smart Group) et d’exporter CSV pour audits trimestriels. Planifiez des recherches enregistrées pour les comités sécurité : FileVault off, dernier check-in > 7 jours, profil Wi-Fi manquant. Ces vues complètent les Smart Groups dynamiques sans dupliquer la logique de conformité.
 
-L’inventaire Jamf bien exploité transforme des alertes dispersées en file de remédiation priorisée et mesurable.`,
+L’inventaire Jamf bien exploité transforme des alertes dispersées en file de remédiation priorisée et mesurable.
+### Cas pratique : audit conformité sur 200 iPhone Jamf
+
+Avant un audit ISO 27001, l'admin Jamf crée une Advanced Mobile Device Search : supervision = true, iOS version < 17, dernière check-in > 7 jours, jailbreak = false. Export CSV pour le comité. Un second Smart Group « FileVault N/A iOS » n'a pas de sens — adaptez les critères au type d'appareil. Priorisez : jailbreak détecté (0), check-in stale (1), OS obsolète (2).
+
+Corrélez avec ABM : un iPhone présent dans ABM mais absent de Jamf depuis 30 jours indique un effacement sans réenrôlement ou une mauvaise assignation serveur MDM.
+
+### Apps VPP et cohérence inventaire
+
+L'inventaire mobile Jamf liste les apps installées et leur source (App Store, VPP, autre). Si Microsoft Teams apparaît « Missing » dans une politique de conformité custom (extension attribute), vérifiez licence VPP, assignation device vs user, et statut InstallApplication dans l'historique MDM. Les apps en attente prolongées méritent un ticket réseau avant wipe.
+
+> **Bonne pratique :** Planifiez des recherches avancées enregistrées pour les comités trimestriels : OS non conforme, check-in > 48 h, profil Wi-Fi manquant. Documentez le propriétaire de chaque recherche et la fréquence d'exécution. [Inventaire Jamf Pro](https://learn.jamf.com/bundle/jamf-pro-documentation/page/Inventory.html)
+
+### Extension Attributes : fréquence et performance
+
+Un EA exécuté à chaque check-in qui lance un script lourd (scan disque complet) dégrade l'expérience utilisateur. Préférez des scripts légers ou une récurrence limitée. Les EA alimentent Smart Groups de conformité — une EA vide ou stale fausse le membership et les déploiements ciblés.
+
+### Tableaux de bord et KPI parc
+
+Pour un comité mensuel, suivez : pourcentage Mac/iPhone avec check-in < 48 h, taux OS conforme, nombre apps VPP manquantes, FileVault activé (Mac). Jamf Pro API ou exports CSV alimentent Power BI. Un objectif réaliste sur 200 iPhone : 95 % check-in hebdomadaire et 100 % supervision ADE pour les appareils ABM.
+
+`,
         gameInstructions:
           'Priorisez le triage de trois Mac non conformes en commençant par la validité MDM, puis OS et espace disque.',
       },
@@ -352,6 +453,7 @@ L’inventaire Jamf bien exploité transforme des alertes dispersées en file de
           'Synchroniser le jeton MDM Jamf avec Apple Business Manager.',
           'Assigner appareils au serveur Jamf et déployer un profil ADE.',
           'Valider l’expérience Setup Assistant et la supervision automatique.',
+          'Planifier le renouvellement du jeton serveur MDM Apple et du certificat Push APNs avec fenêtre de test sur appareil pilote.',
         ],
         keyTakeaways: [
           'Sans certificat Push valide, aucune commande MDM n’atteint les appareils.',
@@ -412,6 +514,27 @@ Après ADE, déployez profils SCEP pour certificats réseau, profils Wi-Fi/VPN, 
 ### Renouvellement et gouvernance des jetons
 
 Documentez dates d’expiration du certificat Push, du Server Token ABM et des certificats SCEP/PKI associés aux profils bootstrap. Une alerte calendrier 45 jours avant échéance évite une coupure MDM silencieuse. Conservez un runbook de renouvellement testé en labo : sans Push valide, aucune commande de lock, wipe ou déploiement profil n’atteint la flotte.
+### Cas pratique : renouvellement jeton ABM sans coupure
+
+Le jeton serveur MDM Apple de Jamf expire dans 14 jours. L'admin télécharge le nouveau token depuis Jamf (Settings → Global → Apple Business Manager), l'importe dans ABM, et vérifie la synchronisation inventaire. Les 200 Mac déjà inscrits continuent de checker normalement — seuls les nouveaux appareils ABM seraient bloqués si le jeton expirait. Testez avec un iPhone de labo non inscrit assigné au serveur Jamf.
+
+Le certificat Push APNs suit un calendrier parallèle : renouvellement via identity.apple.com/pushcert avec le même Apple ID organisationnel. Ne créez pas un nouveau topic APNs sans plan de migration — cela force un réenrôlement massif.
+
+### PreStage ADE pour flotte de 200 appareils
+
+Créez deux PreStages si nécessaire : un pour Mac staff (skip Apple ID, FileVault activé, admin local escrowed) et un pour iPhone terrain (Wi-Fi bootstrap, apps VPP initiales). Scope par type d'appareil dans ABM. Mandatory MDM enrollment empêche l'utilisateur de terminer l'assistant sans gestion.
+
+> **Bonne pratique :** Conservez un runbook daté : dates expiration Push, token ABM, certificats SCEP bootstrap. Alerte 45 jours avant. Testez renouvellement en labo chaque trimestre. Apple : [Configurer le MDM](https://support.apple.com/fr-fr/102571) | Jamf : [Apple Push Certificate](https://learn.jamf.com/bundle/jamf-pro-documentation/page/Apple_Push_Certificate.html)
+
+### Dépannage Remote Management bloqué
+
+Si Setup Assistant reste sur Remote Management : DNS (jamfcloud.com ou instance on-prem), pare-feu sortant 443, certificat Push valide, date/heure correcte. Pour Mac Apple Silicon, vérifiez aussi la connectivité pendant la phase d'activation. Un PreStage mal scoped (mauvais type device) n'applique pas le bon profil ADE.
+
+### Checklist réception 200 appareils ABM
+
+Validez dans l'ordre : (1) certificat Push actif, (2) jeton MDM ABM synchronisé, (3) assignation serveur Jamf dans ABM, (4) PreStage scoped par type, (5) profils bootstrap Wi-Fi/SCEP testés, (6) apps VPP avec licences suffisantes, (7) Mac/iPhone pilote enregistré Managed + Supervised. Documentez chaque étape dans Confluence avec captures d'écran pour transfert d'équipe.
+
+
 
 Maîtriser ABM + Push + PreStage garantit une flotte Jamf supervisée, reproductible et alignée sur les exigences sécurité Apple.`,
         gameInstructions:
@@ -424,6 +547,8 @@ Maîtriser ABM + Push + PreStage garantit une flotte Jamf supervisée, reproduct
 
 L’objectif est de relier l’écosystème Apple (supervision, profils, ADE) aux exigences Zero Trust Microsoft : appareil conforme ou application approuvée avant accès aux données Exchange, Teams ou SharePoint. Chaque module inclut des liens vers Microsoft Learn et les guides Apple correspondants.
 
+**Ce que vous saurez faire :** Déployer 200 iPhone supervisés via ABM et Intune avec profil ADE verrouillé ; créer des politiques de conformité iOS avec actions de wipe sélectif ou complet ; configurer App Protection et Conditional Access pour Outlook/Teams en BYOD ; renouveler jeton ABM et certificat Push Apple avant expiration ; et remédier aux appareils jailbreakés ou non conformes sans couper l'accès métier de toute la flotte.
+
 Prérequis : tenant Microsoft 365 avec Intune licencié, rôle Intune Administrator ou équivalent, accès Apple Business Manager, et notions de Conditional Access. Une flotte de test iOS/iPadOS (physique ou Apple Configurator) est fortement recommandée.`,
     modules: {
       'ade-enrollment-basics': {
@@ -434,6 +559,7 @@ Prérequis : tenant Microsoft 365 avec Intune licencié, rôle Intune Administra
           'Créer et assigner un profil Enrollment Program (ADE) aux appareils ABM.',
           'Comprendre supervision, verrouillage MDM et options Setup Assistant.',
           'Valider l’inscription Intune et l’affichage Managed sur un iPad pilote.',
+          'Renouveler le jeton Enrollment Program Token Intune et resynchroniser ABM sans bloquer les appareils déjà inscrits.',
         ],
         keyTakeaways: [
           'Le token Apple MDM dans Intune doit être renouvelé avant expiration.',
@@ -495,6 +621,27 @@ Déployez profils de configuration Intune : Wi-Fi, VPN, certificats SCEP/PKI, re
 ### Shared iPad et scénarios éducatifs
 
 Pour les iPad partagés, configurez **Shared Device Mode** ou des profils sans user affinity selon votre modèle pédagogique. Les apps VPP assignées au device rather than user accélèrent la mise à disposition en classe. Validez que les profils Wi-Fi et restrictions survivent au redémarrage et que la conformité Intune remonte correctement après la première connexion élève.
+### Cas pratique : 200 iPhone corporate via ABM et Intune
+
+Une entreprise finance déploie 200 iPhone 15 Pro via ABM vers Intune. Séquence : certificat Push Apple uploadé dans Intune, Enrollment Program Token synchronisé, appareils assignés au serveur Microsoft dans ABM, profil ADE créé (supervisé, locked enrollment, skip Apple ID personnel). Pilote : 5 iPhone → validation Managed, profils Wi-Fi/SCEP, apps VPP (Outlook, Authenticator).
+
+Les numéros de série apparaissent sous 72 h après facturation revendeur. Sans assignation ABM → Intune, les iPhone démarrent en mode non géré malgré l'achat corporate.
+
+### Renouvellement ADE tokens et certificat Push
+
+Le **Enrollment Program Token** Intune expire typiquement après un an. Renouvelez depuis Intune → Devices → Apple enrollment → Enrollment Program Tokens, importez dans ABM. Les appareils déjà inscrits restent gérés ; seuls les nouveaux enrôlements ADE échouent si le token est expiré. Même logique pour le certificat MDM Push Apple (distinct du token ABM).
+
+> **Bonne pratique :** Documentez dans un calendrier partagé les trois dates : Push cert, ABM token, renouvellement PKI SCEP. Testez le flux complet sur un iPhone de labo effacé avant la fenêtre de production. [Microsoft Learn — ADE](https://learn.microsoft.com/fr-fr/mem/intune/enrollment/device-enrollment-program-enroll-ios)
+
+### Supervision et verrouillage MDM
+
+Locked enrollment garantit que l'utilisateur ne peut pas retirer le profil MDM — prérequis des flottes Zero Trust. Supervision débloque restrictions avancées (App Store, AirDrop, comptes iCloud). Vérifiez Réglages → Général → Informations → Supervision sur le pilote avant vague de 200 appareils.
+
+### Token vs Push : calendrier de renouvellement
+
+Maintenez un tableau partagé avec trois dates critiques : certificat MDM Push Apple, Enrollment Program Token ABM, expiration PKI SCEP des profils Wi-Fi. Renouvelez chaque artefact 30 jours avant échéance et testez sur un iPhone de labo effacé. Microsoft Learn documente les chemins exacts dans le centre d'administration Intune sous Devices → Apple enrollment.
+
+
 
 ADE + Intune pose les fondations d’un parc iOS supervisé, prêt pour conformité et Conditional Access.`,
         gameInstructions:
@@ -508,6 +655,7 @@ ADE + Intune pose les fondations d’un parc iOS supervisé, prêt pour conformi
           'Assigner des actions de non-conformité : notification, marquer non conforme, retrait sélectif.',
           'Corréler état conformité avec Conditional Access et rapports Intune.',
           'Prioriser remédiation jailbreak et OS critique avant alertes mineures.',
+          'Configurer une action de non-conformité aboutissant à un effacement sélectif ou complet (wipe) sur iPhone compromis.',
         ],
         keyTakeaways: [
           'Le jailbreak doit déclencher action immédiate (blocage ou retrait).',
@@ -577,6 +725,27 @@ Sur appareil **supervisé** via ADE, les politiques de conformité peuvent exige
 ### Cycle de vie et communication
 
 Planifiez les hausses de version OS minimale après chaque keynote Apple : période de grâce de quatorze jours, email utilisateur, puis enforcement CA. Les équipes helpdesk doivent disposer d’une fiche remédiation standard (mise à jour iOS, définition PIN, signalement jailbreak) pour réduire le temps de résolution des tickets Intune.
+### Cas pratique : conformité Intune sur 200 iPhone
+
+Baseline Intune pour 200 iPhone corporate : iOS 17 minimum, PIN 6 chiffres, jailbreak = block immédiat, Threat level (Defender mobile) si licencié. Actions non-conformité : J+0 email, J+3 marquer non conforme, J+7 blocage CA Exchange/SharePoint, J+14 effacement sélectif (MAM) ou wipe device si hautement sensible.
+
+Un iPhone jailbreaké détecté un lundi matin : pas de délai de grâce, ticket sécurité, retrait accès M365 via CA, option wipe complet si données classifiées.
+
+### Intune compliance et wipe : niveaux d'action
+
+Intune distingue **retire** (désinscription MDM + effacement selon paramètres), **selective wipe** (données MAM/apps gérées uniquement) et **full wipe** (effacement factory). Configurez progressivement : notification → non conforme → CA block → wipe. Le wipe complet sur appareil supervisé ADE le reprovisionne au prochain setup si toujours assigné ABM.
+
+> **Bonne pratique :** Alignez hausse version OS minimale sur cycle Apple : communication J-14, grace period, puis enforcement CA. Helpdesk reçoit fiche remédiation standard. [Conformité iOS Intune](https://learn.microsoft.com/fr-fr/mem/intune/protect/device-compliance-get-started)
+
+### Corrélation profils configuration et conformité
+
+Un appareil peut avoir Wi-Fi déployé avec succès mais rester non conforme (PIN absent). Croisez rapports **Device configuration** et **Device compliance** dans Intune. Conditional Access ne reçoit le signal « compliant » que lorsque toutes les politiques assignées passent.
+
+### Reporting Entra ID et preuve audit
+
+Exportez mensuellement les appareils non conformes avec raison (OS, PIN, jailbreak). Archivez les captures Conditional Access sign-in logs montrant blocage 53003 pour appareils non conformes. Les auditeurs vérifient que jailbreak déclenche action < 24 h et que grace period OS est documentée par communication utilisateur datée. Conservez aussi l'historique complet des changements de baseline OS dans le ticket change management.
+
+
 
 Les politiques de conformité Intune traduisent votre baseline sécurité en signaux automatisés exploitables par Entra ID.`,
         gameInstructions:
@@ -590,6 +759,7 @@ Les politiques de conformité Intune traduisent votre baseline sécurité en sig
           'Configurer Conditional Access exigeant apps approuvées ou appareil conforme.',
           'Distinguer scénarios MDM complet, MAM-only et BYOD.',
           'Valider conteneur de données et expérience utilisateur sur iPhone pilote.',
+          'Combiner MAM, conformité device et Conditional Access pour un scénario COPE de 200 iPhone corporate.',
         ],
         keyTakeaways: [
           'MAM protège les données au niveau application sans enrôler l’appareil entier.',
@@ -658,6 +828,27 @@ Préparez communication : installation apps depuis store, acceptation PIN MAM, d
 ### Tests de régression et rollback
 
 Avant généralisation, documentez un plan de rollback : désactivation temporaire de la règle CA la plus restrictive, conservation d’une politique MAM permissive en mode report-only si disponible, et comptes pilote hors groupe production. Rejouez les scénarios copier-coller, pièce jointe et réunion Teams après chaque modification de politique pour éviter les blocages métier en heures ouvrées.
+### Cas pratique : BYOD et COPE mixte — 200 utilisateurs
+
+200 collaborateurs : 120 COPE (iPhone supervisés ADE Intune), 80 BYOD (MAM-only). COPE : conformité device + CA « require compliant device ». BYOD : App Protection Policy (PIN app, chiffrement, bloc copie) + CA « require app protection ». Outlook non managé doit échouer avec erreur 53003 dans Entra sign-in logs.
+
+Pilote : 10 comptes de chaque modèle avant généralisation. Test copier-coller mail vers Notes personnel (doit échouer).
+
+### Intune wipe sélectif vs conformité
+
+Si un BYOD devient non conforme (jailbreak détecté via MAM/WIP), selective wipe efface données corporate dans Outlook/Teams sans effacer photos personnelles. Sur COPE, compliance policy peut déclencher full wipe après escalade sécurité — documentez la chaîne d'approbation.
+
+> **Bonne pratique :** Préparez rollback CA : comptes pilote exclus, règle moins restrictive en parallèle, monitoring Entra ID Sign-ins filtré sur 53003. [Conditional Access overview](https://learn.microsoft.com/fr-fr/entra/identity/conditional-access/overview)
+
+### PKI, SCEP et accès apps protégées
+
+Les apps MAM accèdent au cloud via TLS ; l'accès réseau interne peut exiger certificat SCEP via profil Intune. Assurez cohérence certificat identité avant profil Wi-Fi 802.1X. Conditional Access évalue identité + app + device state à chaque session — un changement policy peut prendre 15–30 minutes à propager.
+
+### Communication utilisateur BYOD/COPE
+
+Préparez FAQ : pourquoi PIN Outlook séparé du code iPhone, pourquoi copier-coller vers Notes est bloqué, comment réenregistrer Company Portal. Pour 200 utilisateurs, envoyez email J-7 avant activation CA stricte avec lien vidéo 2 minutes. Réduisez tickets helpdesk en anticipant les erreurs 53003 les plus fréquentes. Incluez un canal Teams dédié « migration MAM » pendant toute la semaine de bascule production.
+
+
 
 En combinant App Protection et Conditional Access, Intune sécurise M365 sur iOS même lorsque l’organisation ne possède pas entièrement l’appareil — pilier des déploiements hybrides Apple + Microsoft.`,
         gameInstructions:

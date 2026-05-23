@@ -139,6 +139,35 @@ export const appleCertPrepQuestions: Record<string, SeedQuestion[]> = {
       explanation:
         'Apple Business Manager indique si l’appareil est assigné au serveur MDM de l’établissement. La console MDM confirme l’enrôlement, la supervision et la dernière check-in. Ces deux sources croisées évitent les erreurs d’assignation lors des déploiements ADE. L’historique Safari ou le compte iCloud personnel ne renseignent pas sur l’origine ABM ni sur l’assignation MDM.',
     },
+
+    {
+      type: 'KNOWLEDGE',
+      prompt:
+        'Quelle capacité la supervision Apple débloque-t-elle pour un iPhone d’entreprise géré par MDM ?',
+      options: opt(
+        'Profils MDM non supprimables par l’utilisateur et restrictions avancées (App Store, comptes, AirDrop)',
+        'Désactivation automatique d’Activation Lock sans ABM',
+        'Installation d’apps Android via sideload',
+        'Suppression du chiffrement hardware Secure Enclave'
+      ),
+      correctOption: 'a',
+      explanation:
+        'La supervision est établie via ADE ou Apple Configurator et élargit le périmètre MDM : l’utilisateur ne peut pas retirer le profil de gestion sur un appareil supervisé avec enrôlement verrouillé. Les payloads restrictions, filtrage web et mode single-app deviennent disponibles. Activation Lock reste actif et se gère via ABM ou MDM — la supervision ne le désactive pas. Distinction essentielle en support L1 face à un iPhone personnel où l’utilisateur peut refuser ou supprimer le profil MDM non supervisé.',
+    },
+    {
+      type: 'SCENARIO',
+      prompt:
+        '200 iPhones supervisés : les apps VPP déployées par MDM restent « En attente » alors que Safari fonctionne. Première piste réseau ?',
+      options: opt(
+        'Filtrage proxy/pare-feu bloquant les domaines CDN Apple (gsp.apple.com, appldnld.apple.com)',
+        'FileVault désactivé sur les iPhone',
+        'Expiration du certificat BitLocker',
+        'Absence de compte Google Workspace'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Les apps VPP installées via MDM téléchargent binaires depuis l’infrastructure Apple CDN. Un proxy d’entreprise peut autoriser la navigation web tout en bloquant ces domaines. Vérifiez logs proxy, DNS interne et restrictions de contenu iOS. Côté MDM, contrôlez statut InstallApplication et licences VPP assignées. Ce pattern est fréquent après durcissement réseau sans liste blanche Apple mise à jour. Ne restaurez pas en masse avant d’isoler la cause réseau ou certificat.',
+    },
   ],
   'ios-troubleshooting': [
     {
@@ -253,6 +282,35 @@ export const appleCertPrepQuestions: Record<string, SeedQuestion[]> = {
       explanation:
         'Le canal MDM repose sur Apple Push Notification service : sans certificat APNs valide, les check-in et déploiements échouent en masse. Un changement de certificat mal importé (topic APNs différent) peut même nécessiter un réenrôlement. L’admin vérifie la date d’expiration dans la console MDM et le portail Apple Push Certificates. Les symptômes groupés après maintenance certificat orientent fortement vers cette cause plutôt que vers un problème utilisateur individuel.',
     },
+
+    {
+      type: 'KNOWLEDGE',
+      prompt:
+        'Sur iPhone supervisé Jamf Pro, quelle information la console affiche-t-elle pour confirmer que le canal Push MDM est fonctionnel ?',
+      options: opt(
+        'Dernière check-in récente et commandes MDM passant à Acknowledged/Completed',
+        'Couleur de la coque déclarée par l’utilisateur',
+        'Nombre de photos iCloud',
+        'Version de watchOS associée'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Jamf Pro affiche la dernière communication MDM sur la fiche appareil mobile. Une check-in récente prouve que APNs livre les notifications au device. Si les commandes restent Pending malgré check-in, investiguez scope politique ou erreur payload. Une check-in stale (>48 h) sur appareil actif oriente vers certificat Push expiré, réseau ou appareil éteint prolongé. Le support L1 remonte ces timestamps à l’admin MDM avant toute action destructive.',
+    },
+    {
+      type: 'SCENARIO',
+      prompt:
+        'Après renouvellement certificat Push APNs dans Jamf, 50 iPhone perdent le check-in simultanément. Cause la plus probable ?',
+      options: opt(
+        'Nouveau certificat avec topic APNs différent ou import incomplet — les appareils ne reconnaissent plus le serveur Push',
+        'Les utilisateurs ont tous désactivé Bluetooth',
+        'iOS 17 interdit désormais le MDM',
+        'Le mode Focus « Ne pas déranger » bloque le MDM'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Le certificat Push MDM authentifie le serveur Jamf auprès d’APNs avec un topic unique. Un renouvellement doit conserver le même topic ; un certificat recréé from scratch change le topic et casse la gestion existante. Symptôme typique : check-in groupée stale après maintenance. Vérifier Settings → Apple Push Certificates dans Jamf et identity.apple.com. Planifiez renouvellement 30 jours avant expiration et testez sur appareil pilote. Documentez la procédure pour éviter réenrôlement massif de 200 iPhone.',
+    },
   ],
   'acmt-exam-prep': [
     {
@@ -366,6 +424,35 @@ export const appleCertPrepQuestions: Record<string, SeedQuestion[]> = {
       correctOption: 'a',
       explanation:
         'Apple Business Manager est le point d’entrée pour l’ADE et l’assignation au serveur MDM de l’organisation. Le technicien Device Support y trouve des réponses sur la propriété de l’appareil et les voies légitimes de retrait Activation Lock. ABM ne remplace pas Apple Diagnostics ni les procédures atelier. Comprendre ce lien évite les contournements non autorisés lors des reprises SAV ou recyclage parc.',
+    },
+
+    {
+      type: 'KNOWLEDGE',
+      prompt:
+        'Que se passe-t-il généralement après effacement complet d’un iPhone supervisé ADE toujours assigné dans ABM ?',
+      options: opt(
+        'Au redémarrage, Setup Assistant réenrôle automatiquement via Remote Management vers le MDM assigné',
+        'L’appareil devient non supervisé définitivement sans action admin',
+        'Activation Lock disparaît sans compte Apple',
+        'Le MDM ne peut plus jamais gérer cet appareil'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Automated Device Enrollment lie l’appareil au serveur MDM dans ABM. Après effacement, l’assistant affiche Remote Management et réapplique supervision + profil MDM sans intervention utilisateur si locked enrollment. Le technicien Device Support doit connaître ce comportement pour ne pas paniquer face à un « re-setup » normal en SAV. Si assignation ABM retirée, l’appareil se comporte comme consumer. Distinction clé examen : restauration locale vs fin de vie appareil avec retrait ABM.',
+    },
+    {
+      type: 'SCENARIO',
+      prompt:
+        'Un technicien prépare un examen Device Support. Un collègue propose de « bypass Activation Lock avec un outil en ligne ». Réponse conforme ?',
+      options: opt(
+        'Refuser : seules voies Apple documentées (identifiants propriétaire, ABM, commande MDM) sont acceptables',
+        'Accepter si le client signe une décharge',
+        'Remplacer la carte mère sans trace',
+        'Utiliser un profil MDM personnel du technicien'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Apple Device Support et l’éthique atelier interdisent tout contournement non documenté d’Activation Lock. L’examen teste la connaissance des voies légitimes : déverrouillage organisationnel ABM, wipe MDM sur supervisé, credentials propriétaire. Les outils tiers violent garantie et politique sécurité entreprise. Le technicien documente l’état Find My et escalade vers admin MDM. En parc de 200 iPhone, un bypass non tracé crée faille audit et responsabilité légale.',
     },
   ],
 };
@@ -483,6 +570,35 @@ export const jamfProFoundationsQuestions: Record<string, SeedQuestion[]> = {
       explanation:
         'Enrollment Complete est idéal pour paquets et profils de base au premier enrôlement ADE. Ongoing corrige la dérive : réinstalle une app manquante, relance un script ou renouvelle un profil expiré. Combiner les deux évite de surcharger l’enrôlement initial tout en maintenant la conformité. Choisir le mauvais trigger explique souvent « policy ne s’applique pas » malgré un check-in récent.',
     },
+
+    {
+      type: 'KNOWLEDGE',
+      prompt:
+        'Quel endpoint API Jamf Pro moderne permet de lister l’inventaire enrichi des Mac avec filtres (ex. osVersion) ?',
+      options: opt(
+        'GET /api/v1/computers-inventory avec paramètres section et filter OData-like',
+        'POST /api/v1/delete-all-devices',
+        'GET /api/v1/apple-push-cert/download-only',
+        'PUT /api/v1/users/reset-password'
+      ),
+      correctOption: 'a',
+      explanation:
+        'L’API Jamf Pro v1 expose computers-inventory et mobile-devices-inventory pour l’inventaire moderne. Authentification OAuth Bearer token ou compte API selon configuration. Les filtres permettent d’automatiser exports conformité sans cliquer dans l’UI. Classic API (/JSSResource) existe encore mais inventory endpoints v1 sont privilégiés pour reporting. Documentez token scopes minimum. Référence : developer.jamf.com. Automatisation utile avant audit sur parc 200 Mac.',
+    },
+    {
+      type: 'SCENARIO',
+      prompt:
+        'Déploiement VPP de Microsoft Teams sur Smart Group pilote iOS : 8/10 réussissent, 2 restent Pending. Action admin Jamf ?',
+      options: opt(
+        'Vérifier licences VPP, assignation device-based, logs commande InstallApplication et réseau sur les 2 appareils',
+        'Supprimer le Smart Group et tout envoyer à All Mobile Devices',
+        'Révoquer le certificat Push',
+        'Désactiver la supervision sur les 2 iPhone'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Un échec partiel sur pilote indique problème device-specific ou licence, pas policy globale. Jamf affiche statut MDM command et erreur éventuelle. VPP requiert token actif et licences suffisantes assignées au mode device pour flotte partagée. Vérifiez aussi connectivité CDN Apple. Corrigez sur les 2 appareils avant d’élargir aux 200 iPhone production. Elargir scope immédiatement multiplierait les échecs.',
+    },
   ],
   'inventory-basics': [
     {
@@ -597,6 +713,35 @@ export const jamfProFoundationsQuestions: Record<string, SeedQuestion[]> = {
       explanation:
         'Un Mac qui ne check-in plus peut sortir silencieusement du périmètre de déploiement. Jamf affiche la dernière communication MDM sur la fiche appareil. Croiser avec politiques en attente et extensions manquantes priorise les actions avant qu’un utilisateur ne signale une panne. FileVault escrowed est généralement un signe positif de conformité, pas d’alerte.',
     },
+
+    {
+      type: 'KNOWLEDGE',
+      prompt:
+        'Quel champ inventaire Jamf Pro aide à détecter un iPhone potentiellement compromis (jailbreak) ?',
+      options: opt(
+        'Indicateur jailbreak / compromised dans section Security ou extension attribute dédié',
+        'Couleur du boîtier dans Hardware',
+        'Prénom de l’utilisateur dans General',
+        'Version Xcode installée'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Jamf remonte le statut jailbreak via inventaire iOS lorsque disponible. Smart Groups « jailbreak true » isolent appareils à risque pour wipe ou ticket sécurité. Croisez avec dernière check-in : un jailbreak récent sans check-in empêche remédiation à distance. En parc 200 iPhone, export Advanced Mobile Device Search alimente comité sécurité. Ne confondez pas avec supervised flag — un appareil supervisé peut être jailbreaké si exploit post-enrollment.',
+    },
+    {
+      type: 'SCENARIO',
+      prompt:
+        'Inventaire Jamf : 15 Mac présents ABM mais absents de Jamf après 7 jours. Première hypothèse ?',
+      options: opt(
+        'Échec ADE au Setup Assistant, mauvaise assignation serveur MDM dans ABM, ou PreStage non scoped',
+        'Les Mac sont forcément volés',
+        'FileVault empêche l’inventaire Jamf',
+        'Jamf ne gère pas les Mac Apple Silicon'
+      ),
+      correctOption: 'a',
+      explanation:
+        'ABM assigne au serveur MDM ; Jamf synchronise via token. Si utilisateur termine setup sans réseau ou PreStage incorrect, Mac finit non géré. Vérifiez assignation ABM → Jamf, validité token MDM, logs enrollment. Comparez serialNumber ABM vs recherche Jamf. Scenario fréquent réception 20 Mac neufs : un mauvais PreStage laisse machines hors MDM. Pas de wipe massif — corriger assignation et réeffacer pilote.',
+    },
   ],
   'enrollment-apple-integration': [
     {
@@ -710,6 +855,35 @@ export const jamfProFoundationsQuestions: Record<string, SeedQuestion[]> = {
       correctOption: 'a',
       explanation:
         'Le jeton MDM lie Apple Business Manager à Jamf Pro pour synchroniser inventaire et assignations. Un jeton expiré ou non réimporté bloque les nouveaux appareils sans affecter nécessairement les déjà enrôlés. ABM doit toujours assigner les appareils au serveur Jamf correct. Supprimer les PreStage serait destructif et ne résout pas un problème de jeton.',
+    },
+
+    {
+      type: 'KNOWLEDGE',
+      prompt:
+        'Combien de temps avant expiration faut-il planifier le renouvellement du certificat Push APNs Jamf en production ?',
+      options: opt(
+        '30 à 45 jours — tester import avant date d’expiration effective',
+        'La veille à minuit sans test',
+        'Uniquement après coupure constatée sur 200 appareils',
+        'Tous les 10 ans'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Le certificat Push expire typiquement annuellement. Jamf affiche date dans Settings → Apple Push Certificates. Renouvellement via même Apple ID sur identity.apple.com conserve topic APNs. Fenêtre 30-45 jours laisse temps test pilote et rollback. Expiration provoque check-in stale groupée — impact parc entier. Documentez runbook partagé avec équipe ABM. Ne pas confondre avec token serveur MDM ABM — deux renouvellements distincts.',
+    },
+    {
+      type: 'SCENARIO',
+      prompt:
+        'Jeton serveur MDM Apple Jamf renouvelé lundi ; mardi, nouveaux iPhone ABM n’apparaissent pas dans Jamf. Vérification ?',
+      options: opt(
+        'Upload nouveau MDM Server Token dans Jamf ET import dans ABM ; confirmer assignation appareils au serveur Jamf',
+        'Réinstaller Jamf Admin sur poste technicien uniquement',
+        'Changer mot de passe Apple ID personnel',
+        'Supprimer tous les PreStage'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Token MDM lie ABM à Jamf pour sync inventaire et ADE. Token expiré ou mal réimporté bloque nouveaux appareils sans affecter nécessairement existants. ABM doit assigner iPhone au serveur Jamf correct. Supprimer PreStage serait destructif. Vérifiez date expiration dans les deux consoles. Test : assigner iPhone labo ABM et observer apparition Jamf sous 15 min. Critique avant réception 200 iPhone.',
     },
   ],
 };
@@ -828,6 +1002,35 @@ export const intuneIosEnrollmentQuestions: Record<string, SeedQuestion[]> = {
       explanation:
         'Sans jeton MDM valide, Intune ne peut plus synchroniser l’inventaire ABM ni recevoir de nouveaux appareils ADE.',
     },
+
+    {
+      type: 'KNOWLEDGE',
+      prompt:
+        'Quelle différence entre certificat Apple MDM Push Intune et Enrollment Program Token ABM ?',
+      options: opt(
+        'Push cert autorise commandes MDM via APNs ; token ABM synchronise inventaire et ADE entre Apple et Intune',
+        'Les deux fichiers sont identiques et interchangeables',
+        'Token ABM remplace Conditional Access',
+        'Push cert sert uniquement à BitLocker'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Deux artefacts distincts : Push certificate (identity.apple.com) pour canal MDM temps réel ; Enrollment Program Token téléchargé depuis Intune importé dans ABM pour liaison organisationnelle. Expiration de l’un n’implique pas expiration de l’autre — deux alertes calendrier requis. Nouveaux ADE bloqués si token ABM expiré même si Push valide. Documentation Microsoft Learn détaille renouvellement séparé. Erreur fréquente débutants Intune iOS.',
+    },
+    {
+      type: 'SCENARIO',
+      prompt:
+        '200 iPhone assignés Intune dans ABM ; Setup Assistant boucle sur « Unable to activate ». Piste prioritaire ?',
+      options: opt(
+        'Connectivité réseau/DNS vers Apple et Microsoft, date/heure, validité certificat Push et token ABM',
+        'Révoquer toutes licences M365',
+        'Installer Jamf Pro en parallèle sans config',
+        'Désactiver supervision dans ABM manuellement'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Activation iPhone requiert contact serveurs Apple. ADE ajoute contact Intune. Pare-feu bloquant ou DNS interne incorrect cause échec activation ou Remote Management. Vérifiez aussi certificats et token non expirés. Date/heure auto essentielle. Testez iPhone pilote sur réseau guest puis corporate. Scénario 200 devices : résoudre infra avant déploiement masse. Désactiver supervision compromet modèle Zero Trust.',
+    },
   ],
   'compliance-policies': [
     {
@@ -939,6 +1142,35 @@ export const intuneIosEnrollmentQuestions: Record<string, SeedQuestion[]> = {
       correctOption: 'a',
       explanation:
         'Intune évalue PIN, OS, jailbreak et autres critères, puis publie l’état dans Entra ID. Conditional Access peut exiger « appareil conforme » pour autoriser Exchange ou SharePoint. Sans assignation correcte des deux côtés, l’utilisateur reste bloqué malgré une apparence de configuration. Tester sur un appareil pilote valide la chaîne conformité → CA.',
+    },
+
+    {
+      type: 'SCENARIO',
+      prompt:
+        'iPhone jailbreaké détecté par conformité Intune à 09h00. Action alignée Zero Trust ?',
+      options: opt(
+        'Marquer non conforme immédiatement, bloquer CA M365, ticket sécurité, envisager wipe selon politique',
+        'Attendre 30 jours de grace period standard OS',
+        'Ignorer car l’utilisateur est direction',
+        'Désactiver toutes politiques conformité du tenant'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Jailbreak compromet Secure Enclave et contrôles MDM — pas de délai négociable en environnement réglementé. Intune signale non compliant → Entra CA bloque Exchange/Teams. Sécurité évalue wipe full ou retire selon classification données. Grace period réservée OS patchable ou PIN oublié avec MFA recovery. Sur parc 200 iPhone, un jailbreak peut indiquer pattern — cherchez autres devices même utilisateur. Documentez incident.',
+    },
+    {
+      type: 'KNOWLEDGE',
+      prompt:
+        'Quelle action Intune « Actions for noncompliance » permet un effacement factory sur iPhone corporate après escalade ?',
+      options: opt(
+        'Retire / Remote wipe (full wipe) configuré après délais progressifs',
+        'Uniquement changement fond d’écran',
+        'Réinitialisation mot de passe Entra automatique',
+        'Installation Chrome OS Flex'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Intune permet chaîne progressive : notification email, mark noncompliant, block access via CA, puis retire/wipe. Full wipe efface appareil ; sur ADE supervisé, prochain setup reprovisionne si toujours ABM. Selective wipe cible données MAM sur BYOD. Configurez délais selon sensibilité — jailbreak souvent sans grace. Testez sur iPhone labo avant production. Alignez avec legal/HR pour COPE.',
     },
   ],
   'app-protection-conditional-access': [
@@ -1052,6 +1284,35 @@ export const intuneIosEnrollmentQuestions: Record<string, SeedQuestion[]> = {
       correctOption: 'a',
       explanation:
         'Conditional Access peut imposer « exiger une application approuvée » ou « exiger un appareil marqué comme conforme ». Combiné à App Protection, seules les instances Outlook managées accèdent aux données M365. Sans CA, une app non managée pourrait encore synchroniser si les credentials fuient. Valider sur un iPhone pilote avec compte test avant déploiement global.',
+    },
+
+    {
+      type: 'SCENARIO',
+      prompt:
+        'BYOD : Outlook accède au mail malgré politique App Protection PIN requise. Investigation Intune ?',
+      options: opt(
+        'Assignation politique MAM au bon groupe utilisateur, app cible Outlook, version app supportée, état enrollment MAM',
+        'Réinstaller BitLocker sur PC admin',
+        'Renouveler certificat Push Jamf',
+        'Désactiver MFA globalement'
+      ),
+      correctOption: 'a',
+      explanation:
+        'MAM s’applique par utilisateur Azure AD et app cible. Outlook iOS doit être version supportant Intune SDK. Company Portal peut afficher enrollment MAM status. CA « require app protection » bloque clients non managés — vérifiez sign-in logs 53003. Délai propagation 15-30 min possible. BitLocker et Jamf hors périmètre MAM iOS. Test compte pilote avant 200 utilisateurs BYOD.',
+    },
+    {
+      type: 'KNOWLEDGE',
+      prompt:
+        'Quelle combinaison sécurise Outlook/Teams sur iPhone COPE supervisé Intune (200 devices) ?',
+      options: opt(
+        'Conformité device + App Protection + CA exigeant appareil conforme ET/OU app protégée selon modèle',
+        'Wi-Fi guest seul',
+        'Désactivation Conditional Access pour exécutifs',
+        'Compte Apple ID partagé entre tous les iPhone'
+      ),
+      correctOption: 'a',
+      explanation:
+        'COPE combine MDM complet (conformité, profils, supervision) et MAM pour defense-in-depth. CA enforce compliant device pour accès M365 ; MAM ajoute PIN app et bloc copie. Shared Apple ID viole bonnes pratiques. Exclusions CA créent failles audit. Pilote 10 devices valide copier-coller bloqué et accès Teams. Modèle standard entreprises finance/santé avec flotte Apple.',
     },
   ],
 };
