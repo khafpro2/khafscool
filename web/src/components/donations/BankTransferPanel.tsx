@@ -113,7 +113,9 @@ export function BankTransferPanel() {
           <p style={{ fontSize: '0.78rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
             Référence libre
           </p>
-          <p style={{ marginTop: '0.25rem', fontWeight: 700 }}>{details.paymentReference}</p>
+          <p style={{ marginTop: '0.25rem', fontWeight: 700 }} data-testid="bank-reference">
+            {details.paymentReference}
+          </p>
           <p className="muted" style={{ marginTop: '0.35rem', fontSize: '0.92rem' }}>
             Indiquez cette mention dans le libellé du virement pour faciliter le suivi.
           </p>
