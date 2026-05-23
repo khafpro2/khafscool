@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { WEB_URL } from '../../config';
 import { BrandIcon } from '../../components/BrandIcon';
+import { AlmostCompleteBanner } from '../../components/dashboard/AlmostCompleteBanner';
 import { ContinueLearningSection } from '../../components/home/ContinueLearningSection';
 import { HomeEngagementSection } from '../../components/home/HomeEngagementSection';
 import { MdmTracksSection } from '../../components/MdmTracksSection';
@@ -225,6 +226,8 @@ export function LearnerDashboardScreen({ onSignOut }: LearnerDashboardScreenProp
           </Text>
         </View>
       ) : null}
+
+      <AlmostCompleteBanner courses={data.courses} />
 
       <ContinueLearningSection courses={data.courses} />
 

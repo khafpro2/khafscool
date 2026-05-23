@@ -54,3 +54,12 @@ export function toastQuestsCompleted(quests: QuestLike[]) {
     toastQuestCompleted(quest);
   }
 }
+
+export function toastAlmostComplete(courseTitle: string) {
+  showToast({
+    kind: 'success',
+    title: "Plus qu'une unité pour le badge !",
+    body: `« ${courseTitle} » — termine la dernière unité pour débloquer ton super-badge.`,
+    durationMs: 7000,
+  });
+}

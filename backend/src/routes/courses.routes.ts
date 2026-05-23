@@ -28,6 +28,11 @@ export async function coursesRoutes(app: FastifyInstance) {
     { preHandler: requireAuth },
     courses.getPracticeExam
   );
+  app.post<{ Params: { slug: string }; Body: { scorePercent?: number } }>(
+    '/courses/:slug/practice-exam/score',
+    { preHandler: requireAuth, config: quizRateLimitRouteConfig },
+    courses.recordPracticeExamScore
+  );
   app.get<{ Params: { slug: string } }>('/courses/:slug', { preHandler: requireAuth }, courses.getCourse);
   app.post<{
     Params: { id: string };

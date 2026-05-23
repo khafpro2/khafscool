@@ -2,16 +2,18 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { computePracticeExamScorePercent, PRACTICE_EXAM_QUESTION_COUNT } from '@ama/shared/practice-exam';
+import { computePracticeExamScorePercent, PRACTICE_EXAM_PASS_PERCENT, PRACTICE_EXAM_QUESTION_COUNT } from '@ama/shared/practice-exam';
 import {
   checkModuleAnswer,
   fetchCourseProgress,
   fetchPracticeExam,
+  recordPracticeExamScore,
   type PracticeExamData,
   type PracticeExamQuestion,
 } from '@/lib/api';
 import { buildAuthUrl, getAccessToken } from '@/lib/auth';
 import { formatTrack } from '@/lib/tracks';
+import { toastBadgeUnlocked, toastQuestCompleted } from '@/lib/gamification-toasts';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -38,6 +40,7 @@ export function CoursePracticeExamClient({ slug }: { slug: string }) {
   const [questionResults, setQuestionResults] = useState<Record<string, QuestionCheckResult>>({});
   const [revealedQuestions, setRevealedQuestions] = useState<Set<string>>(new Set());
   const [examFinished, setExamFinished] = useState(false);
+  const [scoreRecorded, setScoreRecorded] = useState(false);
 
   useEffect(() => {
     const token = getAccessToken();
@@ -95,6 +98,28 @@ export function CoursePracticeExamClient({ slug }: { slug: string }) {
   useEffect(() => {
     if (allRevealed) setExamFinished(true);
   }, [allRevealed]);
+
+  useEffect(() => {
+    if (!examFinished || scoreRecorded || !state || state.usesDemo) return;
+
+    const token = getAccessToken();
+    if (!token) return;
+
+    setScoreRecorded(true);
+    void recordPracticeExamScore(slug, token, scorePercent)
+      .then((result) => {
+        if (result.badgeEarned) toastBadgeUnlocked(result.badgeEarned);
+        if (result.questCompleted) {
+          toastQuestCompleted({
+            label: 'Passe un examen blanc',
+            rewardPoints: 25,
+          });
+        }
+      })
+      .catch(() => {
+        setScoreRecorded(false);
+      });
+  }, [examFinished, scorePercent, scoreRecorded, slug, state]);
 
   const handleSelectAnswer = useCallback((questionId: string, optionId: string) => {
     setAnswers((current) => ({ ...current, [questionId]: optionId }));
@@ -269,7 +294,7 @@ function PracticeExamResults({
   questionResults: Record<string, QuestionCheckResult>;
 }) {
   const visual = getTrackVisual(track);
-  const passed = scorePercent >= 70;
+  const passed = scorePercent >= PRACTICE_EXAM_PASS_PERCENT;
 
   return (
     <Card style={{ marginTop: '1.25rem' }}>

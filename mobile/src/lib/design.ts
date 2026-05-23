@@ -117,6 +117,12 @@ const BADGE_VISUALS: Record<string, BadgeVisual> = {
     color: '#059669',
     bg: '#ecfdf5',
   },
+  'practice-exam-pass': {
+    label: 'Examen blanc réussi',
+    icon: '\u{1F4DD}',
+    color: '#1d4ed8',
+    bg: '#eff6ff',
+  },
 };
 
 export function getBadgeVisual(badge: string): BadgeVisual {
@@ -229,6 +235,7 @@ export const ALL_BADGE_SLUGS = [
   'apple-mdm-foundation',
   'jamf-engineer',
   'intune-professional',
+  'practice-exam-pass',
 ] as const;
 
 const BADGE_TRACK: Record<string, string> = {
@@ -241,6 +248,7 @@ const BADGE_CRITERIA: Record<string, string> = {
   'apple-mdm-foundation': 'Termine au moins une unité du parcours Apple Device Support.',
   'jamf-engineer': 'Termine au moins une unité du parcours Jamf Pro.',
   'intune-professional': 'Termine au moins une unité du parcours Microsoft Intune.',
+  'practice-exam-pass': 'Réussis un examen blanc avec au moins 70 % après avoir terminé un parcours.',
 };
 
 export function getBadgeTrack(slug: string): string {

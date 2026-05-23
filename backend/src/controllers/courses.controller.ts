@@ -11,6 +11,14 @@ const checkAnswerBodySchema = z.object({
   selectedOption: z.string().min(1, 'selectedOption requis'),
 });
 
+const practiceExamScoreBodySchema = z.object({
+  scorePercent: z
+    .number({ required_error: 'scorePercent requis', invalid_type_error: 'scorePercent doit être un nombre' })
+    .int('scorePercent doit être un entier')
+    .min(0, 'scorePercent doit être entre 0 et 100')
+    .max(100, 'scorePercent doit être entre 0 et 100'),
+});
+
 const certificationSprintRequestSchema = z.object({
   track: z.nativeEnum(CourseTrack, {
     required_error: 'track is required',
@@ -62,6 +70,37 @@ export async function getPracticeExam(
   } catch (e) {
     if ((e as Error).message === 'COURSE_NOT_FOUND') {
       return reply.status(404).send({ error: 'COURSE_NOT_FOUND' });
+    }
+    throw e;
+  }
+}
+
+export async function recordPracticeExamScore(
+  req: FastifyRequest<{ Params: { slug: string }; Body: { scorePercent?: number } }>,
+  reply: FastifyReply
+) {
+  const parsedBody = practiceExamScoreBodySchema.safeParse(req.body ?? {});
+  if (!parsedBody.success) {
+    return reply.status(400).send({
+      error: 'INVALID_PRACTICE_EXAM_SCORE',
+      details: parsedBody.error.issues.map((issue) => ({
+        field: issue.path.join('.') || 'body',
+        message: issue.message,
+      })),
+    });
+  }
+
+  try {
+    const result = await gamification.recordPracticeExamResult(
+      req.user.sub,
+      req.params.slug,
+      parsedBody.data.scorePercent
+    );
+    return reply.send(result);
+  } catch (e) {
+    const message = (e as Error).message;
+    if (message === 'COURSE_NOT_FOUND' || message === 'COURSE_NOT_COMPLETE') {
+      return reply.status(404).send({ error: message });
     }
     throw e;
   }

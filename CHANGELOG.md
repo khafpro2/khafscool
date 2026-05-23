@@ -18,7 +18,10 @@ Release **MDM Academy Pro v0.2** (branche `cursor/progress-dashboard-auth-v2`, P
 - Dashboard web/mobile « Mes pistes MDM » — **X/4 modules** + barre %
 - Pages complétion 4/4, certificat listant les 4 modules, badge piste à 4 modules
 - Durée de lecture estimée, objectifs module actif (web + mobile)
-- Bannière / toast dashboard à **3/4 modules** : « Plus qu'une unité pour le badge ! »
+- Bannière / toast dashboard à **3/4 modules** : « Plus qu'une unité pour le badge ! » (web + mobile)
+- CTA dashboard **« Passer l'examen blanc »** quand un parcours est complété à 100 %
+- Badge **`practice-exam-pass`** (≥ 70 % à l'examen blanc) + quête hebdo optionnelle « Passe un examen blanc » (+25 pts)
+- API `POST /courses/:slug/practice-exam/score` pour enregistrer le score et déclencher la gamification
 - Catalogue `TrailCard` : **~XX min · 4 modules · 40 questions** (somme reading-time)
 
 ### Partage et social

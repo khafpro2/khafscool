@@ -355,3 +355,11 @@ export interface PracticeExamData {
   expectedPoolSize?: number;
   questions: PracticeExamQuestion[];
 }
+
+export interface PracticeExamScoreResult {
+  scorePercent: number;
+  passed: boolean;
+  badgeEarned?: string;
+  questCompleted?: boolean;
+  badges: string[];
+}

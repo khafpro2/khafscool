@@ -1,6 +1,11 @@
+import { PRACTICE_EXAM_PASS_BADGE, PRACTICE_EXAM_PASS_PERCENT } from '@ama/shared/practice-exam';
 import { CourseTrack, UserLevel, type UserQuest } from '@prisma/client';
 import { prisma } from '../lib/prisma.js';
 import { isSupporterFromBadges } from './supporter-badge.service.js';
+
+export { PRACTICE_EXAM_PASS_BADGE, PRACTICE_EXAM_PASS_PERCENT };
+
+export const WEEKLY_PRACTICE_EXAM_QUEST_KEY = 'weekly-practice-exam';
 
 export type CertificationSprintDays = 7 | 14;
 
@@ -162,6 +167,11 @@ const WEEKLY_QUESTS = [
     label: 'Termine 4 modules MDM cette semaine',
     target: 4,
   },
+  {
+    questKey: WEEKLY_PRACTICE_EXAM_QUEST_KEY,
+    label: 'Passe un examen blanc',
+    target: 1,
+  },
 ];
 
 const TRACK_LABELS: Record<CourseTrack, string> = {
@@ -260,6 +270,7 @@ export const WEEKLY_QUEST_REWARD_POINTS: Record<string, number> = {
   'weekly-jamf-2': 40,
   'weekly-intune-2': 40,
   'weekly-mdm-4': 80,
+  [WEEKLY_PRACTICE_EXAM_QUEST_KEY]: 25,
 };
 
 export function weeklyQuestTrack(questKey: string): CourseTrack | null {
@@ -398,6 +409,67 @@ function gradeGame(userOrder: number[], solution: { correctOrder: number[] }) {
     if (userOrder[i] === expected[i]) matches++;
   }
   return Math.round((matches / expected.length) * 100);
+}
+
+export function isPracticeExamPassingScore(scorePercent: number) {
+  return scorePercent >= PRACTICE_EXAM_PASS_PERCENT;
+}
+
+export async function recordPracticeExamResult(
+  userId: string,
+  courseSlug: string,
+  scorePercent: number
+) {
+  const courseProgress = await getCourseProgress(userId, courseSlug);
+  if (courseProgress.progress.progressPercent < 100) {
+    throw new Error('COURSE_NOT_COMPLETE');
+  }
+
+  const passed = isPracticeExamPassingScore(scorePercent);
+  const progress = await prisma.userProgress.findUnique({ where: { userId } });
+  const badges = [...new Set(progress?.badges ?? [])];
+  let badgeEarned: string | undefined;
+  let questCompleted = false;
+
+  if (passed) {
+    if (!badges.includes(PRACTICE_EXAM_PASS_BADGE)) {
+      badges.push(PRACTICE_EXAM_PASS_BADGE);
+      await prisma.userProgress.upsert({
+        where: { userId },
+        create: {
+          userId,
+          badges,
+          points: progress?.points ?? 0,
+          level: progress?.level ?? UserLevel.NOVICE,
+        },
+        update: { badges },
+      });
+      badgeEarned = PRACTICE_EXAM_PASS_BADGE;
+    }
+
+    await ensureWeeklyQuests(userId);
+    const weekStart = startOfWeek(new Date());
+    const quest = await prisma.userQuest.findFirst({
+      where: { userId, questKey: WEEKLY_PRACTICE_EXAM_QUEST_KEY, weekStart },
+    });
+    if (quest && !quest.completed) {
+      await incrementWeeklyQuest(userId, WEEKLY_PRACTICE_EXAM_QUEST_KEY);
+      const updatedQuest = await prisma.userQuest.findFirst({
+        where: { id: quest.id },
+      });
+      questCompleted = Boolean(updatedQuest?.completed);
+    }
+  }
+
+  const latestProgress = await prisma.userProgress.findUnique({ where: { userId } });
+
+  return {
+    scorePercent,
+    passed,
+    badgeEarned,
+    questCompleted,
+    badges: latestProgress?.badges ?? badges,
+  };
 }
 
 export async function checkQuestionAnswer(

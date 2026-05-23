@@ -1,6 +1,12 @@
 /** Nombre de questions tirées aléatoirement pour l'examen blanc. */
 export const PRACTICE_EXAM_QUESTION_COUNT = 10;
 
+/** Seuil de réussite de l'examen blanc (badge + quête hebdo). */
+export const PRACTICE_EXAM_PASS_PERCENT = 70;
+
+/** Badge débloqué une fois lors d'un examen blanc ≥ PRACTICE_EXAM_PASS_PERCENT. */
+export const PRACTICE_EXAM_PASS_BADGE = 'practice-exam-pass';
+
 export type PracticeExamQuestionSource = {
   id: string;
   moduleId: string;

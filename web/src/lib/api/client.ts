@@ -39,6 +39,7 @@ import type {
   DonationStatusResponse,
   LeaderboardResponse,
   PracticeExamData,
+  PracticeExamScoreResult,
   PublicCourseCatalogItem,
   UserBadgesResult,
   UserProgressData,
@@ -373,6 +374,18 @@ export async function fetchPracticeExam(slug: string, token?: string): Promise<P
   if (!fallback) throw new Error('Parcours introuvable');
   markDemoFallback();
   return buildDemoPracticeExam(normalizeCourse(fallback));
+}
+
+export async function recordPracticeExamScore(
+  slug: string,
+  token: string,
+  scorePercent: number
+): Promise<PracticeExamScoreResult> {
+  return apiRequest<PracticeExamScoreResult>(`/courses/${slug}/practice-exam/score`, {
+    method: 'POST',
+    headers: authHeader(token),
+    body: JSON.stringify({ scorePercent }),
+  });
 }
 
 export async function fetchCourseProgress(slug: string, token?: string): Promise<CourseProgressData> {
