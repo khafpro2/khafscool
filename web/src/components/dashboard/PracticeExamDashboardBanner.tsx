@@ -7,10 +7,15 @@ import { Button } from '@/components/ui/Button';
 
 function findCompletedCourses(courses: CourseSummary[]) {
   return courses.filter(
-    (course) =>
-      course.totalModules > 0 &&
-      (course.progressPercent ?? 0) >= 100 &&
-      course.completedModules >= course.totalModules
+    (course) => {
+      const totalModules = course.totalModules ?? 0;
+      const completedModules = course.completedModules ?? 0;
+      return (
+        totalModules > 0 &&
+        (course.progressPercent ?? 0) >= 100 &&
+        completedModules >= totalModules
+      );
+    },
   );
 }
 
