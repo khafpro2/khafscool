@@ -20,6 +20,7 @@ test.describe('Fiche révision parcours', () => {
 
   test('bouton partager la fiche révision', async ({ page }) => {
     await page.goto('/courses/apple-cert-prep/revision');
+    await expect(page.getByRole('button', { name: /Imprimer \/ PDF/i })).toBeVisible({ timeout: 15_000 });
     await expect(page.getByRole('button', { name: /Partager la fiche/i })).toBeVisible();
   });
 });

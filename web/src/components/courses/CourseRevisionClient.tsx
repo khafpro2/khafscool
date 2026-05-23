@@ -155,7 +155,7 @@ export function CourseRevisionClient({ slug }: { slug: string }) {
           shareText={`Ma fiche révision « ${course.title} » sur Apple MDM Academy.`}
           shareUrlPath={`/courses/${slug}/revision`}
           label="Partager la fiche"
-          ariaLabel="Partager ma fiche révision"
+          ariaLabel="Partager la fiche"
         />
         <Button href={`/courses/${slug}/complete`} variant="secondary">
           Page de complétion

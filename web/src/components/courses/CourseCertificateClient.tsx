@@ -226,7 +226,7 @@ export function CourseCertificateClient({ slug }: { slug: string }) {
             shareText={`J'ai obtenu mon certificat pour le parcours « ${completion.title} » sur Apple MDM Academy.`}
             shareUrlPath={`/courses/${slug}/certificate`}
             label="Partager le certificat"
-            ariaLabel="Partager mon certificat de complétion"
+            ariaLabel="Partager le certificat"
           />
           <p className="muted no-print" style={{ fontSize: '0.85rem', margin: 0 }}>
             Choisis « Enregistrer au format PDF » dans la fenêtre d'impression de ton navigateur.

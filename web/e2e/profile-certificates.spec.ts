@@ -13,8 +13,7 @@ test.describe('Profil — certificats', () => {
 
   test('bouton partager le certificat en mode démo', async ({ page }) => {
     await page.goto('/courses/apple-cert-prep/certificate');
-    await expect(page.getByRole('button', { name: /Partager le certificat/i })).toBeVisible({
-      timeout: 15_000,
-    });
+    await expect(page.getByRole('heading', { name: /Apprenant démo/i })).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByRole('button', { name: /Partager le certificat/i })).toBeVisible();
   });
 });
