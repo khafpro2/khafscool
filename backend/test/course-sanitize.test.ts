@@ -18,6 +18,9 @@ describe('course sanitize', () => {
           slug: 'module-1',
           title: 'Unité 1',
           summary: 'Résumé',
+          learningObjectives: ['Objectif A'],
+          keyTakeaways: ['Point clé A'],
+          lessonContent: '## Leçon\n\nContenu pédagogique.',
           imageUrl: null,
           sortOrder: 1,
           questions: [
@@ -46,6 +49,10 @@ describe('course sanitize', () => {
       ],
     });
 
+    expect(sanitized.modules[0]?.summary).toBe('Résumé');
+    expect(sanitized.modules[0]?.learningObjectives).toEqual(['Objectif A']);
+    expect(sanitized.modules[0]?.keyTakeaways).toEqual(['Point clé A']);
+    expect(sanitized.modules[0]?.lessonContent).toContain('Leçon');
     expect(sanitized.modules[0]?.questions[0]).toEqual({
       id: 'q1',
       type: 'MULTIPLE_CHOICE',

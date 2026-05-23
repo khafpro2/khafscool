@@ -66,13 +66,16 @@ model Course {
 }
 
 model Module {
-  id         String           @id @default(uuid())
-  courseId   String
-  slug       String
-  title      String
-  summary    String
-  imageUrl   String?
-  sortOrder  Int              @default(0)
+  id                 String           @id @default(uuid())
+  courseId           String
+  slug               String
+  title              String
+  summary            String
+  learningObjectives String[]         @default([])
+  keyTakeaways       String[]         @default([])
+  lessonContent      String           @default("") @db.Text
+  imageUrl           String?
+  sortOrder          Int              @default(0)
   course     Course           @relation(fields: [courseId], references: [id])
   questions  Question[]
   game       Game?

@@ -350,7 +350,7 @@ export async function fetchCourse(slug: string, token?: string): Promise<CourseD
     const fallback = DEMO_COURSES.find((course) => course.slug === slug);
     if (!fallback) throw new Error('Parcours introuvable');
     markDemoFallback();
-    return fallback;
+    return normalizeCourse(fallback);
   }
 }
 
@@ -359,7 +359,8 @@ export async function fetchCourseProgress(slug: string, token?: string): Promise
     markDemoFallback();
     const fallback = DEMO_COURSES.find((course) => course.slug === slug);
     if (!fallback) throw new Error('Parcours introuvable');
-    return courseToProgress(fallback);
+    markDemoFallback();
+    return courseToProgress(normalizeCourse(fallback));
   }
 
   try {
@@ -372,7 +373,7 @@ export async function fetchCourseProgress(slug: string, token?: string): Promise
     const fallback = DEMO_COURSES.find((course) => course.slug === slug);
     if (!fallback) throw new Error('Progression du parcours introuvable');
     markDemoFallback();
-    return courseToProgress(fallback);
+    return courseToProgress(normalizeCourse(fallback));
   }
 }
 

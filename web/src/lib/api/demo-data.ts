@@ -1,4 +1,5 @@
 import { DEMO_ACCOUNT } from '@ama/shared/constants';
+import { getCoursePedagogy, getModulePedagogy } from '@ama/shared/course-content';
 import {
   appleCertPrepQuestions,
   intuneIosEnrollmentQuestions,
@@ -307,21 +308,30 @@ export function courseToSummary(course: CourseDetail): CourseSummary {
 }
 
 export function normalizeCourse(course: CourseDetail): CourseDetail {
+  const pedagogy = getCoursePedagogy(course.slug);
   return {
     ...course,
-    modules: course.modules.map((module) => ({
-      ...module,
-      questions: module.questions.map((question) => ({
-        ...question,
-        options: Array.isArray(question.options) ? question.options : [],
-      })),
-      game: module.game
-        ? {
-            ...module.game,
-            steps: Array.isArray(module.game.steps) ? module.game.steps : [],
-          }
-        : null,
-    })),
+    description: pedagogy?.description ?? course.description,
+    modules: course.modules.map((module) => {
+      const modulePedagogy = getModulePedagogy(course.slug, module.slug);
+      return {
+        ...module,
+        summary: modulePedagogy?.summary ?? module.summary,
+        learningObjectives: modulePedagogy?.learningObjectives ?? module.learningObjectives,
+        keyTakeaways: modulePedagogy?.keyTakeaways ?? module.keyTakeaways,
+        lessonContent: modulePedagogy?.lessonContent ?? module.lessonContent,
+        questions: module.questions.map((question) => ({
+          ...question,
+          options: Array.isArray(question.options) ? question.options : [],
+        })),
+        game: module.game
+          ? {
+              ...module.game,
+              steps: Array.isArray(module.game.steps) ? module.game.steps : [],
+            }
+          : null,
+      };
+    }),
   };
 }
 

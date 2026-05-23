@@ -145,6 +145,9 @@ export interface CourseModule {
   slug: string;
   title: string;
   summary: string;
+  learningObjectives?: string[];
+  keyTakeaways?: string[];
+  lessonContent?: string;
   questions: CourseQuestion[];
   game?: {
     id?: string;

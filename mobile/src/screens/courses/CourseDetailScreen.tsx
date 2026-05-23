@@ -32,6 +32,15 @@ type ModuleStatus = 'completed' | 'in_progress' | 'locked';
 
 const QUIZ_PASS_PERCENT = 50;
 
+function stripLessonMarkdown(content: string): string {
+  return content
+    .replace(/^###?\s+/gm, '')
+    .replace(/\*\*([^*]+)\*\*/g, '$1')
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    .replace(/^-\s+/gm, '• ')
+    .trim();
+}
+
 function modulePointsFromScores(quizScore: number, gameScore: number) {
   return Math.round(quizScore * 0.1 + gameScore * 0.2);
 }
@@ -49,6 +58,8 @@ export function CourseDetailScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [expandedModuleId, setExpandedModuleId] = useState<string | null>(null);
+  const scrollRef = React.useRef<ScrollView>(null);
+  const activeModuleRef = React.useRef<View>(null);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [questionResults, setQuestionResults] = useState<Record<string, CheckAnswerResult>>({});
   const [revealedQuestions, setRevealedQuestions] = useState<Set<string>>(new Set());
@@ -96,9 +107,19 @@ export function CourseDetailScreen() {
   }, [progress]);
 
   const activeModule = useMemo(() => {
-    if (!expandedModuleId || !course) return null;
-    return course.modules.find((item) => item.id === expandedModuleId) ?? null;
-  }, [course, expandedModuleId]);
+    if (!course) return null;
+    const nextId = progress?.progress.nextModule?.id;
+    const targetId = expandedModuleId ?? nextId;
+    if (!targetId) return course.modules[0] ?? null;
+    return course.modules.find((item) => item.id === targetId) ?? course.modules[0] ?? null;
+  }, [course, expandedModuleId, progress?.progress.nextModule?.id]);
+
+  useEffect(() => {
+    if (!activeModule || loading) return;
+    requestAnimationFrame(() => {
+      scrollRef.current?.scrollTo({ y: 420, animated: true });
+    });
+  }, [activeModule?.id, loading]);
 
   const canSubmit = useMemo(() => {
     if (!activeModule?.questions.length) return false;
@@ -244,6 +265,18 @@ export function CourseDetailScreen() {
     setSubmitting(false);
   }
 
+  function selectModule(moduleId: string) {
+    const module = course?.modules.find((item) => item.id === moduleId);
+    if (!module) return;
+    const moduleProgress = moduleProgressById.get(moduleId);
+    const status = getModuleStatus(moduleId, moduleProgress, progress?.progress.nextModule?.id);
+    if (status === 'locked') return;
+    if (expandedModuleId !== moduleId) {
+      resetQuizState(module);
+    }
+    setExpandedModuleId(moduleId);
+  }
+
   function openWebCourse() {
     void Linking.openURL(`${WEB_URL}/courses/${courseSlug}`);
   }
@@ -273,7 +306,7 @@ export function CourseDetailScreen() {
   const nextModuleId = progress.progress.nextModule?.id;
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView ref={scrollRef} style={styles.container} contentContainerStyle={styles.content}>
       <Pressable onPress={() => router.back()} style={styles.backLink}>
         <Text style={styles.backLinkText}>← Tableau de bord</Text>
       </Pressable>
@@ -308,11 +341,15 @@ export function CourseDetailScreen() {
         {course.modules.map((module, index) => {
           const moduleProgress = moduleProgressById.get(module.id);
           const status = getModuleStatus(module.id, moduleProgress, nextModuleId);
+          const isActive = activeModule?.id === module.id;
           return (
-            <View
+            <Pressable
               key={module.id}
+              disabled={status === 'locked'}
+              onPress={() => selectModule(module.id)}
               style={[
                 styles.stripItem,
+                isActive ? styles.stripActive : null,
                 status === 'completed'
                   ? styles.stripCompleted
                   : status === 'in_progress'
@@ -327,42 +364,33 @@ export function CourseDetailScreen() {
               <Text style={styles.stripStatus}>
                 {moduleStatusIcon(status)} {moduleStatusLabel(status)}
               </Text>
-            </View>
+            </Pressable>
           );
         })}
       </View>
 
-      {course.modules.map((module, index) => {
+      {activeModule ? (() => {
+        const module = activeModule;
+        const moduleIndex = course.modules.findIndex((item) => item.id === module.id);
         const moduleProgress = moduleProgressById.get(module.id);
         const status = getModuleStatus(module.id, moduleProgress, nextModuleId);
-        const isExpanded = expandedModuleId === module.id;
         const isLocked = status === 'locked';
+        const isReviewMode = status === 'completed';
         const hasQuestions = module.questions.length > 0;
-        const canPlayHere = hasQuestions && !isLocked && (status === 'in_progress' || isExpanded);
+        const canPlayHere = hasQuestions && !isLocked && !isReviewMode;
 
         return (
           <View
-            key={module.id}
+            ref={activeModuleRef}
             style={[
               styles.moduleCard,
               status === 'completed' ? styles.moduleCardCompleted : null,
               isLocked ? styles.moduleCardLocked : null,
             ]}
           >
-            <Pressable
-              onPress={() => {
-                if (isLocked) return;
-                if (isExpanded) {
-                  setExpandedModuleId(null);
-                  return;
-                }
-                resetQuizState(module);
-                setExpandedModuleId(module.id);
-              }}
-              style={styles.moduleHeader}
-            >
+            <View style={styles.moduleHeader}>
               <View style={styles.moduleHeaderText}>
-                <Text style={styles.moduleIndex}>Unité {index + 1}</Text>
+                <Text style={styles.moduleIndex}>Unité {moduleIndex + 1}</Text>
                 <Text style={styles.moduleTitle}>{module.title}</Text>
                 <Text style={styles.moduleSummary}>{module.summary}</Text>
                 {moduleProgress?.completedAt ? (
@@ -386,19 +414,40 @@ export function CourseDetailScreen() {
                   {moduleProgress?.score != null ? ` · ${moduleProgress.score}%` : ''}
                 </Text>
               </View>
-            </Pressable>
+            </View>
 
-            {isExpanded ? (
-              <View style={styles.moduleBody}>
-                {isLocked ? (
-                  <View style={styles.lockedBox}>
-                    <Text style={styles.lockedText}>
-                      Termine l'unité précédente pour débloquer le quiz ({module.questions.length}{' '}
-                      question{module.questions.length > 1 ? 's' : ''}).
-                    </Text>
-                  </View>
-                ) : canPlayHere ? (
+            <View style={styles.moduleBody}>
+              {isLocked ? (
+                <View style={styles.lockedBox}>
+                  <Text style={styles.lockedText}>
+                    Termine l'unité précédente pour débloquer le quiz ({module.questions.length}{' '}
+                    question{module.questions.length > 1 ? 's' : ''}).
+                  </Text>
+                </View>
+              ) : isReviewMode ? (
+                <View style={styles.completedBox}>
+                  <Text style={styles.completedEyebrow}>{'\u2705'} Quiz terminé</Text>
+                  <Text style={styles.completedMeta}>
+                    {module.questions.length} question{module.questions.length > 1 ? 's' : ''} complétée
+                    {module.questions.length > 1 ? 's' : ''}
+                    {moduleProgress?.quizScore != null ? ` · score ${moduleProgress.quizScore}%` : ''}
+                  </Text>
+                  <Pressable style={styles.secondaryButton} onPress={openWebCourse}>
+                    <Text style={styles.secondaryButtonText}>Revoir le quiz sur le web →</Text>
+                  </Pressable>
+                </View>
+              ) : canPlayHere ? (
                   <>
+                    {module.lessonContent ? (
+                      <ScrollView
+                        style={styles.lessonScroll}
+                        nestedScrollEnabled
+                        showsVerticalScrollIndicator
+                      >
+                        <Text style={styles.lessonEyebrow}>Leçon</Text>
+                        <Text style={styles.lessonText}>{stripLessonMarkdown(module.lessonContent)}</Text>
+                      </ScrollView>
+                    ) : null}
                     {(() => {
                       const total = module.questions.length;
                       const safeIndex = Math.min(quizQuestionIndex, Math.max(0, total - 1));
@@ -566,32 +615,20 @@ export function CourseDetailScreen() {
                       )}
                     </Pressable>
                   </>
-                ) : status === 'completed' ? (
-                  <View style={styles.completedBox}>
-                    <Text style={styles.completedEyebrow}>{'\u2705'} Quiz terminé</Text>
-                    <Text style={styles.completedMeta}>
-                      {module.questions.length} question{module.questions.length > 1 ? 's' : ''} complétée
-                      {module.questions.length > 1 ? 's' : ''}
-                      {moduleProgress?.quizScore != null ? ` · score ${moduleProgress.quizScore}%` : ''}
-                    </Text>
-                  </View>
                 ) : (
                   <View style={styles.webFallback}>
                     <Text style={styles.webFallbackText}>
-                      {hasQuestions
-                        ? 'Cette unité est verrouillée ou nécessite le web pour le mini-scénario complet.'
-                        : 'Les questions de cette unité ne sont pas disponibles hors ligne.'}
+                      Les questions de cette unité ne sont pas disponibles hors ligne.
                     </Text>
                     <Pressable style={styles.secondaryButton} onPress={openWebCourse}>
                       <Text style={styles.secondaryButtonText}>Continuer sur le web →</Text>
                     </Pressable>
                   </View>
                 )}
-              </View>
-            ) : null}
+            </View>
           </View>
         );
-      })}
+      })() : null}
 
       <View style={styles.footerCard}>
         <Text style={styles.footerTitle}>Besoin du parcours complet ?</Text>
@@ -628,7 +665,7 @@ function moduleStatusLabel(status: ModuleStatus) {
 
 function moduleStatusIcon(status: ModuleStatus) {
   if (status === 'completed') return '\u2705';
-  if (status === 'in_progress') return '\u{1F3AF}';
+  if (status === 'in_progress') return '\u25B6';
   return '\u{1F512}';
 }
 
@@ -751,6 +788,7 @@ function createStyles(colors: AppThemeColors) {
   sectionHint: { color: colors.muted, marginTop: 2, fontSize: 13 },
   moduleStrip: { flexDirection: 'row', gap: 8, marginBottom: 16 },
   stripItem: { flex: 1, borderRadius: 14, padding: 10, borderWidth: 1 },
+  stripActive: { borderWidth: 2, borderColor: colors.accent },
   stripCompleted: { backgroundColor: colors.accentTealSoft, borderColor: colors.success },
   stripInProgress: { backgroundColor: colors.demoBannerBg, borderColor: colors.demoBannerBorder },
   stripLocked: { backgroundColor: colors.bg, borderColor: colors.border, opacity: 0.88 },
@@ -772,6 +810,25 @@ function createStyles(colors: AppThemeColors) {
   moduleIndex: { color: colors.muted, fontSize: 11, fontWeight: '800', textTransform: 'uppercase' },
   moduleTitle: { color: colors.fg, fontSize: 17, fontWeight: '800', marginTop: 2 },
   moduleSummary: { color: colors.muted, marginTop: 4, lineHeight: 20 },
+  lessonScroll: {
+    maxHeight: 220,
+    marginTop: 12,
+    marginBottom: 8,
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.bgSoft,
+  },
+  lessonEyebrow: {
+    color: colors.muted,
+    fontSize: 11,
+    fontWeight: '800',
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+    marginBottom: 8,
+  },
+  lessonText: { color: colors.fg, fontSize: 14, lineHeight: 21 },
   moduleCompletedAt: { color: colors.muted, marginTop: 6, fontSize: 12 },
   statusPill: { borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5 },
   statusCompleted: { backgroundColor: colors.accentTealSoft },

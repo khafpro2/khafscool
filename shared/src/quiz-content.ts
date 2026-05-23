@@ -111,6 +111,34 @@ export const appleCertPrepQuestions: Record<string, SeedQuestion[]> = {
       explanation:
         'La traçabilité SAV repose sur l’identification précise de l’appareil, le contexte logiciel et les actions déjà réalisées — sans stocker de secrets d’authentification.',
     },
+    {
+      type: 'KNOWLEDGE',
+      prompt:
+        'Un Mac d’entreprise supervisé affiche un profil MDM « non vérifié » dans Réglages. Quelle action est la plus appropriée pour un technicien support ?',
+      options: opt(
+        'Contacter l’équipe MDM pour vérifier certificat SCEP/PKI et renouvellement du profil de gestion',
+        'Supprimer manuellement le profil MDM depuis Réglages Système',
+        'Désactiver SIP pour forcer la confiance du certificat',
+        'Réinstaller macOS sans consulter la console MDM'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Un profil MDM non vérifié indique souvent un certificat d’identité expiré ou une chaîne PKI/SCEP mal renouvelée. Le technicien support documente le symptôme et escalade vers l’admin MDM qui renouvelle le profil ou le certificat via la console. Supprimer le profil manuellement est impossible ou déconseillé sur un appareil supervisé. Une réinstallation sans diagnostic MDM risque de reproduire le même échec au prochain enrôlement.',
+    },
+    {
+      type: 'SCENARIO',
+      prompt:
+        'Lors d’un inventaire terrain, vous devez confirmer si un iPad scolaire provient d’Apple Business Manager et est assigné au bon serveur MDM. Où vérifier en priorité ?',
+      options: opt(
+        'Console MDM (inventaire appareil) et portail Apple Business Manager pour l’assignation serveur',
+        'App Réglages > Safari > Historique',
+        'Compte iCloud personnel de l’élève uniquement',
+        'App Store > Achats de l’utilisateur'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Apple Business Manager indique si l’appareil est assigné au serveur MDM de l’établissement. La console MDM confirme l’enrôlement, la supervision et la dernière check-in. Ces deux sources croisées évitent les erreurs d’assignation lors des déploiements ADE. L’historique Safari ou le compte iCloud personnel ne renseignent pas sur l’origine ABM ni sur l’assignation MDM.',
+    },
   ],
   'ios-troubleshooting': [
     {
@@ -197,6 +225,34 @@ export const appleCertPrepQuestions: Record<string, SeedQuestion[]> = {
       explanation:
         'L’absence visible du profil peut coexister avec une gestion partielle ; la console MDM confirme l’enrôlement, la supervision et les commandes en échec.',
     },
+    {
+      type: 'KNOWLEDGE',
+      prompt:
+        'Un profil Wi-Fi d’entreprise 802.1X avec certificat SCEP ne s’installe plus après renouvellement PKI. Quelle piste MDM est la plus pertinente ?',
+      options: opt(
+        'Vérifier validité du profil SCEP, chaîne CA et renouvellement du payload certificat dans la console MDM',
+        'Réinitialiser le mot de passe Apple ID de l’utilisateur',
+        'Désactiver le chiffrement FileVault sur le Mac admin',
+        'Changer la langue du clavier iOS'
+      ),
+      correctOption: 'a',
+      explanation:
+        'SCEP (Simple Certificate Enrollment Protocol) permet de délivrer automatiquement des certificats client pour l’authentification Wi-Fi ou VPN. Si la CA ou le template SCEP a changé, les profils existants échouent jusqu’au redéploiement. L’admin MDM vérifie expiration, URL SCEP et correspondance du sujet certificat. Un renouvellement PKI bien planifié inclut une fenêtre de chevauchement et un scope pilote avant déploiement global.',
+    },
+    {
+      type: 'SCENARIO',
+      prompt:
+        'Plusieurs iPhone d’une flotte supervisée perdent simultanément la connectivité MDM après changement de certificat Push. Quelle cause est la plus probable ?',
+      options: opt(
+        'Certificat APNs MDM expiré ou mal importé — les appareils ne reçoivent plus les commandes Push',
+        'Les utilisateurs ont tous désinstallé Safari',
+        'La version iOS est identique sur tous les appareils',
+        'Le mode basse consommation désactive uniquement le Wi-Fi personnel'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Le canal MDM repose sur Apple Push Notification service : sans certificat APNs valide, les check-in et déploiements échouent en masse. Un changement de certificat mal importé (topic APNs différent) peut même nécessiter un réenrôlement. L’admin vérifie la date d’expiration dans la console MDM et le portail Apple Push Certificates. Les symptômes groupés après maintenance certificat orientent fortement vers cette cause plutôt que vers un problème utilisateur individuel.',
+    },
   ],
   'acmt-exam-prep': [
     {
@@ -282,6 +338,34 @@ export const appleCertPrepQuestions: Record<string, SeedQuestion[]> = {
       correctOption: 'a',
       explanation:
         'Le technicien limite l’accès aux données nécessaires et documente les actions sans exfiltration — aligné sur les standards atelier et réglementaires.',
+    },
+    {
+      type: 'SCENARIO',
+      prompt:
+        'Un technicien prépare un MacBook Pro pour restitution client entreprise avec profil MDM actif. Quelle étape respecte à la fois SAV Apple et continuité MDM ?',
+      options: opt(
+        'Coordonner avec l’admin MDM pour retrait ou wipe géré, puis validation fonctionnelle avant restitution',
+        'Effacer le disque sans informer l’équipe MDM ni documenter le numéro de série',
+        'Laisser le compte admin atelier permanent pour « faciliter le SAV futur »',
+        'Installer un profil de test personnel du technicien'
+      ),
+      correctOption: 'a',
+      explanation:
+        'En parc géré, la restitution ou le SAV doit préserver la traçabilité MDM : retrait contrôlé, wipe si nécessaire, puis tests matériels. Apple Diagnostics et validation clavier/trackpad restent requis avant remise. Laisser un compte admin atelier ou un profil personnel viole les bonnes pratiques sécurité. L’effacement non coordonné peut laisser l’appareil bloqué par Activation Lock ou hors conformité.',
+    },
+    {
+      type: 'KNOWLEDGE',
+      prompt:
+        'Quel lien existe entre Apple Business Manager et la préparation Device Support en entreprise ?',
+      options: opt(
+        'ABM centralise achats et assignation MDM ; le technicien doit connaître supervision et Activation Lock',
+        'ABM remplace entièrement les outils de diagnostic matériel Apple',
+        'ABM sert uniquement à acheter des apps sur l’App Store grand public',
+        'ABM n’a aucun rapport avec Find My ou Activation Lock'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Apple Business Manager est le point d’entrée pour l’ADE et l’assignation au serveur MDM de l’organisation. Le technicien Device Support y trouve des réponses sur la propriété de l’appareil et les voies légitimes de retrait Activation Lock. ABM ne remplace pas Apple Diagnostics ni les procédures atelier. Comprendre ce lien évite les contournements non autorisés lors des reprises SAV ou recyclage parc.',
     },
   ],
 };
@@ -370,6 +454,34 @@ export const jamfProFoundationsQuestions: Record<string, SeedQuestion[]> = {
       correctOption: 'a',
       explanation:
         'Les groupes statiques conviennent aux exceptions nominales ; les Smart Groups automatisent le ciblage à grande échelle.',
+    },
+    {
+      type: 'SCENARIO',
+      prompt:
+        'Vous devez déployer un profil SCEP pour certificats Wi-Fi 802.1X sur un Smart Group de Mac pilotes. Quelle séquence Jamf est recommandée ?',
+      options: opt(
+        'Créer le profil Configuration SCEP + payload Wi-Fi, scope Smart Group pilote, vérifier certificat sur un Mac test',
+        'Envoyer le profil Wi-Fi sans certificat à tous les ordinateurs immédiatement',
+        'Demander à chaque utilisateur d’importer manuellement un .p12 par e-mail',
+        'Désactiver FileVault avant tout déploiement SCEP'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Le profil SCEP établit la confiance PKI et délivre le certificat client avant ou avec le payload Wi-Fi. Jamf Pro scope le profil via Smart Group pour limiter les échecs au pilote. Vérifier dans Trousseau d’accès que le certificat est présent et valide avant d’élargir. Un déploiement massif sans pilote SCEP provoque des tickets 802.1X en cascade.',
+    },
+    {
+      type: 'KNOWLEDGE',
+      prompt:
+        'Quelle différence entre une politique Jamf déclenchée « Enrollment Complete » et « Ongoing » ?',
+      options: opt(
+        'Enrollment Complete s’exécute à l’inscription ; Ongoing se réapplique tant que l’appareil reste dans le scope',
+        'Ongoing ne fonctionne que sur iPhone',
+        'Enrollment Complete remplace Apple Business Manager',
+        'Aucune différence — les deux triggers sont identiques'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Enrollment Complete est idéal pour paquets et profils de base au premier enrôlement ADE. Ongoing corrige la dérive : réinstalle une app manquante, relance un script ou renouvelle un profil expiré. Combiner les deux évite de surcharger l’enrôlement initial tout en maintenant la conformité. Choisir le mauvais trigger explique souvent « policy ne s’applique pas » malgré un check-in récent.',
     },
   ],
   'inventory-basics': [
@@ -471,6 +583,20 @@ export const jamfProFoundationsQuestions: Record<string, SeedQuestion[]> = {
       explanation:
         'L’inventaire Jamf se met à jour à chaque check-in. Un Mac nouvellement chiffré peut mettre quelques minutes à apparaître dans le critère de conformité.',
     },
+    {
+      type: 'KNOWLEDGE',
+      prompt:
+        'Quel indicateur Jamf Pro signale qu’un Mac pourrait perdre prochainement la gestion MDM si aucune action n’est prise ?',
+      options: opt(
+        'Check-in MDM ancienne (>48 h) combinée à absence de rapport inventaire récent',
+        'Couleur du boîtier « Space Gray »',
+        'Présence de Xcode installé',
+        'FileVault activé avec clé de récupération escrowed'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Un Mac qui ne check-in plus peut sortir silencieusement du périmètre de déploiement. Jamf affiche la dernière communication MDM sur la fiche appareil. Croiser avec politiques en attente et extensions manquantes priorise les actions avant qu’un utilisateur ne signale une panne. FileVault escrowed est généralement un signe positif de conformité, pas d’alerte.',
+    },
   ],
   'enrollment-apple-integration': [
     {
@@ -556,6 +682,34 @@ export const jamfProFoundationsQuestions: Record<string, SeedQuestion[]> = {
       correctOption: 'a',
       explanation:
         'Un Push expiré stoppe les commandes. Le renouvellement proactif préserve le même topic APNs et évite une réenrôlement massif.',
+    },
+    {
+      type: 'KNOWLEDGE',
+      prompt:
+        'Dans un profil PreStage Jamf, quel paramètre ADE garantit que l’utilisateur ne peut pas ignorer l’inscription MDM au Setup Assistant ?',
+      options: opt(
+        'Mandatory MDM enrollment / enrôlement MDM obligatoire dans le PreStage',
+        'Autoriser la création d’un compte Apple ID personnel obligatoire',
+        'Désactiver le Wi-Fi au premier démarrage',
+        'Masquer uniquement l’écran « Siri » sans lien avec le MDM'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Le PreStage Enrollment définit l’expérience ADE : supervision, comptes locaux, packages et obligation MDM. Sans enrôlement obligatoire, un utilisateur pourrait terminer l’assistant sans gestion. Les options de skip d’écrans Setup Assistant se configurent dans le même objet. Tester sur un Mac vierge ABM avant production évite les surprises en classe ou en open space.',
+    },
+    {
+      type: 'SCENARIO',
+      prompt:
+        'Après renouvellement du jeton serveur MDM Apple, les nouveaux Mac ABM n’apparaissent plus dans Jamf Pro. Première vérification ?',
+      options: opt(
+        'Validité et upload du nouveau MDM Server Token dans Jamf + assignation appareils au serveur Jamf dans ABM',
+        'Réinstallation de Jamf Admin sur le poste du technicien uniquement',
+        'Changement du mot de passe Apple ID personnel',
+        'Suppression de tous les PreStage existants'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Le jeton MDM lie Apple Business Manager à Jamf Pro pour synchroniser inventaire et assignations. Un jeton expiré ou non réimporté bloque les nouveaux appareils sans affecter nécessairement les déjà enrôlés. ABM doit toujours assigner les appareils au serveur Jamf correct. Supprimer les PreStage serait destructif et ne résout pas un problème de jeton.',
     },
   ],
 };
@@ -758,6 +912,34 @@ export const intuneIosEnrollmentQuestions: Record<string, SeedQuestion[]> = {
       explanation:
         'Les actions de non-conformité sont progressives : notification, blocage mail, puis retrait ou effacement si défini.',
     },
+    {
+      type: 'SCENARIO',
+      prompt:
+        'Une politique de conformité Intune exige iOS 17 minimum. Un iPhone 16 est bloqué par Conditional Access. Comment prioriser la remédiation ?',
+      options: opt(
+        'Identifier la règle OS en échec dans le rapport conformité, notifier l’utilisateur, planifier mise à jour iOS avant expiration du délai de grâce',
+        'Supprimer immédiatement le compte Entra ID de l’utilisateur',
+        'Désactiver toutes les politiques de conformité du tenant',
+        'Révoquer le certificat APNs Jamf (hors périmètre Intune)'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Le rapport de conformité Intune détaille quelle règle échoue (version OS, PIN, jailbreak). Conditional Access s’appuie sur cet état remonté à Entra ID. Un délai de grâce laisse le temps de mettre à jour avant blocage complet. Agir sur le compte utilisateur ou désactiver globalement les politiques est disproportionné pour un écart de version OS.',
+    },
+    {
+      type: 'KNOWLEDGE',
+      prompt:
+        'Quel lien entre politique de conformité Intune et Conditional Access dans Entra ID ?',
+      options: opt(
+        'La conformité Intune alimente le signal « appareil conforme » utilisé par les stratégies CA',
+        'Conditional Access remplace entièrement les politiques de conformité',
+        'Les deux sont indépendants et ne partagent aucun état',
+        'Conditional Access ne s’applique qu’aux appareils Android'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Intune évalue PIN, OS, jailbreak et autres critères, puis publie l’état dans Entra ID. Conditional Access peut exiger « appareil conforme » pour autoriser Exchange ou SharePoint. Sans assignation correcte des deux côtés, l’utilisateur reste bloqué malgré une apparence de configuration. Tester sur un appareil pilote valide la chaîne conformité → CA.',
+    },
   ],
   'app-protection-conditional-access': [
     {
@@ -842,6 +1024,34 @@ export const intuneIosEnrollmentQuestions: Record<string, SeedQuestion[]> = {
       correctOption: 'a',
       explanation:
         'L’appareil devient une « signal » dans CA : conforme, hybride Azure AD join, etc., pour autoriser ou bloquer les sessions.',
+    },
+    {
+      type: 'SCENARIO',
+      prompt:
+        'Un utilisateur BYOD accède à Outlook sans PIN applicatif malgré une politique App Protection assignée. Où investiguer ?',
+      options: opt(
+        'Assignation de la politique MAM au bon groupe utilisateur, état d’enregistrement Intune MAM dans Company Portal, version Outlook supportée',
+        'Réinstallation de BitLocker sur le PC de l’admin',
+        'Changement du certificat Push Apple dans Jamf',
+        'Désactivation du MFA Entra ID globalement'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Les politiques App Protection s’appliquent par utilisateur et par application cible. Company Portal ou l’app elle-même doit refléter l’enregistrement MAM. Une version Outlook trop ancienne peut ignorer certaines contraintes PIN. BitLocker et certificat Jamf sont hors sujet pour MAM iOS. Désactiver MFA aggraverait le risque au lieu de corriger le conteneur applicatif.',
+    },
+    {
+      type: 'KNOWLEDGE',
+      prompt:
+        'Quelle stratégie Conditional Access complète une politique App Protection pour Outlook sur iPhone BYOD ?',
+      options: opt(
+        'Exiger une app protégée par Intune ou un appareil conforme pour accéder à Exchange Online',
+        'Autoriser toutes les apps mail tierces sans condition',
+        'Bloquer uniquement les connexions depuis la France',
+        'Exiger un compte Apple ID géré par l’entreprise sur l’App Store'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Conditional Access peut imposer « exiger une application approuvée » ou « exiger un appareil marqué comme conforme ». Combiné à App Protection, seules les instances Outlook managées accèdent aux données M365. Sans CA, une app non managée pourrait encore synchroniser si les credentials fuient. Valider sur un iPhone pilote avec compte test avant déploiement global.',
     },
   ],
 };

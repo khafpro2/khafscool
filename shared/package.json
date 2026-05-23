@@ -7,7 +7,8 @@
     ".": "./src/index.ts",
     "./quiz-content": "./src/quiz-content.ts",
     "./learning-paths": "./src/learning-paths.ts",
-    "./constants": "./src/constants.ts"
+    "./constants": "./src/constants.ts",
+    "./course-content": "./src/course-content.ts"
   },
   "scripts": {
     "build": "tsc",

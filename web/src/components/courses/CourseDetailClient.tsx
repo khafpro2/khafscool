@@ -8,6 +8,7 @@ import { checkModuleAnswer, completeModule, fetchCourse, fetchCourseProgress } f
 import { AuthRequestError, resolveApiErrorMessage } from '@/lib/auth-errors';
 import { buildAuthUrl, getAccessToken } from '@/lib/auth';
 import { KeyboardShortcutsHelp } from '@/components/courses/KeyboardShortcutsHelp';
+import { LessonContent, ModuleObjectives } from '@/components/courses/LessonContent';
 import { formatTrack } from '@/lib/tracks';
 import {
   InteractiveMiniGame,
@@ -56,6 +57,7 @@ export function CourseDetailClient({ slug }: { slug: string }) {
   const [hasToken, setHasToken] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [hashHighlightSlug, setHashHighlightSlug] = useState<string | null>(null);
+  const [viewModuleId, setViewModuleId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!course) return;
@@ -91,8 +93,57 @@ export function CourseDetailClient({ slug }: { slug: string }) {
       .finally(() => setIsLoading(false));
   }, [slug]);
 
+  const moduleProgressById = useMemo(() => {
+    return new Map(progress?.modules.map((module) => [module.id, module]) ?? []);
+  }, [progress]);
+
+  const inProgressModule =
+    course?.modules.find((module) => module.id === progress?.progress.nextModule?.id) ??
+    course?.modules.find((module) => !moduleProgressById.get(module.id)?.completed) ??
+    course?.modules[0];
+
+  const displayModule =
+    course?.modules.find((module) => module.id === viewModuleId) ?? inProgressModule;
+
+  const displayModuleStatus = displayModule
+    ? getModuleStatus(
+        displayModule.id,
+        moduleProgressById.get(displayModule.id),
+        progress?.progress.nextModule?.id
+      )
+    : 'todo';
+  const isReviewMode = displayModuleStatus === 'completed';
+
   useEffect(() => {
-    if (isLoading || !course) return;
+    if (!course || !progress) return;
+
+    const hash = window.location.hash;
+    if (hash.startsWith('#module-')) {
+      const moduleSlug = decodeURIComponent(hash.slice('#module-'.length));
+      const targetModule = course.modules.find((module) => module.slug === moduleSlug);
+      if (targetModule) {
+        const status = getModuleStatus(
+          targetModule.id,
+          moduleProgressById.get(targetModule.id),
+          progress.progress.nextModule?.id
+        );
+        if (status !== 'todo') {
+          setViewModuleId(targetModule.id);
+          return;
+        }
+      }
+    }
+
+    setViewModuleId(
+      progress.progress.nextModule?.id ??
+        course.modules.find((module) => !moduleProgressById.get(module.id)?.completed)?.id ??
+        course.modules[0]?.id ??
+        null
+    );
+  }, [course, progress, moduleProgressById]);
+
+  useEffect(() => {
+    if (isLoading || !course || !viewModuleId) return;
 
     let highlightTimer: number | undefined;
 
@@ -101,12 +152,21 @@ export function CourseDetailClient({ slug }: { slug: string }) {
       if (!hash.startsWith('#module-')) return;
 
       const moduleSlug = decodeURIComponent(hash.slice('#module-'.length));
-      const target = document.getElementById(`module-${moduleSlug}`);
-      if (!target) return;
+      const targetModule = course?.modules.find((module) => module.slug === moduleSlug);
+      if (!targetModule) return;
 
+      const status = getModuleStatus(
+        targetModule.id,
+        moduleProgressById.get(targetModule.id),
+        progress?.progress.nextModule?.id
+      );
+      if (status === 'todo') return;
+
+      setViewModuleId(targetModule.id);
       setHashHighlightSlug(moduleSlug);
+
       requestAnimationFrame(() => {
-        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        document.getElementById('course-active-module')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       });
 
       if (highlightTimer) window.clearTimeout(highlightTimer);
@@ -119,18 +179,11 @@ export function CourseDetailClient({ slug }: { slug: string }) {
       window.removeEventListener('hashchange', focusModuleFromHash);
       if (highlightTimer) window.clearTimeout(highlightTimer);
     };
-  }, [course, isLoading]);
+  }, [course, isLoading, moduleProgressById, progress, viewModuleId]);
 
-  const moduleProgressById = useMemo(() => {
-    return new Map(progress?.modules.map((module) => [module.id, module]) ?? []);
-  }, [progress]);
-  const activeModule =
-    course?.modules.find((module) => module.id === progress?.progress.nextModule?.id) ??
-    course?.modules.find((module) => !moduleProgressById.get(module.id)?.completed) ??
-    course?.modules[0];
   const activeQuestionIds = useMemo(
-    () => new Set(activeModule?.questions.map((question) => question.id) ?? []),
-    [activeModule]
+    () => new Set(displayModule?.questions.map((question) => question.id) ?? []),
+    [displayModule]
   );
   const activeRevealedQuestions = useMemo(
     () => new Set([...revealedQuestions].filter((id) => activeQuestionIds.has(id))),
@@ -144,30 +197,30 @@ export function CourseDetailClient({ slug }: { slug: string }) {
     return next;
   }, [activeQuestionIds, questionResults]);
   const answeredActiveCount = useMemo(
-    () => activeModule?.questions.filter((question) => answers[question.id]).length ?? 0,
-    [activeModule, answers]
+    () => displayModule?.questions.filter((question) => answers[question.id]).length ?? 0,
+    [displayModule, answers]
   );
-  const activeGameOrder = activeModule ? gameOrders[activeModule.id] : undefined;
-  const activeGameReady = Boolean(!activeModule?.game || gameTouched[activeModule.id]);
+  const activeGameOrder = displayModule ? gameOrders[displayModule.id] : undefined;
+  const activeGameReady = Boolean(!displayModule?.game || gameTouched[displayModule.id]);
 
   const canSubmit = useMemo(() => {
-    if (!activeModule) return false;
-    const quizComplete = activeModule.questions.every((question) => answers[question.id]);
-    const gameComplete = !activeModule.game || Boolean(gameTouched[activeModule.id]);
+    if (!displayModule || isReviewMode) return false;
+    const quizComplete = displayModule.questions.every((question) => answers[question.id]);
+    const gameComplete = !displayModule.game || Boolean(gameTouched[displayModule.id]);
     return quizComplete && gameComplete;
-  }, [activeModule, answers, gameTouched]);
+  }, [displayModule, answers, gameTouched, isReviewMode]);
   const estimatedActiveScore = useMemo(
     () =>
-      activeModule
-        ? computeQuizScorePercent(activeModule.questions.length, activeQuestionResults)
+      displayModule
+        ? computeQuizScorePercent(displayModule.questions.length, activeQuestionResults)
         : 0,
-    [activeModule, activeQuestionResults]
+    [displayModule, activeQuestionResults]
   );
   const estimatedActiveGameScore = useMemo(() => {
-    if (!activeModule?.game?.correctOrder?.length || !activeGameOrder?.length) return 0;
-    if (!gameTouched[activeModule.id]) return 0;
-    return scoreGameOrder(activeGameOrder, activeModule.game.correctOrder);
-  }, [activeGameOrder, activeModule, gameTouched]);
+    if (!displayModule?.game?.correctOrder?.length || !activeGameOrder?.length) return 0;
+    if (!gameTouched[displayModule.id]) return 0;
+    return scoreGameOrder(activeGameOrder, displayModule.game.correctOrder);
+  }, [activeGameOrder, displayModule, gameTouched]);
 
   const resetActiveQuizState = useCallback(() => {
     setAnswers((current) => {
@@ -202,11 +255,11 @@ export function CourseDetailClient({ slug }: { slug: string }) {
   async function resolveCheckAnswer(questionId: string, selectedOption: string): Promise<QuestionCheckResult> {
     const token = getAccessToken();
 
-    if (token && activeModule && !activeModule.id.startsWith('demo-')) {
-      return checkModuleAnswer(activeModule.id, token, { questionId, selectedOption });
+    if (token && displayModule && !displayModule.id.startsWith('demo-')) {
+      return checkModuleAnswer(displayModule.id, token, { questionId, selectedOption });
     }
 
-    const question = activeModule?.questions.find((item) => item.id === questionId);
+    const question = displayModule?.questions.find((item) => item.id === questionId);
     const correct = Boolean(question?.correctOption && question.correctOption === selectedOption);
     return {
       correct,
@@ -222,10 +275,10 @@ export function CourseDetailClient({ slug }: { slug: string }) {
   }
 
   async function revealAllActiveQuestions(): Promise<Record<string, QuestionCheckResult>> {
-    if (!activeModule) return {};
+    if (!displayModule) return {};
 
     const results = { ...activeQuestionResults };
-    for (const question of activeModule.questions) {
+    for (const question of displayModule.questions) {
       const selectedOption = answers[question.id];
       if (!selectedOption || results[question.id]) continue;
       const result = await resolveCheckAnswer(question.id, selectedOption);
@@ -241,25 +294,35 @@ export function CourseDetailClient({ slug }: { slug: string }) {
     await revealAllActiveQuestions();
   }
 
+  function navigateToModule(moduleId: string, moduleSlug: string) {
+    setViewModuleId(moduleId);
+    if (typeof window !== 'undefined') {
+      window.history.replaceState(null, '', `#module-${moduleSlug}`);
+    }
+    requestAnimationFrame(() => {
+      document.getElementById('course-active-module')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
+
   async function handleSubmit() {
-    if (!activeModule) return;
+    if (!displayModule || isReviewMode) return;
 
     const checkedResults = await revealAllActiveQuestions();
-    const localScore = computeQuizScorePercent(activeModule.questions.length, checkedResults);
+    const localScore = computeQuizScorePercent(displayModule.questions.length, checkedResults);
     const correctCount = countCorrectAnswers(checkedResults);
     const token = getAccessToken();
     setSuccessNotice(null);
 
-    if (token && !activeModule.id.startsWith('demo-')) {
+    if (token && !displayModule.id.startsWith('demo-')) {
       try {
         const payload: { quizAnswers: Record<string, string>; gameOrder?: number[] } = {
           quizAnswers: answers,
         };
-        if (activeModule.game && gameTouched[activeModule.id] && activeGameOrder?.length) {
+        if (displayModule.game && gameTouched[displayModule.id] && activeGameOrder?.length) {
           payload.gameOrder = activeGameOrder;
         }
 
-        const backendResult = await completeModule(activeModule.id, token, payload);
+        const backendResult = await completeModule(displayModule.id, token, payload);
         const updatedProgress = await fetchCourseProgress(slug, token);
         const courseJustCompleted =
           backendResult.courseCompleted ||
@@ -285,12 +348,13 @@ export function CourseDetailClient({ slug }: { slug: string }) {
         setSuccessNotice({
           badges: backendResult.badges ?? [],
           gameScore: backendResult.gameScore,
-          moduleTitle: activeModule.title,
+          moduleTitle: displayModule.title,
           pointsEarned: backendResult.pointsEarned,
           quizScore: backendResult.quizScore,
+          nextModule: updatedProgress.progress.nextModule,
         });
         toastModuleCompleted(
-          activeModule.title,
+          displayModule.title,
           backendResult.pointsEarned,
           backendResult.quizScore,
           backendResult.gameScore
@@ -302,6 +366,12 @@ export function CourseDetailClient({ slug }: { slug: string }) {
         resetActiveQuizState();
         setProgress(updatedProgress);
         setUsesProgressFallback(false);
+        if (updatedProgress.progress.nextModule) {
+          navigateToModule(
+            updatedProgress.progress.nextModule.id,
+            updatedProgress.progress.nextModule.slug
+          );
+        }
         return;
       } catch (error) {
         if (error instanceof AuthRequestError) {
@@ -309,14 +379,14 @@ export function CourseDetailClient({ slug }: { slug: string }) {
           return;
         }
         setResult(
-          `Score local : ${correctCount}/${activeModule.questions.length} (${localScore}%). L’enregistrement backend a échoué, mais l’unité reste testable.`
+          `Score local : ${correctCount}/${displayModule.questions.length} (${localScore}%). L’enregistrement backend a échoué, mais l’unité reste testable.`
         );
         return;
       }
     }
 
     setResult(
-      `Score local : ${correctCount}/${activeModule.questions.length} (${localScore}%). Connectez-vous pour enregistrer la progression via l’API.`
+      `Score local : ${correctCount}/${displayModule.questions.length} (${localScore}%). Connectez-vous pour enregistrer la progression via l’API.`
     );
   }
 
@@ -446,11 +516,6 @@ export function CourseDetailClient({ slug }: { slug: string }) {
                   Progression affichée en mode démo. Connectez-vous pour la synchroniser via le backend.
                 </p>
               )}
-              <ModuleStatusStrip
-                course={course}
-                moduleProgressById={moduleProgressById}
-                nextModuleId={progress.progress.nextModule?.id}
-              />
             </Card>
           )}
 
@@ -466,6 +531,17 @@ export function CourseDetailClient({ slug }: { slug: string }) {
                 Quiz {successNotice.quizScore}% · mini-scénario {successNotice.gameScore}% ·{' '}
                 <strong>+{successNotice.pointsEarned} points</strong>
               </p>
+              {successNotice.nextModule ? (
+                <Button
+                  size="sm"
+                  style={{ marginTop: '0.85rem' }}
+                  onClick={() =>
+                    navigateToModule(successNotice.nextModule!.id, successNotice.nextModule!.slug)
+                  }
+                >
+                  Module suivant : {successNotice.nextModule.title}
+                </Button>
+              ) : null}
               {successNotice.badges.length > 0 ? (
                 <div style={{ marginTop: '0.75rem', display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center' }}>
                   {successNotice.badges.map((badgeSlug) => {
@@ -488,34 +564,31 @@ export function CourseDetailClient({ slug }: { slug: string }) {
             </Card>
           )}
 
-          <div style={{ display: 'grid', gap: '1.25rem', marginTop: '1.25rem' }}>
-            {course.modules.map((module, index) => {
+          {displayModule && displayModuleStatus !== 'todo' ? (
+            (() => {
+              const module = displayModule;
               const moduleProgress = moduleProgressById.get(module.id);
-              const completed = moduleProgress?.completed ?? false;
-              const moduleStatus = getModuleStatus(module.id, moduleProgress, progress?.progress.nextModule?.id);
-              const isActiveModule = activeModule?.id === module.id;
-              const isLockedModule = moduleStatus === 'todo';
+              const moduleIndex = course.modules.findIndex((item) => item.id === module.id);
+              const moduleStatus = displayModuleStatus;
+
               return (
                 <Card
                   key={module.id}
-                  id={`module-${module.slug}`}
+                  id="course-active-module"
                   as="article"
                   className={[
-                    completed ? 'card-completed' : undefined,
+                    isReviewMode ? 'card-completed' : undefined,
                     hashHighlightSlug === module.slug ? 'course-module-hash-highlight' : undefined,
                   ]
                     .filter(Boolean)
                     .join(' ')}
-                  style={{
-                    borderColor: completed ? undefined : 'var(--border)',
-                    background: completed ? undefined : 'var(--surface)',
-                  }}
+                  style={{ marginTop: '1.25rem' }}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.75rem', flexWrap: 'wrap' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
                       <TrackIcon track={course.track} size="sm" />
                       <span className="muted" style={{ fontWeight: 800, fontSize: '0.8rem', textTransform: 'uppercase' }}>
-                        Unité {index + 1}
+                        Unité {moduleIndex + 1}
                       </span>
                     </div>
                     <Badge
@@ -530,95 +603,102 @@ export function CourseDetailClient({ slug }: { slug: string }) {
                   </div>
                   <h2 style={{ fontSize: '1.3rem', fontWeight: 800, marginTop: '0.5rem' }}>{module.title}</h2>
                   <p className="muted" style={{ marginTop: '0.4rem' }}>{module.summary}</p>
+                  <ModuleObjectives
+                    learningObjectives={module.learningObjectives}
+                    keyTakeaways={module.keyTakeaways}
+                  />
                   {moduleProgress?.completedAt && (
                     <p className="muted" style={{ marginTop: '0.35rem', fontSize: '0.85rem' }}>
                       Terminée le {new Date(moduleProgress.completedAt).toLocaleDateString('fr-FR')}
                     </p>
                   )}
 
-                  {isLockedModule ? (
-                    <Card variant="soft" style={{ marginTop: '1rem' }}>
-                      <p className="muted" style={{ fontSize: '0.9rem' }}>
-                        Termine l'unité précédente pour débloquer le quiz ({module.questions.length} question
-                        {module.questions.length > 1 ? 's' : ''}).
-                      </p>
-                    </Card>
-                  ) : isActiveModule ? (
+                  {isReviewMode ? (
                     <>
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '0.75rem' }}>
-                      <KeyboardShortcutsHelp
-                        hasQuiz={module.questions.length > 0}
-                        hasMinigame={Boolean(module.game?.steps.length)}
-                      />
-                    </div>
-                    {module.game && gameOrders[module.id] && (
-                      <InteractiveMiniGame
-                        game={module.game}
+                      <Card variant="soft" style={{ marginTop: '1rem' }}>
+                        <Badge tone="success" icon="\u2705">
+                          Quiz terminé — mode révision
+                        </Badge>
+                        <p className="muted" style={{ marginTop: '0.45rem', fontSize: '0.9rem' }}>
+                          Relis les questions et explications sans modifier ta progression.
+                        </p>
+                      </Card>
+                      {module.lessonContent ? <LessonContent content={module.lessonContent} /> : null}
+                      <QuizPanel
+                        module={module}
                         track={course.track}
-                        order={gameOrders[module.id]}
-                        onOrderChange={(order) =>
-                          setGameOrders((current) => ({ ...current, [module.id]: order }))
-                        }
-                        onTouched={() =>
-                          setGameTouched((current) => ({ ...current, [module.id]: true }))
-                        }
+                        answers={answers}
+                        questionResults={activeQuestionResults}
+                        revealedQuestions={activeRevealedQuestions}
+                        reviewMode
+                        onSelectAnswer={handleSelectAnswer}
+                        onCheckAnswer={handleCheckAnswer}
+                        onRevealAll={handleRevealAllQuestions}
+                        estimatedGameScore={estimatedActiveGameScore}
                       />
-                    )}
-                    <QuizPanel
-                      module={module}
-                      track={course.track}
-                      answers={answers}
-                      questionResults={activeQuestionResults}
-                      revealedQuestions={activeRevealedQuestions}
-                      reviewMode={false}
-                      onSelectAnswer={handleSelectAnswer}
-                      onCheckAnswer={handleCheckAnswer}
-                      onRevealAll={handleRevealAllQuestions}
-                      estimatedGameScore={estimatedActiveGameScore}
-                      onFinishQuiz={() => {
-                        document
-                          .getElementById('course-unit-submit')
-                          ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                      }}
-                    />
                     </>
-                  ) : completed ? (
-                    <Card variant="soft" style={{ marginTop: '1rem' }}>
-                      <Badge tone="success" icon="\u2705">
-                        Quiz terminé
-                      </Badge>
-                      <p className="muted" style={{ marginTop: '0.45rem', fontSize: '0.9rem' }}>
-                        {module.questions.length} question{module.questions.length > 1 ? 's' : ''} complétée
-                        {module.questions.length > 1 ? 's' : ''}
-                        {moduleProgress?.quizScore !== null && moduleProgress?.quizScore !== undefined
-                          ? ` · score ${moduleProgress.quizScore}%`
-                          : ''}
-                      </p>
-                    </Card>
-                  ) : null}
+                  ) : (
+                    <>
+                      {module.lessonContent ? <LessonContent content={module.lessonContent} /> : null}
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '0.75rem' }}>
+                        <KeyboardShortcutsHelp
+                          hasQuiz={module.questions.length > 0}
+                          hasMinigame={Boolean(module.game?.steps.length)}
+                        />
+                      </div>
+                      {module.game && gameOrders[module.id] && (
+                        <InteractiveMiniGame
+                          game={module.game}
+                          track={course.track}
+                          order={gameOrders[module.id]}
+                          onOrderChange={(order) =>
+                            setGameOrders((current) => ({ ...current, [module.id]: order }))
+                          }
+                          onTouched={() =>
+                            setGameTouched((current) => ({ ...current, [module.id]: true }))
+                          }
+                        />
+                      )}
+                      <QuizPanel
+                        module={module}
+                        track={course.track}
+                        answers={answers}
+                        questionResults={activeQuestionResults}
+                        revealedQuestions={activeRevealedQuestions}
+                        reviewMode={false}
+                        onSelectAnswer={handleSelectAnswer}
+                        onCheckAnswer={handleCheckAnswer}
+                        onRevealAll={handleRevealAllQuestions}
+                        estimatedGameScore={estimatedActiveGameScore}
+                        onFinishQuiz={() => {
+                          document
+                            .getElementById('course-unit-submit')
+                            ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }}
+                      />
+                    </>
+                  )}
                 </Card>
               );
-            })}
-          </div>
+            })()
+          ) : null}
 
-          {activeModule && (
+          {displayModule && !isReviewMode && displayModuleStatus === 'in_progress' && (
             <Card id="course-unit-submit" style={{ marginTop: '1.25rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
                 <div>
                   <p className="muted" style={{ fontWeight: 800, fontSize: '0.8rem', textTransform: 'uppercase' }}>
-                    Prochaine unité
+                    Unité en cours
                   </p>
-                  <p style={{ fontWeight: 800, marginTop: '0.2rem' }}>
-                    <a href={`#module-${activeModule.slug}`}>{activeModule.title}</a>
-                  </p>
+                  <p style={{ fontWeight: 800, marginTop: '0.2rem' }}>{displayModule.title}</p>
                   <p className="muted" style={{ marginTop: '0.35rem', fontSize: '0.88rem' }}>
-                    Quiz : {answeredActiveCount}/{activeModule.questions.length} réponses
+                    Quiz : {answeredActiveCount}/{displayModule.questions.length} réponses
                     {answeredActiveCount > 0 ? ` · score estimé ${estimatedActiveScore}%` : ''}
-                    {activeModule.questions.length > 0 && (
+                    {displayModule.questions.length > 0 && (
                       <>
                         {' '}
-                        · objectif {Math.ceil((QUIZ_PASS_PERCENT / 100) * activeModule.questions.length)}/
-                        {activeModule.questions.length}
+                        · objectif {Math.ceil((QUIZ_PASS_PERCENT / 100) * displayModule.questions.length)}/
+                        {displayModule.questions.length}
                       </>
                     )}
                   </p>
@@ -627,11 +707,11 @@ export function CourseDetailClient({ slug }: { slug: string }) {
                   Valider l’unité
                 </Button>
               </div>
-              {!canSubmit && activeModule.questions.length > 0 && (
+              {!canSubmit && displayModule.questions.length > 0 && (
                 <p className="muted" style={{ marginTop: '0.65rem', fontSize: '0.85rem' }}>
-                  {!activeModule.questions.every((question) => answers[question.id])
+                  {!displayModule.questions.every((question) => answers[question.id])
                     ? 'Réponds à toutes les questions du quiz pour activer la validation.'
-                    : activeModule.game && !activeGameReady
+                    : displayModule.game && !activeGameReady
                       ? 'Réordonne le mini-scénario (glisser ou flèches) puis clique « Vérifier mon ordre ».'
                       : 'Complète le quiz et le mini-scénario pour valider l’unité.'}
                 </p>
@@ -644,6 +724,14 @@ export function CourseDetailClient({ slug }: { slug: string }) {
         </div>
 
         <aside style={{ position: 'sticky', top: '5.5rem', display: 'grid', gap: '1rem' }}>
+          <ModuleSidebarNav
+            course={course}
+            moduleProgressById={moduleProgressById}
+            nextModuleId={progress?.progress.nextModule?.id}
+            activeModuleId={displayModule?.id}
+            onSelectModule={(moduleId, moduleSlug) => navigateToModule(moduleId, moduleSlug)}
+          />
+
           <Card className="notice-demo">
             <p style={{ color: '#92400e', fontSize: '0.78rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
               Récompense parcours
@@ -731,6 +819,7 @@ type SuccessNotice = {
   moduleTitle: string;
   pointsEarned: number;
   quizScore: number;
+  nextModule?: { id: string; slug: string; title: string } | null;
 };
 
 function getModuleStatus(
@@ -751,61 +840,73 @@ function moduleStatusLabel(status: ModuleStatus) {
 
 function moduleStatusIcon(status: ModuleStatus) {
   if (status === 'completed') return '\u2705';
-  if (status === 'in_progress') return '\u{1F3AF}';
+  if (status === 'in_progress') return '\u25B6';
   return '\u{1F512}';
 }
 
-function ModuleStatusStrip({
+function ModuleSidebarNav({
   course,
   moduleProgressById,
   nextModuleId,
+  activeModuleId,
+  onSelectModule,
 }: {
   course: CourseDetail;
   moduleProgressById: Map<string, CourseProgressModule>;
   nextModuleId?: string | null;
+  activeModuleId?: string;
+  onSelectModule: (moduleId: string, moduleSlug: string) => void;
 }) {
   return (
-    <div
-      style={{
-        display: 'grid',
-        gap: '0.5rem',
-        marginTop: '1rem',
-        gridTemplateColumns: `repeat(${Math.min(course.modules.length, 3)}, minmax(0, 1fr))`,
-      }}
-    >
-      {course.modules.map((module, index) => {
-        const moduleProgress = moduleProgressById.get(module.id);
-        const status = getModuleStatus(module.id, moduleProgress, nextModuleId);
-        return (
-          <div
-            key={module.id}
-            style={{
-              border: `1px solid ${status === 'completed' ? '#6ee7b7' : status === 'in_progress' ? '#fcd34d' : 'var(--border-soft)'}`,
-              borderRadius: 'var(--radius-md)',
-              padding: '0.65rem 0.75rem',
-              background:
-                status === 'completed'
-                  ? 'var(--success-soft)'
-                  : status === 'in_progress'
-                    ? 'var(--warning-soft)'
-                    : 'var(--bg)',
-            }}
-          >
-            <p className="muted" style={{ fontSize: '0.72rem', fontWeight: 800, textTransform: 'uppercase' }}>
-              Unité {index + 1}
-            </p>
-            <p style={{ fontWeight: 700, fontSize: '0.85rem', marginTop: '0.15rem' }}>{module.title}</p>
-            <Badge
-              tone={status === 'completed' ? 'success' : status === 'in_progress' ? 'warning' : 'neutral'}
-              icon={moduleStatusIcon(status)}
-              style={{ marginTop: '0.35rem' }}
+    <Card variant="soft">
+      <p className="section-eyebrow">Unités du parcours</p>
+      <nav aria-label="Unités du parcours" style={{ display: 'grid', gap: '0.5rem', marginTop: '0.65rem' }}>
+        {course.modules.map((module, index) => {
+          const moduleProgress = moduleProgressById.get(module.id);
+          const status = getModuleStatus(module.id, moduleProgress, nextModuleId);
+          const isActive = activeModuleId === module.id;
+          const isLocked = status === 'todo';
+
+          return (
+            <button
+              key={module.id}
+              type="button"
+              id={`module-${module.slug}`}
+              disabled={isLocked}
+              aria-current={isActive ? 'step' : undefined}
+              onClick={() => {
+                if (!isLocked) onSelectModule(module.id, module.slug);
+              }}
+              style={{
+                display: 'grid',
+                gap: '0.2rem',
+                textAlign: 'left',
+                border: `1px solid ${isActive ? 'var(--accent)' : status === 'completed' ? '#6ee7b7' : status === 'in_progress' ? '#fcd34d' : 'var(--border-soft)'}`,
+                borderRadius: 'var(--radius-md)',
+                padding: '0.65rem 0.75rem',
+                background: isActive
+                  ? 'var(--accent-soft)'
+                  : status === 'completed'
+                    ? 'var(--success-soft)'
+                    : status === 'in_progress'
+                      ? 'var(--warning-soft)'
+                      : 'var(--bg)',
+                cursor: isLocked ? 'not-allowed' : 'pointer',
+                opacity: isLocked ? 0.72 : 1,
+              }}
             >
-              {moduleStatusLabel(status)}
-            </Badge>
-          </div>
-        );
-      })}
-    </div>
+              <span className="muted" style={{ fontSize: '0.72rem', fontWeight: 800, textTransform: 'uppercase' }}>
+                Unité {index + 1}
+              </span>
+              <span style={{ fontWeight: 700, fontSize: '0.88rem', color: 'var(--fg)' }}>{module.title}</span>
+              <span style={{ fontSize: '0.78rem', fontWeight: 800, color: 'var(--muted)' }}>
+                {moduleStatusIcon(status)} {moduleStatusLabel(status)}
+              </span>
+            </button>
+          );
+        })}
+      </nav>
+    </Card>
   );
 }
 

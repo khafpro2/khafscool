@@ -4,6 +4,7 @@ import {
   jamfProFoundationsQuestions,
   toDemoQuestions,
 } from '@ama/shared/quiz-content';
+import { getCoursePedagogy, getModulePedagogy } from '@ama/shared/course-content';
 import { apiFetch } from './api';
 import { getAccessToken } from './auth';
 
@@ -35,6 +36,9 @@ export interface CourseModule {
   slug: string;
   title: string;
   summary: string;
+  learningObjectives?: string[];
+  keyTakeaways?: string[];
+  lessonContent?: string;
   questions: CourseQuestion[];
   game?: {
     id?: string;
@@ -104,21 +108,39 @@ export interface CompleteModuleResult {
 
 export { NEXT_COURSE_BY_SLUG } from '@ama/shared/constants';
 
+function normalizeCourse(course: CourseDetail): CourseDetail {
+  const pedagogy = getCoursePedagogy(course.slug);
+  return {
+    ...course,
+    description: pedagogy?.description ?? course.description,
+    modules: course.modules.map((module) => {
+      const modulePedagogy = getModulePedagogy(course.slug, module.slug);
+      return {
+        ...module,
+        summary: modulePedagogy?.summary ?? module.summary,
+        learningObjectives: modulePedagogy?.learningObjectives ?? module.learningObjectives,
+        keyTakeaways: modulePedagogy?.keyTakeaways ?? module.keyTakeaways,
+        lessonContent: modulePedagogy?.lessonContent ?? module.lessonContent,
+      };
+    }),
+  };
+}
+
 export async function fetchCourse(slug: string): Promise<{ data: CourseDetail; source: 'api' | 'demo' }> {
   const token = await getAccessToken();
   if (!token) {
     const demo = DEMO_COURSES[slug];
     if (!demo) throw new Error('COURSE_NOT_FOUND');
-    return { data: demo, source: 'demo' };
+    return { data: normalizeCourse(demo), source: 'demo' };
   }
 
   try {
     const response = await apiFetch<{ course: CourseDetail }>(`/courses/${slug}`);
-    return { data: response.course, source: 'api' };
+    return { data: normalizeCourse(response.course), source: 'api' };
   } catch {
     const demo = DEMO_COURSES[slug];
     if (!demo) throw new Error('COURSE_NOT_FOUND');
-    return { data: demo, source: 'demo' };
+    return { data: normalizeCourse(demo), source: 'demo' };
   }
 }
 
@@ -129,7 +151,7 @@ export async function fetchCourseProgress(
   if (!token) {
     const demo = DEMO_COURSES[slug];
     if (!demo) throw new Error('COURSE_NOT_FOUND');
-    return { data: courseToProgress(demo), source: 'demo' };
+    return { data: courseToProgress(normalizeCourse(demo)), source: 'demo' };
   }
 
   try {
@@ -138,7 +160,7 @@ export async function fetchCourseProgress(
   } catch {
     const demo = DEMO_COURSES[slug];
     if (!demo) throw new Error('COURSE_NOT_FOUND');
-    return { data: courseToProgress(demo), source: 'demo' };
+    return { data: courseToProgress(normalizeCourse(demo)), source: 'demo' };
   }
 }
 

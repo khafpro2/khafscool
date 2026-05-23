@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt';
 import { AuthProvider, CourseTrack, Prisma, PrismaClient } from '@prisma/client';
 import { DEMO_ACCOUNT } from '@ama/shared/constants';
+import { getCoursePedagogy, getModulePedagogy } from '@ama/shared/course-content';
 import {
   appleCertPrepQuestions,
   intuneIosEnrollmentQuestions,
@@ -15,6 +16,9 @@ type SeedModule = {
   slug: string;
   title: string;
   summary: string;
+  learningObjectives: string[];
+  keyTakeaways: string[];
+  lessonContent: string;
   sortOrder: number;
   questions: SeedQuestion[];
   game: {
@@ -31,6 +35,9 @@ async function seedModule(courseId: string, module: SeedModule) {
     update: {
       title: module.title,
       summary: module.summary,
+      learningObjectives: module.learningObjectives,
+      keyTakeaways: module.keyTakeaways,
+      lessonContent: module.lessonContent,
       sortOrder: module.sortOrder,
     },
     create: {
@@ -38,6 +45,9 @@ async function seedModule(courseId: string, module: SeedModule) {
       slug: module.slug,
       title: module.title,
       summary: module.summary,
+      learningObjectives: module.learningObjectives,
+      keyTakeaways: module.keyTakeaways,
+      lessonContent: module.lessonContent,
       sortOrder: module.sortOrder,
     },
   });
@@ -111,20 +121,30 @@ function pathTitle(slug: string): string {
   return path.title;
 }
 
+function modulePedagogy(courseSlug: string, moduleSlug: string) {
+  const pedagogy = getModulePedagogy(courseSlug, moduleSlug);
+  if (!pedagogy) throw new Error(`Contenu pédagogique manquant: ${courseSlug}/${moduleSlug}`);
+  return pedagogy;
+}
+
+function courseDescription(courseSlug: string) {
+  const pedagogy = getCoursePedagogy(courseSlug);
+  if (!pedagogy) throw new Error(`Description parcours manquante: ${courseSlug}`);
+  return pedagogy.description;
+}
+
 async function main() {
   const appleCourse = await seedCourse({
     track: CourseTrack.APPLE,
     slug: 'apple-cert-prep',
     title: pathTitle('apple-cert-prep'),
-    description:
-      'Parcours fondamental pour techniciens support et débutants MDM sur l’écosystème Apple. En fin de parcours, tu sauras diagnostiquer Mac, iPhone et iPad, sécuriser sauvegardes et restaurations, structurer ta préparation à l’examen Apple Device Support et relier support terrain et bases MDM. Contenus originaux, non affiliés à Apple Inc.',
+    description: courseDescription('apple-cert-prep'),
     sortOrder: 1,
     modules: [
       {
         slug: 'device-support-basics',
         title: 'Fondamentaux Device Support',
-        summary:
-          'Diagnostic matériel/logiciel, sauvegarde et réinitialisation sécurisée — résumé pédagogique original.',
+        ...modulePedagogy('apple-cert-prep', 'device-support-basics'),
         sortOrder: 1,
         questions: appleCertPrepQuestions['device-support-basics'],
         game: {
@@ -141,8 +161,7 @@ async function main() {
       {
         slug: 'ios-troubleshooting',
         title: 'Dépannage iOS et iPadOS',
-        summary:
-          'Diagnostiquer connectivité, batterie et blocages courants sur iPhone/iPad — méthode structurée pour techniciens.',
+        ...modulePedagogy('apple-cert-prep', 'ios-troubleshooting'),
         sortOrder: 2,
         questions: appleCertPrepQuestions['ios-troubleshooting'],
         game: {
@@ -160,8 +179,7 @@ async function main() {
       {
         slug: 'acmt-exam-prep',
         title: 'Préparation examen Device Support (ACMT)',
-        summary:
-          'Réviser les domaines clés Apple Device Support : sécurité, sauvegarde, restauration et bonnes pratiques atelier.',
+        ...modulePedagogy('apple-cert-prep', 'acmt-exam-prep'),
         sortOrder: 3,
         questions: appleCertPrepQuestions['acmt-exam-prep'],
         game: {
@@ -183,15 +201,13 @@ async function main() {
     track: CourseTrack.JAMF,
     slug: 'jamf-pro-foundations',
     title: pathTitle('jamf-pro-foundations'),
-    description:
-      'Parcours pratique pour administrateurs MDM Jamf. En fin de parcours, tu sauras cibler des appareils avec smart groups, déployer des politiques pilotes, lire l’inventaire et la conformité Jamf, et enrôler une flotte supervisée via Apple Business Manager.',
+    description: courseDescription('jamf-pro-foundations'),
     sortOrder: 2,
     modules: [
       {
         slug: 'smart-groups-policies',
         title: 'Smart Groups et politiques',
-        summary:
-          'Comprendre comment cibler des Mac et déclencher une politique Jamf Pro sur un périmètre pilote.',
+        ...modulePedagogy('jamf-pro-foundations', 'smart-groups-policies'),
         sortOrder: 1,
         questions: jamfProFoundationsQuestions['smart-groups-policies'],
         game: {
@@ -208,8 +224,7 @@ async function main() {
       {
         slug: 'inventory-basics',
         title: 'Inventaire et conformité',
-        summary:
-          'Lire l’inventaire Jamf, interpréter la conformité et prioriser les actions sur les appareils hors norme.',
+        ...modulePedagogy('jamf-pro-foundations', 'inventory-basics'),
         sortOrder: 2,
         questions: jamfProFoundationsQuestions['inventory-basics'],
         game: {
@@ -227,8 +242,7 @@ async function main() {
       {
         slug: 'enrollment-apple-integration',
         title: 'Enrôlement et intégration Apple',
-        summary:
-          'Relier Apple Business Manager, certificats Push et expérience d’enrôlement automatisé pour une flotte supervisée.',
+        ...modulePedagogy('jamf-pro-foundations', 'enrollment-apple-integration'),
         sortOrder: 3,
         questions: jamfProFoundationsQuestions['enrollment-apple-integration'],
         game: {
@@ -250,15 +264,13 @@ async function main() {
     track: CourseTrack.INTUNE,
     slug: 'intune-ios-enrollment',
     title: pathTitle('intune-ios-enrollment'),
-    description:
-      'Parcours pour admins Microsoft 365 et équipes endpoint hybrides. En fin de parcours, tu sauras configurer l’enrôlement automatisé (ADE) pour iOS/iPadOS, déployer des politiques de conformité Intune et protéger les apps M365 avec App Protection et Conditional Access.',
+    description: courseDescription('intune-ios-enrollment'),
     sortOrder: 3,
     modules: [
       {
         slug: 'ade-enrollment-basics',
         title: 'Préparer Automated Device Enrollment',
-        summary:
-          'Associer Apple Business Manager à Intune, affecter un profil ADE et valider l’expérience Setup Assistant.',
+        ...modulePedagogy('intune-ios-enrollment', 'ade-enrollment-basics'),
         sortOrder: 1,
         questions: intuneIosEnrollmentQuestions['ade-enrollment-basics'],
         game: {
@@ -276,8 +288,7 @@ async function main() {
       {
         slug: 'compliance-policies',
         title: 'Politiques de conformité iOS',
-        summary:
-          'Définir et assigner des politiques de conformité Intune pour iPhone/iPad : OS, PIN, jailbreak et actions correctives.',
+        ...modulePedagogy('intune-ios-enrollment', 'compliance-policies'),
         sortOrder: 2,
         questions: intuneIosEnrollmentQuestions['compliance-policies'],
         game: {
@@ -295,8 +306,7 @@ async function main() {
       {
         slug: 'app-protection-conditional-access',
         title: 'App Protection et Conditional Access',
-        summary:
-          'Protéger les données M365 sur iOS avec des politiques App Protection (MAM) et Conditional Access pour les apps gérées.',
+        ...modulePedagogy('intune-ios-enrollment', 'app-protection-conditional-access'),
         sortOrder: 3,
         questions: intuneIosEnrollmentQuestions['app-protection-conditional-access'],
         game: {
