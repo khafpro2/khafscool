@@ -1,4 +1,5 @@
 import type { Game, Module, Question } from '@prisma/client';
+import { moduleQuizQuestions } from '@ama/shared/quiz-content';
 
 type QuestionOption = { id: string; label: string };
 
@@ -42,7 +43,7 @@ export function sanitizeModule(module: Module & { questions: Question[]; game: G
     lessonContent: module.lessonContent ?? '',
     imageUrl: module.imageUrl,
     sortOrder: module.sortOrder,
-    questions: module.questions.map(sanitizeQuestion),
+    questions: moduleQuizQuestions(module.questions).map(sanitizeQuestion),
     game: sanitizeGame(module.game),
   };
 }

@@ -60,6 +60,7 @@ async function seedModule(courseId: string, module: SeedModule) {
       options: question.options as Prisma.InputJsonValue,
       correctOption: question.correctOption,
       explanation: question.explanation,
+      examOnly: question.examOnly ?? false,
       moduleId: savedModule.id,
     })),
   });

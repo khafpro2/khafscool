@@ -8,6 +8,7 @@ import { SiteMobileNav } from '@/components/layout/SiteMobileNav';
 import { SiteNavLinks } from '@/components/layout/SiteNavLinks';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { CookieConsentBanner } from '@/components/layout/CookieConsentBanner';
+import { GlossaryNavSearch } from '@/components/layout/GlossaryNavSearch';
 import { AnalyticsOptInBanner } from '@/components/layout/AnalyticsOptInBanner';
 import { PointsRankNavIndicator } from '@/components/layout/PointsRankNavIndicator';
 import { StreakNavBadge } from '@/components/layout/StreakNavIndicator';
@@ -129,6 +130,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 </div>
               </div>
               <SiteNavLinks />
+              <GlossaryNavSearch />
             </nav>
             <SiteMobileNav />
             <div className="site-actions">

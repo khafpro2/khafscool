@@ -25,6 +25,14 @@ export function getCourseQuestionCount(slug: CourseSlug): number {
   return getCourseModuleCount(slug) * QUESTIONS_PER_MODULE;
 }
 
+/** Bonus exam-only par parcours (module 4 : 2 existantes + 2 nouvelles). */
+export const PRACTICE_EXAM_BONUS_PER_COURSE = 4;
+
+/** Taille du pool examen blanc (40 Q parcours + bonus module final). */
+export function getPracticeExamPoolSize(slug: CourseSlug): number {
+  return getCourseQuestionCount(slug) + PRACTICE_EXAM_BONUS_PER_COURSE;
+}
+
 export type NextCourseLink = { slug: CourseSlug; title: string };
 
 export const NEXT_COURSE_BY_SLUG: Partial<Record<CourseSlug, NextCourseLink>> = {

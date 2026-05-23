@@ -143,6 +143,9 @@ export function SiteMobileNav() {
           <Link href="/profile" className="site-nav-drawer-link" onClick={close}>
             Profil
           </Link>
+          <Link href="/resources/glossaire" className="site-nav-drawer-link" onClick={close}>
+            Glossaire MDM
+          </Link>
         </div>
 
         <div className="site-nav-drawer-actions">

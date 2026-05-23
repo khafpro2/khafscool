@@ -2,8 +2,6 @@
 
 ## [0.2.1] — 2026-05-24
 
-Release patch **MDM Academy Pro v0.2.1** — polish dons multi-modes (PR #6, branche `cursor/progress-dashboard-auth-v2`).
-
 ### Dons — montants, modes et redirect
 - **Web** — `/donate` redirige vers `/soutenir` (query `?amount=` et fragment `#carte` / `#paypal` / `#virement` préservés)
 - **UX dons** — grille montants 5 € / 10 € / 20 € / Autre + choix mode (carte Stripe, PayPal, virement SEPA) ; CTA contextuels ; bordure accent `#2563EB`
@@ -15,6 +13,14 @@ Release patch **MDM Academy Pro v0.2.1** — polish dons multi-modes (PR #6, bra
 - **Parcours** — micro-CTA discret « Ce contenu vous aide ? Soutenir le projet » → `/soutenir?amount=5` (web sidebar, mobile `/donate?amount=5`)
 - **CI** — smoke `pnpm --filter backend test -- donations`
 - Tests e2e : `donate-redirect.spec.ts`, `soutenir.spec.ts`, `home-support.spec.ts`
+
+### Glossaire, merge checklist et bonus examen
+- **Header web** — recherche glossaire compacte + lien « Glossaire » ; autocomplete 5 termes max (`searchGlossaryLimited`, `@ama/shared/glossary`)
+- **Mobile** — lien « Glossaire » dans l’en-tête écran Parcours → `/glossary`
+- **MERGE.md** — checklist mainteneur v0.2.1 (HEAD, CI, compte démo, 3 modes dons, `verify-release.sh`)
+- **Contenu symétrique** — +2 Q bonus **exam-only** module 4 par piste (Apple, Jamf, Intune) ; 4 modules × 10 Q quiz + 4 bonus examen blanc ; seed **132 QCM** total
+- Champ Prisma `Question.examOnly` ; quiz module filtre les bonus ; pool examen blanc **44 Q** par parcours
+- Tests : `quiz-content.test.ts`, `glossary.test.ts`, `seed-content.test.ts`, e2e header glossaire
 
 ## [0.2.0] — 2026-05-23
 

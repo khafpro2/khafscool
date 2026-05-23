@@ -85,14 +85,15 @@ model Module {
 }
 
 model Question {
-  id            String @id @default(uuid())
+  id            String  @id @default(uuid())
   moduleId      String
   type          String
   prompt        String
   options       Json
   correctOption String
   explanation   String
-  module        Module @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  examOnly      Boolean @default(false)
+  module        Module  @relation(fields: [moduleId], references: [id], onDelete: Cascade)
 }
 
 model Game {

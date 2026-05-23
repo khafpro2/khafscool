@@ -292,6 +292,12 @@ export function searchGlossary(query: string): GlossaryTerm[] {
   });
 }
 
+/** Recherche glossaire limitée (autocomplete header, max 5 résultats). */
+export function searchGlossaryLimited(query: string, limit = 5): GlossaryTerm[] {
+  if (limit <= 0) return [];
+  return searchGlossary(query).slice(0, limit);
+}
+
 export type GlossaryMatchEntry = {
   termId: string;
   aliases: string[];

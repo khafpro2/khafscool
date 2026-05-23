@@ -138,6 +138,8 @@ export interface CourseQuestion {
   /** Présent uniquement en mode démo hors-ligne */
   correctOption?: string;
   explanation?: string;
+  /** Bonus examen blanc — absent des réponses API module */
+  examOnly?: boolean;
 }
 
 export interface CourseModule {
@@ -359,6 +361,13 @@ export interface PracticeExamData {
   poolSize: number;
   expectedPoolSize?: number;
   questions: PracticeExamQuestion[];
+  /** Jeton signé renvoyé par l’API — requis pour enregistrer le score. */
+  attemptToken?: string;
+}
+
+export interface PracticeExamScoreSubmission {
+  attemptToken: string;
+  answers: { questionId: string; selectedOption: string }[];
 }
 
 export interface PracticeExamScoreResult {
@@ -367,4 +376,6 @@ export interface PracticeExamScoreResult {
   badgeEarned?: string;
   questCompleted?: boolean;
   badges: string[];
+  correctCount?: number;
+  totalQuestions?: number;
 }

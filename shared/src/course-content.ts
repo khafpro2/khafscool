@@ -1200,6 +1200,7 @@ export function getContentStats(): {
   courses: number;
   modules: number;
   totalQuestions: number;
+  examOnlyQuestions: number;
   questionsPerModule: Record<string, number>;
   lessonWordsPerModule: Record<string, number>;
 } {
@@ -1211,11 +1212,13 @@ export function getContentStats(): {
 
   const questionsPerModule: Record<string, number> = {};
   let totalQuestions = 0;
+  let examOnlyQuestions = 0;
 
   for (const map of questionMaps) {
     for (const [slug, questions] of Object.entries(map)) {
       questionsPerModule[slug] = questions.length;
       totalQuestions += questions.length;
+      examOnlyQuestions += questions.filter((question) => question.examOnly).length;
     }
   }
 
@@ -1235,6 +1238,7 @@ export function getContentStats(): {
     courses,
     modules,
     totalQuestions,
+    examOnlyQuestions,
     questionsPerModule,
     lessonWordsPerModule,
   };

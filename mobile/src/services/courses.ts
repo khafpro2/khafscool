@@ -2,20 +2,23 @@ import {
   appleCertPrepQuestions,
   intuneIosEnrollmentQuestions,
   jamfProFoundationsQuestions,
+  moduleQuizQuestions,
   toDemoQuestions,
 } from '@ama/shared/quiz-content';
 import { getCoursePedagogy, getModulePedagogy } from '@ama/shared/course-content';
 import { apiFetch } from './api';
 import { getAccessToken } from './auth';
 
-function demoModuleQuestions(moduleKey: string, questions: ReturnType<typeof toDemoQuestions>) {
-  return questions.map(({ id, type, prompt, options, explanation }) => ({
-    id,
-    type,
-    prompt,
-    options,
-    explanation,
-  }));
+function demoModuleQuestions(moduleKey: string, questions: Parameters<typeof toDemoQuestions>[1]) {
+  return moduleQuizQuestions(toDemoQuestions(moduleKey, questions)).map(
+    ({ id, type, prompt, options, explanation }) => ({
+      id,
+      type,
+      prompt,
+      options,
+      explanation,
+    })
+  );
 }
 
 export interface CourseQuestion {

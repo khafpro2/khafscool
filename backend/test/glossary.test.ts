@@ -5,6 +5,7 @@ import {
   findGlossaryMatchesInText,
   glossaryWebHref,
   searchGlossary,
+  searchGlossaryLimited,
 } from '@ama/shared/glossary';
 
 describe('MDM glossary', () => {
@@ -20,6 +21,11 @@ describe('MDM glossary', () => {
   it('filters terms by query', () => {
     const results = searchGlossary('smart group');
     expect(results.some((entry) => entry.id === 'smart-group')).toBe(true);
+  });
+
+  it('limits autocomplete results', () => {
+    const results = searchGlossaryLimited('a', 5);
+    expect(results.length).toBeLessThanOrEqual(5);
   });
 
   it('detects glossary matches with max one per term', () => {

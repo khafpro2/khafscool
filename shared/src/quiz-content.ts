@@ -1,3 +1,5 @@
+import type { CourseSlug } from './learning-paths.js';
+
 export type QuizOption = { id: string; label: string };
 
 export type SeedQuestion = {
@@ -6,7 +8,14 @@ export type SeedQuestion = {
   options: QuizOption[];
   correctOption: string;
   explanation: string;
+  /** Réservé à l'examen blanc — exclu du quiz module (10 Q affichées). */
+  examOnly?: boolean;
 };
+
+/** Questions module visibles dans le parcours (hors bonus exam-only). */
+export function moduleQuizQuestions<T extends { examOnly?: boolean }>(questions: T[]): T[] {
+  return questions.filter((question) => !question.examOnly);
+}
 
 export function toDemoQuestions(
   moduleKey: string,
@@ -604,6 +613,7 @@ export const appleCertPrepQuestions: Record<string, SeedQuestion[]> = {
       correctOption: 'a',
       explanation:
         'Un échec VPP synchronisé sur parc entier pointe vers token expiré, catalogue ABM ou sync MDM — pas panne unitaire. La méthode examen : valider les artefacts ABM/MDM, tester sur pilote, repush ciblé. DFU massif ou contournement Apple ID violent les bonnes pratiques entreprise et la traçabilité audit.',
+      examOnly: true,
     },
     {
       type: 'TROUBLESHOOTING',
@@ -618,6 +628,37 @@ export const appleCertPrepQuestions: Record<string, SeedQuestion[]> = {
       correctOption: 'a',
       explanation:
         'La distinction supervision + mode Required vs Available est centrale aux examens Apple/MDM. Une app Required sur iPhone supervisé ADE ne se comporte pas comme une app perso. Interpréter un cas isolé sans vérifier supervision, assignation et mode de licence mène à un diagnostic erroné — base des scénarios certification.',
+      examOnly: true,
+    },
+    {
+      type: 'SCENARIO',
+      prompt:
+        'Examen blanc : audit trimestriel — 150 iPhone supervisés, 12 % sans app métier VPP Required. Première action conforme Device Support ?',
+      options: opt(
+        'Exporter inventaire MDM (check-in, supervision, assignation app) et corréler avec statut token VPP ABM avant action corrective ciblée',
+        'Wipe immédiat des 12 % d’appareils',
+        'Désactiver VPP sur tout le parc',
+        'Demander à chaque utilisateur de réinstaller via App Store perso'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Un écart de conformité apps VPP se diagnostique par corrélation inventaire MDM + token ABM — pas par action destructive. Les examens Apple/MDM valorisent triage audit : preuves, pilote, repush. Wipe massif sans analyse viole runbooks entreprise.',
+      examOnly: true,
+    },
+    {
+      type: 'KNOWLEDGE',
+      prompt:
+        'Examen blanc : quelle métrique prouve le mieux qu’une flotte iOS est prête pour un audit VPP Required ?',
+      options: opt(
+        'Taux d’install réussi + check-in MDM < 24 h + token VPP valide dans ABM',
+        'Nombre d’Apple ID personnels créés par les employés',
+        'Couleur des coques iPhone en stock',
+        'Version iTunes sur postes Windows'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Conformité VPP Required = licences valides, commandes MDM reçues et appareils synchronisés. Les audits certification croisent install status, check-in récent et validité token — pas des indicateurs hors périmètre MDM.',
+      examOnly: true,
     },
   ],
 };
@@ -1201,6 +1242,7 @@ export const jamfProFoundationsQuestions: Record<string, SeedQuestion[]> = {
       correctOption: 'a',
       explanation:
         'Les examens Jamf et les audits ISO exigent séparation des privilèges et traçabilité sur commandes destructives. EraseDevice via API sans pipeline d’approbation viole les bonnes pratiques enterprise. Dry-run + scopes minimum + logs sont le modèle attendu en certification admin.',
+      examOnly: true,
     },
     {
       type: 'TROUBLESHOOTING',
@@ -1215,6 +1257,37 @@ export const jamfProFoundationsQuestions: Record<string, SeedQuestion[]> = {
       correctOption: 'a',
       explanation:
         'Les scénarios certification Jamf testent la maîtrise API v1 : scopes OAuth, pagination, filtres RSQL. Un export vide avec inventaire UI intact signale quasi toujours une requête mal formée — compétence clé Jamf Certified Admin et audits automation.',
+      examOnly: true,
+    },
+    {
+      type: 'SCENARIO',
+      prompt:
+        'Examen blanc Jamf : reporting conformité ISO — 180 Mac, 15 % OS obsolète. Livrable le plus attendu en audit ?',
+      options: opt(
+        'Export computers-inventory filtré + Smart Group « Non compliant OS » + plan de remédiation daté',
+        'Capture d’écran Jamf Admin sans métadonnées',
+        'Liste manuelle des prénoms utilisateurs',
+        'Suppression des Mac non conformes sans ticket'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Reporting et conformité Jamf reposent sur inventaire API, groupes dynamiques et traçabilité des actions correctives. Les examens Jamf Certified Admin testent l’automation reproductible — pas des exports ad hoc non vérifiables.',
+      examOnly: true,
+    },
+    {
+      type: 'KNOWLEDGE',
+      prompt:
+        'Examen blanc : quel objet Jamf Pro alimente le mieux un tableau de bord « appareils non conformes + dernière check-in » ?',
+      options: opt(
+        'Smart Group basé sur critères OS/conformité + Extension Attributes si besoin',
+        'Compte utilisateur local macOS uniquement',
+        'Profil Wi-Fi iOS envoyé aux Mac',
+        'Token VPP Apps and Books seul'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Smart Groups et EA calculés sont le cœur du reporting conformité Jamf : membership dynamique, policies ciblées et exports API cohérents. Distinction clé certification vs inventaire statique.',
+      examOnly: true,
     },
   ],
 };
@@ -1796,6 +1869,7 @@ export const intuneIosEnrollmentQuestions: Record<string, SeedQuestion[]> = {
       correctOption: 'a',
       explanation:
         'Les examens Microsoft Intune mobile valident la chaîne complète ABM → conformité → app Required → CA. Un pilote avec install status Installed et accès M365 bloqué si non conforme prouve le modèle COPE finance/santé — réponse type certification.',
+      examOnly: true,
     },
     {
       type: 'TROUBLESHOOTING',
@@ -1810,6 +1884,48 @@ export const intuneIosEnrollmentQuestions: Record<string, SeedQuestion[]> = {
       correctOption: 'a',
       explanation:
         'Pending groupé post-maintenance token = artefact sync ou réseau, pas panne device. La méthode certification Intune : valider triple token, licences, réseau, repush pilote avant action destructive. Wipe massif sans diagnostic viole les runbooks Zero Trust.',
+      examOnly: true,
+    },
+    {
+      type: 'SCENARIO',
+      prompt:
+        'Examen blanc Intune : comité audit demande preuve que 95 % des iPhone ont l’app métier Required. Indicateur le plus fiable ?',
+      options: opt(
+        'Rapport install status Intune (Installed vs Pending/Failed) sur groupe dynamique corporate',
+        'Nombre de tickets helpdesk ouverts',
+        'Taille moyenne des photos iCloud',
+        'Version Safari sur Mac admin'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Reporting conformité apps Intune s’appuie sur install status par assignation — métrique standard MD-102 et audits Zero Trust. Corréler avec conformité device et token VPP valide complète la preuve audit.',
+      examOnly: true,
+    },
+    {
+      type: 'KNOWLEDGE',
+      prompt:
+        'Examen blanc : quel triplet d’artefacts ABM doit être valide avant un déploiement VPP Required massif Intune ?',
+      options: opt(
+        'Push MDM + Enrollment Program Token + Token VPP (Apps and Books)',
+        'Uniquement certificat Push',
+        'Licence Jamf Pro',
+        'Compte Google Workspace seul'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Intune mobile certification exige la maîtrise des trois tokens Apple : commandes MDM, inventaire ADE et licences VPP. Confondre l’un d’eux est un piège classique examen MD-102.',
+      examOnly: true,
     },
   ],
 };
+
+export const QUESTIONS_BY_COURSE: Record<CourseSlug, Record<string, SeedQuestion[]>> = {
+  'apple-cert-prep': appleCertPrepQuestions,
+  'jamf-pro-foundations': jamfProFoundationsQuestions,
+  'intune-ios-enrollment': intuneIosEnrollmentQuestions,
+};
+
+/** Pool complet seed (quiz module + bonus exam-only) pour examen blanc démo. */
+export function getSeedQuestionsForCourse(courseSlug: CourseSlug): SeedQuestion[] {
+  return Object.values(QUESTIONS_BY_COURSE[courseSlug] ?? {}).flat();
+}

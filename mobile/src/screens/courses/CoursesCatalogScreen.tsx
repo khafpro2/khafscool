@@ -72,7 +72,17 @@ export function CoursesCatalogScreen() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.header}>
-        <Text style={styles.eyebrow}>MDM Academy</Text>
+        <View style={styles.headerTopRow}>
+          <Text style={styles.eyebrow}>MDM Academy</Text>
+          <Pressable
+            accessibilityRole="link"
+            accessibilityLabel="Ouvrir le glossaire MDM"
+            onPress={() => router.push('/glossary')}
+            style={styles.glossaryLink}
+          >
+            <Text style={styles.glossaryLinkText}>Glossaire</Text>
+          </Pressable>
+        </View>
         <Text style={styles.title}>Apprends Apple, Jamf Pro et Intune</Text>
         <Text style={styles.subtitle}>
           Trois parcours de 3 unités — support Apple, administration Jamf et enrôlement Microsoft Intune.
@@ -191,7 +201,23 @@ function createStyles(colors: AppThemeColors) {
   loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.bg },
   loadingText: { marginTop: 12, color: colors.muted, fontSize: 15 },
   header: { marginBottom: 20 },
-  eyebrow: { color: colors.accent, fontSize: 13, fontWeight: '800', marginBottom: 4, textTransform: 'uppercase' },
+  headerTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+    marginBottom: 4,
+  },
+  glossaryLink: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: colors.radiusMd,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.bgSoft,
+  },
+  glossaryLinkText: { color: colors.accent, fontSize: 13, fontWeight: '800' },
+  eyebrow: { color: colors.accent, fontSize: 13, fontWeight: '800', textTransform: 'uppercase' },
   title: { color: colors.fg, fontSize: 26, fontWeight: '800', lineHeight: 32 },
   subtitle: { color: colors.muted, marginTop: 8, lineHeight: 22, fontSize: 15 },
   demoBanner: {

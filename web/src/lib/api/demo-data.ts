@@ -1,5 +1,6 @@
-import { DEMO_ACCOUNT } from '@ama/shared/constants';
 import { getCoursePedagogy, getModulePedagogy } from '@ama/shared/course-content';
+import { DEMO_ACCOUNT } from '@ama/shared/constants';
+import { moduleQuizQuestions } from '@ama/shared/quiz-content';
 import {
   appleCertPrepQuestions,
   intuneIosEnrollmentQuestions,
@@ -320,10 +321,12 @@ export function normalizeCourse(course: CourseDetail): CourseDetail {
         learningObjectives: modulePedagogy?.learningObjectives ?? module.learningObjectives,
         keyTakeaways: modulePedagogy?.keyTakeaways ?? module.keyTakeaways,
         lessonContent: modulePedagogy?.lessonContent ?? module.lessonContent,
-        questions: module.questions.map((question) => ({
-          ...question,
-          options: Array.isArray(question.options) ? question.options : [],
-        })),
+        questions: moduleQuizQuestions(
+          module.questions.map((question) => ({
+            ...question,
+            options: Array.isArray(question.options) ? question.options : [],
+          }))
+        ),
         game: module.game
           ? {
               ...module.game,

@@ -1,4 +1,5 @@
 import { PRACTICE_EXAM_PASS_BADGE, PRACTICE_EXAM_PASS_PERCENT } from '@ama/shared/practice-exam';
+import { moduleQuizQuestions } from '@ama/shared/quiz-content';
 import { CourseTrack, UserLevel, type UserQuest } from '@prisma/client';
 import { prisma } from '../lib/prisma.js';
 import { isSupporterFromBadges } from './supporter-badge.service.js';
@@ -549,6 +550,8 @@ export async function completeModule(
   });
   if (!module) throw new Error('MODULE_NOT_FOUND');
 
+  const quizQuestions = moduleQuizQuestions(module.questions);
+
   const existingProgress = await prisma.moduleProgress.findUnique({
     where: { userId_moduleId: { userId, moduleId } },
   });
@@ -559,7 +562,7 @@ export async function completeModule(
     if (payload.reviewMode) {
       const quizScore = gradeQuiz(
         payload.quizAnswers ?? {},
-        module.questions.map((q) => ({ id: q.id, correctOption: q.correctOption }))
+        quizQuestions.map((q) => ({ id: q.id, correctOption: q.correctOption }))
       );
       const solution = (module.game?.solution as { correctOrder?: number[] }) ?? { correctOrder: [] };
       const gameScore = gradeGame(payload.gameOrder ?? [], { correctOrder: solution.correctOrder ?? [] });
@@ -592,7 +595,7 @@ export async function completeModule(
 
   const quizScore = gradeQuiz(
     payload.quizAnswers ?? {},
-    module.questions.map((q) => ({ id: q.id, correctOption: q.correctOption }))
+    quizQuestions.map((q) => ({ id: q.id, correctOption: q.correctOption }))
   );
 
   const solution = (module.game?.solution as { correctOrder?: number[] }) ?? { correctOrder: [] };
