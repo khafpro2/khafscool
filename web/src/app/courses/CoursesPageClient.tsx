@@ -15,7 +15,7 @@ import {
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { LevelPill } from '@/components/ui/LevelPill';
+import { TrackIcon } from '@/components/ui/TrackIcon';
 import { TrailCard } from '@/components/ui/TrailCard';
 import { inferLevelFromModules, type TrailLevel } from '@/lib/design';
 import { getLearningPath, sortMvpCoursesFirst } from '@/lib/learningPaths';
@@ -241,17 +241,32 @@ export function CoursesPageClient({ initialTrack }: CoursesPageClientProps) {
         )}
       </div>
 
-      <Card variant="soft" style={{ marginTop: '2rem' }}>
+      <Card variant="soft" style={{ marginTop: '2rem' }} aria-labelledby="sprint-cta-title">
         <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
-            <h2 style={{ fontSize: '1.2rem', fontWeight: 800 }}>Tu hésites ? Démarre par un sprint</h2>
-            <p className="muted" style={{ marginTop: '0.35rem', maxWidth: 600 }}>
-              Sept ou quatorze jours, un objectif clair par piste : laisse-toi guider et reçois ton badge à la fin.
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+              <TrackIcon track="SPRINT" size="sm" ariaHidden={false} title="Sprint certification" />
+              <h2 id="sprint-cta-title" style={{ fontSize: '1.2rem', fontWeight: 800, margin: 0 }}>
+                Pas encore de parcours en cours ?
+              </h2>
+            </div>
+            <p className="muted" style={{ marginTop: '0.5rem', maxWidth: 620 }}>
+              Un sprint certification, c&apos;est un défi guidé sur 7 ou 14 jours sur une piste Apple, Jamf ou Intune.
+              Termine le cycle pour débloquer ton badge.
             </p>
-            <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.8rem', flexWrap: 'wrap' }}>
-              <Badge tone="success" icon="\u{1F3C1}">7 jours</Badge>
-              <Badge tone="success" icon="\u{1F3C1}">14 jours</Badge>
-              <LevelPill level="Intermédiaire" />
+            <div
+              style={{ display: 'flex', gap: '0.5rem', marginTop: '0.8rem', flexWrap: 'wrap' }}
+              aria-label="Options de sprint disponibles"
+            >
+              <Badge tone="success" title="Sprint 7 jours — idéal pour réviser vite">
+                Sprint 7 jours · Idéal pour réviser vite
+              </Badge>
+              <Badge tone="success" title="Sprint 14 jours — rythme confortable">
+                Sprint 14 jours · Rythme confortable
+              </Badge>
+              <Badge tone="neutral" title="Badge débloqué à la fin du sprint">
+                Badge à la fin
+              </Badge>
             </div>
           </div>
           <Button href="/sprint" size="lg">

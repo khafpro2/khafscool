@@ -301,7 +301,7 @@ function SprintDashboardCard({ sprint }: { sprint: CertificationSprintSummary | 
             <>
               <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginTop: '0.4rem' }}>Aucun sprint actif</h2>
               <p className="muted" style={{ marginTop: '0.35rem' }}>
-                Lance un cycle court de préparation sur Apple, Jamf ou Intune, puis suis ton rythme ici.
+                Défi guidé sur 7 ou 14 jours sur Apple, Jamf ou Intune. Termine le cycle pour débloquer ton badge.
               </p>
             </>
           )}

@@ -136,9 +136,9 @@ function SprintHomeCard({ sprint }: { sprint: CertificationSprintSummary | null 
     return (
       <Card className="home-engagement-card home-engagement-sprint">
         <span className="home-engagement-eyebrow">Sprint certification</span>
-        <h3 className="home-engagement-title">Planifie ta révision</h3>
+        <h3 className="home-engagement-title">Lance un sprint certification</h3>
         <p className="muted home-engagement-caption">
-          Lance un cycle de 7 ou 14 jours sur Apple, Jamf ou Intune pour cadrer ta préparation.
+          Défi guidé sur 7 ou 14 jours sur Apple, Jamf ou Intune. Termine le cycle pour débloquer ton badge.
         </p>
         <Button href="/sprint" size="sm" style={{ marginTop: '0.85rem' }}>
           Démarrer un sprint

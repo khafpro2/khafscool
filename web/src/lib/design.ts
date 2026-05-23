@@ -39,7 +39,7 @@ const TRACK_VISUALS: Record<string, TrackVisual> = {
   },
   SPRINT: {
     label: 'Sprint certification',
-    icon: '\u{1F3C1}',
+    icon: '🏁',
     color: '#2563eb',
     gradient: 'var(--gradient-hero)',
     defaultLevel: 'Avancé',

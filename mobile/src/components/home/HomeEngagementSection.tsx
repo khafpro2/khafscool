@@ -100,9 +100,9 @@ export function HomeEngagementSection({ quests, sprint }: HomeEngagementSectionP
             </>
           ) : (
             <>
-              <Text style={styles.cardTitle}>Planifie ta révision</Text>
+              <Text style={styles.cardTitle}>Lance un sprint certification</Text>
               <Text style={styles.cardCaption}>
-                Lance un cycle de 7 ou 14 jours sur Apple, Jamf ou Intune pour cadrer ta préparation.
+                Défi guidé sur 7 ou 14 jours sur Apple, Jamf ou Intune. Termine le cycle pour débloquer ton badge.
               </Text>
             </>
           )}

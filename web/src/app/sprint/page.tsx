@@ -60,13 +60,13 @@ const SPRINT_PLAN_COPY: Record<
   { title: string; description: string; modulesHint: string }
 > = {
   7: {
-    title: 'Sprint intensif — 7 jours',
-    description: 'Rythme soutenu pour réviser les unités clés avant une certification proche.',
+    title: 'Sprint 7 jours',
+    description: 'Idéal pour réviser vite — rythme soutenu sur les unités clés avant une certification proche.',
     modulesHint: '4 unités ciblées',
   },
   14: {
-    title: 'Sprint étendu — 14 jours',
-    description: 'Progression plus souple avec marge pour consolider chaque piste Apple, Jamf ou Intune.',
+    title: 'Sprint 14 jours',
+    description: 'Rythme confortable — plus de marge pour consolider chaque piste Apple, Jamf ou Intune.',
     modulesHint: '4 unités + révisions',
   },
 };
@@ -145,8 +145,8 @@ export default function SprintPage() {
         </span>
         <h1>Accélère ta préparation certification</h1>
         <p style={{ marginTop: '0.85rem' }}>
-          Choisis un objectif Apple, Jamf ou Intune, puis lance un sprint de 7 ou 14 jours pour transformer
-          tes unités en plan de révision mesurable.
+          Un sprint certification, c&apos;est un défi guidé sur 7 ou 14 jours sur une piste Apple, Jamf ou Intune.
+          Termine le cycle pour débloquer ton badge et structurer ta révision.
         </p>
         <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', marginTop: '1.5rem' }}>
           <Button href="/dashboard" variant="secondary" size="lg">
@@ -283,17 +283,22 @@ export default function SprintPage() {
                 Durée du sprint
               </span>
               <div className="chip-row">
-                {DAY_OPTIONS.map((days) => (
-                  <button
-                    key={days}
-                    type="button"
-                    className="chip"
-                    aria-pressed={selectedDays === days}
-                    onClick={() => setSelectedDays(days)}
-                  >
-                    {days} jours
-                  </button>
-                ))}
+                {DAY_OPTIONS.map((days) => {
+                  const planCopy = SPRINT_PLAN_COPY[days];
+                  return (
+                    <button
+                      key={days}
+                      type="button"
+                      className="chip"
+                      aria-pressed={selectedDays === days}
+                      aria-label={`${planCopy.title} — ${planCopy.description}`}
+                      title={planCopy.description}
+                      onClick={() => setSelectedDays(days)}
+                    >
+                      {planCopy.title}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -508,8 +513,7 @@ function CurrentSprintCard({
         <span className="section-eyebrow">Sprint courant</span>
         <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginTop: '0.4rem' }}>Aucun sprint actif</h2>
         <p className="muted" style={{ marginTop: '0.75rem' }}>
-          Choisis une piste Apple, Jamf ou Intune et lance un cycle de 7 ou 14 jours pour structurer ta révision
-          certification.
+          Défi guidé sur 7 ou 14 jours sur Apple, Jamf ou Intune. Termine le cycle pour débloquer ton badge.
         </p>
         <Button href="/courses" variant="secondary" style={{ marginTop: '1rem' }}>
           Choisir un parcours

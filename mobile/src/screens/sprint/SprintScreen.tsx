@@ -35,13 +35,13 @@ const SPRINT_PLAN_COPY: Record<
   { title: string; description: string; modulesHint: string }
 > = {
   7: {
-    title: 'Sprint intensif — 7 jours',
-    description: 'Rythme soutenu pour réviser les unités clés avant une certification proche.',
+    title: 'Sprint 7 jours',
+    description: 'Idéal pour réviser vite — rythme soutenu sur les unités clés avant une certification proche.',
     modulesHint: '4 unités ciblées',
   },
   14: {
-    title: 'Sprint étendu — 14 jours',
-    description: 'Progression plus souple avec marge pour consolider chaque piste.',
+    title: 'Sprint 14 jours',
+    description: 'Rythme confortable — plus de marge pour consolider chaque piste Apple, Jamf ou Intune.',
     modulesHint: '4 unités + révisions',
   },
 };
@@ -118,7 +118,7 @@ export function SprintScreen() {
         <Text style={styles.heroEyebrow}>{sprintVisual.icon ?? '\u{26A1}'} Certification Sprint</Text>
         <Text style={styles.heroTitle}>Accélère ta préparation certification</Text>
         <Text style={styles.heroCopy}>
-          Choisis Apple, Jamf ou Intune, puis lance un sprint de 7 ou 14 jours pour structurer ta révision.
+          Défi guidé sur 7 ou 14 jours sur Apple, Jamf ou Intune. Termine le cycle pour débloquer ton badge.
         </Text>
       </View>
 
@@ -220,7 +220,7 @@ function CurrentSprintCard({
         <Text style={styles.currentEyebrow}>Sprint courant</Text>
         <Text style={styles.currentTitle}>Aucun sprint actif</Text>
         <Text style={styles.currentCopy}>
-          Lance un sprint ci-dessous pour transformer tes unités en plan de révision mesurable.
+          Défi guidé sur 7 ou 14 jours sur Apple, Jamf ou Intune. Termine le cycle pour débloquer ton badge.
         </Text>
       </View>
     );
