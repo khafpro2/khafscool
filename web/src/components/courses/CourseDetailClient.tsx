@@ -43,6 +43,7 @@ import { scoreGameOrder } from '@/lib/points';
 import {
   countLessonWords,
   formatCourseHeroBanner,
+  formatReadingTimeLabel,
   sumLessonReadingMinutes,
 } from '@ama/shared/reading-time';
 import { QUESTIONS_PER_MODULE } from '@ama/shared/constants';
