@@ -28,8 +28,6 @@ const mockDonationStatusUnavailable = {
   message: 'Bientôt disponible — merci pour votre intérêt !',
 };
 
-const MOCK_PAYPAL_URL = 'https://www.paypal.com/donate/?hosted_button_id=e2e_mock';
-
 test.describe('Page Soutenir', () => {
   test.beforeEach(async ({ page }) => {
     await page.route(`${API_BASE}/donations/status`, async (route) => {
@@ -41,41 +39,56 @@ test.describe('Page Soutenir', () => {
     });
   });
 
-  test('affiche la section carte bancaire et les montants suggérés', async ({ page }) => {
-    await page.goto('/soutenir#carte');
+  test('affiche la grille de choix montant et mode de paiement', async ({ page }) => {
+    await page.goto('/soutenir');
     await expect(
       page.getByRole('heading', { level: 1, name: 'Soutenir MDM Academy Pro' }),
     ).toBeVisible({ timeout: 15_000 });
-    await expect(
-      page.getByRole('heading', { level: 2, name: 'Carte bancaire (Visa, Mastercard…)' }),
-    ).toBeVisible();
+
+    const grid = page.getByTestId('donation-choice-grid');
+    await expect(grid).toBeVisible();
+    await expect(page.getByRole('heading', { level: 2, name: '1. Choisissez un montant' })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 2, name: '2. Choisissez un mode de paiement' })).toBeVisible();
+    await expect(page.getByTestId('donation-amount-5')).toBeVisible();
+    await expect(page.getByTestId('donation-amount-10')).toBeVisible();
+    await expect(page.getByTestId('donation-amount-20')).toBeVisible();
+    await expect(page.getByTestId('donation-amount-custom')).toBeVisible();
+    await expect(page.getByTestId('donation-mode-carte')).toBeVisible();
+    await expect(page.getByTestId('donation-mode-paypal')).toBeVisible();
+    await expect(page.getByTestId('donation-mode-virement')).toBeVisible();
+  });
+
+  test('pré-sélectionne le montant via ?amount=10', async ({ page }) => {
+    await page.goto('/soutenir?amount=10');
+    await expect(page.getByTestId('donation-choice-grid')).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByTestId('donation-amount-10')).toHaveClass(/is-selected/);
+    await expect(page.getByText('10 €', { exact: false }).first()).toBeVisible();
+  });
+
+  test('affiche le CTA carte avec montant sélectionné (fallback)', async ({ page }) => {
+    await page.goto('/soutenir#carte');
+    await expect(page.getByTestId('donation-mode-carte')).toHaveClass(/is-selected/, { timeout: 15_000 });
     await expect(page.getByText('sécurisé via Stripe', { exact: false })).toBeVisible();
-    await expect(page.getByText('100 % gratuite', { exact: false }).first()).toBeVisible();
-    await expect(page.getByRole('button', { name: /5[\s\u00a0]*€/ })).toBeVisible();
-    await expect(page.getByRole('button', { name: /10[\s\u00a0]*€/ })).toBeVisible();
-    await expect(page.getByRole('button', { name: /20[\s\u00a0]*€/ })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Faire un don (lien externe)' })).toBeVisible();
   });
 
-  test('affiche la section virement bancaire et le bouton copier IBAN', async ({ page }) => {
-    await page.goto('/soutenir#virement');
-    await expect(page.getByRole('heading', { level: 2, name: 'Virement bancaire (SEPA)' })).toBeVisible({
-      timeout: 15_000,
-    });
+  test('affiche la section virement avec IBAN et référence montant', async ({ page }) => {
+    await page.goto('/soutenir?amount=10#virement');
+    await expect(page.getByTestId('donation-mode-virement')).toHaveClass(/is-selected/, { timeout: 15_000 });
     await expect(page.getByTestId('bank-iban')).toContainText('FR76 2823 3000 0193 2563 3272 239');
     await expect(page.getByRole('button', { name: 'Copier l’IBAN' })).toBeVisible();
-    await expect(page.getByTestId('bank-reference')).toHaveText('Soutien MDM Academy');
+    await expect(page.getByTestId('bank-reference')).toContainText('Soutien MDM Academy - 10€');
   });
 
-  test('affiche la section PayPal quand l’URL est configurée (mock env)', async ({ page }) => {
-    await page.goto('/soutenir#paypal');
-    await expect(page.getByRole('heading', { level: 2, name: 'PayPal (don volontaire)' })).toBeVisible({
-      timeout: 15_000,
-    });
+  test('affiche PayPal avec montant dans l’URL quand configuré', async ({ page }) => {
+    await page.goto('/soutenir?amount=10#paypal');
+    await expect(page.getByTestId('donation-mode-paypal')).toHaveClass(/is-selected/, { timeout: 15_000 });
     await expect(page.getByText('sécurisée par PayPal', { exact: false })).toBeVisible();
-    await expect(page.locator('#paypal').getByText(/Référence optionnelle.*MDM Academy/)).toBeVisible();
-    await expect(page.getByTestId('paypal-donate-button')).toBeVisible();
-    await expect(page.getByTestId('paypal-donate-button')).toHaveAttribute('href', MOCK_PAYPAL_URL);
+    const paypalButton = page.getByTestId('paypal-donate-button');
+    await expect(paypalButton).toBeVisible();
+    await expect(paypalButton).toHaveAttribute('href', /10/);
+    await expect(paypalButton).toContainText('10');
+    await expect(page.getByText('Montant 10', { exact: false })).toBeVisible();
   });
 
   test('affiche la FAQ dons (5 questions)', async ({ page }) => {
@@ -87,7 +100,7 @@ test.describe('Page Soutenir', () => {
     await expect(page.getByText('Puis-je obtenir un reçu fiscal ?')).toBeVisible();
     await page.getByText('Puis-je obtenir un reçu fiscal ?').click();
     await expect(
-      page.getByText('MDM Academy Pro n’est pas configurée comme association', { exact: false })
+      page.getByText('MDM Academy Pro n’est pas configurée comme association', { exact: false }),
     ).toBeVisible();
   });
 
@@ -115,7 +128,7 @@ test.describe('Page Soutenir', () => {
 });
 
 test.describe('Page Soutenir — paiement CB Stripe', () => {
-  test('affiche le bouton payer par carte quand Stripe est actif (mock API)', async ({ page }) => {
+  test('affiche le bouton Donner X € quand Stripe est actif (mock API)', async ({ page }) => {
     await page.route(`${API_BASE}/donations/status`, async (route) => {
       await route.fulfill({
         status: 200,
@@ -124,10 +137,9 @@ test.describe('Page Soutenir — paiement CB Stripe', () => {
       });
     });
 
-    await page.goto('/soutenir#carte');
-    await expect(page.getByRole('button', { name: /Payer .* par carte/ })).toBeVisible({
-      timeout: 15_000,
-    });
+    await page.goto('/soutenir?amount=10#carte');
+    await expect(page.getByTestId('stripe-donate-button')).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByTestId('stripe-donate-button')).toContainText('10');
     await expect(page.getByText('Redirection vers Stripe Checkout', { exact: false })).toBeVisible();
   });
 
@@ -145,6 +157,6 @@ test.describe('Page Soutenir — paiement CB Stripe', () => {
       timeout: 15_000,
     });
     await expect(page.getByRole('link', { name: 'docs/DONATIONS.md' })).toBeVisible();
-    await expect(page.getByRole('button', { name: /Payer .* par carte/ })).toHaveCount(0);
+    await expect(page.getByTestId('stripe-donate-button')).toHaveCount(0);
   });
 });

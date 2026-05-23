@@ -65,6 +65,14 @@ Première release MVP **MDM Academy Pro** (branche `cursor/progress-dashboard-au
 
 ## Unreleased — `cursor/progress-dashboard-auth-v2`
 
+### UX dons — grille choix montant et mode
+- **`DonationChoiceGrid` (web)** — `/soutenir` : montants 5 € / 10 € / 20 € / Autre puis 3 cartes mode (carte Stripe, PayPal, virement SEPA) ; CTA « Donner X € », PayPal avec `?amount=` si possible, référence virement « MDM Academy - X€ » ; bordure accent `#2563EB` ; FAQ conservée en bas
+- **Accueil** — `SupportProjectCard` : 3 chips montants + lien « Choisir mode de paiement » → `/soutenir?amount=10`
+- **Mobile** — `DonationChoiceSection` sur `/donate` : même pattern chips montants + 3 modes
+- **Query `?amount=`** — pré-sélection montant sur `/soutenir` (web + deep link mobile)
+- **`@ama/shared/donation-amounts`** — helpers `formatDonationEuros`, `buildPaypalUrlWithAmount`, `buildDonationBankReference`
+- Tests e2e : `soutenir.spec.ts`, `home-support.spec.ts`
+
 ### Badge Supporter, FAQ dons, notifications stub
 - **Badge Supporter** — galerie web/mobile (`ALL_BADGE_SLUGS`) + critères déblocage ; CTA « Soutenir le projet » sur la carte verrouillée
 - **FAQ dons FR** — section 5 questions sur `/soutenir` (gratuité, remboursement, reçu fiscal, badge, destination)

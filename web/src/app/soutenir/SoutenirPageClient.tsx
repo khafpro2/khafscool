@@ -1,8 +1,6 @@
 'use client';
 
-import { BankTransferPanel } from '@/components/donations/BankTransferPanel';
-import { DonationPanel } from '@/components/donations/DonationPanel';
-import { PayPalPanel } from '@/components/donations/PayPalPanel';
+import { DonationChoiceGrid } from '@/components/donations/DonationChoiceGrid';
 import { getContactEmail, getContactMailto } from '@/lib/contact';
 
 const DONATION_FAQ = [
@@ -47,10 +45,8 @@ export function SoutenirPageClient() {
         Un don optionnel pour faire vivre la plateforme — sans jamais limiter l’accès à la formation.
       </p>
 
-      <div className="donation-methods-grid" style={{ marginTop: '1.5rem' }}>
-        <DonationPanel />
-        <PayPalPanel />
-        <BankTransferPanel />
+      <div style={{ marginTop: '1.5rem' }}>
+        <DonationChoiceGrid />
       </div>
 
       <section aria-labelledby="donation-faq-heading" style={{ marginTop: '2.5rem' }}>

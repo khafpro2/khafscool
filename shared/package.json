@@ -15,7 +15,8 @@
     "./revision-sheet": "./src/revision-sheet.ts",
     "./practice-exam": "./src/practice-exam.ts",
     "./donation-bank": "./src/donation-bank.ts",
-    "./donation-methods": "./src/donation-methods.ts"
+    "./donation-methods": "./src/donation-methods.ts",
+    "./donation-amounts": "./src/donation-amounts.ts"
   },
   "scripts": {
     "build": "tsc",

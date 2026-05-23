@@ -1,11 +1,12 @@
+import Link from 'next/link';
+import { PRESET_DONATION_AMOUNTS_CENTS } from '@ama/shared/donation-amounts';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 
-const DONATION_MODES = [
-  { icon: '\u{1F4B3}', label: 'Carte bancaire', hint: 'Stripe Checkout — montants 5 €, 10 €, 20 € ou libre' },
-  { icon: '\u{1F4B0}', label: 'PayPal', hint: 'Don volontaire — montant libre sur PayPal' },
-  { icon: '\u{1F3E6}', label: 'Virement SEPA', hint: 'IBAN Revolut — copie en un clic' },
-] as const;
+const PRESET_AMOUNTS = PRESET_DONATION_AMOUNTS_CENTS.map((cents) => ({
+  euros: cents / 100,
+  label: `${cents / 100}\u00a0€`,
+}));
 
 export function SupportProjectCard() {
   return (
@@ -22,28 +23,32 @@ export function SupportProjectCard() {
               Soutenir le projet
             </h2>
             <p className="muted" style={{ marginTop: '0.5rem', maxWidth: 520 }}>
-              MDM Academy Pro reste gratuite pour tous. Un don volontaire aide l’hébergement — carte, PayPal ou
-              virement bancaire.
+              MDM Academy Pro reste gratuite pour tous. Choisissez un montant, puis le mode de paiement sur la
+              page Soutenir.
             </p>
           </div>
-          <div className="home-support-modes" data-testid="home-support-modes">
-            {DONATION_MODES.map((mode) => (
-              <div key={mode.label} className="home-support-mode">
-                <span className="home-support-mode-icon" aria-hidden>
-                  {mode.icon}
-                </span>
-                <div>
-                  <p className="home-support-mode-label">{mode.label}</p>
-                  <p className="home-support-mode-hint">{mode.hint}</p>
-                </div>
-              </div>
-            ))}
+
+          <div>
+            <p className="home-support-amounts-label">Montants suggérés</p>
+            <div className="home-support-amounts" data-testid="home-support-amounts">
+              {PRESET_AMOUNTS.map(({ euros, label }) => (
+                <Link
+                  key={euros}
+                  href={`/soutenir?amount=${euros}`}
+                  className="home-support-amount-chip"
+                  data-testid={`home-support-amount-${euros}`}
+                >
+                  {label}
+                </Link>
+              ))}
+            </div>
           </div>
+
           <div className="home-support-actions">
-            <Button href="/soutenir" size="lg">
-              Faire un don
+            <Button href="/soutenir?amount=10" size="lg">
+              Choisir mode de paiement
             </Button>
-            <Button href="/soutenir#virement" size="sm" variant="secondary">
+            <Button href="/soutenir?amount=10#virement" size="sm" variant="secondary">
               Voir l’IBAN
             </Button>
           </div>

@@ -1,12 +1,11 @@
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { BankTransferCard } from '../../components/donations/BankTransferCard';
-import { CardPaymentCard } from '../../components/donations/CardPaymentCard';
-import { PayPalCard } from '../../components/donations/PayPalCard';
+import { DonationChoiceSection } from '../../components/donations/DonationChoiceSection';
 import { CONTACT_EMAIL, CONTACT_MAILTO } from '../../config';
 import { useThemedStyles } from '../../hooks/useThemedStyles';
 import type { AppThemeColors } from '../../lib/design';
+
 export function DonateScreen() {
   const router = useRouter();
   const styles = useThemedStyles(createStyles);
@@ -30,13 +29,7 @@ export function DonateScreen() {
         </Text>
       </View>
 
-      <Text style={styles.sectionHint}>
-        Trois moyens de soutenir le projet : carte bancaire (Stripe), PayPal ou virement SEPA.
-      </Text>
-
-      <CardPaymentCard />
-      <PayPalCard />
-      <BankTransferCard />
+      <DonationChoiceSection />
 
       <View style={styles.footerCard}>
         <Text style={styles.footerTitle}>Une question sur les dons ?</Text>
@@ -54,14 +47,13 @@ export function DonateScreen() {
 function createStyles(colors: AppThemeColors) {
   return StyleSheet.create({
     container: { flex: 1, backgroundColor: colors.bg },
-    content: { padding: 24, paddingBottom: 40 },
-    backButton: { marginBottom: 12 },
+    content: { padding: 24, paddingBottom: 40, gap: 16 },
+    backButton: { marginBottom: 4 },
     backText: { color: colors.accent, fontWeight: '700', fontSize: 15 },
     hero: {
       backgroundColor: colors.accentSoft,
       borderRadius: colors.radiusLg,
       padding: 20,
-      marginBottom: 16,
       borderWidth: 1,
       borderColor: colors.border,
     },
@@ -85,13 +77,8 @@ function createStyles(colors: AppThemeColors) {
       lineHeight: 21,
       fontSize: 15,
     },
-    sectionHint: {
-      color: colors.muted,
-      marginBottom: 16,
-      lineHeight: 21,
-      fontSize: 14,
-    },
     footerCard: {
+      marginTop: 8,
       backgroundColor: colors.bgSoft,
       borderRadius: colors.radiusLg,
       padding: 16,
