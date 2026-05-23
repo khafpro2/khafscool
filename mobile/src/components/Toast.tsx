@@ -18,6 +18,7 @@ const KIND_META: Record<
   points: { icon: '\u2B50', label: 'Points gagnés', accentKey: 'warning' },
   badge: { icon: '\u{1F3C6}', label: 'Badge débloqué', accentKey: 'success' },
   quest: { icon: '\u{1F3AF}', label: 'Quête accomplie', accentKey: 'accent' },
+  success: { icon: '\u{1F525}', label: 'Presque fini', accentKey: 'success' },
 };
 
 export function Toaster() {

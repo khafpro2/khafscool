@@ -1,4 +1,4 @@
-export type ToastKind = 'points' | 'badge' | 'quest';
+export type ToastKind = 'points' | 'badge' | 'quest' | 'success';
 
 export type ToastInput = {
   kind: ToastKind;
