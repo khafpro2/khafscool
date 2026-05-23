@@ -22,7 +22,7 @@ const DONATION_FAQ = [
   {
     question: 'Comment obtenir le badge Supporter ?',
     answer:
-      'Connectez-vous à votre compte, puis faites un don par carte (Stripe), PayPal ou virement depuis cette page. Le badge Supporter est attribué automatiquement après confirmation du paiement carte ; pour PayPal ou virement, contactez-nous avec votre identifiant compte si le badge n’apparaît pas sous 48 h.',
+      'Connectez-vous à votre compte, puis faites un don depuis cette page. Le badge Supporter est attribué automatiquement après un don par carte (Stripe). Pour un don PayPal ou virement, le badge n’est pas automatique : écrivez à KTHIAM@HARMYTECH.COM avec l’e-mail de votre compte MDM Academy pour qu’on vous l’attribue manuellement.',
   },
   {
     question: 'Où va mon don ?',

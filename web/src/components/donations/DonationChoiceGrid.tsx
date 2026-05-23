@@ -22,6 +22,7 @@ import { Card } from '@/components/ui/Card';
 import { createDonationCheckout, fetchDonationStatus } from '@/lib/api/client';
 import type { DonationStatusResponse } from '@/lib/api/types';
 import { getAccessToken } from '@/lib/auth';
+import { AuthRequestError } from '@/lib/auth-errors';
 import { getContactEmail, getContactMailto } from '@/lib/contact';
 import { formatIbanDisplay, getDonationBankDetails } from '@/lib/donation-bank';
 import { getDonationPaypalUrl } from '@/lib/donation-paypal';
@@ -40,6 +41,35 @@ const DEFAULT_DONATION_STATUS: DonationStatusResponse = {
 };
 
 type PaymentMode = DonationPaymentModeId;
+
+function StripeCheckoutSpinner() {
+  return (
+    <span
+      aria-hidden
+      style={{
+        width: '1rem',
+        height: '1rem',
+        borderRadius: '50%',
+        border: '2px solid currentColor',
+        borderTopColor: 'transparent',
+        animation: 'ama-spin 0.8s linear infinite',
+        flexShrink: 0,
+      }}
+    />
+  );
+}
+
+function stripeCheckoutErrorMessage(error: unknown): string {
+  if (error instanceof AuthRequestError) {
+    return error.message;
+  }
+  if (error instanceof Error) {
+    if (error.message.startsWith('Erreur API') || error.message === 'Failed to fetch') {
+      return 'Impossible d’ouvrir le paiement par carte pour le moment. Réessayez dans quelques instants ou choisissez PayPal / virement.';
+    }
+  }
+  return 'Impossible d’ouvrir le paiement par carte. Réessayez plus tard ou contactez-nous.';
+}
 
 function PayPalWordmark() {
   return (
@@ -212,9 +242,9 @@ export function DonationChoiceGrid() {
         return;
       }
 
-      setError('Impossible d’ouvrir le paiement. Réessaie plus tard.');
+      setError('Impossible d’ouvrir le paiement par carte. Réessayez dans quelques instants.');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erreur lors de la création du don.');
+      setError(stripeCheckoutErrorMessage(err));
     } finally {
       setSubmitting(false);
     }
@@ -399,9 +429,13 @@ export function DonationChoiceGrid() {
                   size="lg"
                   onClick={() => void handleStripeDonate()}
                   disabled={submitting || effectiveAmountCents == null}
+                  aria-busy={submitting}
                   data-testid="stripe-donate-button"
                 >
-                  {submitting ? 'Redirection vers Stripe…' : `Payer ${formattedAmount} par carte`}
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
+                    {submitting ? <StripeCheckoutSpinner /> : null}
+                    {submitting ? 'Redirection vers Stripe…' : `Payer ${formattedAmount} par carte`}
+                  </span>
                 </Button>
               ) : fallbackUrl ? (
                 <a href={fallbackUrl} className="btn btn-lg" target="_blank" rel="noopener noreferrer">

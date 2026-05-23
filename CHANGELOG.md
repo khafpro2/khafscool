@@ -65,6 +65,13 @@ Première release MVP **MDM Academy Pro** (branche `cursor/progress-dashboard-au
 
 ## Unreleased — `cursor/progress-dashboard-auth-v2`
 
+### Redirect dons, checkout Stripe et liens
+- **Web** — `/donate` redirige vers `/soutenir` (query `?amount=` et fragment `#carte` / `#paypal` / `#virement` préservés)
+- **Nav / footer** — lien « Faire un don » → `/soutenir` (plus seulement `#paypal`)
+- **Stripe Checkout** — spinner sur « Payer X € par carte » pendant `create-checkout-session` ; message d’erreur FR si l’API échoue
+- **FAQ** — badge Supporter : attribution manuelle PayPal/virement via KTHIAM@HARMYTECH.COM
+- Tests e2e : `donate-redirect.spec.ts`, spinner et erreur checkout dans `soutenir.spec.ts`
+
 ### UX dons — sélecteur de mode de paiement
 - **`DonationChoiceGrid` (web)** — 3 cartes mode (`role="radiogroup"`) : Carte bancaire, PayPal, Virement bancaire ; bordure `#2563EB` + checkmark ; CTA contextuels « Payer X € par carte », « Ouvrir PayPal », « Copier IBAN »
 - **Accueil** — `SupportProjectCard` : liste des 3 modes avec liens vers `/soutenir?amount=10#…`

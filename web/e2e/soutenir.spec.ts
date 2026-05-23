@@ -123,7 +123,7 @@ test.describe('Page Soutenir', () => {
     await page.goto('/');
     const footerLink = page.getByRole('contentinfo').getByRole('link', { name: 'Faire un don' });
     await expect(footerLink).toBeVisible();
-    await expect(footerLink).toHaveAttribute('href', '/soutenir#paypal');
+    await expect(footerLink).toHaveAttribute('href', '/soutenir');
   });
 
   test('affiche la page merci après don Stripe', async ({ page }) => {
@@ -174,5 +174,57 @@ test.describe('Page Soutenir — paiement CB Stripe', () => {
     });
     await expect(page.getByRole('link', { name: 'docs/DONATIONS.md' })).toBeVisible();
     await expect(page.getByTestId('stripe-donate-button')).toHaveCount(0);
+  });
+
+  test('affiche un spinner pendant create-checkout-session (mock API)', async ({ page }) => {
+    await page.route(`${API_BASE}/donations/status`, async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(mockDonationStatusLive),
+      });
+    });
+
+    await page.route(`${API_BASE}/donations/create-checkout-session`, async (route) => {
+      await new Promise((resolve) => setTimeout(resolve, 800));
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ checkoutUrl: 'https://checkout.stripe.com/e2e-mock' }),
+      });
+    });
+
+    await page.goto('/soutenir?amount=10#carte');
+    const button = page.getByTestId('stripe-donate-button');
+    await expect(button).toBeVisible({ timeout: 15_000 });
+    await button.click();
+    await expect(button).toHaveAttribute('aria-busy', 'true');
+    await expect(button).toContainText('Redirection vers Stripe');
+  });
+
+  test('affiche une erreur FR si create-checkout-session échoue (mock API)', async ({ page }) => {
+    await page.route(`${API_BASE}/donations/status`, async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(mockDonationStatusLive),
+      });
+    });
+
+    await page.route(`${API_BASE}/donations/create-checkout-session`, async (route) => {
+      await route.fulfill({
+        status: 503,
+        contentType: 'application/json',
+        body: JSON.stringify({ message: 'Service de paiement indisponible.' }),
+      });
+    });
+
+    await page.goto('/soutenir?amount=10#carte');
+    const button = page.getByTestId('stripe-donate-button');
+    await expect(button).toBeVisible({ timeout: 15_000 });
+    await button.click();
+    await expect(page.locator('.donation-error')).toContainText('Service de paiement indisponible', {
+      timeout: 10_000,
+    });
   });
 });
