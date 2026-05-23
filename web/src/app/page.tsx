@@ -2,6 +2,7 @@ import { HomeOnboardingBanner } from '@/components/home/HomeOnboardingBanner';
 import { ContinueLearningSection } from '@/components/home/ContinueLearningSection';
 import { HomeEngagementSection } from '@/components/home/HomeEngagementSection';
 import { InstallAppButton } from '@/components/home/InstallAppButton';
+import { SupportProjectCard } from '@/components/home/SupportProjectCard';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { LearningPathCard } from '@/components/ui/LearningPathCard';
@@ -140,6 +141,8 @@ export default function HomePage() {
           </p>
         </div>
       </section>
+
+      <SupportProjectCard />
 
       <section className="section container">
         <div className="section-head">

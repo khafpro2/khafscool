@@ -21,6 +21,7 @@ export default function RootLayout() {
       <Stack.Screen name="sprint" />
       <Stack.Screen name="diagnostics" />
       <Stack.Screen name="about" />
+      <Stack.Screen name="donate" />
       <Stack.Screen name="glossary" />
       <Stack.Screen name="course/[slug]" />
       <Stack.Screen name="course/[slug]/complete" />

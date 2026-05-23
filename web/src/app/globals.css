@@ -1112,6 +1112,53 @@ html[data-theme='dark'] .analytics-opt-in-banner {
   background: linear-gradient(135deg, var(--surface) 0%, var(--accent-soft) 100%);
   border-color: color-mix(in srgb, var(--accent) 35%, var(--border-soft));
 }
+.home-support {
+  margin-top: 2.5rem;
+}
+.home-support-card {
+  overflow: hidden;
+}
+.home-support-layout {
+  display: grid;
+  gap: 1.25rem;
+}
+.home-support-modes {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+.home-support-mode {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  border-radius: 14px;
+  border: 1px solid var(--border-soft);
+  background: color-mix(in srgb, var(--accent) 6%, var(--card));
+}
+.home-support-mode-icon {
+  font-size: 1.35rem;
+  line-height: 1;
+}
+.home-support-mode-label {
+  font-weight: 800;
+  font-size: 0.95rem;
+}
+.home-support-mode-hint {
+  margin-top: 0.2rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+  line-height: 1.35;
+}
+.home-support-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  align-items: center;
+}
+[data-theme='dark'] .home-support-mode {
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface));
+}
 [data-theme='dark'] .home-cta-card {
   background: linear-gradient(135deg, var(--surface) 0%, color-mix(in srgb, var(--accent) 18%, var(--bg)) 100%);
   border-color: color-mix(in srgb, var(--accent) 45%, var(--border-soft));

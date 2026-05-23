@@ -433,10 +433,10 @@ export function ProfileScreen() {
         <Text style={styles.linkCta}>Ouvrir les diagnostics →</Text>
       </Pressable>
 
-      <Pressable style={styles.linkCard} onPress={() => openWebPath('/soutenir')}>
+      <Pressable style={styles.linkCard} onPress={() => router.push('/donate')}>
         <Text style={styles.linkTitle}>Soutenir le projet</Text>
-        <Text style={styles.linkHint}>Don volontaire — la formation reste 100 % gratuite</Text>
-        <Text style={styles.linkCta}>Faire un don →</Text>
+        <Text style={styles.linkHint}>Carte, PayPal ou virement — la formation reste 100 % gratuite</Text>
+        <Text style={styles.linkCta}>Voir les options →</Text>
       </Pressable>
 
       <Pressable style={styles.linkCard} onPress={() => router.push('/about')}>

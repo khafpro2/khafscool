@@ -33,6 +33,9 @@ Release **MDM Academy Pro v0.2** (branche `cursor/progress-dashboard-auth-v2`, P
 ### Dons, conformité et DX
 - Dons Stripe `/soutenir#carte` — section **carte bancaire** prioritaire (Visa/Mastercard, Checkout), badge Supporter, pages merci/annule
 - **Virement bancaire SEPA** — section `/soutenir#virement` (web) + cartes natives mobile ; coordonnées Revolut HarmyTech, copie IBAN/BIC, variables `DONATION_BANK_*`
+- **Mobile** — écran natif `/donate` (carte → web Stripe, PayPal, virement IBAN) ; liens profil, à propos et accueil
+- **Web accueil** — carte « Soutenir le projet » (3 modes : CB, PayPal, virement)
+- **CI** — `tsc --noEmit` mobile dans le job `build-test` (régression ToastKind)
 - Export/suppression compte RGPD, auth enrichie, rate limit quiz FR
 - `scripts/dev-stack.sh`, Postgres Docker port **5433**, diagnostics OAuth
 

@@ -2,14 +2,12 @@ import { useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
-  Linking,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
-import { WEB_URL } from '../../config';
 import { BrandIcon } from '../../components/BrandIcon';
 import { AlmostCompleteBanner } from '../../components/dashboard/AlmostCompleteBanner';
 import { ContinueLearningSection } from '../../components/home/ContinueLearningSection';
@@ -395,14 +393,11 @@ export function LearnerDashboardScreen({ onSignOut }: LearnerDashboardScreenProp
         <Text style={styles.refreshText}>Rafraîchir la progression</Text>
       </Pressable>
 
-      <Pressable
-        style={styles.supportCard}
-        onPress={() => void Linking.openURL(`${WEB_URL}/soutenir`)}
-      >
+      <Pressable style={styles.supportCard} onPress={() => router.push('/donate')}>
         <Text style={styles.supportEyebrow}>{'\u{1F49A}'} Soutenir le projet</Text>
         <Text style={styles.supportTitle}>Formation 100 % gratuite</Text>
         <Text style={styles.supportHint}>
-          Un don volontaire aide l’hébergement — ouvre la page web /soutenir.
+          Carte bancaire, PayPal ou virement SEPA — don volontaire pour l’hébergement.
         </Text>
       </Pressable>
     </ScrollView>
