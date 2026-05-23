@@ -1,10 +1,10 @@
+import type { CourseSlug } from './learning-paths.js';
+
 export const COURSE_SLUGS = [
   'apple-cert-prep',
   'jamf-pro-foundations',
   'intune-ios-enrollment',
-] as const;
-
-export type CourseSlug = (typeof COURSE_SLUGS)[number];
+] as const satisfies readonly CourseSlug[];
 
 /** Nombre de questions quiz par module MVP (aligné seed + contenu). */
 export const QUESTIONS_PER_MODULE = 10;
