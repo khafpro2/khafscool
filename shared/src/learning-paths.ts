@@ -18,7 +18,7 @@ export interface LearningPathDefinition {
   shortTitle: string;
   durationMinutes: number;
   totalModules: number;
-  objectives: [string, string, string];
+  objectives: string[];
 }
 
 export const LEARNING_PATHS: LearningPathDefinition[] = [
@@ -33,6 +33,7 @@ export const LEARNING_PATHS: LearningPathDefinition[] = [
     objectives: [
       'Diagnostiquer pannes matérielles et logicielles sur Mac, iPhone et iPad',
       'Sécuriser sauvegardes, restaurations et Activation Lock en atelier',
+      'Relier support terrain et escalade MDM (apps, profils, check-in)',
       'Gérer apps VPP et préparer l’examen Apple Device Support',
     ],
   },
