@@ -13,6 +13,7 @@ import { WEB_URL } from '../../config';
 import { BrandIcon } from '../../components/BrandIcon';
 import { ContinueLearningSection } from '../../components/home/ContinueLearningSection';
 import { HomeEngagementSection } from '../../components/home/HomeEngagementSection';
+import { MdmTracksSection } from '../../components/MdmTracksSection';
 import { useAppTheme } from '../../context/ThemeContext';
 import type { AppThemeColors } from '../../lib/design';
 import { formatLevel, formatTrack, getBadgeVisual, getRankInfo } from '../../lib/design';
@@ -226,6 +227,8 @@ export function LearnerDashboardScreen({ onSignOut }: LearnerDashboardScreenProp
       ) : null}
 
       <ContinueLearningSection courses={data.courses} />
+
+      <MdmTracksSection courses={data.courses} />
 
       <View style={[styles.heroCard, { backgroundColor: rank.gradient[0] }]}>
         <Text style={styles.heroEyebrow}>

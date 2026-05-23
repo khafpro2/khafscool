@@ -43,6 +43,27 @@ export const courseCompletePageMetadata: Metadata = {
   robots: { index: false, follow: true },
 };
 
+export function buildCourseRevisionMetadata(
+  slug: string,
+  courseTitle?: string
+): Metadata {
+  const title = courseTitle ?? 'Parcours MDM';
+  const canonical = `/courses/${slug}/revision`;
+
+  return {
+    title: `Fiche révision — ${title}`,
+    description: `Synthèse des points clés et liens glossaire pour le parcours ${title} (Apple MDM, Jamf ou Intune).`,
+    openGraph: {
+      locale: 'fr_FR',
+      title: `Fiche révision — ${title}`,
+      description: `Points clés des 4 modules et glossaire MDM pour réviser ${title}.`,
+      url: canonical,
+    },
+    alternates: { canonical },
+    robots: { index: false, follow: true },
+  };
+}
+
 export function buildCourseCertificateMetadata(
   slug: string,
   courseTitle?: string

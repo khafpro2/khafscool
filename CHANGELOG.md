@@ -26,6 +26,13 @@ Première release MVP **MDM Academy Pro** (branche `cursor/progress-dashboard-au
 
 ## Unreleased — `cursor/progress-dashboard-auth-v2`
 
+### Fiche révision, dashboard pistes et sprint 4 modules
+- **Fiche révision web** — `/courses/[slug]/revision` : agrège `keyTakeaways` des 4 modules, liens glossaire auto, FR, dark mode, bouton « Imprimer / PDF » ; accessible après complétion (ou démo) ; lien depuis `/courses/[slug]/complete`
+- **Dashboard web** — section « Mes pistes MDM » : cartes Apple/Jamf/Intune **X/4 modules** + barre % (`LearningPathCard`, `MdmTracksSection`)
+- **Mobile** — écran natif `CourseRevisionScreen` (`/course/[slug]/revision`) + lien depuis complétion ; section `MdmTracksSection` sur tableau de bord (**X/4** + barre %)
+- **Sprint & quêtes** — cibles sprint dynamiques sur **4 modules/piste** ; données démo alignées (`weekly-apple-2`, etc.) ; tests backend `revision-sheet`, `certification-sprint-target`, mocks 4 modules
+- Tests e2e : `revision-sheet.spec.ts`
+
 ### Glossaire, leçons et catalogue (v0.2)
 - **Glossaire MDM** — `@ama/shared/glossary` : 34 termes FR (ABM, ADE, DEP, VPP, SCEP, supervision, Smart Group, conformité, wipe sélectif…) ; page web `/resources/glossaire` avec recherche, catégories, dark mode, sitemap ; lien depuis `/resources`
 - **Leçons enrichies** — `@ama/shared/lesson-markdown` : parseur H2/H3, listes, blockquote « Bonne pratique », liens externes ; web `LessonContent` + CSS `.lesson-content` ; mobile composant `LessonContent` (parité markdown)

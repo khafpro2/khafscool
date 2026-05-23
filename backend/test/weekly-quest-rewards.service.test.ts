@@ -55,7 +55,7 @@ function mockModuleCompletion(userId: string, moduleId: string) {
   prismaMock.moduleProgress.count.mockResolvedValue(1);
   prismaMock.userQuest.findMany.mockResolvedValue([]);
   prismaMock.moduleProgress.findMany.mockResolvedValue([{ quizScore: 100, gameScore: 100 }]);
-  prismaMock.module.count.mockResolvedValue(3);
+  prismaMock.module.count.mockResolvedValue(4);
 }
 
 describe('weekly quest rewards', () => {

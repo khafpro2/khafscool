@@ -54,6 +54,8 @@ export function MdmTracksSection({ courses: progressCourses }: { courses?: Cours
               path={path}
               title={course?.title ?? path.title}
               progressPercent={course?.progressPercent ?? 0}
+              completedModules={course?.completedModules ?? 0}
+              showTrackProgress={Boolean(course)}
               cta={course?.progressPercent ? 'Continuer ce parcours' : 'Démarrer cette piste'}
             />
           );

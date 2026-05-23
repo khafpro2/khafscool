@@ -70,7 +70,7 @@ describe('completeModule idempotence', () => {
     prismaMock.moduleProgress.findMany.mockResolvedValue([
       { quizScore: 80, gameScore: 100 },
     ]);
-    prismaMock.module.count.mockResolvedValue(3);
+    prismaMock.module.count.mockResolvedValue(4);
 
     const result = await completeModule(userId, moduleId, {
       quizAnswers: { q1: 'b' },

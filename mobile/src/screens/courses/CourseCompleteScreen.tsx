@@ -253,6 +253,9 @@ export function CourseCompleteScreen() {
           <Pressable style={styles.primaryButton} onPress={openCertificate}>
             <Text style={styles.primaryButtonText}>{'\u{1F4DC}'} Voir mon certificat</Text>
           </Pressable>
+          <Pressable style={styles.secondaryButton} onPress={() => router.push(`/course/${slug}/revision`)}>
+            <Text style={styles.secondaryButtonText}>{'\u{1F4D1}'} Fiche révision</Text>
+          </Pressable>
           <Pressable style={styles.secondaryButton} onPress={() => void shareSuccess()}>
             <Text style={styles.secondaryButtonText}>Partager ma réussite</Text>
           </Pressable>

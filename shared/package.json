@@ -11,7 +11,8 @@
     "./course-content": "./src/course-content.ts",
     "./glossary": "./src/glossary.ts",
     "./lesson-markdown": "./src/lesson-markdown.ts",
-    "./reading-time": "./src/reading-time.ts"
+    "./reading-time": "./src/reading-time.ts",
+    "./revision-sheet": "./src/revision-sheet.ts"
   },
   "scripts": {
     "build": "tsc",

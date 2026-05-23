@@ -183,7 +183,7 @@ export function mockDashboard(): DashboardData {
       preparationScore: 72,
     },
     badges: ['apple-mdm-foundation'],
-    quests: [{ id: '1', label: 'Termine 3 unités Apple cette semaine', progress: 1, target: 3 }],
+    quests: [{ id: 'weekly-apple-2', label: 'Valide 2 modules Apple', progress: 1, target: 2 }],
     certificationSprint: mockCertificationSprint(),
     courses: [
       { id: '1', slug: 'apple-cert-prep', title: 'Parcours Apple — Device Support & MDM', track: 'APPLE', progressPercent: 33, totalModules: 4, completedModules: 1 },

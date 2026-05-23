@@ -331,6 +331,9 @@ export function CourseCompleteClient({
           <Button href={`/courses/${slug}/certificate`} variant="secondary" icon={'\u{1F4DC}'}>
             Télécharger / Imprimer mon certificat
           </Button>
+          <Button href={`/courses/${slug}/revision`} variant="secondary" icon={'\u{1F4D1}'}>
+            Fiche révision
+          </Button>
           <Button href="/badges">Voir mes badges</Button>
           <Button href="/dashboard" variant="ghost">
             Tableau de bord

@@ -15,16 +15,20 @@ export interface LearningPathCardProps {
   path: LearningPathMeta;
   title?: string;
   progressPercent?: number;
+  completedModules?: number;
   cta?: string;
   size?: 'default' | 'hero';
+  showTrackProgress?: boolean;
 }
 
 export function LearningPathCard({
   path,
   title,
   progressPercent = 0,
+  completedModules,
   cta = 'Commencer ce parcours',
   size = 'default',
+  showTrackProgress = false,
 }: LearningPathCardProps) {
   const visual = getTrackVisual(path.track);
   const displayTitle = title ?? path.title;
@@ -52,9 +56,11 @@ export function LearningPathCard({
         title={displayTitle}
         points={points}
         percent={percent}
+        completedModules={completedModules}
         inProgress={inProgress}
         isCompleted={isCompleted}
         ctaLabel={ctaLabel}
+        showTrackProgress={showTrackProgress}
       />
     </article>
   );
@@ -116,18 +122,26 @@ function PathBody({
   title,
   points,
   percent,
+  completedModules,
   inProgress,
   isCompleted,
   ctaLabel,
+  showTrackProgress,
 }: {
   path: LearningPathMeta;
   title: string;
   points: number;
   percent: number;
+  completedModules?: number;
   inProgress: boolean;
   isCompleted: boolean;
   ctaLabel: string;
+  showTrackProgress?: boolean;
 }) {
+  const moduleTotal = path.totalModules;
+  const moduleDone = typeof completedModules === 'number' ? completedModules : null;
+  const showProgressBar = showTrackProgress || inProgress || isCompleted;
+
   return (
     <div className="learning-path-card-body">
       <h3 className="learning-path-card-title">{title}</h3>
@@ -135,8 +149,13 @@ function PathBody({
         <LevelPill level={path.level} />
         <Badge tone="neutral">{formatDurationLabel(path.durationMinutes)}</Badge>
         <Badge tone="neutral">
-          {path.totalModules} unité{path.totalModules > 1 ? 's' : ''}
+          {moduleTotal} unité{moduleTotal > 1 ? 's' : ''}
         </Badge>
+        {moduleDone !== null ? (
+          <Badge tone={isCompleted ? 'success' : 'neutral'}>
+            {moduleDone}/{moduleTotal} modules
+          </Badge>
+        ) : null}
         <Badge tone="warning">{points} pts</Badge>
       </div>
       <ul className="learning-path-objectives">
@@ -144,12 +163,12 @@ function PathBody({
           <li key={objective}>{objective}</li>
         ))}
       </ul>
-      {(inProgress || isCompleted) && (
+      {(showProgressBar || moduleDone !== null) && (
         <ProgressBar
           value={percent}
           tone={isCompleted ? 'success' : 'accent'}
           showValueLabel
-          label="Progression"
+          label={moduleDone !== null ? `${moduleDone}/${moduleTotal} modules` : 'Progression'}
           size="sm"
           style={{ marginTop: '0.35rem' }}
         />

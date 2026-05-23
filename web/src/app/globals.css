@@ -3191,6 +3191,125 @@ html[data-theme='dark'] .analytics-opt-in-banner {
     color: inherit;
     text-decoration: none;
   }
+
+  .revision-actions,
+  .no-print {
+    display: none !important;
+  }
+
+  .revision-page {
+    padding: 0;
+  }
+
+  .revision-document {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    border: none;
+    box-shadow: none;
+    background: #fff !important;
+  }
+
+  .revision-module {
+    page-break-inside: avoid;
+  }
+
+  .revision-glossary-term {
+    color: #0f172a !important;
+    text-decoration: underline;
+  }
+}
+
+.revision-page {
+  position: relative;
+}
+
+.revision-document {
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  background: var(--bg-soft);
+  padding: 1.25rem 1.35rem;
+}
+
+.revision-document__header {
+  display: flex;
+  gap: 0.85rem;
+  align-items: flex-start;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-soft);
+  margin-bottom: 1rem;
+}
+
+.revision-document__eyebrow {
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+.revision-document__title {
+  font-size: 1.35rem;
+  font-weight: 900;
+  margin-top: 0.15rem;
+}
+
+.revision-document__meta {
+  margin-top: 0.25rem;
+  font-size: 0.92rem;
+}
+
+.revision-module + .revision-module {
+  margin-top: 1.15rem;
+  padding-top: 1rem;
+  border-top: 1px dashed var(--border-soft);
+}
+
+.revision-module__title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  margin-bottom: 0.55rem;
+}
+
+.revision-module__list {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: grid;
+  gap: 0.45rem;
+  line-height: 1.55;
+}
+
+.revision-glossary-term {
+  color: var(--accent-teal, var(--accent));
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+}
+
+.revision-inline-link {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.revision-document__footer {
+  margin-top: 1.25rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--border-soft);
+  font-size: 0.88rem;
+}
+
+.revision-glossary-link {
+  font-weight: 700;
+  color: var(--accent);
+}
+
+[data-theme='dark'] .revision-document {
+  background: var(--bg-soft);
+  border-color: var(--border);
+}
+
+[data-theme='dark'] .revision-glossary-term {
+  color: var(--accent-teal, #5eead4);
 }
 
 [data-theme='dark'] .card:hover {

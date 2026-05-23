@@ -117,16 +117,16 @@ export async function fetchLearnerDashboard(): Promise<LearnerDashboard> {
 const demoProgress: LearnerProgress = {
   user: { id: 'demo', displayName: DEMO_ACCOUNT.displayName, email: DEMO_ACCOUNT.email },
   progress: {
-    totalModules: 6,
+    totalModules: 12,
     completedModules: 2,
-    progressPercent: 33,
+    progressPercent: 17,
     averageScore: 86,
     points: 420,
     level: 'TECHNICIAN',
   },
   badges: ['apple-mdm-foundation'],
   learningStreak: { currentDays: 2, longestDays: 4, lastActivityDate: '2026-05-18' },
-  quests: [{ id: 'weekly-apple-3', label: 'Termine 3 unités Apple cette semaine', progress: 1, target: 3 }],
+  quests: [{ id: 'weekly-apple-2', label: 'Valide 2 modules Apple', progress: 1, target: 2 }],
   recentActivity: [
     {
       id: 'demo-apple-module-2',
@@ -145,9 +145,9 @@ const demoProgress: LearnerProgress = {
       slug: 'apple-cert-prep',
       title: 'Parcours Apple Device Support & MDM',
       track: 'APPLE',
-      totalModules: 3,
+      totalModules: 4,
       completedModules: 2,
-      progressPercent: 67,
+      progressPercent: 50,
       nextModule: {
         id: 'demo-apple-module-3',
         slug: 'mdm-basics',
@@ -159,9 +159,9 @@ const demoProgress: LearnerProgress = {
   tracks: [
     {
       track: 'APPLE',
-      totalModules: 3,
+      totalModules: 4,
       completedModules: 2,
-      progressPercent: 67,
+      progressPercent: 50,
       averageScore: 88,
       nextModule: {
         id: 'demo-apple-module-3',
