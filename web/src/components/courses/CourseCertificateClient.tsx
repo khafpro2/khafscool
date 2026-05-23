@@ -208,10 +208,10 @@ export function CourseCertificateClient({ slug }: { slug: string }) {
             icon={'\u{1F5A8}\uFE0F'}
             aria-label="Télécharger le certificat en PDF via la boîte de dialogue d'impression"
           >
-            Télécharger PDF
+            Enregistrer en PDF
           </Button>
           <p className="muted no-print" style={{ fontSize: '0.85rem', margin: 0 }}>
-            Choisis « Enregistrer au format PDF » dans la fenêtre d&apos;impression de ton navigateur.
+            Choisis « Enregistrer au format PDF » dans la fenêtre d'impression de ton navigateur.
           </p>
           {usesDemo && (
             <Button href={buildAuthUrl(`/courses/${slug}/certificate`)} variant="dark">
