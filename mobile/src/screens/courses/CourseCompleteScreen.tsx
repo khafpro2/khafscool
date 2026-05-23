@@ -133,6 +133,20 @@ export function CourseCompleteScreen() {
     void Linking.openURL(`${WEB_URL}/courses/${slug}/complete`);
   }
 
+  async function shareCertificate() {
+    const url = `${WEB_URL}/courses/${slug}/certificate`;
+    const intro = `Mon certificat « ${title} » sur Apple MDM Academy.`;
+    try {
+      await Share.share(
+        Platform.OS === 'ios'
+          ? { message: intro, url, title: 'Certificat MDM Academy' }
+          : { message: `${intro} ${url}`, title: 'Certificat MDM Academy' }
+      );
+    } catch {
+      // Annulation ou partage indisponible
+    }
+  }
+
   async function shareSuccess() {
     const url = `${WEB_URL}/courses/${slug}/complete`;
     const intro = `J'ai complété le parcours « ${title} » sur Apple MDM Academy.`;
@@ -253,9 +267,15 @@ export function CourseCompleteScreen() {
           <Pressable style={styles.primaryButton} onPress={openCertificate}>
             <Text style={styles.primaryButtonText}>{'\u{1F4DC}'} Voir mon certificat</Text>
           </Pressable>
-          <Pressable style={styles.secondaryButton} onPress={() => router.push(`/course/${slug}/revision`)}>
-            <Text style={styles.secondaryButtonText}>{'\u{1F4D1}'} Fiche révision</Text>
+          <Pressable style={styles.secondaryButton} onPress={() => void shareCertificate()}>
+            <Text style={styles.secondaryButtonText}>Partager mon certificat</Text>
           </Pressable>
+        <Pressable style={styles.secondaryButton} onPress={() => router.push(`/course/${slug}/revision`)}>
+          <Text style={styles.secondaryButtonText}>{'\u{1F4D1}'} Fiche révision</Text>
+        </Pressable>
+        <Pressable style={styles.secondaryButton} onPress={() => void Linking.openURL(`${WEB_URL}/courses/${slug}/examen`)}>
+          <Text style={styles.secondaryButtonText}>{'\u{1F4DD}'} Examen blanc</Text>
+        </Pressable>
           <Pressable style={styles.secondaryButton} onPress={() => void shareSuccess()}>
             <Text style={styles.secondaryButtonText}>Partager ma réussite</Text>
           </Pressable>

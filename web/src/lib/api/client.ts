@@ -17,6 +17,7 @@ import {
   normalizeWeeklyQuests,
   toDashboardData,
 } from './demo-data';
+import { buildDemoPracticeExam } from './practice-exam-demo';
 import type {
   AuthResponse,
   AuthUser,
@@ -37,6 +38,7 @@ import type {
   DonationCheckoutResponse,
   DonationStatusResponse,
   LeaderboardResponse,
+  PracticeExamData,
   PublicCourseCatalogItem,
   UserBadgesResult,
   UserProgressData,
@@ -354,6 +356,25 @@ export async function fetchCourse(slug: string, token?: string): Promise<CourseD
   }
 }
 
+export async function fetchPracticeExam(slug: string, token?: string): Promise<PracticeExamData> {
+  if (token) {
+    try {
+      const data = await apiRequest<PracticeExamData>(`/courses/${slug}/practice-exam`, {
+        headers: authHeader(token),
+      });
+      clearDemoMode();
+      return data;
+    } catch {
+      // fallback démo ci-dessous
+    }
+  }
+
+  const fallback = DEMO_COURSES.find((course) => course.slug === slug);
+  if (!fallback) throw new Error('Parcours introuvable');
+  markDemoFallback();
+  return buildDemoPracticeExam(normalizeCourse(fallback));
+}
+
 export async function fetchCourseProgress(slug: string, token?: string): Promise<CourseProgressData> {
   if (!token) {
     markDemoFallback();
@@ -392,7 +413,7 @@ export async function checkModuleAnswer(
 export async function completeModule(
   moduleId: string,
   token: string,
-  payload: { quizAnswers?: Record<string, string>; gameOrder?: number[] }
+  payload: { quizAnswers?: Record<string, string>; gameOrder?: number[]; reviewMode?: boolean }
 ) {
   return apiRequest<CompleteModuleResult>(`/modules/${moduleId}/complete`, {
     method: 'POST',

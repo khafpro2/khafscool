@@ -3,8 +3,10 @@ import React, { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Linking,
+  Platform,
   Pressable,
   ScrollView,
+  Share,
   StyleSheet,
   Text,
   View,
@@ -73,6 +75,20 @@ export function CourseRevisionScreen() {
   );
   const visual = getTrackVisual(track);
 
+  async function shareRevision() {
+    const url = `${WEB_URL}/courses/${slug}/revision`;
+    const intro = `Ma fiche révision « ${courseTitle} » sur Apple MDM Academy.`;
+    try {
+      await Share.share(
+        Platform.OS === 'ios'
+          ? { message: intro, url, title: 'Fiche révision — MDM Academy' }
+          : { message: `${intro} ${url}`, title: 'Fiche révision — MDM Academy' }
+      );
+    } catch {
+      // Annulation ou partage indisponible
+    }
+  }
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -111,8 +127,14 @@ export function CourseRevisionScreen() {
         <Pressable style={styles.primaryButton} onPress={() => void Linking.openURL(`${WEB_URL}/courses/${slug}/revision`)}>
           <Text style={styles.primaryButtonText}>Imprimer / PDF (web)</Text>
         </Pressable>
+        <Pressable style={styles.secondaryButton} onPress={() => router.push(`/course/${slug}/examen`)}>
+          <Text style={styles.secondaryButtonText}>{'\u{1F4DD}'} Examen blanc</Text>
+        </Pressable>
         <Pressable style={styles.secondaryButton} onPress={() => router.push('/glossary')}>
           <Text style={styles.secondaryButtonText}>Glossaire MDM</Text>
+        </Pressable>
+        <Pressable style={styles.secondaryButton} onPress={() => void shareRevision()}>
+          <Text style={styles.secondaryButtonText}>Partager la fiche</Text>
         </Pressable>
       </View>
 

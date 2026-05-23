@@ -1,5 +1,29 @@
 # Changelog
 
+## [0.2.0] — 2026-05-23
+
+Release **MDM Academy Pro v0.2** (branche `cursor/progress-dashboard-auth-v2`, PR #6) — contenu enrichi, 4 modules par piste, glossaire, révision et examen blanc.
+
+### Contenu pédagogique
+- **4 modules × 10 questions** par parcours Apple, Jamf et Intune (120 QCM total)
+- Leçons markdown FR enrichies (`lessonContent`, objectifs, points clés), liens glossaire auto
+- **Glossaire MDM** — 34 termes FR, page `/resources/glossaire` (web + mobile)
+
+### Révision et examen
+- **Fiche révision** — `/courses/[slug]/revision` : synthèse `keyTakeaways`, liens glossaire, impression PDF (web + mobile)
+- **Examen blanc** — `/courses/[slug]/examen` : 10 questions aléatoires parmi les 40 du parcours ; API `GET /courses/:slug/practice-exam` (sans `correctOption`, validation via `check-answer`) ; score final + lien retour révision ; mobile lien web natif
+- SEO : métadonnées `noindex` + sitemap `/revision` et `/examen` ; fil d’Ariane révision → examen
+
+### Dashboard et parcours
+- Dashboard web/mobile « Mes pistes MDM » — **X/4 modules** + barre %
+- Pages complétion 4/4, certificat listant les 4 modules, badge piste à 4 modules
+- Durée de lecture estimée, objectifs module actif (web + mobile)
+
+### Dons, conformité et DX
+- Dons Stripe `/soutenir`, badge Supporter, pages merci/annule
+- Export/suppression compte RGPD, auth enrichie, rate limit quiz FR
+- `scripts/dev-stack.sh`, Postgres Docker port **5433**, diagnostics OAuth
+
 ## [0.1.0] — 2026-05-22
 
 Première release MVP **MDM Academy Pro** (branche `cursor/progress-dashboard-auth-v2`, PR #6).
@@ -25,6 +49,13 @@ Première release MVP **MDM Academy Pro** (branche `cursor/progress-dashboard-au
 - `DEPLOYMENT.md`, `MERGE.md`, roadmap README
 
 ## Unreleased — `cursor/progress-dashboard-auth-v2`
+
+### Quiz révision, aperçu parcours, partage mobile, export dons
+- **Quiz révision (module terminé)** — web + mobile : refaire le quiz depuis la sidebar sans modifier la progression ; flag API `reviewMode` sur `POST /modules/:id/complete` (score recalculé, `pointsEarned: 0`) ; bannière FR « Mode révision — aucun point »
+- **Page parcours** — hero `/courses/[slug]` : liste compacte des 4 titres de modules (sans dévoiler le quiz)
+- **Mobile partage** — Share API native : certificat (`CourseCompleteScreen`) + fiche révision (`CourseRevisionScreen`)
+- **Admin dons** — `GET /admin/donations/export.csv` (CSV protégé `X-Admin-Api-Key`) ; doc `docs/DONATIONS.md` mise à jour
+- Tests backend : `complete-module` review mode, `donations` export CSV
 
 ### Fiche révision, dashboard pistes et sprint 4 modules
 - **Fiche révision web** — `/courses/[slug]/revision` : agrège `keyTakeaways` des 4 modules, liens glossaire auto, FR, dark mode, bouton « Imprimer / PDF » ; accessible après complétion (ou démo) ; lien depuis `/courses/[slug]/complete`

@@ -189,7 +189,7 @@ export function CourseDetailScreen() {
     }
   }
 
-  async function handleSubmit(module: CourseModule) {
+  async function handleSubmit(module: CourseModule, review = false) {
     if (!module.questions.length) return;
 
     setSubmitting(true);
@@ -202,7 +202,16 @@ export function CourseDetailScreen() {
         const result = await completeModule(module.id, {
           quizAnswers: answers,
           gameOrder: module.game?.steps.map((step) => step.id),
+          ...(review ? { reviewMode: true } : {}),
         });
+
+        if (review || result.reviewMode) {
+          setLocalResult(`Mode révision — score ${result.quizScore}%. Aucun point enregistré.`);
+          resetQuizState(module);
+          setSubmitting(false);
+          return;
+        }
+
         const refreshed = await fetchCourseProgress(courseSlug);
         const courseJustCompleted =
           result.courseCompleted ||
@@ -253,6 +262,13 @@ export function CourseDetailScreen() {
         setSubmitting(false);
         return;
       }
+    }
+
+    if (review) {
+      setLocalResult(`Mode révision — score local ${estimatedQuizScore}%. Aucun point enregistré.`);
+      resetQuizState(module);
+      setSubmitting(false);
+      return;
     }
 
     setLocalResult(
@@ -387,7 +403,7 @@ export function CourseDetailScreen() {
         const isLocked = status === 'locked';
         const isReviewMode = status === 'completed';
         const hasQuestions = module.questions.length > 0;
-        const canPlayHere = hasQuestions && !isLocked && !isReviewMode;
+        const canPlayHere = hasQuestions && !isLocked;
         const readingLabel = module.lessonContent
           ? formatReadingTimeLabel(countLessonWords(module.lessonContent))
           : null;
@@ -446,20 +462,16 @@ export function CourseDetailScreen() {
                     question{module.questions.length > 1 ? 's' : ''}).
                   </Text>
                 </View>
-              ) : isReviewMode ? (
-                <View style={styles.completedBox}>
-                  <Text style={styles.completedEyebrow}>{'\u2705'} Quiz terminé</Text>
-                  <Text style={styles.completedMeta}>
-                    {module.questions.length} question{module.questions.length > 1 ? 's' : ''} complétée
-                    {module.questions.length > 1 ? 's' : ''}
-                    {moduleProgress?.quizScore != null ? ` · score ${moduleProgress.quizScore}%` : ''}
-                  </Text>
-                  <Pressable style={styles.secondaryButton} onPress={openWebCourse}>
-                    <Text style={styles.secondaryButtonText}>Revoir le quiz sur le web →</Text>
-                  </Pressable>
-                </View>
               ) : canPlayHere ? (
                   <>
+                    {isReviewMode ? (
+                      <View style={styles.reviewBanner}>
+                        <Text style={styles.reviewBannerTitle}>{'\u{1F504}'} Mode révision — aucun point</Text>
+                        <Text style={styles.reviewBannerText}>
+                          Refais le quiz pour t&apos;entraîner sans modifier ta progression.
+                        </Text>
+                      </View>
+                    ) : null}
                     {module.lessonContent ? (
                       <ScrollView
                         style={styles.lessonScroll}
@@ -613,7 +625,9 @@ export function CourseDetailScreen() {
                                 <Text style={styles.quizNavBtnPrimaryText}>Suivant</Text>
                               </Pressable>
                             ) : revealed ? (
-                              <Text style={styles.quizFinishHint}>Quiz terminé — valide l’unité ci-dessous</Text>
+                              <Text style={styles.quizFinishHint}>
+                                {isReviewMode ? 'Quiz terminé — termine la révision ci-dessous' : 'Quiz terminé — valide l’unité ci-dessous'}
+                              </Text>
                             ) : (
                               <Pressable disabled style={styles.quizNavBtnPrimary}>
                                 <Text style={styles.quizNavBtnPrimaryText}>Suivant</Text>
@@ -644,13 +658,15 @@ export function CourseDetailScreen() {
                     {localResult ? <Text style={styles.localResult}>{localResult}</Text> : null}
                     <Pressable
                       disabled={!canSubmit || submitting}
-                      onPress={() => void handleSubmit(module)}
+                      onPress={() => void handleSubmit(module, isReviewMode)}
                       style={[styles.primaryButton, !canSubmit || submitting ? styles.buttonDisabled : null]}
                     >
                       {submitting ? (
                         <ActivityIndicator color="#FFFFFF" size="small" />
                       ) : (
-                        <Text style={styles.primaryButtonText}>Valider l’unité</Text>
+                        <Text style={styles.primaryButtonText}>
+                          {isReviewMode ? 'Terminer la révision' : 'Valider l’unité'}
+                        </Text>
                       )}
                     </Pressable>
                   </>
@@ -912,6 +928,16 @@ function createStyles(colors: AppThemeColors) {
   },
   completedEyebrow: { color: colors.success, fontWeight: '800', fontSize: 13 },
   completedMeta: { color: colors.muted, marginTop: 6, lineHeight: 20 },
+  reviewBanner: {
+    backgroundColor: colors.bg,
+    borderRadius: 12,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+    marginBottom: 12,
+  },
+  reviewBannerTitle: { color: colors.fg, fontWeight: '800', fontSize: 14 },
+  reviewBannerText: { color: colors.muted, marginTop: 6, lineHeight: 20, fontSize: 13 },
   questionBlock: { marginBottom: 14 },
   questionPrompt: { color: colors.fg, fontWeight: '700', lineHeight: 22, marginBottom: 8 },
   quizStepper: { gap: 10 },

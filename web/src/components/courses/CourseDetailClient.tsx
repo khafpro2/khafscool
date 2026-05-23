@@ -215,6 +215,12 @@ export function CourseDetailClient({ slug }: { slug: string }) {
     const gameComplete = !displayModule.game || Boolean(gameTouched[displayModule.id]);
     return quizComplete && gameComplete;
   }, [displayModule, answers, gameTouched, isReviewMode]);
+  const canSubmitReview = useMemo(() => {
+    if (!displayModule || !isReviewMode) return false;
+    return displayModule.questions.every(
+      (question) => answers[question.id] && revealedQuestions.has(question.id)
+    );
+  }, [displayModule, answers, revealedQuestions, isReviewMode]);
   const estimatedActiveScore = useMemo(
     () =>
       displayModule
@@ -301,6 +307,10 @@ export function CourseDetailClient({ slug }: { slug: string }) {
   }
 
   function navigateToModule(moduleId: string, moduleSlug: string) {
+    if (moduleId !== viewModuleId) {
+      resetActiveQuizState();
+      setResult(null);
+    }
     setViewModuleId(moduleId);
     if (typeof window !== 'undefined') {
       window.history.replaceState(null, '', `#module-${moduleSlug}`);
@@ -396,6 +406,43 @@ export function CourseDetailClient({ slug }: { slug: string }) {
     );
   }
 
+  async function handleReviewSubmit() {
+    if (!displayModule || !isReviewMode) return;
+
+    const checkedResults = await revealAllActiveQuestions();
+    const localScore = computeQuizScorePercent(displayModule.questions.length, checkedResults);
+    const correctCount = countCorrectAnswers(checkedResults);
+    const token = getAccessToken();
+    setSuccessNotice(null);
+
+    if (token && !displayModule.id.startsWith('demo-')) {
+      try {
+        const backendResult = await completeModule(displayModule.id, token, {
+          quizAnswers: answers,
+          reviewMode: true,
+        });
+        setResult(
+          `Mode révision — score ${backendResult.quizScore}% (${correctCount}/${displayModule.questions.length} bonnes réponses). Aucun point enregistré.`
+        );
+        resetActiveQuizState();
+        return;
+      } catch (error) {
+        if (error instanceof AuthRequestError) {
+          setResult(resolveApiErrorMessage(error, 'module'));
+          return;
+        }
+        setResult(
+          `Mode révision — score local ${localScore}% (${correctCount}/${displayModule.questions.length}). Aucun point enregistré.`
+        );
+        return;
+      }
+    }
+
+    setResult(
+      `Mode révision — score local ${localScore}% (${correctCount}/${displayModule.questions.length}). Aucun point enregistré.`
+    );
+  }
+
   if (isLoading) {
     return <CourseDetailPageSkeleton />;
   }
@@ -458,6 +505,25 @@ export function CourseDetailClient({ slug }: { slug: string }) {
           {course.description && (
             <p style={{ marginTop: '0.75rem', maxWidth: 720, color: 'rgba(255,255,255,0.94)' }}>{course.description}</p>
           )}
+          {course.modules.length > 0 ? (
+            <ol
+              style={{
+                marginTop: '0.85rem',
+                paddingLeft: '1.15rem',
+                display: 'grid',
+                gap: '0.2rem',
+                maxWidth: 720,
+                fontSize: '0.88rem',
+                color: 'rgba(255,255,255,0.92)',
+              }}
+            >
+              {course.modules.map((module, index) => (
+                <li key={module.id} style={{ fontWeight: 600 }}>
+                  {index + 1}. {module.title}
+                </li>
+              ))}
+            </ol>
+          ) : null}
           <p
             style={{
               marginTop: '0.85rem',
@@ -635,11 +701,11 @@ export function CourseDetailClient({ slug }: { slug: string }) {
                   {isReviewMode ? (
                     <>
                       <Card variant="soft" style={{ marginTop: '1rem' }}>
-                        <Badge tone="success" icon="\u2705">
-                          Quiz terminé — mode révision
+                        <Badge tone="neutral" icon={'\u{1F504}'}>
+                          Mode révision — aucun point
                         </Badge>
                         <p className="muted" style={{ marginTop: '0.45rem', fontSize: '0.9rem' }}>
-                          Relis les questions et explications sans modifier ta progression.
+                          Refais le quiz pour t&apos;entraîner : ta progression et tes points ne seront pas modifiés.
                         </p>
                       </Card>
                       {module.lessonContent ? <LessonContent content={module.lessonContent} /> : null}
@@ -649,7 +715,7 @@ export function CourseDetailClient({ slug }: { slug: string }) {
                         answers={answers}
                         questionResults={activeQuestionResults}
                         revealedQuestions={activeRevealedQuestions}
-                        reviewMode
+                        reviewMode={false}
                         onSelectAnswer={handleSelectAnswer}
                         onCheckAnswer={handleCheckAnswer}
                         onRevealAll={handleRevealAllQuestions}
@@ -701,6 +767,33 @@ export function CourseDetailClient({ slug }: { slug: string }) {
               );
             })()
           ) : null}
+
+          {displayModule && isReviewMode && (
+            <Card id="course-unit-submit" style={{ marginTop: '1.25rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                <div>
+                  <p className="muted" style={{ fontWeight: 800, fontSize: '0.8rem', textTransform: 'uppercase' }}>
+                    Mode révision
+                  </p>
+                  <p style={{ fontWeight: 800, marginTop: '0.2rem' }}>{displayModule.title}</p>
+                  <p className="muted" style={{ marginTop: '0.35rem', fontSize: '0.88rem' }}>
+                    Quiz : {answeredActiveCount}/{displayModule.questions.length} réponses · aucun point
+                  </p>
+                </div>
+                <Button onClick={() => void handleReviewSubmit()} disabled={!canSubmitReview}>
+                  Terminer la révision
+                </Button>
+              </div>
+              {!canSubmitReview && displayModule.questions.length > 0 && (
+                <p className="muted" style={{ marginTop: '0.65rem', fontSize: '0.85rem' }}>
+                  Valide chaque question du quiz pour terminer la révision.
+                </p>
+              )}
+              {result && (
+                <p style={{ marginTop: '0.85rem', fontWeight: 700, color: 'var(--accent-strong)' }}>{result}</p>
+              )}
+            </Card>
+          )}
 
           {displayModule && !isReviewMode && displayModuleStatus === 'in_progress' && (
             <Card id="course-unit-submit" style={{ marginTop: '1.25rem' }}>

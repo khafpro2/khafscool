@@ -469,7 +469,7 @@ async function buildCompleteModuleResponse(
 export async function completeModule(
   userId: string,
   moduleId: string,
-  payload: { quizAnswers?: Record<string, string>; gameOrder?: number[] }
+  payload: { quizAnswers?: Record<string, string>; gameOrder?: number[]; reviewMode?: boolean }
 ) {
   const module = await prisma.module.findUnique({
     where: { id: moduleId },
@@ -483,6 +483,27 @@ export async function completeModule(
 
   if (existingProgress?.completedAt) {
     const progress = await prisma.userProgress.findUnique({ where: { userId } });
+
+    if (payload.reviewMode) {
+      const quizScore = gradeQuiz(
+        payload.quizAnswers ?? {},
+        module.questions.map((q) => ({ id: q.id, correctOption: q.correctOption }))
+      );
+      const solution = (module.game?.solution as { correctOrder?: number[] }) ?? { correctOrder: [] };
+      const gameScore = gradeGame(payload.gameOrder ?? [], { correctOrder: solution.correctOrder ?? [] });
+      const response = await buildCompleteModuleResponse(
+        userId,
+        module,
+        quizScore,
+        gameScore,
+        0,
+        progress?.badges ?? [],
+        progress?.level ?? UserLevel.NOVICE,
+        true
+      );
+      return { ...response, reviewMode: true, pointsEarned: 0 };
+    }
+
     const quizScore = existingProgress.quizScore ?? 0;
     const gameScore = existingProgress.gameScore ?? 0;
     return buildCompleteModuleResponse(

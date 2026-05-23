@@ -3,6 +3,7 @@ import { CourseTrack } from '@prisma/client';
 import { z } from 'zod';
 import { prisma } from '../lib/prisma.js';
 import * as gamification from '../services/gamification.service.js';
+import * as practiceExam from '../services/practice-exam.service.js';
 import { sanitizeCourse } from '../utils/course-sanitize.js';
 
 const checkAnswerBodySchema = z.object({
@@ -49,6 +50,21 @@ export async function listPublicCatalog(_req: FastifyRequest, reply: FastifyRepl
       moduleCount: _count.modules,
     })),
   });
+}
+
+export async function getPracticeExam(
+  req: FastifyRequest<{ Params: { slug: string } }>,
+  reply: FastifyReply
+) {
+  try {
+    const data = await practiceExam.getPracticeExam(req.params.slug);
+    return reply.send(data);
+  } catch (e) {
+    if ((e as Error).message === 'COURSE_NOT_FOUND') {
+      return reply.status(404).send({ error: 'COURSE_NOT_FOUND' });
+    }
+    throw e;
+  }
 }
 
 export async function getCourse(
@@ -121,7 +137,7 @@ export async function getCourseProgress(
 export async function completeModule(
   req: FastifyRequest<{
     Params: { id: string };
-    Body: { quizAnswers?: Record<string, string>; gameOrder?: number[] };
+    Body: { quizAnswers?: Record<string, string>; gameOrder?: number[]; reviewMode?: boolean };
   }>,
   reply: FastifyReply
 ) {

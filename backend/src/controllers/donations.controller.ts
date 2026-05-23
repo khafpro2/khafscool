@@ -73,6 +73,48 @@ export async function getDonationStatus(_req: FastifyRequest, reply: FastifyRepl
   return reply.send(buildDonationStatusResponse());
 }
 
+function escapeCsvField(value: string | number | null | undefined) {
+  if (value == null) return '';
+  const text = String(value);
+  if (/[",\n\r]/.test(text)) {
+    return `"${text.replace(/"/g, '""')}"`;
+  }
+  return text;
+}
+
+export async function exportDonationsCsv(_req: FastifyRequest, reply: FastifyReply) {
+  const donations = await prisma.donation.findMany({
+    orderBy: { createdAt: 'desc' },
+    select: {
+      id: true,
+      amountCents: true,
+      currency: true,
+      email: true,
+      userId: true,
+      stripeSessionId: true,
+      createdAt: true,
+    },
+  });
+
+  const header = 'id,amountCents,currency,email,userId,stripeSessionId,createdAt';
+  const rows = donations.map((donation) =>
+    [
+      escapeCsvField(donation.id),
+      escapeCsvField(donation.amountCents),
+      escapeCsvField(donation.currency),
+      escapeCsvField(donation.email),
+      escapeCsvField(donation.userId),
+      escapeCsvField(donation.stripeSessionId),
+      escapeCsvField(donation.createdAt.toISOString()),
+    ].join(',')
+  );
+
+  return reply
+    .header('Content-Type', 'text/csv; charset=utf-8')
+    .header('Content-Disposition', 'attachment; filename="donations-export.csv"')
+    .send([header, ...rows].join('\n'));
+}
+
 export async function getDonationStats(_req: FastifyRequest, reply: FastifyReply) {
   const [aggregate, latest] = await Promise.all([
     prisma.donation.aggregate({

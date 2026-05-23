@@ -103,6 +103,8 @@ export interface CompleteModuleResult {
   badges: string[];
   preparationScore: number;
   courseCompleted: boolean;
+  alreadyCompleted?: boolean;
+  reviewMode?: boolean;
   courseCompletion?: CourseCompletionResult;
 }
 
@@ -176,7 +178,7 @@ export async function checkModuleAnswer(
 
 export async function completeModule(
   moduleId: string,
-  payload: { quizAnswers?: Record<string, string>; gameOrder?: number[] }
+  payload: { quizAnswers?: Record<string, string>; gameOrder?: number[]; reviewMode?: boolean }
 ): Promise<CompleteModuleResult> {
   return apiFetch<CompleteModuleResult>(`/modules/${moduleId}/complete`, {
     method: 'POST',

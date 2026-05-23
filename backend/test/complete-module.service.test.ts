@@ -90,6 +90,54 @@ describe('completeModule idempotence', () => {
     expect(prismaMock.userQuest.update).not.toHaveBeenCalled();
   });
 
+  it('grades quiz in review mode without updating progress or awarding points', async () => {
+    const userId = 'user-1';
+    const moduleId = 'module-1';
+
+    prismaMock.module.findUnique.mockResolvedValue({
+      id: moduleId,
+      courseId: 'course-1',
+      questions: [
+        { id: 'q1', correctOption: 'a' },
+        { id: 'q2', correctOption: 'b' },
+      ],
+      game: { solution: { correctOrder: [1] } },
+      course: { slug: 'apple-cert-prep', title: 'Parcours Apple', track: CourseTrack.APPLE },
+    });
+    prismaMock.moduleProgress.findUnique.mockResolvedValue({
+      userId,
+      moduleId,
+      quizScore: 80,
+      gameScore: 100,
+      completedAt: new Date('2026-05-01T10:00:00.000Z'),
+    });
+    prismaMock.userProgress.findUnique.mockResolvedValue({
+      userId,
+      points: 500,
+      level: UserLevel.TECHNICIAN,
+      badges: ['apple-mdm-foundation'],
+    });
+    prismaMock.moduleProgress.findMany.mockResolvedValue([
+      { quizScore: 80, gameScore: 100 },
+    ]);
+    prismaMock.module.count.mockResolvedValue(4);
+
+    const result = await completeModule(userId, moduleId, {
+      quizAnswers: { q1: 'a', q2: 'b' },
+      gameOrder: [1],
+      reviewMode: true,
+    });
+
+    expect(result).toMatchObject({
+      reviewMode: true,
+      alreadyCompleted: true,
+      quizScore: 100,
+      pointsEarned: 0,
+    });
+    expect(prismaMock.moduleProgress.upsert).not.toHaveBeenCalled();
+    expect(prismaMock.userProgress.upsert).not.toHaveBeenCalled();
+  });
+
   it('awards points on first completion', async () => {
     const userId = 'user-2';
     const moduleId = 'module-2';

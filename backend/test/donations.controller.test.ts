@@ -8,6 +8,7 @@ vi.mock('../src/lib/prisma.js', () => ({
     donation: {
       aggregate: vi.fn(),
       findFirst: vi.fn(),
+      findMany: vi.fn(),
     },
   },
 }));
@@ -25,6 +26,7 @@ vi.mock('../src/lib/stripe.js', () => ({
 import {
   buildDonationStatusResponse,
   createDonationCheckout,
+  exportDonationsCsv,
   getDonationStats,
   parseDonationCheckoutRequest,
 } from '../src/controllers/donations.controller.js';
@@ -34,6 +36,7 @@ import type { FastifyReply, FastifyRequest } from 'fastify';
 function makeReply() {
   const reply = {
     status: vi.fn().mockReturnThis(),
+    header: vi.fn().mockReturnThis(),
     send: vi.fn((payload: unknown) => payload),
   };
 
@@ -175,5 +178,38 @@ describe('donation stats', () => {
       currency: 'eur',
       lastDonationAt: null,
     });
+  });
+});
+
+describe('donation csv export', () => {
+  beforeEach(() => {
+    vi.mocked(prisma.donation.findMany).mockReset();
+  });
+
+  it('exports donations as CSV with header row', async () => {
+    vi.mocked(prisma.donation.findMany).mockResolvedValue([
+      {
+        id: 'don-1',
+        amountCents: 1000,
+        currency: 'eur',
+        email: 'donor@example.com',
+        userId: 'user-1',
+        stripeSessionId: 'cs_test_1',
+        createdAt: new Date('2026-05-22T12:00:00.000Z'),
+      },
+    ] as never);
+
+    const reply = makeReply();
+    await exportDonationsCsv({} as FastifyRequest, reply);
+
+    expect(reply.header).toHaveBeenCalledWith('Content-Type', 'text/csv; charset=utf-8');
+    expect(reply.header).toHaveBeenCalledWith(
+      'Content-Disposition',
+      'attachment; filename="donations-export.csv"'
+    );
+    expect(reply.send).toHaveBeenCalledWith(
+      expect.stringContaining('id,amountCents,currency,email,userId,stripeSessionId,createdAt')
+    );
+    expect(reply.send).toHaveBeenCalledWith(expect.stringContaining('donor@example.com'));
   });
 });

@@ -331,10 +331,27 @@ export interface CompleteModuleResult {
   preparationScore: number;
   courseCompleted: boolean;
   alreadyCompleted?: boolean;
+  reviewMode?: boolean;
   courseCompletion?: CourseCompletionResult;
 }
 
 export interface CheckAnswerResult {
   correct: boolean;
   explanation?: string;
+}
+
+export interface PracticeExamQuestion extends CourseQuestion {
+  moduleId: string;
+}
+
+export interface PracticeExamData {
+  course: {
+    slug: string;
+    title: string;
+    track: string;
+  };
+  questionCount: number;
+  poolSize: number;
+  expectedPoolSize?: number;
+  questions: PracticeExamQuestion[];
 }

@@ -12,7 +12,7 @@ MDM Academy Pro reste **100 % gratuit**. Les dons sont optionnels et servent uni
 | `STRIPE_DONATION_PRICE_ID_10` | Non | Price ID Stripe pour 10 €. |
 | `STRIPE_DONATION_PRICE_ID_20` | Non | Price ID Stripe pour 20 €. |
 | `DONATION_URL` | Non | Lien externe (Buy Me a Coffee, PayPal, etc.) si Stripe n’est pas configuré. |
-| `ADMIN_API_KEY` | Non | Clé pour `GET /admin/donations/stats` (en-tête `X-Admin-Api-Key`). Sans clé : 503. |
+| `ADMIN_API_KEY` | Non | Clé pour `GET /admin/donations/stats` et `GET /admin/donations/export.csv` (en-tête `X-Admin-Api-Key`). Sans clé : 503. |
 | `WEB_URL` | Oui (prod) | URL du front pour les redirections success/cancel (`/soutenir`). |
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Non | Clé publique (`pk_test_…`) — réservée à une future intégration Elements ; Checkout redirect n’en a pas besoin. |
 
@@ -25,6 +25,7 @@ Copier les valeurs depuis `.env.example` à la racine du monorepo.
 | `GET /donations/status` | Non | Mode `live` / `fallback` / `unavailable` + montants suggérés |
 | `POST /donations/create-checkout-session` | Optionnelle | Crée une session Stripe Checkout (`{ amountCents }`) |
 | `GET /admin/donations/stats` | `X-Admin-Api-Key` | Agrégats lecture seule : nombre de dons, total centimes, dernière date |
+| `GET /admin/donations/export.csv` | `X-Admin-Api-Key` | Export CSV de tous les dons (id, montant, email, userId, session Stripe, date) |
 | `POST /donations/webhook` | Signature Stripe | Alias de `/billing/webhook` — enregistre les dons |
 
 Corps checkout :
@@ -69,6 +70,14 @@ Endpoint protégé pour le suivi interne (pas d’UI admin dans le MVP) :
 ```bash
 curl -s -H "X-Admin-Api-Key: $ADMIN_API_KEY" \
   http://localhost:4000/admin/donations/stats
+```
+
+Export CSV complet :
+
+```bash
+curl -s -H "X-Admin-Api-Key: $ADMIN_API_KEY" \
+  -o donations-export.csv \
+  http://localhost:4000/admin/donations/export.csv
 ```
 
 Réponse exemple :
