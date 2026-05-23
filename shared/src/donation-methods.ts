@@ -1,5 +1,11 @@
 export type DonationPaypalStatus = 'configured' | 'unavailable';
 
+/** Lien PayPal.Me par défaut (HarmyTech / Khalifa Thiam) — override via env. */
+export const DEFAULT_DONATION_PAYPAL_URL = 'https://www.paypal.com/paypalme/khafpro';
+
+/** Référence ou message optionnel suggéré sur la page PayPal. */
+export const DEFAULT_DONATION_PAYPAL_REFERENCE = 'MDM Academy';
+
 const PAYPAL_HOSTS = new Set(['paypal.com', 'paypal.me']);
 
 function isAllowedPaypalHost(hostname: string): boolean {
@@ -26,10 +32,12 @@ export function normalizeDonationPaypalUrl(raw: string | undefined | null): stri
 export function resolveDonationPaypalUrl(sources: {
   publicUrl?: string | null;
   serverUrl?: string | null;
+  defaultUrl?: string | null;
 }): string | null {
   return (
     normalizeDonationPaypalUrl(sources.publicUrl) ??
-    normalizeDonationPaypalUrl(sources.serverUrl)
+    normalizeDonationPaypalUrl(sources.serverUrl) ??
+    normalizeDonationPaypalUrl(sources.defaultUrl ?? DEFAULT_DONATION_PAYPAL_URL)
   );
 }
 

@@ -73,6 +73,7 @@ test.describe('Page Soutenir', () => {
       timeout: 15_000,
     });
     await expect(page.getByText('sécurisée par PayPal', { exact: false })).toBeVisible();
+    await expect(page.getByText('MDM Academy', { exact: false })).toBeVisible();
     await expect(page.getByTestId('paypal-donate-button')).toBeVisible();
     await expect(page.getByTestId('paypal-donate-button')).toHaveAttribute('href', MOCK_PAYPAL_URL);
   });

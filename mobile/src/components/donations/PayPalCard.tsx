@@ -2,7 +2,10 @@ import React from 'react';
 import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 import type { AppThemeColors } from '../../lib/design';
 import { useThemedStyles } from '../../hooks/useThemedStyles';
-import { getDonationPaypalUrl } from '../../lib/donation-paypal';
+import {
+  DEFAULT_DONATION_PAYPAL_REFERENCE,
+  getDonationPaypalUrl,
+} from '../../lib/donation-paypal';
 
 function PayPalWordmark() {
   return (
@@ -39,7 +42,10 @@ export function PayPalCard() {
           <Pressable style={styles.primaryButton} onPress={openPayPalDonation}>
             <Text style={styles.primaryButtonText}>Donner avec PayPal</Text>
           </Pressable>
-          <Text style={styles.hint}>Ouverture dans le navigateur — vous choisissez le montant sur PayPal.</Text>
+          <Text style={styles.hint}>
+            Ouverture dans le navigateur — montant libre sur PayPal. Référence optionnelle : «{' '}
+            {DEFAULT_DONATION_PAYPAL_REFERENCE} ».
+          </Text>
         </>
       ) : (
         <View style={styles.unavailableBox}>

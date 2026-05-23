@@ -1,11 +1,17 @@
 import { describe, expect, it } from 'vitest';
 import {
+  DEFAULT_DONATION_PAYPAL_URL,
   getDonationPaypalStatus,
   normalizeDonationPaypalUrl,
   resolveDonationPaypalUrl,
 } from '@ama/shared/donation-methods';
 
 describe('donation PayPal URL', () => {
+  it('exposes the default PayPal.me URL', () => {
+    expect(DEFAULT_DONATION_PAYPAL_URL).toBe('https://www.paypal.com/paypalme/khafpro');
+    expect(normalizeDonationPaypalUrl(DEFAULT_DONATION_PAYPAL_URL)).toBe(DEFAULT_DONATION_PAYPAL_URL);
+  });
+
   it('accepts PayPal Donate hosted button URLs', () => {
     const url = 'https://www.paypal.com/donate/?hosted_button_id=ABC123';
     expect(normalizeDonationPaypalUrl(url)).toBe(url);
@@ -31,5 +37,10 @@ describe('donation PayPal URL', () => {
         serverUrl: 'https://paypal.me/server',
       }),
     ).toBe('https://paypal.me/public');
+  });
+
+  it('falls back to the default PayPal.me URL when env is empty', () => {
+    expect(resolveDonationPaypalUrl({})).toBe(DEFAULT_DONATION_PAYPAL_URL);
+    expect(getDonationPaypalStatus(resolveDonationPaypalUrl({}))).toBe('configured');
   });
 });

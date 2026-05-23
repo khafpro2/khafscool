@@ -24,9 +24,9 @@ Sans `STRIPE_SECRET_KEY`, la section affiche un message explicite (pas de fausse
 | `STRIPE_DONATION_PRICE_ID_10` | Non | Price ID Stripe pour 10 €. |
 | `STRIPE_DONATION_PRICE_ID_20` | Non | Price ID Stripe pour 20 €. |
 | `DONATION_URL` | Non | Lien externe (Buy Me a Coffee, etc.) si Stripe n’est pas configuré. |
-| `DONATION_PAYPAL_URL` | Non | Lien PayPal Donate ou PayPal.Me (backend `GET /donations/status`). |
-| `NEXT_PUBLIC_DONATION_PAYPAL_URL` | Non | Même lien côté web (`/soutenir#paypal`). Prioritaire sur `DONATION_PAYPAL_URL` côté client. |
-| `EXPO_PUBLIC_DONATION_PAYPAL_URL` | Non | Lien PayPal sur l’écran À propos (mobile). |
+| `DONATION_PAYPAL_URL` | Non | Lien PayPal Donate ou PayPal.Me (backend `GET /donations/status`). Défaut : `https://www.paypal.com/paypalme/khafpro`. |
+| `NEXT_PUBLIC_DONATION_PAYPAL_URL` | Non | Même lien côté web (`/soutenir#paypal`). Prioritaire sur le défaut intégré. |
+| `EXPO_PUBLIC_DONATION_PAYPAL_URL` | Non | Lien PayPal sur l’écran À propos (mobile). Défaut : PayPal.Me khafpro. |
 | `DONATION_BANK_BENEFICIARY` | Non | Bénéficiaire du virement SEPA (défaut : Khalifa Thiam). |
 | `DONATION_BANK_IBAN` | Non | IBAN sans espaces (défaut : compte Revolut HarmyTech). |
 | `DONATION_BANK_BIC` | Non | BIC/SWIFT (défaut : `REVOFRP2`). |
@@ -97,7 +97,9 @@ Montants suggérés : `500`, `1000`, `2000` (5 €, 10 €, 20 €). Montant lib
 
 En complément de Stripe et du virement SEPA, la page `/soutenir#paypal` propose un **don via PayPal** (montant libre sur la page PayPal).
 
-### Créer le lien
+**Lien par défaut** (comme l’IBAN Revolut HarmyTech) : [paypal.me/khafpro](https://www.paypal.com/paypalme/khafpro). Référence optionnelle suggérée : « MDM Academy ».
+
+### Créer ou remplacer le lien
 
 1. **PayPal Donate (bouton hébergé)** — [PayPal Donations](https://www.paypal.com/fr/business/tools/donate-button) :
    - Créer un bouton « Don » pour votre association ou activité.
@@ -107,20 +109,25 @@ En complément de Stripe et du virement SEPA, la page `/soutenir#paypal` propose
 
 ### Variables d’environnement
 
+Sans override, le dépôt utilise `DEFAULT_DONATION_PAYPAL_URL` dans `@ama/shared/donation-methods` :
+
 ```env
-# Backend (statut API) + fallback serveur
-DONATION_PAYPAL_URL=https://www.paypal.com/donate/?hosted_button_id=XXXXXXXX
+# Valeur par défaut intégrée (override optionnel)
+# https://www.paypal.com/paypalme/khafpro
+
+# Backend (statut API)
+DONATION_PAYPAL_URL=
 
 # Web — affichage /soutenir#paypal (recommandé en production Vercel)
-NEXT_PUBLIC_DONATION_PAYPAL_URL=https://www.paypal.com/donate/?hosted_button_id=XXXXXXXX
+NEXT_PUBLIC_DONATION_PAYPAL_URL=
 
 # Mobile — écran À propos
-EXPO_PUBLIC_DONATION_PAYPAL_URL=https://www.paypal.com/donate/?hosted_button_id=XXXXXXXX
+EXPO_PUBLIC_DONATION_PAYPAL_URL=
 ```
 
-Sans URL valide (`https` + domaine `paypal.com` ou `paypal.me`), la section affiche **« PayPal bientôt disponible »** — pas de fausse promesse.
+Pour remplacer le lien par défaut, renseigner l’une de ces variables. L’URL doit être `https` avec un domaine `paypal.com` ou `paypal.me`.
 
-L’API `GET /donations/status` expose `paypal.status` : `configured` ou `unavailable`.
+L’API `GET /donations/status` expose `paypal.status` : `configured` (défaut) ou `unavailable` si l’override est invalide.
 
 ## Fallback sans Stripe
 

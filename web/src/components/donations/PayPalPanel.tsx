@@ -1,7 +1,10 @@
 'use client';
 
 import { Card } from '@/components/ui/Card';
-import { getDonationPaypalUrl } from '@/lib/donation-paypal';
+import {
+  DEFAULT_DONATION_PAYPAL_REFERENCE,
+  getDonationPaypalUrl,
+} from '@/lib/donation-paypal';
 
 function PayPalWordmark() {
   return (
@@ -60,6 +63,7 @@ export function PayPalPanel() {
           </a>
           <p className="muted" style={{ marginTop: '0.85rem', fontSize: '0.88rem' }}>
             Ouverture dans un nouvel onglet — vous choisissez le montant sur la page PayPal.
+            Référence optionnelle : « {DEFAULT_DONATION_PAYPAL_REFERENCE} ».
           </p>
         </div>
       ) : (

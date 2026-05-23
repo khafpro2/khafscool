@@ -77,11 +77,15 @@ describe('donations checkout', () => {
         configured: false,
         checkoutEnabled: false,
       },
-      paypal: { status: 'unavailable' },
+      paypal: { status: 'configured' },
       fallbackUrl: 'https://buymeacoffee.com/mdm-academy',
       suggestedAmountsCents: [500, 1000, 2000],
       message: 'Paiement externe — la formation reste 100 % gratuite.',
     });
+  });
+
+  it('exposes paypal configured by default without DONATION_PAYPAL_URL', () => {
+    expect(buildDonationStatusResponse().paypal).toEqual({ status: 'configured' });
   });
 
   it('exposes paypal configured when DONATION_PAYPAL_URL is set', () => {

@@ -62,6 +62,11 @@ Première release MVP **MDM Academy Pro** (branche `cursor/progress-dashboard-au
 
 ## Unreleased — `cursor/progress-dashboard-auth-v2`
 
+### PayPal par défaut (khafpro)
+- **`DEFAULT_DONATION_PAYPAL_URL`** — `@ama/shared/donation-methods` : `https://www.paypal.com/paypalme/khafpro` (comme IBAN Revolut HarmyTech) ; override via `DONATION_PAYPAL_URL` / `NEXT_PUBLIC_*` / `EXPO_PUBLIC_*`
+- Web `/soutenir#paypal` + mobile : bouton **Donner avec PayPal** actif par défaut ; référence optionnelle « MDM Academy »
+- API `GET /donations/status` → `paypal.status: configured` sans variable d’environnement
+
 ### Quiz révision, aperçu parcours, partage mobile, export dons
 - **Quiz révision (module terminé)** — web + mobile : refaire le quiz depuis la sidebar sans modifier la progression ; flag API `reviewMode` sur `POST /modules/:id/complete` (score recalculé, `pointsEarned: 0`) ; bannière FR « Mode révision — aucun point »
 - **Page parcours** — hero `/courses/[slug]` : liste compacte des 4 titres de modules (sans dévoiler le quiz)

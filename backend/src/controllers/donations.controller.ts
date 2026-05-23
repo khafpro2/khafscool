@@ -1,7 +1,4 @@
-import {
-  getDonationPaypalStatus,
-  normalizeDonationPaypalUrl,
-} from '@ama/shared/donation-methods';
+import { getDonationPaypalStatus, resolveDonationPaypalUrl } from '@ama/shared/donation-methods';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import { prisma } from '../lib/prisma.js';
@@ -32,7 +29,9 @@ export function parseDonationCheckoutRequest(body: unknown) {
 }
 
 function getDonationPaypalUrlFromEnv() {
-  return normalizeDonationPaypalUrl(process.env.DONATION_PAYPAL_URL);
+  return resolveDonationPaypalUrl({
+    serverUrl: process.env.DONATION_PAYPAL_URL,
+  });
 }
 
 function buildPaypalStatusBlock() {
