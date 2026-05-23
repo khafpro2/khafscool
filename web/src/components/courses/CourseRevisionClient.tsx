@@ -14,6 +14,7 @@ import { buildAuthUrl, getAccessToken } from '@/lib/auth';
 import { formatTrack } from '@/lib/tracks';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { Button } from '@/components/ui/Button';
+import { ShareContentButton } from '@/components/courses/ShareContentButton';
 import { Card } from '@/components/ui/Card';
 import { TrackIcon } from '@/components/ui/TrackIcon';
 import { getTrackVisual } from '@/lib/design';
@@ -149,6 +150,13 @@ export function CourseRevisionClient({ slug }: { slug: string }) {
         <Button icon={'\u{1F5A8}'} onClick={() => window.print()}>
           Imprimer / PDF
         </Button>
+        <ShareContentButton
+          shareTitle="Fiche révision — MDM Academy"
+          shareText={`Ma fiche révision « ${course.title} » sur Apple MDM Academy.`}
+          shareUrlPath={`/courses/${slug}/revision`}
+          label="Partager la fiche"
+          ariaLabel="Partager ma fiche révision"
+        />
         <Button href={`/courses/${slug}/complete`} variant="secondary">
           Page de complétion
         </Button>

@@ -7,10 +7,11 @@ describe('seed content stats', () => {
 
     expect(stats.courses).toBe(3);
     expect(stats.modules).toBe(12);
-    expect(stats.totalQuestions).toBe(120);
+    expect(stats.totalQuestions).toBe(126);
 
     for (const count of Object.values(stats.questionsPerModule)) {
-      expect(count).toBe(10);
+      expect(count).toBeGreaterThanOrEqual(10);
+      expect(count).toBeLessThanOrEqual(12);
     }
 
     for (const words of Object.values(stats.lessonWordsPerModule)) {

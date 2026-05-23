@@ -17,4 +17,9 @@ test.describe('Fiche révision parcours', () => {
     await page.getByRole('link', { name: /Fiche révision/i }).click();
     await expect(page).toHaveURL(/\/courses\/apple-cert-prep\/revision/);
   });
+
+  test('bouton partager la fiche révision', async ({ page }) => {
+    await page.goto('/courses/apple-cert-prep/revision');
+    await expect(page.getByRole('button', { name: /Partager la fiche/i })).toBeVisible();
+  });
 });

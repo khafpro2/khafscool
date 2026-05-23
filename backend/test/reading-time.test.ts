@@ -4,9 +4,11 @@ import {
   estimateReadingMinutes,
   formatReadingTimeLabel,
   formatCourseHeroBanner,
+  formatTrailCatalogMeta,
   sumLessonReadingMinutes,
   READING_WORDS_PER_MINUTE,
 } from '@ama/shared/reading-time';
+import { getCourseReadingMinutes } from '@ama/shared/course-content';
 
 describe('reading time', () => {
   it('uses ~200 words per minute', () => {
@@ -36,5 +38,15 @@ describe('reading time', () => {
 
   it('formats course hero banner for four-module tracks', () => {
     expect(formatCourseHeroBanner(4, 18, 10)).toBe('4 modules · 10 questions · ~18 min de lecture');
+  });
+
+  it('formats trail catalog meta with reading sum', () => {
+    expect(formatTrailCatalogMeta(4, 18, 10)).toBe('~18 min · 4 modules · 40 questions');
+  });
+
+  it('exposes positive reading minutes for MVP courses', () => {
+    expect(getCourseReadingMinutes('apple-cert-prep')).toBeGreaterThan(10);
+    expect(getCourseReadingMinutes('jamf-pro-foundations')).toBeGreaterThan(10);
+    expect(getCourseReadingMinutes('intune-ios-enrollment')).toBeGreaterThan(10);
   });
 });

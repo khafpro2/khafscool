@@ -3,7 +3,7 @@ import {
   intuneIosEnrollmentQuestions,
   jamfProFoundationsQuestions,
 } from './quiz-content';
-import { countLessonWords } from './reading-time';
+import { countLessonWords, sumLessonReadingMinutes } from './reading-time';
 
 export type ModulePedagogy = {
   summary: string;
@@ -1178,6 +1178,13 @@ En maîtrisant ABM, VPP et déploiement apps Intune, vous complétez la chaîne 
 
 export function getCoursePedagogy(courseSlug: string): CoursePedagogy | undefined {
   return COURSE_PEDAGOGY[courseSlug];
+}
+
+/** Durée de lecture cumulée (~200 mots/min) pour un parcours MVP. */
+export function getCourseReadingMinutes(courseSlug: string): number {
+  const course = COURSE_PEDAGOGY[courseSlug];
+  if (!course) return 0;
+  return sumLessonReadingMinutes(Object.values(course.modules).map((module) => module.lessonContent));
 }
 
 export function getModulePedagogy(

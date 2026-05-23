@@ -13,6 +13,7 @@ import { buildAuthUrl, getAccessToken, getStoredUser } from '@/lib/auth';
 import { formatTrack } from '@/lib/tracks';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { Button } from '@/components/ui/Button';
+import { ShareContentButton } from '@/components/courses/ShareContentButton';
 import { BrandIcon } from '@/components/ui/BrandIcon';
 import { TrackIcon } from '@/components/ui/TrackIcon';
 import {
@@ -220,6 +221,13 @@ export function CourseCertificateClient({ slug }: { slug: string }) {
           >
             Enregistrer en PDF
           </Button>
+          <ShareContentButton
+            shareTitle="Certificat MDM Academy"
+            shareText={`J'ai obtenu mon certificat pour le parcours « ${completion.title} » sur Apple MDM Academy.`}
+            shareUrlPath={`/courses/${slug}/certificate`}
+            label="Partager le certificat"
+            ariaLabel="Partager mon certificat de complétion"
+          />
           <p className="muted no-print" style={{ fontSize: '0.85rem', margin: 0 }}>
             Choisis « Enregistrer au format PDF » dans la fenêtre d'impression de ton navigateur.
           </p>

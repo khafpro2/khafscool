@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import * as React from 'react';
 import { QUESTIONS_PER_MODULE } from '@ama/shared/constants';
+import { formatTrailCatalogMeta } from '@ama/shared/reading-time';
 import { Badge } from './Badge';
 import { LevelPill } from './LevelPill';
 import { ProgressBar } from './ProgressBar';
@@ -29,6 +30,7 @@ export interface TrailCardProps {
   showProgress?: boolean;
   level?: TrailLevel;
   durationMinutes?: number;
+  readingMinutes?: number;
   points?: number;
   rewardBadge?: { label: string; brand?: import('@/lib/brands').BrandId; icon?: string } | null;
   cta?: string;
@@ -50,6 +52,7 @@ export function TrailCard({
   showProgress,
   level,
   durationMinutes,
+  readingMinutes,
   points,
   rewardBadge,
   cta,
@@ -66,7 +69,7 @@ export function TrailCard({
   const inProgress = status ? status === 'in-progress' : percent > 0 && percent < 100;
   const isCompleted = status ? status === 'completed' : percent >= 100;
   const ctaLabel = cta ?? (isCompleted ? 'Revoir' : inProgress ? 'Continuer' : 'Démarrer');
-  const moduleLabel = formatModuleQuizLabel(totalModules, questionsPerModule);
+  const catalogMeta = formatTrailCatalogLabel(totalModules, readingMinutes, questionsPerModule);
   const shouldShowProgress = showProgress || inProgress || isCompleted;
 
   return (
@@ -121,16 +124,18 @@ export function TrailCard({
 
         <div className="trail-card-meta">
           <LevelPill level={effectiveLevel} />
-          <Badge tone="neutral">
-            {formatDurationLabel(effectiveDuration)}
-          </Badge>
-          {moduleLabel ? (
-            <Badge tone="neutral">{moduleLabel}</Badge>
-          ) : totalModules ? (
-            <Badge tone="neutral">
-              {totalModules} unité{totalModules > 1 ? 's' : ''}
-            </Badge>
-          ) : null}
+          {catalogMeta ? (
+            <Badge tone="neutral">{catalogMeta}</Badge>
+          ) : (
+            <>
+              <Badge tone="neutral">{formatDurationLabel(effectiveDuration)}</Badge>
+              {totalModules ? (
+                <Badge tone="neutral">
+                  {totalModules} unité{totalModules > 1 ? 's' : ''}
+                </Badge>
+              ) : null}
+            </>
+          )}
           <Badge tone="warning">
             {effectivePoints} pts
           </Badge>
@@ -196,8 +201,13 @@ function mapTrackReward(track?: string | null) {
   return { label: reward.label, brand: reward.brand };
 }
 
-function formatModuleQuizLabel(totalModules?: number, questionsPerModule?: number) {
-  if (!totalModules) return null;
-  const questions = questionsPerModule ?? QUESTIONS_PER_MODULE;
-  return `${totalModules} module${totalModules > 1 ? 's' : ''} · ${questions} questions/module`;
+function formatTrailCatalogLabel(
+  totalModules?: number,
+  readingMinutes?: number,
+  questionsPerModule?: number
+) {
+  if (!totalModules || typeof readingMinutes !== 'number' || readingMinutes <= 0) {
+    return null;
+  }
+  return formatTrailCatalogMeta(totalModules, readingMinutes, questionsPerModule ?? QUESTIONS_PER_MODULE);
 }

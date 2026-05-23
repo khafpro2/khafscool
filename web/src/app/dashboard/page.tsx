@@ -16,6 +16,7 @@ import { Card } from '@/components/ui/Card';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import { TrackIcon } from '@/components/ui/TrackIcon';
 import { MdmTracksSection } from '@/components/dashboard/MdmTracksSection';
+import { AlmostCompleteBanner } from '@/components/dashboard/AlmostCompleteBanner';
 import { DashboardSkeleton } from '@/components/ui/Skeleton';
 import { TrailCard } from '@/components/ui/TrailCard';
 import { estimatePoints, getRankInfo, inferLevelFromModules } from '@/lib/design';
@@ -160,6 +161,8 @@ export default function DashboardPage() {
         courses={courses}
         learningStreak={learningStreak}
       />
+
+      <AlmostCompleteBanner courses={courses} />
 
       <RecommendedActionCard action={recommendedAction} />
       <MdmTracksSection courses={courses} />

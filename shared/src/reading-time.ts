@@ -42,3 +42,14 @@ export function formatCourseHeroBanner(
   const moduleLabel = moduleCount > 1 ? 'modules' : 'module';
   return `${moduleCount} ${moduleLabel} · ${questionsPerModule} questions · ~${totalReadingMinutes} min de lecture`;
 }
+
+/** Métadonnées catalogue : « ~M min · N modules · Q questions ». */
+export function formatTrailCatalogMeta(
+  moduleCount: number,
+  totalReadingMinutes: number,
+  questionsPerModule = 10
+): string {
+  const totalQuestions = moduleCount * questionsPerModule;
+  const moduleLabel = moduleCount > 1 ? 'modules' : 'module';
+  return `~${totalReadingMinutes} min · ${moduleCount} ${moduleLabel} · ${totalQuestions} questions`;
+}

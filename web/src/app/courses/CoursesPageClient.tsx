@@ -18,6 +18,7 @@ import { Card } from '@/components/ui/Card';
 import { TrackIcon } from '@/components/ui/TrackIcon';
 import { TrailCard } from '@/components/ui/TrailCard';
 import { inferLevelFromModules, type TrailLevel } from '@/lib/design';
+import { getCourseReadingMinutes } from '@ama/shared/course-content';
 import { getLearningPath, sortMvpCoursesFirst } from '@/lib/learningPaths';
 import { TracksComparisonTable } from '@/components/courses/TracksComparisonTable';
 import { TrailCardSkeleton } from '@/components/ui/Skeleton';
@@ -236,6 +237,7 @@ export function CoursesPageClient({ initialTrack }: CoursesPageClientProps) {
                 showProgress={hasToken}
                 questionsPerModule={10}
                 level={level}
+                readingMinutes={getCourseReadingMinutes(course.slug)}
                 recommended={getLearningPath(course.slug)?.recommended}
               />
             ))}

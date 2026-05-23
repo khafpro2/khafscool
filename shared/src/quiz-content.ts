@@ -591,6 +591,34 @@ export const appleCertPrepQuestions: Record<string, SeedQuestion[]> = {
       explanation:
         'Les apps sideload non gouvernées violent la sécurité entreprise et la supervision ; escalade vers admin MDM pour distribution légitime.',
     },
+    {
+      type: 'SCENARIO',
+      prompt:
+        'Examen style certification : 200 iPhone supervisés perdent une app VPP Required après renouvellement token ABM. Ordre d’investigation le plus rigoureux ?',
+      options: opt(
+        'Vérifier validité token VPP dans ABM et console MDM, sync licences, repush InstallApplication sur Smart Group pilote avant masse',
+        'Restaurer chaque iPhone en DFU sans ticket',
+        'Désactiver supervision sur toute la flotte',
+        'Installer l’app via Apple ID personnel « pour débloquer »'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Un échec VPP synchronisé sur parc entier pointe vers token expiré, catalogue ABM ou sync MDM — pas panne unitaire. La méthode examen : valider les artefacts ABM/MDM, tester sur pilote, repush ciblé. DFU massif ou contournement Apple ID violent les bonnes pratiques entreprise et la traçabilité audit.',
+    },
+    {
+      type: 'TROUBLESHOOTING',
+      prompt:
+        'Piège examen Device Support : un collègue affirme que « retirer manuellement une app gérée VPP depuis l’écran d’accueil iOS » prouve un bug MDM. Réponse la plus exacte ?',
+      options: opt(
+        'Sur appareil non supervisé ou app Available, l’utilisateur peut retirer l’app — cela ne prouve pas un défaut VPP Required sur flotte supervisée correctement assignée',
+        'Toute app VPP est impossible à retirer même sur iPhone perso',
+        'Le MDM ne contrôle jamais les apps',
+        'Il faut jailbreak pour retirer une app'
+      ),
+      correctOption: 'a',
+      explanation:
+        'La distinction supervision + mode Required vs Available est centrale aux examens Apple/MDM. Une app Required sur iPhone supervisé ADE ne se comporte pas comme une app perso. Interpréter un cas isolé sans vérifier supervision, assignation et mode de licence mène à un diagnostic erroné — base des scénarios certification.',
+    },
   ],
 };
 
@@ -1160,6 +1188,34 @@ export const jamfProFoundationsQuestions: Record<string, SeedQuestion[]> = {
       explanation:
         'Automation API standardise reporting, réduit erreur humaine et prépare audits récurrents sans effort manuel.',
     },
+    {
+      type: 'SCENARIO',
+      prompt:
+        'Examen Jamf Certified Admin : un script OAuth appelle EraseDevice sur une Smart Group « Non compliant OS » sans garde-fou. Quelle réponse d’architecture est la plus conforme ?',
+      options: opt(
+        'Workflow avec approbation humaine, compte API à scopes minimum, dry-run inventaire et journal centralisé avant toute action destructive',
+        'Token OAuth partagé dans un wiki interne pour « aller plus vite »',
+        'EraseDevice immédiat car le script est signé par un admin',
+        'Désactiver toutes les Smart Groups pour stopper le script'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Les examens Jamf et les audits ISO exigent séparation des privilèges et traçabilité sur commandes destructives. EraseDevice via API sans pipeline d’approbation viole les bonnes pratiques enterprise. Dry-run + scopes minimum + logs sont le modèle attendu en certification admin.',
+    },
+    {
+      type: 'TROUBLESHOOTING',
+      prompt:
+        'Piège examen : après migration Classic API → v1 computers-inventory, un rapport hebdo affiche 0 Mac alors que Jamf Admin en liste 200. Cause la plus probable ?',
+      options: opt(
+        'Filtres OAuth scopes, pagination ou critères de requête v1 incorrects — pas disparition réelle du parc',
+        'Les 200 Mac ont été effacés simultanément',
+        'Jamf Cloud a perdu la licence Apple Push',
+        'Les Mac sont devenus des iPhone'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Les scénarios certification Jamf testent la maîtrise API v1 : scopes OAuth, pagination, filtres RSQL. Un export vide avec inventaire UI intact signale quasi toujours une requête mal formée — compétence clé Jamf Certified Admin et audits automation.',
+    },
   ],
 };
 
@@ -1726,6 +1782,34 @@ export const intuneIosEnrollmentQuestions: Record<string, SeedQuestion[]> = {
       correctOption: 'a',
       explanation:
         'Runbook réception : triple token, licences VPP, pilote install status, réseau CDN Apple — évite 200 tickets Pending.',
+    },
+    {
+      type: 'SCENARIO',
+      prompt:
+        'Examen MD-102 / Intune mobile : avant J-Day, 200 iPhone COPE doivent recevoir Teams Required + CA « appareil conforme ». Quel enchaînement valide le runbook Zero Trust ?',
+      options: opt(
+        'Tokens Push + ADE + VPP valides, conformité device testée sur pilote, app Required assignée, CA appliquée, install status Installed sur échantillon',
+        'Assigner Teams Available uniquement et désactiver CA pour accélérer',
+        'Apple ID partagé pour télécharger Teams manuellement',
+        'Retirer profil SCEP pour simplifier le réseau'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Les examens Microsoft Intune mobile valident la chaîne complète ABM → conformité → app Required → CA. Un pilote avec install status Installed et accès M365 bloqué si non conforme prouve le modèle COPE finance/santé — réponse type certification.',
+    },
+    {
+      type: 'TROUBLESHOOTING',
+      prompt:
+        'Piège examen Intune : 40 iPhone affichent « Pending install » Teams alors que le token VPP vient d’être renouvelé hier. Première action conforme ?',
+      options: opt(
+        'Confirmer sync token VPP dans Intune + ABM, licences disponibles, connectivité CDN Apple sur site, puis repush sur Smart Group pilote',
+        'Wipe immédiat des 40 appareils',
+        'Désinstaller Company Portal sur toute la flotte',
+        'Basculer tous les iPhone en mode BYOD sans MAM'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Pending groupé post-maintenance token = artefact sync ou réseau, pas panne device. La méthode certification Intune : valider triple token, licences, réseau, repush pilote avant action destructive. Wipe massif sans diagnostic viole les runbooks Zero Trust.',
     },
   ],
 };
