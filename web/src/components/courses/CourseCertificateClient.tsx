@@ -206,7 +206,7 @@ export function CourseCertificateClient({ slug }: { slug: string }) {
             type="button"
             onClick={() => window.print()}
             icon={'\u{1F5A8}\uFE0F'}
-            aria-label="Télécharger le certificat en PDF via la boîte de dialogue d'impression"
+            aria-label="Imprimer le certificat ou l'enregistrer en PDF"
           >
             Enregistrer en PDF
           </Button>
