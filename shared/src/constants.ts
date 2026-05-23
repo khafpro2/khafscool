@@ -16,6 +16,11 @@ export function getCourseModuleCount(slug: CourseSlug): number {
   return MODULES_BY_COURSE[slug] ?? 3;
 }
 
+/** Nombre total de questions quiz pour un parcours MVP. */
+export function getCourseQuestionCount(slug: CourseSlug): number {
+  return getCourseModuleCount(slug) * QUESTIONS_PER_MODULE;
+}
+
 export type NextCourseLink = { slug: CourseSlug; title: string };
 
 export const NEXT_COURSE_BY_SLUG: Partial<Record<CourseSlug, NextCourseLink>> = {

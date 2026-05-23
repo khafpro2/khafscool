@@ -3,6 +3,8 @@ import {
   countLessonWords,
   estimateReadingMinutes,
   formatReadingTimeLabel,
+  formatCourseHeroBanner,
+  sumLessonReadingMinutes,
   READING_WORDS_PER_MINUTE,
 } from '@ama/shared/reading-time';
 
@@ -26,5 +28,13 @@ describe('reading time', () => {
 
   it('formats French reading badge label', () => {
     expect(formatReadingTimeLabel(400)).toBe('~2 min de lecture');
+  });
+
+  it('sums reading minutes across lessons', () => {
+    expect(sumLessonReadingMinutes(['word '.repeat(200), 'word '.repeat(400)])).toBe(3);
+  });
+
+  it('formats course hero banner for four-module tracks', () => {
+    expect(formatCourseHeroBanner(4, 18, 10)).toBe('4 modules · 10 questions · ~18 min de lecture');
   });
 });

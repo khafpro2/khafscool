@@ -26,11 +26,17 @@ import {
   getTrackVisual,
   inferLevelFromModules,
 } from '@/lib/design';
+import { QUESTIONS_PER_MODULE } from '@ama/shared/constants';
+import { sumLessonReadingMinutes } from '@ama/shared/reading-time';
+import type { CourseProgressModule } from '@/lib/api';
 
 type CompletionState = {
   course: CourseDetail;
   completion: CourseCompletionResult;
   usesDemo: boolean;
+  validatedModules: { title: string; completedAt?: string | null }[];
+  completedModuleCount: number;
+  totalReadingMinutes: number;
 };
 
 export function CourseCompleteClient({
@@ -63,8 +69,18 @@ export function CourseCompleteClient({
 
     fetchCourse(slug, token)
       .then(async (course) => {
+        const totalReadingMinutes = sumLessonReadingMinutes(
+          course.modules.map((module) => module.lessonContent ?? '')
+        );
+
         if (storedCompletion) {
-          setState({ course, completion: storedCompletion, usesDemo: !token });
+          setState({
+            course,
+            completion: storedCompletion,
+            usesDemo: !token,
+            ...resolveValidatedModules(course, null, !token),
+            totalReadingMinutes,
+          });
           return;
         }
 
@@ -75,6 +91,7 @@ export function CourseCompleteClient({
               const reward = getRewardBadgeForTrack(course.track);
               const badgeEarned =
                 reward && progress.progress.progressPercent >= 100 ? reward.badgeSlug : undefined;
+              const validated = resolveValidatedModules(course, progress.modules, false);
               setState({
                 course,
                 completion: {
@@ -84,6 +101,8 @@ export function CourseCompleteClient({
                   ...(badgeEarned ? { badgeEarned } : {}),
                 },
                 usesDemo: false,
+                ...validated,
+                totalReadingMinutes,
               });
               return;
             }
@@ -93,7 +112,10 @@ export function CourseCompleteClient({
           return;
         }
 
-        setState(buildDemoCompletion(course));
+        setState({
+          ...buildDemoCompletion(course),
+          totalReadingMinutes,
+        });
       })
       .finally(() => setIsLoading(false));
   }, [slug, initialCompletion]);
@@ -125,7 +147,7 @@ export function CourseCompleteClient({
     );
   }
 
-  const { course, completion, usesDemo } = state;
+  const { course, completion, usesDemo, validatedModules, completedModuleCount, totalReadingMinutes } = state;
   const visual = getTrackVisual(course.track);
   const reward = getRewardBadgeForTrack(course.track);
   const badgeSlug = completion.badgeEarned ?? reward?.badgeSlug;
@@ -133,6 +155,7 @@ export function CourseCompleteClient({
   const level = inferLevelFromModules(course.modules.length);
   const estimatedTotal = estimatePoints(course.modules.length, level);
   const motivationalLine = pickMotivationalMessage(slug);
+  const totalQuestions = course.modules.length * QUESTIONS_PER_MODULE;
 
   return (
     <section style={{ padding: '1rem 0 3rem', position: 'relative', overflow: 'hidden' }}>
@@ -155,7 +178,7 @@ export function CourseCompleteClient({
         </h1>
         <p style={{ marginTop: '0.65rem', maxWidth: 640, color: 'rgba(255,255,255,0.94)' }}>
           Tu viens de boucler les {course.modules.length} unités du parcours{' '}
-          {formatTrack(course.track)}. Continue sur la lancée !
+          {formatTrack(course.track)} — {totalQuestions} questions validées au total. Continue sur la lancée !
         </p>
         <p
           className="completion-motivation"
@@ -183,6 +206,55 @@ export function CourseCompleteClient({
           </p>
         )}
       </div>
+
+      <Card style={{ marginTop: '1.25rem', position: 'relative', zIndex: 1 }}>
+        <h2 style={{ fontSize: '1.15rem', fontWeight: 800 }}>Récapitulatif du parcours</h2>
+        <div
+          style={{
+            marginTop: '0.85rem',
+            display: 'grid',
+            gap: '0.75rem',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+          }}
+        >
+          <div>
+            <p className="muted" style={{ fontWeight: 800, fontSize: '0.78rem', textTransform: 'uppercase' }}>
+              Modules validés
+            </p>
+            <p style={{ fontSize: '1.5rem', fontWeight: 900, marginTop: '0.2rem' }}>
+              {completedModuleCount}/{course.modules.length}
+            </p>
+          </div>
+          <div>
+            <p className="muted" style={{ fontWeight: 800, fontSize: '0.78rem', textTransform: 'uppercase' }}>
+              Temps de lecture
+            </p>
+            <p style={{ fontSize: '1.5rem', fontWeight: 900, marginTop: '0.2rem' }}>
+              ~{totalReadingMinutes} min
+            </p>
+          </div>
+          <div>
+            <p className="muted" style={{ fontWeight: 800, fontSize: '0.78rem', textTransform: 'uppercase' }}>
+              Questions quiz
+            </p>
+            <p style={{ fontSize: '1.5rem', fontWeight: 900, marginTop: '0.2rem' }}>
+              {totalQuestions}
+            </p>
+            <p className="muted" style={{ fontSize: '0.85rem', marginTop: '0.15rem' }}>
+              {QUESTIONS_PER_MODULE} par module
+            </p>
+          </div>
+        </div>
+        {validatedModules.length > 0 ? (
+          <ul style={{ marginTop: '1rem', paddingLeft: '1.1rem', display: 'grid', gap: '0.45rem' }}>
+            {validatedModules.map((module) => (
+              <li key={module.title} style={{ fontWeight: 600 }}>
+                {'\u2705'} {module.title}
+              </li>
+            ))}
+          </ul>
+        ) : null}
+      </Card>
 
       <div
         style={{
@@ -336,7 +408,34 @@ function buildDemoCompletion(course: CourseDetail): CompletionState {
       pointsEarned: estimatePoints(course.modules.length, level),
       ...(reward ? { badgeEarned: reward.badgeSlug } : {}),
     },
+    ...resolveValidatedModules(course, null, true),
+    totalReadingMinutes: sumLessonReadingMinutes(course.modules.map((module) => module.lessonContent ?? '')),
   };
+}
+
+function resolveValidatedModules(
+  course: CourseDetail,
+  progressModules: CourseProgressModule[] | null,
+  demoComplete: boolean
+) {
+  if (progressModules?.length) {
+    const validated = progressModules
+      .filter((module) => module.completed)
+      .map((module) => ({ title: module.title, completedAt: module.completedAt }));
+    return {
+      validatedModules: validated,
+      completedModuleCount: validated.length,
+    };
+  }
+
+  if (demoComplete) {
+    return {
+      validatedModules: course.modules.map((module) => ({ title: module.title })),
+      completedModuleCount: course.modules.length,
+    };
+  }
+
+  return { validatedModules: [], completedModuleCount: 0 };
 }
 
 const MOTIVATIONAL_MESSAGES = [

@@ -24,3 +24,21 @@ export function countLessonWords(content: string): number {
 export function formatReadingTimeLabel(wordCount: number): string {
   return `~${estimateReadingMinutes(wordCount)} min de lecture`;
 }
+
+/** Somme des durées de lecture estimées pour plusieurs leçons. */
+export function sumLessonReadingMinutes(contents: string[]): number {
+  return contents.reduce(
+    (total, content) => total + estimateReadingMinutes(countLessonWords(content)),
+    0
+  );
+}
+
+/** Bandeau hero parcours : « N modules · Q questions · ~M min de lecture ». */
+export function formatCourseHeroBanner(
+  moduleCount: number,
+  totalReadingMinutes: number,
+  questionsPerModule = 10
+): string {
+  const moduleLabel = moduleCount > 1 ? 'modules' : 'module';
+  return `${moduleCount} ${moduleLabel} · ${questionsPerModule} questions · ~${totalReadingMinutes} min de lecture`;
+}

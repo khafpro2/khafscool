@@ -46,6 +46,7 @@ Première release MVP **MDM Academy Pro** (branche `cursor/progress-dashboard-au
 - **Module 4 Jamf** — parcours `jamf-pro-foundations` : « Automatisation et extension API » (leçon 800+ mots, 10 questions MDM Jamf)
 - **Module 4 Intune** — parcours `intune-ios-enrollment` : « Apps métier et Apple Business Manager dans Intune » (même structure)
 - **Parité catalogue** — `MODULES_BY_COURSE` : **4 modules** pour les 3 parcours ; TrailCard / mobile « 4 modules · 10 Q/module » ; tests seed **12 modules, 120 questions**
+- **Complétion 4 modules** — pages `/courses/[slug]/complete` (web + mobile) : récap **4/4**, temps de lecture total, liste unités validées, message **40 questions** ; certificat web liste les **4 titres de modules** ; bandeau hero « 4 modules · 10 questions · ~N min » ; badge piste déclenché à **4 modules** (tests backend mis à jour)
 - **Objectifs module actif (mobile)** — panneau repliable `ModuleObjectives` sur module actif (parité web)
 - Docs : Postgres Docker — port hôte **5433** vs conteneur **5432** (`README`, `DEPLOYMENT`, `compose.yaml`, `backend/.env.example`)
 - API : `GET /auth/oauth/status` — état Google / Apple / Microsoft (`configured` | `stub` | `disabled`)

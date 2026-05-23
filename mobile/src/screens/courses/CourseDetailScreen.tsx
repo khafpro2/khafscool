@@ -18,7 +18,8 @@ import { useThemedStyles } from '../../hooks/useThemedStyles';
 import { toastBadgeUnlocked, toastModuleCompleted } from '../../lib/gamification-toasts';
 import { LessonContent } from '../../components/LessonContent';
 import { ModuleObjectives } from '../../components/ModuleObjectives';
-import { countLessonWords, formatReadingTimeLabel } from '@ama/shared/reading-time';
+import { QUESTIONS_PER_MODULE } from '@ama/shared/constants';
+import { countLessonWords, formatCourseHeroBanner, formatReadingTimeLabel, sumLessonReadingMinutes } from '@ama/shared/reading-time';
 import { findGlossaryTermInText, glossaryMobilePath } from '@ama/shared/glossary';
 import {
   CheckAnswerResult,
@@ -299,6 +300,14 @@ export function CourseDetailScreen() {
   const visual = getTrackVisual(course.track);
   const percent = progress.progress.progressPercent;
   const nextModuleId = progress.progress.nextModule?.id;
+  const totalReadingMinutes = sumLessonReadingMinutes(
+    course.modules.map((module) => module.lessonContent ?? '')
+  );
+  const heroBanner = formatCourseHeroBanner(
+    progress.progress.totalModules,
+    totalReadingMinutes,
+    QUESTIONS_PER_MODULE
+  );
 
   return (
     <ScrollView ref={scrollRef} style={styles.container} contentContainerStyle={styles.content}>
@@ -311,6 +320,7 @@ export function CourseDetailScreen() {
         <Text style={styles.heroTrack}>{formatTrack(course.track)}</Text>
         <Text style={styles.heroTitle}>{course.title}</Text>
         {course.description ? <Text style={styles.heroDescription}>{course.description}</Text> : null}
+        <Text style={styles.heroBanner}>{heroBanner}</Text>
         <View style={styles.heroMeta}>
           <Text style={styles.heroMetaText}>
             {progress.progress.completedModules}/{progress.progress.totalModules} unités · {percent} %
@@ -332,7 +342,9 @@ export function CourseDetailScreen() {
 
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>Unités du parcours</Text>
-        <Text style={styles.sectionHint}>3 unités · statut en temps réel</Text>
+        <Text style={styles.sectionHint}>
+          {progress.progress.totalModules} unités · statut en temps réel
+        </Text>
       </View>
 
       <View style={styles.moduleStrip}>
@@ -804,6 +816,13 @@ function createStyles(colors: AppThemeColors) {
   },
   heroTitle: { color: '#FFFFFF', fontSize: 24, fontWeight: '800', marginTop: 4 },
   heroDescription: { color: 'rgba(255,255,255,0.9)', marginTop: 8, lineHeight: 20 },
+  heroBanner: {
+    color: 'rgba(255,255,255,0.98)',
+    marginTop: 10,
+    fontWeight: '800',
+    fontSize: 14,
+    lineHeight: 20,
+  },
   heroMeta: { marginTop: 12, marginBottom: 10 },
   heroMetaText: { color: 'rgba(255,255,255,0.85)', fontWeight: '600' },
   glossaryLink: { marginTop: 10, alignSelf: 'flex-start' },

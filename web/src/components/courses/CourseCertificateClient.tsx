@@ -29,6 +29,7 @@ type CertificateState = {
   learnerName: string;
   completedAt: Date;
   usesDemo: boolean;
+  completedModuleTitles: string[];
 };
 
 function formatFrenchDate(date: Date) {
@@ -59,6 +60,7 @@ function buildDemoCertificate(course: CourseDetail): CertificateState {
     usesDemo: true,
     learnerName: 'Apprenant démo',
     completedAt: new Date(),
+    completedModuleTitles: course.modules.map((module) => module.title),
     completion: {
       slug: course.slug,
       title: course.title,
@@ -106,6 +108,7 @@ export function CourseCertificateClient({ slug }: { slug: string }) {
             learnerName: (await resolveLearnerName()) ?? 'Apprenant MDM Academy',
             completedAt: new Date(),
             usesDemo: !token,
+            completedModuleTitles: course.modules.map((module) => module.title),
           });
           return;
         }
@@ -117,6 +120,9 @@ export function CourseCertificateClient({ slug }: { slug: string }) {
               const reward = getRewardBadgeForTrack(course.track);
               const badgeEarned =
                 reward && progress.progress.progressPercent >= 100 ? reward.badgeSlug : undefined;
+              const completedModuleTitles = progress.modules
+                .filter((module) => module.completed)
+                .map((module) => module.title);
               setState({
                 course,
                 completion: {
@@ -128,6 +134,10 @@ export function CourseCertificateClient({ slug }: { slug: string }) {
                 learnerName: (await resolveLearnerName()) ?? 'Apprenant MDM Academy',
                 completedAt: new Date(),
                 usesDemo: false,
+                completedModuleTitles:
+                  completedModuleTitles.length > 0
+                    ? completedModuleTitles
+                    : course.modules.map((module) => module.title),
               });
               return;
             }
@@ -169,7 +179,7 @@ export function CourseCertificateClient({ slug }: { slug: string }) {
     );
   }
 
-  const { course, completion, learnerName, completedAt, usesDemo } = state;
+  const { course, completion, learnerName, completedAt, usesDemo, completedModuleTitles } = state;
   const visual = getTrackVisual(course.track);
   const reward = getRewardBadgeForTrack(course.track);
   const badgeSlug = completion.badgeEarned ?? reward?.badgeSlug;
@@ -247,6 +257,17 @@ export function CourseCertificateClient({ slug }: { slug: string }) {
           <p className="certificate-document__track">
             Piste {formatTrack(course.track)} · {course.modules.length} unités · niveau {level}
           </p>
+
+          {completedModuleTitles.length > 0 ? (
+            <div className="certificate-document__modules">
+              <p className="certificate-document__modules-label">Unités complétées</p>
+              <ol className="certificate-document__modules-list">
+                {completedModuleTitles.map((title) => (
+                  <li key={title}>{title}</li>
+                ))}
+              </ol>
+            </div>
+          ) : null}
 
           <div className="certificate-document__metrics">
             <div className="certificate-document__metric">

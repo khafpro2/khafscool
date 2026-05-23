@@ -1,5 +1,5 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Animated,
   Easing,
@@ -20,7 +20,9 @@ import type { AppThemeColors } from '../../lib/design';
 import { estimatePoints, formatTrack, getBadgeVisual, getTrackVisual, inferLevelFromModules } from '../../lib/design';
 import { useThemedStyles } from '../../hooks/useThemedStyles';
 import type { CourseSlug } from '@ama/shared/learning-paths';
-import { NEXT_COURSE_BY_SLUG } from '@ama/shared/constants';
+import { NEXT_COURSE_BY_SLUG, QUESTIONS_PER_MODULE } from '@ama/shared/constants';
+import { formatCourseHeroBanner, sumLessonReadingMinutes } from '@ama/shared/reading-time';
+import { fetchCourse, fetchCourseProgress } from '../../services/courses';
 
 const MOTIVATIONAL_MESSAGES = [
   'Tu viens de franchir une étape majeure — la suite t’attend avec confiance.',
@@ -54,10 +56,54 @@ export function CourseCompleteScreen() {
   const badgeVisual = badgeEarned ? getBadgeVisual(badgeEarned) : null;
   const nextCourse = useMemo(() => NEXT_COURSE_BY_SLUG[slug as CourseSlug] ?? null, [slug]);
   const motivationalLine = useMemo(() => pickMotivationalMessage(slug), [slug]);
-  const moduleCount = 3;
+  const [moduleCount, setModuleCount] = useState(4);
+  const [validatedModules, setValidatedModules] = useState<{ title: string }[]>([]);
+  const [totalReadingMinutes, setTotalReadingMinutes] = useState(0);
   const level = inferLevelFromModules(moduleCount);
   const estimatedTotal = estimatePoints(moduleCount, level);
   const displayPoints = pointsEarned > 0 ? pointsEarned : estimatedTotal;
+  const totalQuestions = moduleCount * QUESTIONS_PER_MODULE;
+
+  useEffect(() => {
+    if (!slug) return;
+    let cancelled = false;
+
+    void (async () => {
+      try {
+        const { data: course } = await fetchCourse(slug);
+        if (cancelled) return;
+        const readingMinutes = sumLessonReadingMinutes(
+          course.modules.map((module) => module.lessonContent ?? '')
+        );
+        setModuleCount(course.modules.length);
+        setTotalReadingMinutes(readingMinutes);
+
+        try {
+          const progress = await fetchCourseProgress(slug);
+          if (cancelled) return;
+          const validated = progress.data.modules
+            .filter((module) => module.completed)
+            .map((module) => ({ title: module.title }));
+          setValidatedModules(
+            validated.length > 0
+              ? validated
+              : course.modules.map((module) => ({ title: module.title }))
+          );
+        } catch {
+          setValidatedModules(course.modules.map((module) => ({ title: module.title })));
+        }
+      } catch {
+        if (!cancelled) {
+          setModuleCount(4);
+          setValidatedModules([]);
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [slug]);
 
   const heroScale = useRef(new Animated.Value(0.96)).current;
   const heroOpacity = useRef(new Animated.Value(0)).current;
@@ -127,7 +173,8 @@ export function CourseCompleteScreen() {
         <TrackIcon track={track} size="lg" style={{ marginBottom: 10 }} />
         <Text style={styles.heroTitle}>Bravo ! Tu as complété « {title} »</Text>
         <Text style={styles.heroText}>
-          Tu viens de boucler les {moduleCount} unités du parcours {formatTrack(track)}. Continue sur la lancée !
+          Tu viens de boucler les {moduleCount} unités du parcours {formatTrack(track)} — {totalQuestions}{' '}
+          questions validées au total. Continue sur la lancée !
         </Text>
         <Text style={styles.heroMotivation}>{motivationalLine}</Text>
         {usesDemo ? (
@@ -136,6 +183,39 @@ export function CourseCompleteScreen() {
           </Text>
         ) : null}
       </Animated.View>
+
+      <View style={styles.recapCard}>
+        <Text style={styles.recapTitle}>Récapitulatif du parcours</Text>
+        <View style={styles.recapGrid}>
+          <View style={styles.recapMetric}>
+            <Text style={styles.recapLabel}>Modules validés</Text>
+            <Text style={styles.recapValue}>
+              {validatedModules.length}/{moduleCount}
+            </Text>
+          </View>
+          <View style={styles.recapMetric}>
+            <Text style={styles.recapLabel}>Temps de lecture</Text>
+            <Text style={styles.recapValue}>~{totalReadingMinutes} min</Text>
+          </View>
+          <View style={styles.recapMetric}>
+            <Text style={styles.recapLabel}>Questions quiz</Text>
+            <Text style={styles.recapValue}>{totalQuestions}</Text>
+            <Text style={styles.recapHint}>{QUESTIONS_PER_MODULE} par module</Text>
+          </View>
+        </View>
+        {validatedModules.length > 0 ? (
+          <View style={styles.moduleList}>
+            {validatedModules.map((module) => (
+              <Text key={module.title} style={styles.moduleListItem}>
+                {'\u2705'} {module.title}
+              </Text>
+            ))}
+          </View>
+        ) : null}
+        <Text style={styles.heroBannerHint}>
+          {formatCourseHeroBanner(moduleCount, totalReadingMinutes, QUESTIONS_PER_MODULE)}
+        </Text>
+      </View>
 
       <View style={styles.statsRow}>
         <View style={styles.statCard}>
@@ -372,6 +452,29 @@ function createStyles(colors: AppThemeColors) {
       fontSize: 13,
     },
     statsRow: { gap: 12, marginBottom: 16 },
+    recapCard: {
+      backgroundColor: colors.bgSoft,
+      borderRadius: 18,
+      padding: 16,
+      borderWidth: 1,
+      borderColor: colors.border,
+      marginBottom: 16,
+    },
+    recapTitle: { color: colors.fg, fontSize: 18, fontWeight: '800' },
+    recapGrid: { gap: 12, marginTop: 12 },
+    recapMetric: {},
+    recapLabel: {
+      color: colors.muted,
+      fontSize: 11,
+      fontWeight: '800',
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
+    },
+    recapValue: { color: colors.fg, fontSize: 24, fontWeight: '900', marginTop: 4 },
+    recapHint: { color: colors.muted, fontSize: 12, marginTop: 2 },
+    moduleList: { marginTop: 12, gap: 6 },
+    moduleListItem: { color: colors.fg, fontWeight: '600', lineHeight: 22 },
+    heroBannerHint: { color: colors.muted, marginTop: 12, fontSize: 13, fontWeight: '700' },
     statCard: {
       backgroundColor: colors.bgSoft,
       borderRadius: 18,

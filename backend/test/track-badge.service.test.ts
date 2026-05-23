@@ -55,7 +55,7 @@ describe('track completion badges', () => {
       level: UserLevel.NOVICE,
       badges: [],
     });
-    prismaMock.module.count.mockResolvedValue(3);
+    prismaMock.module.count.mockResolvedValue(4);
     prismaMock.moduleProgress.count.mockResolvedValue(1);
     prismaMock.userQuest.findFirst.mockResolvedValue({
       id: 'quest-1',
@@ -67,6 +67,55 @@ describe('track completion badges', () => {
     prismaMock.userQuest.upsert.mockResolvedValue({});
     prismaMock.userQuest.findMany.mockResolvedValue([]);
     prismaMock.moduleProgress.findMany.mockResolvedValue([{ quizScore: 100, gameScore: 100 }]);
+
+    await completeModule(userId, moduleId, {
+      quizAnswers: { q1: 'a' },
+      gameOrder: [1],
+    });
+
+    expect(prismaMock.userProgress.update).toHaveBeenCalledWith({
+      where: { userId },
+      data: expect.objectContaining({
+        badges: [],
+      }),
+    });
+  });
+
+  it('does not award a track badge after three of four modules on the track', async () => {
+    const userId = 'user-badge-partial';
+    const moduleId = 'module-badge-partial';
+
+    prismaMock.module.findUnique.mockResolvedValue({
+      id: moduleId,
+      courseId: 'course-1',
+      questions: [{ id: 'q1', correctOption: 'a' }],
+      game: { solution: { correctOrder: [1] } },
+      course: { slug: 'apple-cert-prep', title: 'Parcours Apple', track: CourseTrack.APPLE },
+    });
+    prismaMock.moduleProgress.findUnique.mockResolvedValue(null);
+    prismaMock.moduleProgress.upsert.mockResolvedValue({});
+    prismaMock.userProgress.upsert.mockResolvedValue({
+      userId,
+      points: 28,
+      level: UserLevel.NOVICE,
+      badges: [],
+    });
+    prismaMock.module.count.mockResolvedValue(4);
+    prismaMock.moduleProgress.count.mockResolvedValue(3);
+    prismaMock.userQuest.findFirst.mockResolvedValue({
+      id: 'quest-1',
+      progress: 0,
+      target: 2,
+      completed: false,
+    });
+    prismaMock.userQuest.update.mockResolvedValue({});
+    prismaMock.userQuest.upsert.mockResolvedValue({});
+    prismaMock.userQuest.findMany.mockResolvedValue([]);
+    prismaMock.moduleProgress.findMany.mockResolvedValue([
+      { quizScore: 100, gameScore: 100 },
+      { quizScore: 100, gameScore: 100 },
+      { quizScore: 100, gameScore: 100 },
+    ]);
 
     await completeModule(userId, moduleId, {
       quizAnswers: { q1: 'a' },
@@ -100,8 +149,8 @@ describe('track completion badges', () => {
       level: UserLevel.NOVICE,
       badges: [],
     });
-    prismaMock.module.count.mockResolvedValue(3);
-    prismaMock.moduleProgress.count.mockResolvedValue(3);
+    prismaMock.module.count.mockResolvedValue(4);
+    prismaMock.moduleProgress.count.mockResolvedValue(4);
     prismaMock.userQuest.findFirst.mockResolvedValue({
       id: 'quest-1',
       progress: 0,
@@ -112,6 +161,7 @@ describe('track completion badges', () => {
     prismaMock.userQuest.upsert.mockResolvedValue({});
     prismaMock.userQuest.findMany.mockResolvedValue([]);
     prismaMock.moduleProgress.findMany.mockResolvedValue([
+      { quizScore: 100, gameScore: 100 },
       { quizScore: 100, gameScore: 100 },
       { quizScore: 100, gameScore: 100 },
       { quizScore: 100, gameScore: 100 },

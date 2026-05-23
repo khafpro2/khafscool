@@ -31,7 +31,6 @@ import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { CourseDetailPageSkeleton } from '@/components/ui/Skeleton';
 import { TrackIcon } from '@/components/ui/TrackIcon';
 import {
-  estimateDurationMinutes,
   estimatePoints,
   formatDurationLabel,
   getBadgeVisual,
@@ -41,7 +40,12 @@ import {
 } from '@/lib/design';
 import { toastBadgeUnlocked, toastModuleCompleted } from '@/lib/gamification-toasts';
 import { scoreGameOrder } from '@/lib/points';
-import { countLessonWords, formatReadingTimeLabel } from '@ama/shared/reading-time';
+import {
+  countLessonWords,
+  formatCourseHeroBanner,
+  sumLessonReadingMinutes,
+} from '@ama/shared/reading-time';
+import { QUESTIONS_PER_MODULE } from '@ama/shared/constants';
 
 export function CourseDetailClient({ slug }: { slug: string }) {
   const router = useRouter();
@@ -413,7 +417,10 @@ export function CourseDetailClient({ slug }: { slug: string }) {
   const level = inferLevelFromModules(totalModules);
   const reward = getRewardBadgeForTrack(course.track);
   const points = estimatePoints(totalModules, level);
-  const duration = estimateDurationMinutes(totalModules);
+  const totalReadingMinutes = sumLessonReadingMinutes(
+    course.modules.map((module) => module.lessonContent ?? '')
+  );
+  const heroBanner = formatCourseHeroBanner(totalModules, totalReadingMinutes, QUESTIONS_PER_MODULE);
 
   return (
     <section style={{ padding: '1rem 0 3rem' }}>
@@ -450,14 +457,19 @@ export function CourseDetailClient({ slug }: { slug: string }) {
           {course.description && (
             <p style={{ marginTop: '0.75rem', maxWidth: 720, color: 'rgba(255,255,255,0.94)' }}>{course.description}</p>
           )}
+          <p
+            style={{
+              marginTop: '0.85rem',
+              fontWeight: 800,
+              fontSize: '0.95rem',
+              color: 'rgba(255,255,255,0.98)',
+              letterSpacing: '0.01em',
+            }}
+          >
+            {heroBanner}
+          </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '1rem' }}>
             <LevelPill level={level} />
-            <Badge tone="neutral" style={{ background: 'rgba(255,255,255,0.18)', color: '#fff', border: '1px solid rgba(255,255,255,0.32)' }}>
-              {formatDurationLabel(duration)}
-            </Badge>
-            <Badge tone="neutral" style={{ background: 'rgba(255,255,255,0.18)', color: '#fff', border: '1px solid rgba(255,255,255,0.32)' }}>
-              {totalModules} unité{totalModules > 1 ? 's' : ''}
-            </Badge>
             <Badge tone="warning">
               {points} pts à gagner
             </Badge>
@@ -785,7 +797,7 @@ export function CourseDetailClient({ slug }: { slug: string }) {
               </li>
               <li style={{ display: 'flex', justifyContent: 'space-between', gap: '0.5rem' }}>
                 <span className="muted">Durée estimée</span>
-                <strong>{formatDurationLabel(duration)}</strong>
+                <strong>{formatDurationLabel(totalReadingMinutes)}</strong>
               </li>
               <li style={{ display: 'flex', justifyContent: 'space-between', gap: '0.5rem' }}>
                 <span className="muted">Unités</span>

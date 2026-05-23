@@ -160,11 +160,11 @@ describe('isTrackFullyCompleted', () => {
   });
 
   it('requires every module on the track to be completed', async () => {
-    prismaMock.module.count.mockResolvedValue(3);
-    prismaMock.moduleProgress.count.mockResolvedValue(2);
+    prismaMock.module.count.mockResolvedValue(4);
+    prismaMock.moduleProgress.count.mockResolvedValue(3);
     await expect(isTrackFullyCompleted('user-1', CourseTrack.APPLE)).resolves.toBe(false);
 
-    prismaMock.moduleProgress.count.mockResolvedValue(3);
+    prismaMock.moduleProgress.count.mockResolvedValue(4);
     await expect(isTrackFullyCompleted('user-1', CourseTrack.APPLE)).resolves.toBe(true);
   });
 });

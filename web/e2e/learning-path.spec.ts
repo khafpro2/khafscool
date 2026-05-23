@@ -52,6 +52,10 @@ test.describe('Parcours d’apprentissage — smoke', () => {
   test('page complétion parcours affiche le partage', async ({ page }) => {
     await page.goto('/courses/apple-cert-prep/complete');
     await expect(page.getByRole('heading', { name: /Bravo !/i })).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByText(/40 questions validées/i)).toBeVisible();
+    await expect(page.getByText(/Récapitulatif du parcours/i)).toBeVisible();
+    await expect(page.getByText(/4\/4/)).toBeVisible();
+    await expect(page.getByText(/min de lecture/i).first()).toBeVisible();
     await expect(
       page.getByRole('button', { name: /Partager ma réussite/i })
     ).toBeVisible();
@@ -70,9 +74,18 @@ test.describe('Parcours d’apprentissage — smoke', () => {
       timeout: 15_000,
     });
     await expect(page.getByRole('article', { name: /Certificat de complétion/i })).toBeVisible();
+    await expect(page.getByText(/Unités complétées/i)).toBeVisible();
+    await expect(page.locator('.certificate-document__modules-list li')).toHaveCount(4);
     await expect(
       page.getByRole('button', { name: /Imprimer.*PDF/i })
     ).toBeVisible();
+  });
+
+  test('hero parcours affiche bandeau 4 modules', async ({ page }) => {
+    await page.goto('/courses/apple-cert-prep');
+    await expect(page.getByText(/4 modules · 10 questions · ~\d+ min de lecture/i)).toBeVisible({
+      timeout: 15_000,
+    });
   });
 
   test('lien « Aller au contenu » visible au focus', async ({ page }) => {
