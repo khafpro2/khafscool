@@ -85,6 +85,7 @@ test.describe('Page Soutenir', () => {
     });
     await expect(page.getByText('La plateforme est-elle vraiment gratuite ?')).toBeVisible();
     await expect(page.getByText('Puis-je obtenir un reçu fiscal ?')).toBeVisible();
+    await page.getByText('Puis-je obtenir un reçu fiscal ?').click();
     await expect(
       page.getByText('MDM Academy Pro n’est pas configurée comme association', { exact: false })
     ).toBeVisible();
