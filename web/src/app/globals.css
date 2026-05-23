@@ -3563,6 +3563,9 @@ html[data-theme='dark'] .analytics-opt-in-banner {
   .donation-methods-grid {
     grid-template-columns: 1fr 1fr;
   }
+  .donation-methods-grid > :first-child {
+    grid-column: 1 / -1;
+  }
 }
 
 .donation-card-brand {

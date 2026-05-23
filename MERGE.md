@@ -123,7 +123,7 @@ pnpm smoke:web
 - [ ] **RGPD compte** — export JSON + suppression compte (web profil + mobile API)
 - [ ] **DemoModeBanner** — distinction « Mode démo local » / « Connecté à l’API »
 - [ ] **Récap quiz mobile** — score X/Y + points estimés avant validation d’unité
-- [ ] **Dons volontaires** — `/soutenir`, Stripe Checkout ou `DONATION_URL`, footer + mobile (formation toujours gratuite)
+- [ ] **Dons volontaires** — `/soutenir` : carte bancaire (Stripe Checkout), PayPal (`paypal.me/khafpro`) et virement Revolut (IBAN Khalifa Thiam) ; footer `#paypal` + mobile (formation toujours gratuite)
 - [x] **Fiche révision web** — partage Web Share API + impression PDF
 - [x] **Examen blanc** — web `/examen`, mobile lien natif, API practice-exam
 - [x] **Catalogue durée** — `TrailCard` reading-time cumulé + 40 questions
