@@ -376,6 +376,21 @@ export function ProfileScreen() {
         </View>
       )}
 
+      <Text style={styles.sectionTitle}>Ressources</Text>
+      <Text style={styles.sectionHint}>Référence MDM et liens officiels</Text>
+
+      <Pressable style={styles.linkCard} onPress={() => router.push('/glossary')}>
+        <Text style={styles.linkTitle}>Glossaire MDM</Text>
+        <Text style={styles.linkHint}>34 termes FR — ABM, ADE, supervision, Smart Groups…</Text>
+        <Text style={styles.linkCta}>Ouvrir le glossaire →</Text>
+      </Pressable>
+
+      <Pressable style={styles.linkCard} onPress={() => openWebPath('/resources')}>
+        <Text style={styles.linkTitle}>Ressources officielles</Text>
+        <Text style={styles.linkHint}>Documentation Apple, Jamf et Microsoft</Text>
+        <Text style={styles.linkCta}>Ouvrir sur le web →</Text>
+      </Pressable>
+
       <Text style={styles.sectionTitle}>Gamification</Text>
       <Text style={styles.sectionHint}>Badges, quêtes et sprint certification</Text>
 

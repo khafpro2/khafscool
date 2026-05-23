@@ -8,6 +8,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import { QUESTIONS_PER_MODULE } from '@ama/shared/constants';
 import { BrandIcon } from '../../components/BrandIcon';
 import { TrackFilterChips } from '../../components/TrackFilterChips';
 import { type TrackFilter } from '../../lib/track-filters';
@@ -17,6 +18,7 @@ import type { AppThemeColors } from '../../lib/design';
 import { formatTrack, getTrackVisual } from '../../lib/design';
 import { useThemedStyles } from '../../hooks/useThemedStyles';
 import { CourseSummary, fetchCourses } from '../../services/courses';
+import { getAccessToken } from '../../services/auth';
 
 export function CoursesCatalogScreen() {
   const router = useRouter();
@@ -26,9 +28,12 @@ export function CoursesCatalogScreen() {
   const [source, setSource] = useState<'api' | 'demo'>('api');
   const [loading, setLoading] = useState(true);
   const [selectedTrack, setSelectedTrack] = useState<TrackFilter>('TOUS');
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   async function loadCatalog() {
     setLoading(true);
+    const token = await getAccessToken();
+    setIsAuthenticated(Boolean(token));
     const result = await fetchCourses();
     setCourses(result.data);
     setSource(result.source);
@@ -92,6 +97,7 @@ export function CoursesCatalogScreen() {
             path={path}
             course={course}
             styles={styles}
+            showProgress={isAuthenticated}
             onPress={() => router.push(`/course/${path.slug}`)}
           />
         );
@@ -108,23 +114,26 @@ function CatalogCourseCard({
   path,
   course,
   styles,
+  showProgress,
   onPress,
 }: {
   path: (typeof LEARNING_PATHS)[number];
   course?: CourseSummary;
   styles: ReturnType<typeof createStyles>;
+  showProgress: boolean;
   onPress: () => void;
 }) {
   const visual = getTrackVisual(path.track);
   const moduleCount = course?.totalModules ?? path.totalModules;
+  const completedModules = course?.completedModules ?? 0;
   const progress = course?.progressPercent ?? 0;
   const title = course?.title ?? path.title;
+  const moduleQuizLabel = `${moduleCount} module${moduleCount > 1 ? 's' : ''} · ${QUESTIONS_PER_MODULE} Q/module`;
+  const inProgress = progress > 0 && progress < 100;
+  const isCompleted = progress >= 100;
+  const shouldShowProgress = showProgress;
   const ctaLabel =
-    progress > 0 && progress < 100
-      ? 'Continuer ce parcours'
-      : progress >= 100
-        ? 'Revoir'
-        : 'Commencer gratuitement';
+    inProgress ? 'Continuer ce parcours' : isCompleted ? 'Revoir' : 'Commencer gratuitement';
 
   return (
     <Pressable onPress={onPress} style={styles.card}>
@@ -134,10 +143,15 @@ function CatalogCourseCard({
       </View>
       <View style={styles.cardBody}>
         <Text style={styles.cardTitle}>{title}</Text>
-        <Text style={styles.cardMeta}>
-          ~{path.durationMinutes} min · {moduleCount} unités
-          {progress > 0 ? ` · ${progress} % complété` : ''}
-        </Text>
+        <Text style={styles.cardMeta}>{moduleQuizLabel}</Text>
+        {shouldShowProgress ? (
+          <>
+            <ProgressBar progress={progress} styles={styles} />
+            <Text style={styles.progressLabel}>
+              {completedModules}/{moduleCount} unités · {progress} %
+            </Text>
+          </>
+        ) : null}
         <View style={styles.objectives}>
           {path.objectives.map((objective) => (
             <Text key={objective} style={styles.objectiveItem}>
@@ -151,6 +165,22 @@ function CatalogCourseCard({
         </View>
       </View>
     </Pressable>
+  );
+}
+
+function ProgressBar({
+  progress,
+  styles,
+}: {
+  progress: number;
+  styles: ReturnType<typeof createStyles>;
+}) {
+  const safeProgress = Math.max(0, Math.min(progress, 100));
+
+  return (
+    <View style={styles.progressTrack}>
+      <View style={[styles.progressFill, { width: `${safeProgress}%` }]} />
+    </View>
   );
 }
 
@@ -199,6 +229,15 @@ function createStyles(colors: AppThemeColors) {
   cardBody: { padding: 16 },
   cardTitle: { color: colors.fg, fontSize: 18, fontWeight: '800' },
   cardMeta: { color: colors.muted, marginTop: 6, fontSize: 13, fontWeight: '600' },
+  progressTrack: {
+    height: 8,
+    borderRadius: 999,
+    overflow: 'hidden',
+    backgroundColor: colors.border,
+    marginTop: 10,
+  },
+  progressFill: { height: '100%', borderRadius: 999, backgroundColor: colors.accent },
+  progressLabel: { color: colors.muted, marginTop: 6, fontSize: 12, fontWeight: '700' },
   objectives: { marginTop: 10, gap: 4 },
   objectiveItem: { color: colors.muted, fontSize: 13, lineHeight: 18 },
   cardFooter: { flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 6, marginTop: 14 },

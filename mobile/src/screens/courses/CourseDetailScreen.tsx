@@ -17,6 +17,7 @@ import { formatTrack, getTrackVisual } from '../../lib/design';
 import { useThemedStyles } from '../../hooks/useThemedStyles';
 import { toastBadgeUnlocked, toastModuleCompleted } from '../../lib/gamification-toasts';
 import { LessonContent } from '../../components/LessonContent';
+import { countLessonWords, formatReadingTimeLabel } from '@ama/shared/reading-time';
 import {
   CheckAnswerResult,
   CourseDetail,
@@ -314,6 +315,9 @@ export function CourseDetailScreen() {
           </Text>
         </View>
         <ProgressBar progress={percent} fillColor={colors.warning} trackColor="rgba(255,255,255,0.22)" styles={styles} />
+        <Pressable onPress={() => router.push('/glossary')} style={styles.glossaryLink}>
+          <Text style={styles.glossaryLinkText}>Glossaire MDM →</Text>
+        </Pressable>
       </View>
 
       {source === 'demo' ? (
@@ -370,6 +374,9 @@ export function CourseDetailScreen() {
         const isReviewMode = status === 'completed';
         const hasQuestions = module.questions.length > 0;
         const canPlayHere = hasQuestions && !isLocked && !isReviewMode;
+        const readingLabel = module.lessonContent
+          ? formatReadingTimeLabel(countLessonWords(module.lessonContent))
+          : null;
 
         return (
           <View
@@ -385,6 +392,11 @@ export function CourseDetailScreen() {
                 <Text style={styles.moduleIndex}>Unité {moduleIndex + 1}</Text>
                 <Text style={styles.moduleTitle}>{module.title}</Text>
                 <Text style={styles.moduleSummary}>{module.summary}</Text>
+                {readingLabel ? (
+                  <View style={styles.readingBadge}>
+                    <Text style={styles.readingBadgeText}>{readingLabel}</Text>
+                  </View>
+                ) : null}
                 {moduleProgress?.completedAt ? (
                   <Text style={styles.moduleCompletedAt}>
                     Terminée le {new Date(moduleProgress.completedAt).toLocaleDateString('fr-FR')}
@@ -770,6 +782,8 @@ function createStyles(colors: AppThemeColors) {
   heroDescription: { color: 'rgba(255,255,255,0.9)', marginTop: 8, lineHeight: 20 },
   heroMeta: { marginTop: 12, marginBottom: 10 },
   heroMetaText: { color: 'rgba(255,255,255,0.85)', fontWeight: '600' },
+  glossaryLink: { marginTop: 10, alignSelf: 'flex-start' },
+  glossaryLinkText: { color: '#FFCE5B', fontWeight: '800', fontSize: 14 },
   progressTrack: { height: 8, borderRadius: 999, overflow: 'hidden', backgroundColor: colors.border },
   progressFill: { height: '100%', borderRadius: 999 },
   demoBanner: { backgroundColor: colors.demoBannerBg, borderRadius: 14, padding: 12, marginBottom: 16, borderWidth: 1, borderColor: colors.demoBannerBorder },
@@ -801,6 +815,17 @@ function createStyles(colors: AppThemeColors) {
   moduleIndex: { color: colors.muted, fontSize: 11, fontWeight: '800', textTransform: 'uppercase' },
   moduleTitle: { color: colors.fg, fontSize: 17, fontWeight: '800', marginTop: 2 },
   moduleSummary: { color: colors.muted, marginTop: 4, lineHeight: 20 },
+  readingBadge: {
+    alignSelf: 'flex-start',
+    marginTop: 8,
+    backgroundColor: colors.bg,
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  readingBadgeText: { color: colors.muted, fontSize: 12, fontWeight: '700' },
   lessonScroll: {
     maxHeight: 220,
     marginTop: 12,

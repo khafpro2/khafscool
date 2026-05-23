@@ -41,6 +41,7 @@ import {
 } from '@/lib/design';
 import { toastBadgeUnlocked, toastModuleCompleted } from '@/lib/gamification-toasts';
 import { scoreGameOrder } from '@/lib/points';
+import { countLessonWords, formatReadingTimeLabel } from '@ama/shared/reading-time';
 
 export function CourseDetailClient({ slug }: { slug: string }) {
   const router = useRouter();
@@ -603,6 +604,11 @@ export function CourseDetailClient({ slug }: { slug: string }) {
                   </div>
                   <h2 style={{ fontSize: '1.3rem', fontWeight: 800, marginTop: '0.5rem' }}>{module.title}</h2>
                   <p className="muted" style={{ marginTop: '0.4rem' }}>{module.summary}</p>
+                  {module.lessonContent ? (
+                    <Badge tone="neutral" style={{ marginTop: '0.5rem' }}>
+                      {formatReadingTimeLabel(countLessonWords(module.lessonContent))}
+                    </Badge>
+                  ) : null}
                   <ModuleObjectives
                     learningObjectives={module.learningObjectives}
                     keyTakeaways={module.keyTakeaways}
@@ -899,6 +905,11 @@ function ModuleSidebarNav({
                 Unité {index + 1}
               </span>
               <span style={{ fontWeight: 700, fontSize: '0.88rem', color: 'var(--fg)' }}>{module.title}</span>
+              {isActive && module.lessonContent ? (
+                <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--muted)' }}>
+                  {formatReadingTimeLabel(countLessonWords(module.lessonContent))}
+                </span>
+              ) : null}
               <span style={{ fontSize: '0.78rem', fontWeight: 800, color: 'var(--muted)' }}>
                 {moduleStatusIcon(status)} {moduleStatusLabel(status)}
               </span>

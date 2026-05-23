@@ -76,6 +76,45 @@ export default function HomePage() {
 
       <ContinueLearningSection />
 
+      <section className="section container home-resources" style={{ marginTop: '2.5rem' }}>
+        <div className="section-head">
+          <div>
+            <span className="section-eyebrow">Ressources</span>
+            <h2>Référence MDM</h2>
+            <p className="muted" style={{ marginTop: '0.35rem', maxWidth: 620 }}>
+              Glossaire français et liens officiels pour compléter tes parcours Apple, Jamf et Intune.
+            </p>
+          </div>
+        </div>
+        <div className="grid grid-cards" style={{ marginTop: '1rem' }}>
+          <Card variant="elevated" style={{ display: 'grid', gap: '0.65rem' }}>
+            <div
+              style={{
+                width: 48,
+                height: 48,
+                borderRadius: 16,
+                background: 'var(--gradient-resources, var(--gradient-accent))',
+                color: '#fff',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '1.35rem',
+              }}
+              aria-hidden
+            >
+              {'\u{1F4D6}'}
+            </div>
+            <h3 style={{ fontSize: '1.15rem', fontWeight: 800 }}>Glossaire MDM</h3>
+            <p className="muted">
+              34 termes FR — ABM, ADE, supervision, Smart Groups, conformité, wipe sélectif et plus.
+            </p>
+            <Button href="/resources/glossaire" size="sm" style={{ justifySelf: 'start', marginTop: '0.25rem' }}>
+              Ouvrir le glossaire
+            </Button>
+          </Card>
+        </div>
+      </section>
+
       <section className="section container home-learning-paths" style={{ marginTop: '2.5rem' }}>
         <div className="section-head">
           <div>

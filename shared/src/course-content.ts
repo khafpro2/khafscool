@@ -3,6 +3,7 @@ import {
   intuneIosEnrollmentQuestions,
   jamfProFoundationsQuestions,
 } from './quiz-content';
+import { countLessonWords } from './reading-time';
 
 export type ModulePedagogy = {
   summary: string;
@@ -869,17 +870,7 @@ export function getModulePedagogy(
   return COURSE_PEDAGOGY[courseSlug]?.modules[moduleSlug];
 }
 
-export function countLessonWords(markdown: string): number {
-  const text = markdown
-    .replace(/```[\s\S]*?```/g, ' ')
-    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
-    .replace(/[#>*_\-|`]/g, ' ')
-    .replace(/\|/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-  if (!text) return 0;
-  return text.split(/\s+/).filter(Boolean).length;
-}
+export { countLessonWords } from './reading-time';
 
 export function getContentStats(): {
   courses: number;

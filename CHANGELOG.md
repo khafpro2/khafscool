@@ -34,6 +34,11 @@ Première release MVP **MDM Academy Pro** (branche `cursor/progress-dashboard-au
 - Tests : `glossary.test.ts`, `lesson-markdown.test.ts`, e2e `glossary-catalog.spec.ts`
 
 ### Sprint v0.2 (en cours)
+- **Mobile glossaire** — écran `GlossaryScreen` (`@ama/shared/glossary`, recherche + filtres catégorie) ; liens profil, parcours et ressources web
+- **Catalogue mobile** — parité web : « 3 modules · 10 Q/module » + barre % si connecté (`CoursesCatalogScreen`)
+- **Durée de lecture** — `@ama/shared/reading-time` : `estimateReadingMinutes` (~200 mots/min) ; badge « ~N min de lecture » sur module actif (web sidebar + mobile)
+- **Accueil web** — carte « Glossaire MDM » → `/resources/glossaire` (section Ressources)
+- Tests : `reading-time.test.ts`
 - **Contenu enrichi** — `@ama/shared/course-content` : descriptions 2–3 paragraphes, `lessonContent` markdown FR par module, `learningObjectives` / `keyTakeaways`, quiz portés à **8 questions/module** (72 total) ; API sanitize expose la leçon sans spoilers ; web `LessonContent` + mobile section « Leçon » scrollable
 - Docs : Postgres Docker — port hôte **5433** vs conteneur **5432** (`README`, `DEPLOYMENT`, `compose.yaml`, `backend/.env.example`)
 - API : `GET /auth/oauth/status` — état Google / Apple / Microsoft (`configured` | `stub` | `disabled`)

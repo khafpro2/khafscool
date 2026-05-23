@@ -10,7 +10,8 @@
     "./constants": "./src/constants.ts",
     "./course-content": "./src/course-content.ts",
     "./glossary": "./src/glossary.ts",
-    "./lesson-markdown": "./src/lesson-markdown.ts"
+    "./lesson-markdown": "./src/lesson-markdown.ts",
+    "./reading-time": "./src/reading-time.ts"
   },
   "scripts": {
     "build": "tsc",
