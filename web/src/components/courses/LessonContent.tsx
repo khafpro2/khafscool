@@ -1,14 +1,16 @@
 'use client';
 
 import Link from 'next/link';
+import { useId } from 'react';
 import {
   isBonnePratiqueBlockquote,
-  parseInlineMarkdown,
+  parseInlineWithGlossary,
   parseLessonBlocks,
 } from '@ama/shared/lesson-markdown';
+import { glossaryWebHref } from '@ama/shared/glossary';
 
-function renderInline(text: string) {
-  return parseInlineMarkdown(text).map((part, index) => {
+function renderInline(text: string, linkedTermIds: Set<string>) {
+  return parseInlineWithGlossary(text, linkedTermIds).map((part, index) => {
     if (part.type === 'strong') {
       return (
         <strong key={index} className="lesson-content-strong">
@@ -29,8 +31,24 @@ function renderInline(text: string) {
         </a>
       );
     }
+    if (part.type === 'glossary') {
+      return (
+        <Link
+          key={index}
+          href={glossaryWebHref(part.termId)}
+          className="lesson-content-glossary-term"
+        >
+          {part.label}
+        </Link>
+      );
+    }
     return part.value;
   });
+}
+
+function renderBlockInline(text: string) {
+  const linkedTermIds = new Set<string>();
+  return renderInline(text, linkedTermIds);
 }
 
 export function LessonContent({ content }: { content: string }) {
@@ -52,14 +70,14 @@ export function LessonContent({ content }: { content: string }) {
         if (block.type === 'h2') {
           return (
             <h2 key={index} className="lesson-content-h2">
-              {renderInline(block.text)}
+              {renderBlockInline(block.text)}
             </h2>
           );
         }
         if (block.type === 'h3') {
           return (
             <h3 key={index} className="lesson-content-h3">
-              {renderInline(block.text)}
+              {renderBlockInline(block.text)}
             </h3>
           );
         }
@@ -73,7 +91,7 @@ export function LessonContent({ content }: { content: string }) {
               {isBonnePratique ? (
                 <span className="lesson-content-tip-label">Bonne pratique</span>
               ) : null}
-              <p>{renderInline(block.text.replace(/^\*\*Bonne pratique\s*:\*\*\s*/i, ''))}</p>
+              <p>{renderBlockInline(block.text.replace(/^\*\*Bonne pratique\s*:\*\*\s*/i, ''))}</p>
             </blockquote>
           );
         }
@@ -81,14 +99,14 @@ export function LessonContent({ content }: { content: string }) {
           return (
             <ul key={index} className="lesson-content-list">
               {block.items.map((item, itemIndex) => (
-                <li key={itemIndex}>{renderInline(item)}</li>
+                <li key={itemIndex}>{renderBlockInline(item)}</li>
               ))}
             </ul>
           );
         }
         return (
           <p key={index} className="lesson-content-p">
-            {renderInline(block.text)}
+            {renderBlockInline(block.text)}
           </p>
         );
       })}
@@ -103,32 +121,36 @@ export function ModuleObjectives({
   learningObjectives?: string[];
   keyTakeaways?: string[];
 }) {
+  const detailsId = useId();
   const objectives = learningObjectives?.length ? learningObjectives : null;
   const takeaways = keyTakeaways?.length ? keyTakeaways : null;
   if (!objectives && !takeaways) return null;
 
   return (
-    <div className="module-objectives">
-      {objectives ? (
-        <div>
-          <p className="muted module-objectives-label">Objectifs</p>
-          <ul className="module-objectives-list">
-            {objectives.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-        </div>
-      ) : null}
-      {takeaways ? (
-        <div>
-          <p className="muted module-objectives-label">Points clés</p>
-          <ul className="module-objectives-list">
-            {takeaways.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-        </div>
-      ) : null}
-    </div>
+    <details className="module-objectives-details">
+      <summary className="module-objectives-summary">Objectifs et points clés du module</summary>
+      <div className="module-objectives" id={detailsId}>
+        {objectives ? (
+          <div>
+            <p className="muted module-objectives-label">Objectifs d’apprentissage</p>
+            <ul className="module-objectives-list">
+              {objectives.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+        {takeaways ? (
+          <div>
+            <p className="muted module-objectives-label">Points clés à retenir</p>
+            <ul className="module-objectives-list">
+              {takeaways.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+      </div>
+    </details>
   );
 }

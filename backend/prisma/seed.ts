@@ -194,6 +194,24 @@ async function main() {
           solution: { correctOrder: [1, 2, 3] },
         },
       },
+      {
+        slug: 'apps-vpp-management',
+        title: 'Gestion des apps et VPP',
+        ...modulePedagogy('apple-cert-prep', 'apps-vpp-management'),
+        sortOrder: 4,
+        questions: appleCertPrepQuestions['apps-vpp-management'],
+        game: {
+          type: 'APP_VPP_TRIAGE',
+          scenario:
+            'Une app VPP métier n’apparaît pas sur un iPhone supervisé après configuration. Ordonne les vérifications support L1.',
+          steps: [
+            { id: 1, label: 'Confirmer Wi-Fi/cellulaire et date/heure correctes' },
+            { id: 2, label: 'Vérifier profil MDM et dernière check-in dans la console' },
+            { id: 3, label: 'Escalader vers admin MDM avec bundle ID et tests réseau documentés' },
+          ],
+          solution: { correctOrder: [1, 2, 3] },
+        },
+      },
     ],
   });
 

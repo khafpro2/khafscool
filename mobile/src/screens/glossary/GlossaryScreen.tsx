@@ -1,5 +1,5 @@
-import { useRouter } from 'expo-router';
-import React, { useMemo, useState } from 'react';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Pressable,
   ScrollView,
@@ -7,6 +7,7 @@ import {
   Text,
   TextInput,
   View,
+  type View as ViewType,
 } from 'react-native';
 import { MDM_GLOSSARY, searchGlossary, type GlossaryTerm } from '@ama/shared/glossary';
 import { useAppTheme } from '../../context/ThemeContext';
@@ -23,10 +24,14 @@ const CATEGORY_COLORS: Record<GlossaryTerm['category'], { bg: string; text: stri
 
 export function GlossaryScreen() {
   const router = useRouter();
+  const { term } = useLocalSearchParams<{ term?: string | string[] }>();
+  const scrollRef = useRef<ScrollView>(null);
+  const termRefs = useRef<Record<string, ViewType | null>>({});
   const { colors } = useAppTheme();
   const styles = useThemedStyles(createStyles);
   const [query, setQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<GlossaryTerm['category'] | 'ALL'>('ALL');
+  const focusTermId = typeof term === 'string' ? term : Array.isArray(term) ? term[0] : undefined;
 
   const categories = useMemo(
     () => Array.from(new Set(MDM_GLOSSARY.map((entry) => entry.category))).sort(),
@@ -39,8 +44,28 @@ export function GlossaryScreen() {
     return searched.filter((entry) => entry.category === selectedCategory);
   }, [query, selectedCategory]);
 
+  useEffect(() => {
+    if (!focusTermId) return;
+    setQuery('');
+    setSelectedCategory('ALL');
+  }, [focusTermId]);
+
+  useEffect(() => {
+    if (!focusTermId) return;
+    const target = termRefs.current[focusTermId];
+    if (!target) return;
+    const timer = setTimeout(() => {
+      target.measureLayout(
+        scrollRef.current?.getInnerViewNode?.() as number,
+        (_x, y) => scrollRef.current?.scrollTo({ y: Math.max(0, y - 24), animated: true }),
+        () => undefined
+      );
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [focusTermId, visibleTerms]);
+
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView ref={scrollRef} style={styles.container} contentContainerStyle={styles.content}>
       <Pressable onPress={() => router.back()} style={styles.backLink}>
         <Text style={styles.backLinkText}>← Retour</Text>
       </Pressable>
@@ -88,7 +113,15 @@ export function GlossaryScreen() {
       {visibleTerms.length > 0 ? (
         <View style={styles.termList}>
           {visibleTerms.map((entry) => (
-            <GlossaryTermCard key={entry.id} entry={entry} styles={styles} />
+            <GlossaryTermCard
+              key={entry.id}
+              entry={entry}
+              styles={styles}
+              highlighted={entry.id === focusTermId}
+              cardRef={(node) => {
+                termRefs.current[entry.id] = node;
+              }}
+            />
           ))}
         </View>
       ) : (
@@ -136,14 +169,18 @@ function CategoryChip({
 function GlossaryTermCard({
   entry,
   styles,
+  highlighted = false,
+  cardRef,
 }: {
   entry: GlossaryTerm;
   styles: ReturnType<typeof createStyles>;
+  highlighted?: boolean;
+  cardRef?: (node: ViewType | null) => void;
 }) {
   const categoryStyle = CATEGORY_COLORS[entry.category];
 
   return (
-    <View style={styles.termCard}>
+    <View ref={cardRef} style={[styles.termCard, highlighted ? styles.termCardHighlighted : null]}>
       <View style={styles.termHeader}>
         <Text style={styles.termTitle}>{entry.term}</Text>
         <View style={[styles.categoryBadge, { backgroundColor: categoryStyle.bg }]}>
@@ -234,6 +271,10 @@ function createStyles(colors: AppThemeColors) {
       padding: 16,
       borderWidth: 1,
       borderColor: colors.border,
+    },
+    termCardHighlighted: {
+      borderColor: colors.accent,
+      borderWidth: 2,
     },
     termHeader: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 8 },
     termTitle: { color: colors.fg, fontSize: 17, fontWeight: '800', flexShrink: 1 },

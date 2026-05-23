@@ -28,12 +28,12 @@ export const LEARNING_PATHS: LearningPathDefinition[] = [
     brand: 'apple',
     title: 'Parcours Apple — Device Support & MDM',
     shortTitle: 'Apple Device Support',
-    durationMinutes: 45,
-    totalModules: 3,
+    durationMinutes: 60,
+    totalModules: 4,
     objectives: [
       'Diagnostiquer pannes matérielles et logicielles sur Mac, iPhone et iPad',
       'Sécuriser sauvegardes, restaurations et Activation Lock en atelier',
-      'Structurer ta préparation à l’examen Apple Device Support',
+      'Gérer apps VPP et préparer l’examen Apple Device Support',
     ],
   },
   {

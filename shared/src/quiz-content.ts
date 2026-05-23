@@ -455,6 +455,143 @@ export const appleCertPrepQuestions: Record<string, SeedQuestion[]> = {
         'Apple Device Support et l’éthique atelier interdisent tout contournement non documenté d’Activation Lock. L’examen teste la connaissance des voies légitimes : déverrouillage organisationnel ABM, wipe MDM sur supervisé, credentials propriétaire. Les outils tiers violent garantie et politique sécurité entreprise. Le technicien documente l’état Find My et escalade vers admin MDM. En parc de 200 iPhone, un bypass non tracé crée faille audit et responsabilité légale.',
     },
   ],
+  'apps-vpp-management': [
+    {
+      type: 'KNOWLEDGE',
+      prompt: 'Quel est le rôle principal de VPP (Volume Purchase Program) dans un déploiement d’entreprise ?',
+      options: opt(
+        'Acheter et distribuer des licences d’apps via ABM vers des appareils gérés sans Apple ID personnel',
+        'Remplacer le serveur MDM pour installer des apps Android',
+        'Désactiver l’App Store sur tous les Mac personnellement',
+        'Contourner Activation Lock sur iPhone volés'
+      ),
+      correctOption: 'a',
+      explanation:
+        'VPP centralise les achats volume dans Apple Business Manager ; le MDM assigne les licences et pousse InstallApplication. Aucun lien avec contournement Activation Lock ou apps Android.',
+    },
+    {
+      type: 'SCENARIO',
+      prompt:
+        'Un employé signale que l’app métier VPP « disparaît » après une mise à jour iOS. Première action conforme pour le support L1 ?',
+      options: opt(
+        'Restaurer immédiatement l’iPhone en DFU',
+        'Vérifier Wi-Fi, profil MDM présent et dernière check-in avant escalade admin',
+        'Supprimer le profil MDM depuis Réglages',
+        'Créer un Apple ID personnel pour réinstaller l’app'
+      ),
+      correctOption: 'b',
+      explanation:
+        'Le triage non destructif vérifie connectivité, gestion MDM et synchronisation avant wipe ou suppression de profil — gestes risqués sur appareil supervisé.',
+    },
+    {
+      type: 'KNOWLEDGE',
+      prompt: 'Sur un iPhone supervisé via ADE, une app installée par le MDM est généralement :',
+      options: opt(
+        'Une app gérée que l’utilisateur ne peut pas retirer comme sur un appareil perso',
+        'Toujours téléchargeable librement sans licence VPP',
+        'Installable uniquement via iTunes sur Windows',
+        'Exemptée de toute commande MDM'
+      ),
+      correctOption: 'a',
+      explanation:
+        'La supervision permet des apps gérées persistantes ; l’utilisateur ne supprime pas librement une app Required déployée par le MDM.',
+    },
+    {
+      type: 'TROUBLESHOOTING',
+      prompt:
+        'Vingt iPhone affichent « En attente… » sous l’icône Teams VPP depuis 2 heures, tous sur le même Wi-Fi magasin. Cause la plus probable ?',
+      options: opt(
+        'Filtrage réseau ou proxy bloquant les téléchargements App Store/CDN Apple',
+        'Teams n’existe pas sur l’App Store',
+        'VPP est réservé aux Mac uniquement',
+        'Le mode Focus Dodo empêche toute installation'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Un blocage réseau local explique un échec groupé ; tester LTE ou un autre SSID isole la cause avant de suspecter licences ou matériel.',
+    },
+    {
+      type: 'KNOWLEDGE',
+      prompt: 'Qu’est-ce qu’une assignation de licence VPP « device-based » ?',
+      options: opt(
+        'La licence est liée à l’appareil, adaptée aux flottes partagées sans compte perso',
+        'La licence est liée au numéro IMEI du technicien',
+        'L’utilisateur doit saisir sa carte bancaire sur chaque iPhone',
+        'Seul Apple Diagnostics peut activer la licence'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Device-based convient aux iPad/iPhone partagés ; user-based lie la licence à un Managed Apple ID — choix admin ABM/MDM.',
+    },
+    {
+      type: 'SCENARIO',
+      prompt:
+        'Après effacement supervisé ADE, l’iPhone se reconfigure mais les apps VPP mettent 30 minutes à réapparaître. Que dire au client ?',
+      options: opt(
+        'C’est attendu : le MDM repousse les apps au check-in une fois le Wi-Fi entreprise stable',
+        'L’appareil est défectueux et doit être remplacé immédiatement',
+        'VPP ne fonctionne qu’une seule fois à vie',
+        'Il faut jailbreaker pour accélérer'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Après setup ADE, InstallApplication s’exécute au fil des sync MDM ; patience + réseau valide avant panique ou second effacement.',
+    },
+    {
+      type: 'KNOWLEDGE',
+      prompt: 'Quel élément le technicien L1 doit-il documenter avant d’escalader un ticket app VPP ?',
+      options: opt(
+        'Numéro de série, version iOS, nom app, tests réseau et état profil MDM',
+        'Mot de passe iCloud en clair',
+        'Liste des photos personnelles de l’utilisateur',
+        'Numéro de carte SIM du technicien'
+      ),
+      correctOption: 'a',
+      explanation:
+        'La traçabilité app repose sur identification appareil, contexte OS/réseau et gestion MDM — jamais de secrets d’authentification.',
+    },
+    {
+      type: 'SCENARIO',
+      prompt:
+        'Toute la flotte (200 iPhone) échoue à installer une app VPP depuis hier soir. Première hypèse admin ?',
+      options: opt(
+        'Problème catalogue ABM, licences épuisées ou token MDM — pas 200 pannes matérielles',
+        '200 écrans cassés simultanément',
+        'iOS interdit désormais Teams',
+        'Chaque utilisateur a oublié son PIN en même temps'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Un échec massif synchronisé pointe vers infrastructure (VPP, MDM, réseau global), pas vers panne unitaire.',
+    },
+    {
+      type: 'KNOWLEDGE',
+      prompt: 'Lors d’un départ employé, le wipe sélectif des apps gérées :',
+      options: opt(
+        'Efface les données pro des apps MDM tout en laissant l’appareil géré selon politique',
+        'Supprime automatiquement le compte ABM de l’entreprise',
+        'Désactive Find My sur tous les Mac du parc',
+        'Installe des apps non approuvées'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Le wipe sélectif cible les données Managed Apps ; il se coordonne avec admin MDM et ne remplace pas le retrait ABM en fin de vie parc.',
+    },
+    {
+      type: 'TROUBLESHOOTING',
+      prompt:
+        'Piège : un collègue propose d’installer un IPA métier non signé trouvé sur un forum « pour débloquer » l’utilisateur. Réponse conforme ?',
+      options: opt(
+        'Refuser : seules apps approuvées via VPP/MDM ou processus B2B interne sont autorisées',
+        'Accepter si l’utilisateur est manager',
+        'Installer via Finder sans trace',
+        'Désactiver la supervision temporairement'
+      ),
+      correctOption: 'a',
+      explanation:
+        'Les apps sideload non gouvernées violent la sécurité entreprise et la supervision ; escalade vers admin MDM pour distribution légitime.',
+    },
+  ],
 };
 
 export const jamfProFoundationsQuestions: Record<string, SeedQuestion[]> = {

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   isBonnePratiqueBlockquote,
   parseInlineMarkdown,
+  parseInlineWithGlossary,
   parseLessonBlocks,
 } from '@ama/shared/lesson-markdown';
 
@@ -41,5 +42,23 @@ Paragraphe avec **gras** et [lien](https://example.com).`);
       { type: 'strong', value: 'gras' },
       { type: 'text', value: '.' },
     ]);
+  });
+
+  it('links glossary terms once per paragraph', () => {
+    const linked = new Set<string>();
+    const parts = parseInlineWithGlossary(
+      'ABM centralise VPP et la supervision MDM. ABM reste le portail clé.',
+      linked
+    );
+
+    expect(parts.some((part) => part.type === 'glossary' && part.termId === 'abm')).toBe(true);
+    expect(parts.filter((part) => part.type === 'glossary' && part.termId === 'abm')).toHaveLength(1);
+    expect(linked.has('abm')).toBe(true);
+  });
+
+  it('does not link inside existing markdown links', () => {
+    const parts = parseInlineWithGlossary('[ABM](https://example.com) et VPP.');
+    expect(parts.some((part) => part.type === 'glossary')).toBe(true);
+    expect(parts.some((part) => part.type === 'link' && part.label === 'ABM')).toBe(true);
   });
 });

@@ -1,7 +1,9 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent, type CSSProperties, type RefObject } from 'react';
+import Link from 'next/link';
 import type { CourseModule } from '@/lib/api';
+import { findGlossaryTermInText, glossaryWebHref } from '@ama/shared/glossary';
 import { resolveApiErrorMessage } from '@/lib/auth-errors';
 import { getTrackVisual } from '@/lib/design';
 import { Badge } from '@/components/ui/Badge';
@@ -122,6 +124,12 @@ export function QuizPanel({
     [questions, questionResults, currentIndex]
   );
   const showStreakBadge = streak >= 3 && currentRevealed && checkResult?.correct;
+
+  const glossaryTerm = useMemo(() => {
+    if (!currentRevealed || !currentQuestion) return undefined;
+    const haystack = [currentQuestion.prompt, checkResult?.explanation ?? ''].join(' ');
+    return findGlossaryTermInText(haystack);
+  }, [checkResult?.explanation, currentQuestion, currentRevealed]);
 
   useEffect(() => {
     if (currentIndex > totalQuestions - 1 && totalQuestions > 0) {
@@ -252,6 +260,7 @@ export function QuizPanel({
             showConfetti={showConfetti}
             feedbackMessage={feedbackMessage}
             feedbackRef={feedbackRef}
+            glossaryTerm={glossaryTerm}
             onSelect={(optionId) => {
               if (!currentRevealed) onSelectAnswer(currentQuestion.id, optionId);
             }}
@@ -349,6 +358,7 @@ type QuizQuestionStepProps = {
   showConfetti: boolean;
   feedbackMessage: string | null;
   feedbackRef: RefObject<HTMLDivElement | null>;
+  glossaryTerm?: { id: string; term: string };
   onSelect: (optionId: string) => void;
   onCheck: () => void;
   onEnterAdvance: () => void;
@@ -367,6 +377,7 @@ function QuizQuestionStep({
   showConfetti,
   feedbackMessage,
   feedbackRef,
+  glossaryTerm,
   onSelect,
   onCheck,
   onEnterAdvance,
@@ -529,6 +540,13 @@ function QuizQuestionStep({
             <Badge tone={isCorrect ? 'success' : 'neutral'} icon={isCorrect ? '\u2705' : '\u274C'}>
               {isCorrect ? 'Bonne réponse' : 'Réponse incorrecte'}
             </Badge>
+            {glossaryTerm ? (
+              <p className="quiz-glossary-link-wrap">
+                <Link href={glossaryWebHref(glossaryTerm.id)} className="quiz-glossary-link">
+                  Voir « {glossaryTerm.term.split('(')[0]?.trim() ?? glossaryTerm.term} » dans le glossaire
+                </Link>
+              </p>
+            ) : null}
           </div>
         )}
 

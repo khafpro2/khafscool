@@ -1,17 +1,29 @@
 import React from 'react';
 import { Linking, StyleSheet, Text, View } from 'react-native';
+import { useRouter } from 'expo-router';
 import {
   isBonnePratiqueBlockquote,
-  parseInlineMarkdown,
+  parseInlineWithGlossary,
   parseLessonBlocks,
 } from '@ama/shared/lesson-markdown';
+import { glossaryMobilePath } from '@ama/shared/glossary';
 import type { AppThemeColors } from '../lib/design';
 import { useThemedStyles } from '../hooks/useThemedStyles';
 
-function InlineText({ text, styles }: { text: string; styles: ReturnType<typeof createStyles> }) {
+function InlineText({
+  text,
+  styles,
+  onGlossaryPress,
+}: {
+  text: string;
+  styles: ReturnType<typeof createStyles>;
+  onGlossaryPress: (termId: string) => void;
+}) {
+  const linkedTermIds = new Set<string>();
+
   return (
     <>
-      {parseInlineMarkdown(text).map((part, index) => {
+      {parseInlineWithGlossary(text, linkedTermIds).map((part, index) => {
         if (part.type === 'strong') {
           return (
             <Text key={index} style={styles.lessonStrong}>
@@ -31,6 +43,18 @@ function InlineText({ text, styles }: { text: string; styles: ReturnType<typeof 
             </Text>
           );
         }
+        if (part.type === 'glossary') {
+          return (
+            <Text
+              key={index}
+              style={styles.lessonGlossaryLink}
+              accessibilityRole="link"
+              onPress={() => onGlossaryPress(part.termId)}
+            >
+              {part.label}
+            </Text>
+          );
+        }
         return part.value;
       })}
     </>
@@ -38,10 +62,14 @@ function InlineText({ text, styles }: { text: string; styles: ReturnType<typeof 
 }
 
 export function LessonContent({ content }: { content: string }) {
+  const router = useRouter();
   const styles = useThemedStyles(createStyles);
   if (!content.trim()) return null;
 
   const blocks = parseLessonBlocks(content);
+  const openGlossaryTerm = (termId: string) => {
+    router.push(glossaryMobilePath(termId) as '/glossary');
+  };
 
   return (
     <View style={styles.container}>
@@ -50,14 +78,14 @@ export function LessonContent({ content }: { content: string }) {
         if (block.type === 'h2') {
           return (
             <Text key={index} style={styles.h2}>
-              <InlineText text={block.text} styles={styles} />
+              <InlineText text={block.text} styles={styles} onGlossaryPress={openGlossaryTerm} />
             </Text>
           );
         }
         if (block.type === 'h3') {
           return (
             <Text key={index} style={styles.h3}>
-              <InlineText text={block.text} styles={styles} />
+              <InlineText text={block.text} styles={styles} onGlossaryPress={openGlossaryTerm} />
             </Text>
           );
         }
@@ -68,7 +96,7 @@ export function LessonContent({ content }: { content: string }) {
             <View key={index} style={isBonnePratique ? styles.tip : styles.quote}>
               {isBonnePratique ? <Text style={styles.tipLabel}>Bonne pratique</Text> : null}
               <Text style={styles.paragraph}>
-                <InlineText text={body} styles={styles} />
+                <InlineText text={body} styles={styles} onGlossaryPress={openGlossaryTerm} />
               </Text>
             </View>
           );
@@ -79,7 +107,7 @@ export function LessonContent({ content }: { content: string }) {
               {block.items.map((item, itemIndex) => (
                 <Text key={itemIndex} style={styles.listItem}>
                   {'\u2022 '}
-                  <InlineText text={item} styles={styles} />
+                  <InlineText text={item} styles={styles} onGlossaryPress={openGlossaryTerm} />
                 </Text>
               ))}
             </View>
@@ -87,7 +115,7 @@ export function LessonContent({ content }: { content: string }) {
         }
         return (
           <Text key={index} style={styles.paragraph}>
-            <InlineText text={block.text} styles={styles} />
+            <InlineText text={block.text} styles={styles} onGlossaryPress={openGlossaryTerm} />
           </Text>
         );
       })}
@@ -172,5 +200,11 @@ const createStyles = (colors: AppThemeColors) =>
       color: colors.accent,
       fontWeight: '700',
       textDecorationLine: 'underline',
+    },
+    lessonGlossaryLink: {
+      color: colors.accentTeal ?? colors.accent,
+      fontWeight: '700',
+      textDecorationLine: 'underline',
+      textDecorationStyle: 'dotted',
     },
   });

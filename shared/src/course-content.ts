@@ -262,6 +262,93 @@ En consolidant sécurité, diagnostics, restauration et documentation, vous alig
         gameInstructions:
           'Remettez dans l’ordre les étapes de diagnostic d’un Mac hors tension après une panne électrique, conformément au runbook atelier.',
       },
+      'apps-vpp-management': {
+        summary:
+          'Comprendre VPP, apps gérées et distribution sur appareils supervisés — du ticket support à la coordination avec l’admin MDM.',
+        learningObjectives: [
+          'Expliquer le rôle de VPP dans Apple Business Manager et la différence apps gérées vs App Store personnel.',
+          'Diagnostiquer une app métier absente ou bloquée sur iPhone supervisé (licence, check-in, réseau).',
+          'Identifier les apps Managed Apps et les conséquences d’un wipe sélectif sur les données professionnelles.',
+          'Coordonner avec l’admin MDM pour réinstallation, retrait licence ou réassignation device-based.',
+          'Documenter un incident app (bundle ID, version, dernière sync MDM) avant escalade niveau 2.',
+        ],
+        keyTakeaways: [
+          'VPP centralise les licences dans ABM ; le MDM pousse l’installation sans Apple ID personnel.',
+          'Une app « en attente » prolongée pointe souvent vers réseau, licence épuisée ou profil MDM en échec.',
+          'Sur appareil supervisé, l’utilisateur ne peut pas retirer une app gérée comme sur un iPhone perso.',
+          'Le support L1 vérifie check-in MDM et Wi-Fi avant d’ouvrir un ticket admin pour InstallApplication.',
+        ],
+        lessonContent: `## Gestion des apps et VPP en entreprise
+
+Dans un parc d’entreprise supervisé via Automated Device Enrollment, les applications ne se comportent pas comme sur un iPhone personnel. Le technicien Device Support doit comprendre comment Apple Business Manager, le programme VPP (Volume Purchase Program) et le serveur MDM collaborent pour distribuer Teams, apps métier ou outils internes sans compte Apple ID personnel de l’employé.
+
+### VPP et Apple Business Manager
+
+**VPP** permet à l’organisation d’acheter des licences d’apps et de livres en volume. Les achats sont rattachés au portail **ABM** : l’administrateur assigne les licences à un serveur MDM (Jamf Pro, Intune, autre). Le MDM envoie ensuite la commande InstallApplication aux appareils ciblés. L’utilisateur final voit l’icône apparaître sans saisir mot de passe App Store — condition essentielle pour flottes partagées, retail ou éducation.
+
+Deux modes dominent : assignation **device-based** (licence liée à l’appareil, idéal pour iPad partagés) et assignation **user-based** (licence liée à un Managed Apple ID). Le technicien support n’administre pas ABM au quotidien, mais doit savoir qui contacter quand une app manque sur 200 iPhone identiques.
+
+Référence : [Apps et livres dans Apple Business Manager](https://support.apple.com/fr-fr/guide/apple-business-manager/)
+
+### Apps gérées vs apps personnelles
+
+Une **app gérée** (Managed App) est installée ou mise à jour par le MDM. Sur appareil **supervisé**, l’utilisateur ne peut généralement pas la supprimer ; les données peuvent être effacées sélectivement lors d’un départ (wipe sélectif) sans toucher aux photos personnelles si l’appareil est en User Enrollment — hors scope ici, focus ADE supervisé.
+
+Le technicien L1 reçoit souvent « mon app métier a disparu ». Avant toute restauration destructive :
+
+1. Confirmer Wi-Fi/cellulaire et date/heure.
+2. Vérifier dans Réglages → Général → VPN et gestion des appareils que le profil MDM est présent.
+3. Demander à l’admin MDM l’état InstallApplication et la dernière **check-in MDM**.
+4. Noter bundle ID, version attendue et heure du dernier succès si visible dans l’inventaire.
+
+### Symptômes courants et triage
+
+**Icône grisée « En attente… »** : souvent réseau filtré, proxy bloquant les CDN Apple, ou espace disque insuffisant. Faire tester un réseau alternatif (partage connexion labo) avant wipe.
+
+**App absente après réinitialisation supervisée** : normal si le MDM n’a pas encore renvoyé les apps au prochain check-in. Attendre 15–30 minutes connecté au Wi-Fi entreprise ; forcer une sync via l’admin si disponible.
+
+**« Impossible d’installer » pour toute la flotte** : suspecter licence VPP expirée, token MDM Apple renouvelé incorrectement, ou app retirée du catalogue ABM. Escalade admin immédiate — le L1 documente l’ampleur (combien d’appareils, même site ou global).
+
+**Conflit avec Apple ID personnel** : sur appareil supervisé ADE avec apps VPP device-based, l’utilisateur ne devrait pas avoir à mélanger achats perso pour l’app pro. Si l’organisation autorise App Store perso via restriction assouplie, documenter la politique interne.
+
+### Managed Apple ID et contexte scolaire
+
+En **ASM** (Apple School Manager), les élèves utilisent souvent un **Managed Apple ID**. Les apps pédagogiques passent par VPP et MDM ; le technicien support vérifie que l’iPad est toujours supervisé et que le compte managed est actif. Un iPad « non managé » après effacement non ADE perd les apps institutionnelles jusqu’à réenrôlement.
+
+### Coordination support ↔ administrateur MDM
+
+Runbook recommandé pour ticket app :
+
+- Numéro de série, modèle, version iOS/iPadOS.
+- Nom exact de l’app et usage métier.
+- Capture ou description du message d’erreur App Store / MDM.
+- Tests réseau effectués (Wi-Fi invité vs corporate, DNS).
+- Confirmation que le collègue voit la même app sur un autre appareil du même groupe.
+
+L’admin MDM vérifie côté console : licence disponible, scope Smart Group / groupe d’appareils, statut commande, logs APNs si check-in stale. Le technicien ne relance pas une restauration complète qui retarderait uniquement une app manquante.
+
+### Cas pratique : déploiement Teams sur 200 iPhone retail
+
+Une enseigne reçoit 200 iPhone supervisés ADE. L’admin assigne Microsoft Teams via VPP device-based et une politique MDM « Required ». Jour J, 15 collaborateurs signalent l’absence de Teams.
+
+Le support L1 constate que les 15 appareils sont sur le Wi-Fi magasin avec port 443 OK mais filtrage App Store partiel. Bascule test sur LTE : l’app s’installe. Ticket réseau ouvert ; pas de wipe. Cinq autres appareils n’ont jamais check-in depuis 72 h — profil MDM en échec certificat Wi-Fi ; escalade MDM pour repush profil 802.1X.
+
+Leçon : une panne « app » est souvent réseau, profil ou licence — pas matériel.
+
+### Wipe sélectif et fin de contrat
+
+Lors du départ d’un employé, l’organisation peut effacer uniquement les données des apps gérées (Managed Apps) si la solution MDM et la supervision le permettent, avant restitution du matériel. Le technicien SAV doit confirmer avec l’admin MDM que le wipe a été commandé et qu’**Activation Lock** organisationnel est géré via ABM — jamais un effacement local non tracé.
+
+> **Bonne pratique :** Pour tout incident app sur appareil supervisé, documente bundle ID, version OS, état du profil MDM et résultat d’un test réseau alternatif avant de proposer une restauration. Réfère-toi au glossaire MDM (VPP, supervision, check-in) pour le vocabulaire partagé avec l’équipe déploiement.
+
+### Apps custom (B2B) et TestFlight
+
+Certaines apps métier sont distribuées en B2B privé ou via lien MDM sans être visibles sur l’App Store public. Le technicien ne doit pas tenter d’installer un IPA ad hoc non approuvé : risque sécurité et violation politique entreprise. Toute app hors catalogue VPP/ABM passe par l’admin MDM et la gouvernance logicielle.
+
+En maîtrisant VPP, apps gérées et triage réseau/MDM, le technicien Device Support réduit les restaurations inutiles et dialogue efficacement avec les administrateurs Jamf ou Intune responsables du catalogue applicatif.`,
+        gameInstructions:
+          'Ordonnez le triage support quand une app VPP manque sur un iPhone supervisé : réseau, profil MDM, check-in, puis escalade admin.',
+      },
     },
   },
   'jamf-pro-foundations': {

@@ -278,7 +278,7 @@ const DEMO_COURSES: Record<string, CourseDetail> = {
     title: 'Parcours Apple — Device Support & MDM',
     track: 'APPLE',
     description: 'Diagnostic, sécurité et préparation aux fondamentaux Apple Device Support.',
-    totalModules: 3,
+    totalModules: 4,
     completedModules: 0,
     progressPercent: 0,
     modules: [
@@ -310,6 +310,16 @@ const DEMO_COURSES: Record<string, CourseDetail> = {
         questions: demoModuleQuestions(
           'acmt-exam-prep',
           toDemoQuestions('acmt-exam-prep', appleCertPrepQuestions['acmt-exam-prep'])
+        ),
+      },
+      {
+        id: 'demo-apple-module-4',
+        slug: 'apps-vpp-management',
+        title: 'Gestion des apps et VPP',
+        summary: 'VPP, apps gérées et triage support sur iPhone supervisé.',
+        questions: demoModuleQuestions(
+          'apps-vpp-management',
+          toDemoQuestions('apps-vpp-management', appleCertPrepQuestions['apps-vpp-management'])
         ),
       },
     ],

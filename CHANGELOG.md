@@ -40,6 +40,9 @@ Première release MVP **MDM Academy Pro** (branche `cursor/progress-dashboard-au
 - **Accueil web** — carte « Glossaire MDM » → `/resources/glossaire` (section Ressources)
 - Tests : `reading-time.test.ts`
 - **Contenu enrichi** — `@ama/shared/course-content` : descriptions 2–3 paragraphes, `lessonContent` markdown FR par module, `learningObjectives` / `keyTakeaways`, quiz portés à **8 questions/module** (72 total) ; API sanitize expose la leçon sans spoilers ; web `LessonContent` + mobile section « Leçon » scrollable
+- **Objectifs module actif (web)** — panneau repliable `ModuleObjectives` sous le titre : objectifs d’apprentissage + points clés (FR, dark mode)
+- **Liens glossaire auto** — `@ama/shared/lesson-markdown` + `@ama/shared/glossary` : termes MDM liés dans les leçons (`/resources/glossaire#terme`, mobile scroll) ; max 1 lien/terme/paragraphe ; quiz : lien « Voir dans le glossaire » après validation
+- **Module 4 Apple** — parcours `apple-cert-prep` : « Gestion des apps et VPP » (leçon 800+ mots, 10 questions) ; catalogue **4 modules** pour ce parcours (`MODULES_BY_COURSE`, seed)
 - Docs : Postgres Docker — port hôte **5433** vs conteneur **5432** (`README`, `DEPLOYMENT`, `compose.yaml`, `backend/.env.example`)
 - API : `GET /auth/oauth/status` — état Google / Apple / Microsoft (`configured` | `stub` | `disabled`)
 - Web : `/diagnostics` — section OAuth FR (lecture `/auth/oauth/status`)

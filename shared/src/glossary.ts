@@ -291,3 +291,118 @@ export function searchGlossary(query: string): GlossaryTerm[] {
     return haystack.includes(normalized);
   });
 }
+
+export type GlossaryMatchEntry = {
+  termId: string;
+  aliases: string[];
+};
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/** Extrait les variantes recherchables d’un terme (acronyme, libellé long, id). */
+export function buildGlossaryAliases(entry: GlossaryTerm): string[] {
+  const aliases = new Set<string>();
+  aliases.add(entry.term);
+  aliases.add(entry.id);
+
+  const parenMatch = entry.term.match(/^([^(]+)\(([^)]+)\)/);
+  if (parenMatch) {
+    aliases.add(parenMatch[1]!.trim());
+    aliases.add(parenMatch[2]!.trim());
+  }
+
+  const withoutParens = entry.term.replace(/\([^)]*\)/g, '').trim();
+  if (withoutParens) aliases.add(withoutParens);
+
+  return [...aliases]
+    .map((alias) => alias.trim())
+    .filter((alias) => alias.length >= 2)
+    .sort((a, b) => b.length - a.length);
+}
+
+/** Entrées pré-calculées pour la détection inline (alias triés par longueur décroissante). */
+export const GLOSSARY_MATCH_ENTRIES: GlossaryMatchEntry[] = MDM_GLOSSARY.map((entry) => ({
+  termId: entry.id,
+  aliases: buildGlossaryAliases(entry),
+}));
+
+export type GlossaryTextMatch = {
+  start: number;
+  end: number;
+  termId: string;
+  label: string;
+};
+
+/** Liens glossaire dans un paragraphe : max 1 occurrence par terme, sans chevauchement. */
+export function findGlossaryMatchesInText(
+  text: string,
+  linkedTermIds: Set<string> = new Set()
+): GlossaryTextMatch[] {
+  const candidates: Array<GlossaryTextMatch & { length: number }> = [];
+
+  for (const entry of GLOSSARY_MATCH_ENTRIES) {
+    if (linkedTermIds.has(entry.termId)) continue;
+
+    for (const alias of entry.aliases) {
+      const regex = new RegExp(`\\b${escapeRegExp(alias)}\\b`, 'i');
+      const match = regex.exec(text);
+      if (!match) continue;
+
+      candidates.push({
+        start: match.index,
+        end: match.index + match[0].length,
+        termId: entry.termId,
+        label: match[0],
+        length: match[0].length,
+      });
+      break;
+    }
+  }
+
+  candidates.sort((a, b) => a.start - b.start || b.length - a.length);
+
+  const selected: GlossaryTextMatch[] = [];
+  const usedTermIds = new Set<string>();
+  const usedRanges: Array<{ start: number; end: number }> = [];
+
+  for (const candidate of candidates) {
+    if (usedTermIds.has(candidate.termId)) continue;
+    const overlaps = usedRanges.some(
+      (range) => !(candidate.end <= range.start || candidate.start >= range.end)
+    );
+    if (overlaps) continue;
+
+    usedTermIds.add(candidate.termId);
+    linkedTermIds.add(candidate.termId);
+    usedRanges.push({ start: candidate.start, end: candidate.end });
+    selected.push({
+      start: candidate.start,
+      end: candidate.end,
+      termId: candidate.termId,
+      label: candidate.label,
+    });
+  }
+
+  return selected.sort((a, b) => a.start - b.start);
+}
+
+export function getGlossaryTermById(termId: string): GlossaryTerm | undefined {
+  return MDM_GLOSSARY.find((entry) => entry.id === termId);
+}
+
+/** Premier terme glossaire reconnu dans un texte (quiz, explications). */
+export function findGlossaryTermInText(text: string): GlossaryTerm | undefined {
+  const matches = findGlossaryMatchesInText(text);
+  if (!matches.length) return undefined;
+  return getGlossaryTermById(matches[0]!.termId);
+}
+
+export function glossaryWebHref(termId: string): string {
+  return `/resources/glossaire#${termId}`;
+}
+
+export function glossaryMobilePath(termId: string): string {
+  return `/glossary?term=${encodeURIComponent(termId)}`;
+}

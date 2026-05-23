@@ -186,7 +186,7 @@ export function mockDashboard(): DashboardData {
     quests: [{ id: '1', label: 'Termine 3 unités Apple cette semaine', progress: 1, target: 3 }],
     certificationSprint: mockCertificationSprint(),
     courses: [
-      { id: '1', slug: 'apple-cert-prep', title: 'Parcours Apple — Device Support & MDM', track: 'APPLE', progressPercent: 33, totalModules: 3, completedModules: 1 },
+      { id: '1', slug: 'apple-cert-prep', title: 'Parcours Apple — Device Support & MDM', track: 'APPLE', progressPercent: 33, totalModules: 4, completedModules: 1 },
       { id: '2', slug: 'jamf-pro-foundations', title: 'Fondamentaux Jamf Pro', track: 'JAMF', progressPercent: 0, totalModules: 3, completedModules: 0 },
       { id: '3', slug: 'intune-ios-enrollment', title: 'Microsoft Intune — Enrôlement iOS/iPadOS', track: 'INTUNE', progressPercent: 0, totalModules: 3, completedModules: 0 },
     ],
@@ -438,6 +438,23 @@ export const DEMO_COURSES: CourseDetail[] = [
             { id: 1, label: 'Vérifier alimentation, câbles et prise secteur' },
             { id: 2, label: 'Lancer Apple Diagnostics et noter les codes erreur' },
             { id: 3, label: 'Documenter les résultats avant toute réparation matérielle' },
+          ],
+          correctOrder: [1, 2, 3],
+        },
+      },
+      {
+        id: 'demo-apple-module-4',
+        slug: 'apps-vpp-management',
+        title: 'Gestion des apps et VPP',
+        summary: 'VPP, apps gérées et triage support sur iPhone supervisé.',
+        questions: toDemoQuestions('apps-vpp-management', appleCertPrepQuestions['apps-vpp-management']),
+        game: {
+          type: 'APP_VPP_TRIAGE',
+          scenario: 'Une app VPP métier manque sur un iPhone supervisé. Ordonne les vérifications.',
+          steps: [
+            { id: 1, label: 'Confirmer Wi-Fi/cellulaire et date/heure correctes' },
+            { id: 2, label: 'Vérifier profil MDM et dernière check-in dans la console' },
+            { id: 3, label: 'Escalader vers admin MDM avec bundle ID et tests réseau documentés' },
           ],
           correctOrder: [1, 2, 3],
         },

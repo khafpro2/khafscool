@@ -3479,10 +3479,39 @@ html[data-theme='dark'] .analytics-opt-in-banner {
 .lesson-content-tip p {
   margin: 0;
 }
+.module-objectives-details {
+  margin-top: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 0.65rem;
+  background: var(--bg-soft);
+  padding: 0.35rem 0.75rem 0.65rem;
+}
+.module-objectives-summary {
+  cursor: pointer;
+  font-weight: 800;
+  font-size: 0.88rem;
+  color: var(--fg);
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0;
+}
+.module-objectives-summary::-webkit-details-marker {
+  display: none;
+}
+.module-objectives-summary::before {
+  content: '▸';
+  color: var(--accent);
+  transition: transform 0.15s ease;
+}
+.module-objectives-details[open] .module-objectives-summary::before {
+  transform: rotate(90deg);
+}
 .module-objectives {
   display: grid;
   gap: 0.75rem;
-  margin-top: 0.75rem;
+  margin-top: 0.35rem;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
 .module-objectives-label {
@@ -3495,6 +3524,26 @@ html[data-theme='dark'] .analytics-opt-in-banner {
   display: grid;
   gap: 0.25rem;
   font-size: 0.9rem;
+}
+.lesson-content-glossary-term {
+  color: var(--accent);
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 0.15em;
+}
+.lesson-content-glossary-term:hover {
+  color: var(--accent-strong, var(--accent));
+}
+.quiz-glossary-link-wrap {
+  margin: 0.55rem 0 0;
+  font-size: 0.88rem;
+}
+.quiz-glossary-link {
+  color: var(--accent);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 0.12em;
 }
 
 /* Glossaire MDM */

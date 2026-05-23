@@ -20,6 +20,9 @@ test.describe('Glossaire MDM', () => {
 test.describe('Catalogue parcours — métadonnées', () => {
   test('affiche modules et questions par module', async ({ page }) => {
     await page.goto('/courses');
+    await expect(page.getByText(/4 modules · 10 questions\/module/i).first()).toBeVisible({
+      timeout: 15_000,
+    });
     await expect(page.getByText(/3 modules · 10 questions\/module/i).first()).toBeVisible({
       timeout: 15_000,
     });

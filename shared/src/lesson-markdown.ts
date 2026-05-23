@@ -31,10 +31,13 @@ export function parseLessonBlocks(content: string): LessonBlock[] {
     });
 }
 
+import { findGlossaryMatchesInText } from './glossary';
+
 export type InlinePart =
   | { type: 'text'; value: string }
   | { type: 'strong'; value: string }
-  | { type: 'link'; label: string; href: string };
+  | { type: 'link'; label: string; href: string }
+  | { type: 'glossary'; label: string; termId: string };
 
 export function parseInlineMarkdown(text: string): InlinePart[] {
   const parts = text.split(/(\*\*[^*]+\*\*|\[[^\]]+\]\([^)]+\))/g);
@@ -52,6 +55,54 @@ export function parseInlineMarkdown(text: string): InlinePart[] {
       continue;
     }
     result.push({ type: 'text', value: part });
+  }
+
+  return result;
+}
+
+function splitTextWithGlossary(
+  text: string,
+  linkedTermIds: Set<string>
+): Array<{ type: 'text'; value: string } | { type: 'glossary'; label: string; termId: string }> {
+  const matches = findGlossaryMatchesInText(text, linkedTermIds);
+  if (!matches.length) return [{ type: 'text', value: text }];
+
+  const parts: Array<{ type: 'text'; value: string } | { type: 'glossary'; label: string; termId: string }> = [];
+  let cursor = 0;
+
+  for (const match of matches) {
+    if (match.start > cursor) {
+      parts.push({ type: 'text', value: text.slice(cursor, match.start) });
+    }
+    parts.push({ type: 'glossary', label: match.label, termId: match.termId });
+    cursor = match.end;
+  }
+
+  if (cursor < text.length) {
+    parts.push({ type: 'text', value: text.slice(cursor) });
+  }
+
+  return parts;
+}
+
+/** Parse le markdown inline et insère des liens glossaire (max 1 par terme et par paragraphe). */
+export function parseInlineWithGlossary(
+  text: string,
+  linkedTermIds: Set<string> = new Set()
+): InlinePart[] {
+  const baseParts = parseInlineMarkdown(text);
+  const result: InlinePart[] = [];
+
+  for (const part of baseParts) {
+    if (part.type !== 'text') {
+      result.push(part);
+      continue;
+    }
+
+    const glossaryParts = splitTextWithGlossary(part.value, linkedTermIds);
+    for (const glossaryPart of glossaryParts) {
+      result.push(glossaryPart);
+    }
   }
 
   return result;

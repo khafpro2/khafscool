@@ -18,6 +18,7 @@ import { useThemedStyles } from '../../hooks/useThemedStyles';
 import { toastBadgeUnlocked, toastModuleCompleted } from '../../lib/gamification-toasts';
 import { LessonContent } from '../../components/LessonContent';
 import { countLessonWords, formatReadingTimeLabel } from '@ama/shared/reading-time';
+import { findGlossaryTermInText, glossaryMobilePath } from '@ama/shared/glossary';
 import {
   CheckAnswerResult,
   CourseDetail,
@@ -551,6 +552,24 @@ export function CourseDetailScreen() {
                               <View style={styles.explanationBox}>
                                 <Text style={styles.explanationTitle}>💡 Explication</Text>
                                 <Text style={styles.explanationText}>{checkResult.explanation}</Text>
+                                {(() => {
+                                  const glossaryTerm = findGlossaryTermInText(
+                                    `${question.prompt} ${checkResult.explanation ?? ''}`
+                                  );
+                                  if (!glossaryTerm) return null;
+                                  return (
+                                    <Pressable
+                                      onPress={() =>
+                                        router.push(glossaryMobilePath(glossaryTerm.id) as '/glossary')
+                                      }
+                                      style={styles.quizGlossaryLink}
+                                    >
+                                      <Text style={styles.quizGlossaryLinkText}>
+                                        Voir dans le glossaire →
+                                      </Text>
+                                    </Pressable>
+                                  );
+                                })()}
                               </View>
                             ) : null}
                           </View>
@@ -978,6 +997,8 @@ function createStyles(colors: AppThemeColors) {
     letterSpacing: 0.4,
   },
   explanationText: { color: colors.fg, marginTop: 4, lineHeight: 20 },
+  quizGlossaryLink: { marginTop: 10, alignSelf: 'flex-start' },
+  quizGlossaryLinkText: { color: colors.accent, fontWeight: '800', fontSize: 13 },
   localResult: { color: colors.demoBannerText, marginBottom: 10, lineHeight: 20 },
   primaryButton: {
     backgroundColor: colors.accent,
