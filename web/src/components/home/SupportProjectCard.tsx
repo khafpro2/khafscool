@@ -9,7 +9,11 @@ const DONATION_MODES = [
 
 export function SupportProjectCard() {
   return (
-    <section className="section container home-support" aria-labelledby="home-support-title">
+    <section
+      className="section container home-support"
+      aria-labelledby="home-support-title"
+      data-testid="home-support-section"
+    >
       <Card variant="elevated" className="home-support-card">
         <div className="home-support-layout">
           <div className="home-support-copy">
