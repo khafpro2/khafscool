@@ -75,6 +75,9 @@ pnpm db:up
 pnpm setup
 # ou, si déjà installé : pnpm db:migrate && pnpm db:seed
 
+# Après un git pull (schéma ou contenu modifié) :
+# pnpm db:migrate && pnpm db:seed
+
 # 3. API + web en un terminal (Ctrl+C arrête tout)
 pnpm dev:stack
 ```

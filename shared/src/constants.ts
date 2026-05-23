@@ -2,6 +2,9 @@ import { MVP_TRACK_SLUGS, type CourseSlug } from './learning-paths';
 
 export const COURSE_SLUGS = [...MVP_TRACK_SLUGS] as const;
 
+/** Nombre de questions quiz par module MVP (aligné seed + contenu). */
+export const QUESTIONS_PER_MODULE = 10;
+
 export type NextCourseLink = { slug: CourseSlug; title: string };
 
 export const NEXT_COURSE_BY_SLUG: Partial<Record<CourseSlug, NextCourseLink>> = {

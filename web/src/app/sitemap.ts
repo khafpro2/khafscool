@@ -12,6 +12,7 @@ const PUBLIC_PATHS = [
   '/badges',
   '/sprint',
   '/resources',
+  '/resources/glossaire',
   '/demo',
   '/soutenir',
   '/soutenir/merci',

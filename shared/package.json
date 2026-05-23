@@ -8,7 +8,9 @@
     "./quiz-content": "./src/quiz-content.ts",
     "./learning-paths": "./src/learning-paths.ts",
     "./constants": "./src/constants.ts",
-    "./course-content": "./src/course-content.ts"
+    "./course-content": "./src/course-content.ts",
+    "./glossary": "./src/glossary.ts",
+    "./lesson-markdown": "./src/lesson-markdown.ts"
   },
   "scripts": {
     "build": "tsc",

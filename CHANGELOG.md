@@ -26,6 +26,13 @@ Première release MVP **MDM Academy Pro** (branche `cursor/progress-dashboard-au
 
 ## Unreleased — `cursor/progress-dashboard-auth-v2`
 
+### Glossaire, leçons et catalogue (v0.2)
+- **Glossaire MDM** — `@ama/shared/glossary` : 34 termes FR (ABM, ADE, DEP, VPP, SCEP, supervision, Smart Group, conformité, wipe sélectif…) ; page web `/resources/glossaire` avec recherche, catégories, dark mode, sitemap ; lien depuis `/resources`
+- **Leçons enrichies** — `@ama/shared/lesson-markdown` : parseur H2/H3, listes, blockquote « Bonne pratique », liens externes ; web `LessonContent` + CSS `.lesson-content` ; mobile composant `LessonContent` (parité markdown)
+- **Catalogue `/courses`** — cartes `TrailCard` : « 3 modules · 10 questions/module » + barre progression % si connecté (`showProgress`)
+- **Dev DX** — `scripts/dev-stack.sh` : `pnpm db:migrate` uniquement si migrations pending ; README rappel `pnpm db:migrate && pnpm db:seed` après pull
+- Tests : `glossary.test.ts`, `lesson-markdown.test.ts`, e2e `glossary-catalog.spec.ts`
+
 ### Sprint v0.2 (en cours)
 - **Contenu enrichi** — `@ama/shared/course-content` : descriptions 2–3 paragraphes, `lessonContent` markdown FR par module, `learningObjectives` / `keyTakeaways`, quiz portés à **8 questions/module** (72 total) ; API sanitize expose la leçon sans spoilers ; web `LessonContent` + mobile section « Leçon » scrollable
 - Docs : Postgres Docker — port hôte **5433** vs conteneur **5432** (`README`, `DEPLOYMENT`, `compose.yaml`, `backend/.env.example`)

@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import * as React from 'react';
+import { QUESTIONS_PER_MODULE } from '@ama/shared/constants';
 import { Badge } from './Badge';
 import { LevelPill } from './LevelPill';
 import { ProgressBar } from './ProgressBar';
@@ -24,6 +25,8 @@ export interface TrailCardProps {
   totalModules?: number;
   completedModules?: number;
   progressPercent?: number;
+  questionsPerModule?: number;
+  showProgress?: boolean;
   level?: TrailLevel;
   durationMinutes?: number;
   points?: number;
@@ -43,6 +46,8 @@ export function TrailCard({
   totalModules,
   completedModules,
   progressPercent,
+  questionsPerModule,
+  showProgress,
   level,
   durationMinutes,
   points,
@@ -61,6 +66,8 @@ export function TrailCard({
   const inProgress = status ? status === 'in-progress' : percent > 0 && percent < 100;
   const isCompleted = status ? status === 'completed' : percent >= 100;
   const ctaLabel = cta ?? (isCompleted ? 'Revoir' : inProgress ? 'Continuer' : 'Démarrer');
+  const moduleLabel = formatModuleQuizLabel(totalModules, questionsPerModule);
+  const shouldShowProgress = showProgress || inProgress || isCompleted;
 
   return (
     <Link href={href} className="trail-card" aria-label={`${title} — ouvrir le parcours`}>
@@ -117,7 +124,9 @@ export function TrailCard({
           <Badge tone="neutral">
             {formatDurationLabel(effectiveDuration)}
           </Badge>
-          {totalModules ? (
+          {moduleLabel ? (
+            <Badge tone="neutral">{moduleLabel}</Badge>
+          ) : totalModules ? (
             <Badge tone="neutral">
               {totalModules} unité{totalModules > 1 ? 's' : ''}
             </Badge>
@@ -127,15 +136,15 @@ export function TrailCard({
           </Badge>
         </div>
 
-        {(inProgress || isCompleted) && (
+        {shouldShowProgress && (
           <ProgressBar
             value={percent}
             tone={isCompleted ? 'success' : 'accent'}
             showValueLabel
             label={
               typeof completedModules === 'number' && totalModules
-                ? `${completedModules}/${totalModules} unités`
-                : 'Progression'
+                ? `${completedModules}/${totalModules} unités · ${percent} %`
+                : `${percent} %`
             }
             size="sm"
             style={{ marginTop: '0.2rem' }}
@@ -185,4 +194,10 @@ function mapTrackReward(track?: string | null) {
   const reward = getRewardBadgeForTrack(track);
   if (!reward) return null;
   return { label: reward.label, brand: reward.brand };
+}
+
+function formatModuleQuizLabel(totalModules?: number, questionsPerModule?: number) {
+  if (!totalModules) return null;
+  const questions = questionsPerModule ?? QUESTIONS_PER_MODULE;
+  return `${totalModules} module${totalModules > 1 ? 's' : ''} · ${questions} questions/module`;
 }

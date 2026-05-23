@@ -233,6 +233,8 @@ export function CoursesPageClient({ initialTrack }: CoursesPageClientProps) {
                 totalModules={course.totalModules}
                 completedModules={course.completedModules}
                 progressPercent={course.progressPercent}
+                showProgress={hasToken}
+                questionsPerModule={10}
                 level={level}
                 recommended={getLearningPath(course.slug)?.recommended}
               />

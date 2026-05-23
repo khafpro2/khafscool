@@ -16,6 +16,7 @@ import type { AppThemeColors } from '../../lib/design';
 import { formatTrack, getTrackVisual } from '../../lib/design';
 import { useThemedStyles } from '../../hooks/useThemedStyles';
 import { toastBadgeUnlocked, toastModuleCompleted } from '../../lib/gamification-toasts';
+import { LessonContent } from '../../components/LessonContent';
 import {
   CheckAnswerResult,
   CourseDetail,
@@ -31,15 +32,6 @@ import {
 type ModuleStatus = 'completed' | 'in_progress' | 'locked';
 
 const QUIZ_PASS_PERCENT = 50;
-
-function stripLessonMarkdown(content: string): string {
-  return content
-    .replace(/^###?\s+/gm, '')
-    .replace(/\*\*([^*]+)\*\*/g, '$1')
-    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
-    .replace(/^-\s+/gm, '• ')
-    .trim();
-}
 
 function modulePointsFromScores(quizScore: number, gameScore: number) {
   return Math.round(quizScore * 0.1 + gameScore * 0.2);
@@ -444,8 +436,7 @@ export function CourseDetailScreen() {
                         nestedScrollEnabled
                         showsVerticalScrollIndicator
                       >
-                        <Text style={styles.lessonEyebrow}>Leçon</Text>
-                        <Text style={styles.lessonText}>{stripLessonMarkdown(module.lessonContent)}</Text>
+                        <LessonContent content={module.lessonContent} />
                       </ScrollView>
                     ) : null}
                     {(() => {

@@ -7,9 +7,13 @@ cd "$ROOT"
 echo "==> PostgreSQL (docker compose, hôte :5433 → conteneur :5432)…"
 pnpm db:up
 
-echo "==> Migrations et seed (si première install ou schéma modifié)…"
-echo "    pnpm db:migrate && pnpm db:seed"
-pnpm db:migrate
+echo "==> Migrations et seed…"
+if ! pnpm --filter backend exec prisma migrate status >/dev/null 2>&1; then
+  echo "    Migrations en attente — pnpm db:migrate"
+  pnpm db:migrate
+else
+  echo "    Schéma à jour — migration ignorée"
+fi
 pnpm db:seed
 
 echo "==> Backend http://localhost:4000 et Web http://127.0.0.1:3000"

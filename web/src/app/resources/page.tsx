@@ -149,6 +149,9 @@ export default function ResourcesPage() {
           de révision ou une décision de conformité.
         </p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '1.25rem' }}>
+          <Button href="/resources/glossaire" variant="secondary" size="lg">
+            Glossaire MDM
+          </Button>
           <Button href="/sprint" variant="secondary" size="lg">
             Préparer un sprint
           </Button>
