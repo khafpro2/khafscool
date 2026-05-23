@@ -11,13 +11,18 @@ Feuille de route produit et technique pour le monorepo Apple MDM Academy.
 - Dons volontaires (`/soutenir`), contact HarmyTech, compte démo unifié (`demo@mdmacademy.local`)
 - CI : build-test, integration, e2e-web — voir [MERGE.md](./MERGE.md) et [PR #6](https://github.com/khafpro2/khafscool/pull/6)
 
-## v0.2 — Enrichissement
+## v0.2.0 — Enrichissement (livré — PR #6)
 
-- **OAuth production** — credentials Apple / Google / Microsoft, redirect URIs prod ([guide](./docs/OAUTH-PRODUCTION.md))
-- **Certificats PDF** — export personnalisé *(bouton Télécharger PDF + @media print)*, métadonnées SEO, partage amélioré
-- **Contenus** — modules Intune avancés *(+2 questions ADE v0.2)*, parcours Apple supplémentaires, scénarios interactifs
-- **Contenus enrichis (v0.2)** — descriptions longues FR, blocs leçon markdown (500–800 mots/module), objectifs et points clés, quiz 8 questions/module (72 total), affichage leçon web + mobile
-- **Analytics (optionnel)** — mesure d’usage avec consentement cookies respecté
+- [x] **Contenus enrichis** — 4 modules/piste, leçons markdown FR, objectifs et points clés, glossaire 34 termes
+- [x] **Fiche révision** — `/courses/[slug]/revision` web + mobile, impression PDF, partage Web Share (web)
+- [x] **Examen blanc** — 10 questions aléatoires/piste, API `practice-exam`, web + mobile
+- [x] **Dashboard pistes** — X/4 modules + barre % ; bannière 3/4 « Plus qu'une unité pour le badge ! »
+- [x] **Catalogue** — durée lecture cumulée `~XX min · 4 modules · 40 questions`
+- [x] **Certificat** — impression PDF + partage Web Share (web)
+- [x] **Quiz renforcés** — +2 questions exam-style par parcours (126 QCM seed)
+- [x] **Durée de lecture** — `@ama/shared/reading-time` sur modules et hero parcours
+- [ ] **OAuth production** — credentials Apple / Google / Microsoft ([guide](./docs/OAUTH-PRODUCTION.md))
+- [ ] **Analytics (optionnel)** — mesure d’usage avec consentement cookies respecté
 
 ## v1.0 — Production
 

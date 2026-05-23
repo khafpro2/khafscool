@@ -18,6 +18,14 @@ Release **MDM Academy Pro v0.2** (branche `cursor/progress-dashboard-auth-v2`, P
 - Dashboard web/mobile « Mes pistes MDM » — **X/4 modules** + barre %
 - Pages complétion 4/4, certificat listant les 4 modules, badge piste à 4 modules
 - Durée de lecture estimée, objectifs module actif (web + mobile)
+- Bannière / toast dashboard à **3/4 modules** : « Plus qu'une unité pour le badge ! »
+- Catalogue `TrailCard` : **~XX min · 4 modules · 40 questions** (somme reading-time)
+
+### Partage et social
+- Web Share API (ou copie presse-papiers) — fiche révision, certificat, complétion parcours (texte FR)
+
+### Contenu quiz
+- **+2 questions exam-style** par parcours (module final) — 126 QCM seed total
 
 ### Dons, conformité et DX
 - Dons Stripe `/soutenir`, badge Supporter, pages merci/annule

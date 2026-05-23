@@ -36,6 +36,23 @@ Workflow : `.github/workflows/ci.yml`
 
 ---
 
+## v0.2.0 — Enrichissement (PR #6, branche `cursor/progress-dashboard-auth-v2`)
+
+- [x] Version monorepo `@ama/shared`, backend, web, mobile : **0.2.0**
+- [x] [CHANGELOG.md](./CHANGELOG.md) — section `[0.2.0]` à jour
+- [x] **4 modules × 10 questions** par piste (120 QCM + 6 renfort exam-style)
+- [x] **Glossaire MDM** — `/resources/glossaire` (web + mobile)
+- [x] **Fiche révision** — `/courses/[slug]/revision` + partage Web Share API (web)
+- [x] **Examen blanc** — `/courses/[slug]/examen` + API `GET /courses/:slug/practice-exam`
+- [x] **Certificat** — partage Web Share API (web) + impression PDF
+- [x] **Dashboard** — bannière / toast « Plus qu'une unité pour le badge ! » à 3/4 modules
+- [x] **Catalogue** — `TrailCard` : `~XX min · 4 modules · 40 questions` (somme reading-time)
+- [ ] Job **build-test** — vert
+- [ ] Job **integration** — vert
+- [ ] Job **e2e-web** — vert
+
+---
+
 ## Release 0.1.0 — checklist pre-merge
 
 - [ ] Version monorepo `@ama/shared`, backend, web, mobile : **0.1.0**
@@ -107,6 +124,11 @@ pnpm smoke:web
 - [ ] **DemoModeBanner** — distinction « Mode démo local » / « Connecté à l’API »
 - [ ] **Récap quiz mobile** — score X/Y + points estimés avant validation d’unité
 - [ ] **Dons volontaires** — `/soutenir`, Stripe Checkout ou `DONATION_URL`, footer + mobile (formation toujours gratuite)
+- [x] **Fiche révision web** — partage Web Share API + impression PDF
+- [x] **Examen blanc** — web `/examen`, mobile lien natif, API practice-exam
+- [x] **Catalogue durée** — `TrailCard` reading-time cumulé + 40 questions
+- [x] **Dashboard 3/4** — bannière + toast « Plus qu'une unité pour le badge ! »
+- [x] **Partage certificat web** — Web Share API avec texte FR
 
 ---
 
@@ -160,6 +182,10 @@ pnpm db:seed
 - [ ] `/diagnostics` — santé API et tokens (outil mainteneur)
 - [ ] `/courses/apple-cert-prep/complete` — partage et lien certificat
 - [ ] `/courses/apple-cert-prep/certificate` — certificat imprimable (mode démo OK)
+- [ ] `/courses/apple-cert-prep/revision` — fiche révision + bouton Partager (Web Share / copie)
+- [ ] `/courses/apple-cert-prep/examen` — examen blanc 10 questions (mode démo OK)
+- [ ] `/dashboard` (connecté, 3/4 modules) — bannière « Plus qu'une unité pour le badge ! »
+- [ ] `/courses` — cartes `~XX min · 4 modules · 40 questions`
 - [ ] `/profile` — section certificats (parcours terminés → certificat, empty state FR)
 - [ ] `/profile` — export JSON + suppression compte (modal confirmation SUPPRIMER)
 - [ ] Bannière cookies — affichée une fois, masquée après « J'ai compris », lien `/legal/confidentialite`
