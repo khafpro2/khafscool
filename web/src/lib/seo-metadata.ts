@@ -64,6 +64,27 @@ export function buildCourseRevisionMetadata(
   };
 }
 
+export function buildCoursePracticeExamMetadata(
+  slug: string,
+  courseTitle?: string
+): Metadata {
+  const title = courseTitle ?? 'Parcours MDM';
+  const canonical = `/courses/${slug}/examen`;
+
+  return {
+    title: `Examen blanc — ${title}`,
+    description: `Entraînement chronométré : 10 questions aléatoires tirées des 40 du parcours ${title} (Apple MDM, Jamf ou Intune).`,
+    openGraph: {
+      locale: 'fr_FR',
+      title: `Examen blanc — ${title}`,
+      description: `10 questions QCM aléatoires pour tester tes acquis sur ${title}.`,
+      url: canonical,
+    },
+    alternates: { canonical },
+    robots: { index: false, follow: true },
+  };
+}
+
 export function buildCourseCertificateMetadata(
   slug: string,
   courseTitle?: string

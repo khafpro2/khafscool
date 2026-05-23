@@ -23,6 +23,11 @@ export async function coursesRoutes(app: FastifyInstance) {
     { preHandler: requireAuth },
     courses.getCourseProgress
   );
+  app.get<{ Params: { slug: string } }>(
+    '/courses/:slug/practice-exam',
+    { preHandler: requireAuth },
+    courses.getPracticeExam
+  );
   app.get<{ Params: { slug: string } }>('/courses/:slug', { preHandler: requireAuth }, courses.getCourse);
   app.post<{
     Params: { id: string };

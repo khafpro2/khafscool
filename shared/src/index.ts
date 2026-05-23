@@ -6,3 +6,4 @@ export * from './glossary';
 export * from './lesson-markdown';
 export * from './reading-time';
 export * from './revision-sheet';
+export * from './practice-exam';

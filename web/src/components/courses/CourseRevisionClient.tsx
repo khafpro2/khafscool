@@ -152,6 +152,9 @@ export function CourseRevisionClient({ slug }: { slug: string }) {
         <Button href={`/courses/${slug}/complete`} variant="secondary">
           Page de complétion
         </Button>
+        <Button href={`/courses/${slug}/examen`} variant="secondary" icon={'\u{1F4DD}'}>
+          Examen blanc
+        </Button>
         <Button href={`/resources/glossaire`} variant="ghost">
           Glossaire MDM
         </Button>

@@ -25,6 +25,7 @@ export default function RootLayout() {
       <Stack.Screen name="course/[slug]" />
       <Stack.Screen name="course/[slug]/complete" />
       <Stack.Screen name="course/[slug]/revision" />
+      <Stack.Screen name="course/[slug]/examen" />
     </Stack>
     </ThemeProvider>
     </SafeAreaProvider>

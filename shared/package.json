@@ -1,6 +1,6 @@
 {
   "name": "@ama/shared",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "exports": {
@@ -12,7 +12,8 @@
     "./glossary": "./src/glossary.ts",
     "./lesson-markdown": "./src/lesson-markdown.ts",
     "./reading-time": "./src/reading-time.ts",
-    "./revision-sheet": "./src/revision-sheet.ts"
+    "./revision-sheet": "./src/revision-sheet.ts",
+    "./practice-exam": "./src/practice-exam.ts"
   },
   "scripts": {
     "build": "tsc",
