@@ -4355,6 +4355,9 @@ html[data-theme='dark'] .analytics-opt-in-banner {
   width: min(100%, 520px);
   margin-top: clamp(2rem, 5vw, 2.75rem);
   grid-template-columns: repeat(3, minmax(0, 1fr));
+  list-style: none;
+  padding: 0;
+  margin-bottom: 0;
 }
 
 .home-track-choice {

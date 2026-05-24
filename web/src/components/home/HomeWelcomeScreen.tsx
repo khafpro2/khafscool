@@ -33,11 +33,11 @@ export function HomeWelcomeScreen() {
 
       <p className="home-welcome-tagline">Je veux apprendre</p>
 
-      <div className="home-track-choices" role="list" aria-label="Choix de piste MDM">
+      <ul className="home-track-choices" aria-label="Choix de piste MDM">
         {LEARNING_PATHS.map((path, index) => (
           <TrackChoiceLink key={path.slug} path={path} index={index} />
         ))}
-      </div>
+      </ul>
     </section>
   );
 }
@@ -47,11 +47,11 @@ function TrackChoiceLink({ path, index }: { path: LearningPathMeta; index: numbe
   const label = TRACK_LABELS[path.track];
 
   return (
-    <Link
-      href={path.href}
-      className="home-track-choice"
-      role="listitem"
-      data-track={path.track.toLowerCase()}
+    <li>
+      <Link
+        href={path.href}
+        className="home-track-choice"
+        data-track={path.track.toLowerCase()}
       style={
         {
           '--track-gradient': visual.gradient,
@@ -63,7 +63,8 @@ function TrackChoiceLink({ path, index }: { path: LearningPathMeta; index: numbe
       <span className="home-track-choice-icon" aria-hidden>
         <BrandIcon brand={path.brand} size="lg" variant="onColor" />
       </span>
-      <span className="home-track-choice-label">{label}</span>
-    </Link>
+        <span className="home-track-choice-label">{label}</span>
+      </Link>
+    </li>
   );
 }

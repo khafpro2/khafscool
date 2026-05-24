@@ -36,7 +36,10 @@ test.describe('Module — section vidéo pilote', () => {
 
     const sidebar = page.getByRole('navigation', { name: /Unités du parcours/i });
 
-    await expect(sidebar.getByText(/Vidéo/)).toBeVisible();
+    await expect(
+      sidebar.getByRole('button', { name: /Unité 1/i }).getByText(/Vidéo/)
+    ).toBeVisible();
+    await expect(sidebar.getByText(/Vidéo/)).toHaveCount(2);
 
   });
 

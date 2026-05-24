@@ -77,6 +77,7 @@ test.describe('Parcours d’apprentissage — smoke', () => {
       timeout: 15_000,
     });
     await expect(page.getByRole('article', { name: /Certificat de complétion/i })).toBeVisible();
+    await expect(page.getByText(/Formation multimédia/i)).toBeVisible();
     await expect(page.getByText(/Unités complétées/i)).toBeVisible();
     await expect(page.locator('.certificate-document__modules-list li')).toHaveCount(4);
     await expect(
