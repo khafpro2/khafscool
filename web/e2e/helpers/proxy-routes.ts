@@ -46,7 +46,10 @@ export const PROXY_COURSE_PROGRESS = '**/api/proxy/courses/*/progress';
 export const PROXY_PRACTICE_EXAM = '**/api/proxy/courses/*/practice-exam';
 export const PROXY_PRACTICE_EXAM_SCORE = '**/api/proxy/courses/*/practice-exam/score';
 
-/** Login reste un appel direct vers l’API backend (hors proxy). */
+/** Login via relais BFF Next.js (cookies HttpOnly). */
+export const BFF_AUTH_LOGIN = '**/api/auth/login';
+
+/** @deprecated Préférer `BFF_AUTH_LOGIN` — login passe par le BFF. */
 export const API_AUTH_LOGIN = 'http://localhost:4000/auth/login';
 
 export async function fulfillJsonRoute(route: Route, body: unknown, status = 200) {

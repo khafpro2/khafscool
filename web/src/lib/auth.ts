@@ -38,6 +38,11 @@ export async function storeAuthTokens(auth: AuthResponse, options?: StoreAuthOpt
   const rememberMe = options?.rememberMe ?? auth.rememberMe ?? readRememberMePreference();
   writeRememberMePreference(rememberMe);
 
+  if (auth.accessToken === COOKIE_SESSION) {
+    storeAuthenticatedUser(auth.user);
+    return;
+  }
+
   const res = await fetch('/api/auth/session', {
     method: 'POST',
     credentials: 'include',

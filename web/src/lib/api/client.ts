@@ -1,5 +1,5 @@
 import { AuthRequestError, throwAuthRequestError } from '../auth-errors';
-import { refreshSession } from '../auth';
+import { COOKIE_SESSION, ACCESS_TOKEN_TTL_MINUTES, refreshSession } from '../auth';
 import { recordApiFailure, recordApiSuccess } from '../api-status-store';
 import { clearDemoMode, markDemoFallback } from '../demo-mode-store';
 import {
@@ -115,6 +115,34 @@ function authHeader(_token?: string): Record<string, string> {
   return {};
 }
 
+async function browserAuthRequest<T extends AuthResponse>(
+  bffPath: '/api/auth/login' | '/api/auth/register',
+  body: unknown
+): Promise<T> {
+  const res = await fetch(bffPath, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+    credentials: 'include',
+    cache: 'no-store',
+  });
+
+  if (!res.ok) {
+    recordApiFailure();
+    await throwAuthRequestError(res);
+  }
+
+  recordApiSuccess();
+  const data = (await res.json()) as { user: AuthUser; rememberMe?: boolean };
+  return {
+    accessToken: COOKIE_SESSION,
+    refreshToken: COOKIE_SESSION,
+    user: data.user,
+    rememberMe: data.rememberMe ?? true,
+    accessTokenTtlMinutes: ACCESS_TOKEN_TTL_MINUTES,
+  } as T;
+}
+
 async function authRequest<T>(path: string, body: unknown): Promise<T> {
   try {
     const res = await fetch(`${API_URL}${path}`, {
@@ -139,10 +167,16 @@ async function authRequest<T>(path: string, body: unknown): Promise<T> {
 }
 
 export function login(email: string, password: string, rememberMe = true) {
+  if (typeof window !== 'undefined') {
+    return browserAuthRequest<AuthResponse>('/api/auth/login', { email, password, rememberMe });
+  }
   return authRequest<AuthResponse>('/auth/login', { email, password, rememberMe });
 }
 
 export function register(email: string, password: string, displayName: string) {
+  if (typeof window !== 'undefined') {
+    return browserAuthRequest<AuthResponse>('/api/auth/register', { email, password, displayName });
+  }
   return authRequest<AuthResponse>('/auth/register', { email, password, displayName });
 }
 

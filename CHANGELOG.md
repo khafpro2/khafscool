@@ -8,6 +8,7 @@
 - **Intune module 4** — encadré cas pratique supplémentaire (renouvellement token VPP avant go-live)
 - **API** — rate limit 10/min sur `POST /donations/create-checkout-session` (429 FR structuré)
 - **CI** — smoke web aligné sur le rendu client (skeletons aria-label, titre auth, diagnostics MVP)
+- **Auth web** — login/inscription via BFF `/api/auth/login` et `/api/auth/register` (cookies HttpOnly, tokens hors JS)
 - Tests : `donations.rate-limit.test.ts`, e2e `whats-new-banner.spec.ts`
 
 ### Dons — montants, modes et redirect

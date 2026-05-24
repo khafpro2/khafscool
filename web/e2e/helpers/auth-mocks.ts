@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test';
 import { DEMO_ACCOUNT } from '@ama/shared/constants';
-import { API_AUTH_LOGIN, PROXY_AUTH_ME, PROXY_DASHBOARD, PROXY_USER_EXPORT } from './proxy-routes';
+import { BFF_AUTH_LOGIN, PROXY_AUTH_ME, PROXY_DASHBOARD, PROXY_USER_EXPORT } from './proxy-routes';
 
 export const mockDemoUser = {
   id: 'e2e-user-demo',
@@ -18,11 +18,11 @@ export const mockAuthResponse = {
 };
 
 export async function mockAuthenticatedSession(page: Page) {
-  await page.route(API_AUTH_LOGIN, async (route) => {
+  await page.route(BFF_AUTH_LOGIN, async (route) => {
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
-      body: JSON.stringify(mockAuthResponse),
+      body: JSON.stringify({ user: mockDemoUser, rememberMe: true }),
     });
   });
 
