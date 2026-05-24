@@ -1125,6 +1125,10 @@ Jour J production : 30 appareils restent **Pending install**. Triage :
 
 Pas de wipe massif. Corrélation **Monitor → App install status** par app et par groupe.
 
+### Cas pratique : renouveler le token VPP la veille d'un go-live
+
+Une PME retail prévoit lundi matin le déploiement Required de huit apps métier sur 120 iPad supervisés. Vendredi soir, l'admin Intune découvre que le token VPP Apple expire samedi à minuit — trois jours avant la réception des terminaux. Plutôt que reporter le projet, il télécharge immédiatement le nouveau token depuis Tenant Administration, l'importe dans Apple Business Manager, puis force une synchronisation VPP dans Intune. Il vérifie sur dix iPad pilotes que les statuts passent de « Failed » à « Installed » après resync. Lundi, les 120 appareils reçoivent le catalogue sans ticket helpdesk. Le runbook est mis à jour avec alerte J-45 et test trimestriel en labo.
+
 ### Diagnostic Pending, Failed et Missing
 
 Dans Intune : **Apps → Monitor → App install status**. Filtrez par app et groupe. Causes fréquentes :

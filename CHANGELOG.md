@@ -2,6 +2,14 @@
 
 ## [0.2.1] — 2026-05-24
 
+### Déploiement, bandeau accueil et durcissement dons
+- **docs/QUICK-DEPLOY.md** — guide FR en 15 étapes : Vercel web + Railway API + Postgres, liste env vars, Stripe/PayPal prod
+- **Web accueil** — bandeau discret « Nouveau · v0.2.1 » (examen blanc, glossaire, dons 3 modes) ; dismiss `localStorage`
+- **Intune module 4** — encadré cas pratique supplémentaire (renouvellement token VPP avant go-live)
+- **API** — rate limit 10/min sur `POST /donations/create-checkout-session` (429 FR structuré)
+- **CI** — smoke web aligné sur le rendu client (skeletons aria-label, titre auth, diagnostics MVP)
+- Tests : `donations.rate-limit.test.ts`, e2e `whats-new-banner.spec.ts`
+
 ### Dons — montants, modes et redirect
 - **Web** — `/donate` redirige vers `/soutenir` (query `?amount=` et fragment `#carte` / `#paypal` / `#virement` préservés)
 - **UX dons** — grille montants 5 € / 10 € / 20 € / Autre + choix mode (carte Stripe, PayPal, virement SEPA) ; CTA contextuels ; bordure accent `#2563EB`

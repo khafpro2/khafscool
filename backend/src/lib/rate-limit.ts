@@ -10,3 +10,8 @@ export const quizProgressRateLimit = {
   max: 40,
   timeWindow: '1 minute' as const,
 };
+
+export const donationCheckoutRateLimit = {
+  max: 10,
+  timeWindow: '1 minute' as const,
+};

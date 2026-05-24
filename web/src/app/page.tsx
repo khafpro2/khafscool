@@ -1,4 +1,5 @@
 import { HomeOnboardingBanner } from '@/components/home/HomeOnboardingBanner';
+import { HomeWhatsNewBanner } from '@/components/home/HomeWhatsNewBanner';
 import { ContinueLearningSection } from '@/components/home/ContinueLearningSection';
 import { HomeEngagementSection } from '@/components/home/HomeEngagementSection';
 import { InstallAppButton } from '@/components/home/InstallAppButton';
@@ -70,6 +71,8 @@ export default function HomePage() {
           <HeroStat label="Badges" value="3" hint="super-badges piste" />
         </div>
       </section>
+
+      <HomeWhatsNewBanner />
 
       <HomeOnboardingBanner />
 
