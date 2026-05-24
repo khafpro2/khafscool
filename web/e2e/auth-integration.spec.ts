@@ -1,8 +1,13 @@
 import { DEMO_ACCOUNT } from '@ama/shared/constants';
 import { expect, test } from '@playwright/test';
+import { seedCookieConsent } from './helpers/cookie-consent';
 
 test.describe('Auth integration (API live)', () => {
   test.skip(!process.env.E2E_LIVE_API, 'Set E2E_LIVE_API=1 with API + Postgres seedés');
+
+  test.beforeEach(async ({ page }) => {
+    await seedCookieConsent(page);
+  });
 
   test('connexion démo puis tableau de bord', async ({ page }) => {
     await page.goto('/auth?redirect=/dashboard');
