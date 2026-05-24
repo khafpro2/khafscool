@@ -1,6 +1,9 @@
 import { expect, test } from '@playwright/test';
-
-const API_BASE = 'http://localhost:4000';
+import {
+  fulfillJsonRoute,
+  isDonationsCheckoutRequest,
+  isDonationsStatusRequest,
+} from './helpers/proxy-routes';
 
 const mockDonationStatusFallback = {
   mode: 'fallback' as const,
@@ -30,12 +33,8 @@ const mockDonationStatusUnavailable = {
 
 test.describe('Page Soutenir', () => {
   test.beforeEach(async ({ page }) => {
-    await page.route(`${API_BASE}/donations/status`, async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify(mockDonationStatusFallback),
-      });
+    await page.route(isDonationsStatusRequest, async (route) => {
+      await fulfillJsonRoute(route, mockDonationStatusFallback);
     });
   });
 
@@ -144,12 +143,8 @@ test.describe('Page Soutenir', () => {
 
 test.describe('Page Soutenir — paiement CB Stripe', () => {
   test('affiche le bouton Donner X € quand Stripe est actif (mock API)', async ({ page }) => {
-    await page.route(`${API_BASE}/donations/status`, async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify(mockDonationStatusLive),
-      });
+    await page.route(isDonationsStatusRequest, async (route) => {
+      await fulfillJsonRoute(route, mockDonationStatusLive);
     });
 
     await page.goto('/soutenir?amount=10#carte');
@@ -160,12 +155,8 @@ test.describe('Page Soutenir — paiement CB Stripe', () => {
   });
 
   test('affiche un message clair sans Stripe ni lien externe (mock API)', async ({ page }) => {
-    await page.route(`${API_BASE}/donations/status`, async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify(mockDonationStatusUnavailable),
-      });
+    await page.route(isDonationsStatusRequest, async (route) => {
+      await fulfillJsonRoute(route, mockDonationStatusUnavailable);
     });
 
     await page.goto('/soutenir#carte');
@@ -177,15 +168,11 @@ test.describe('Page Soutenir — paiement CB Stripe', () => {
   });
 
   test('affiche un spinner pendant create-checkout-session (mock API)', async ({ page }) => {
-    await page.route(`${API_BASE}/donations/status`, async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify(mockDonationStatusLive),
-      });
+    await page.route(isDonationsStatusRequest, async (route) => {
+      await fulfillJsonRoute(route, mockDonationStatusLive);
     });
 
-    await page.route(`${API_BASE}/donations/create-checkout-session`, async (route) => {
+    await page.route(isDonationsCheckoutRequest, async (route) => {
       await new Promise((resolve) => setTimeout(resolve, 800));
       await route.fulfill({
         status: 200,
@@ -203,15 +190,11 @@ test.describe('Page Soutenir — paiement CB Stripe', () => {
   });
 
   test('affiche une erreur FR si create-checkout-session échoue (mock API)', async ({ page }) => {
-    await page.route(`${API_BASE}/donations/status`, async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify(mockDonationStatusLive),
-      });
+    await page.route(isDonationsStatusRequest, async (route) => {
+      await fulfillJsonRoute(route, mockDonationStatusLive);
     });
 
-    await page.route(`${API_BASE}/donations/create-checkout-session`, async (route) => {
+    await page.route(isDonationsCheckoutRequest, async (route) => {
       await route.fulfill({
         status: 503,
         contentType: 'application/json',
