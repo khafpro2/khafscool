@@ -5,7 +5,7 @@ test.describe('Examen blanc parcours', () => {
     await page.goto('/courses/apple-cert-prep/examen');
 
     await expect(page.getByRole('heading', { name: /Examen blanc|Parcours Apple/i }).first()).toBeVisible();
-    await expect(page.getByText(/10 questions aléatoires/i).first()).toBeVisible();
+    await expect(page.getByText(/Pool de \d+ questions · 10 tirées au hasard/i).first()).toBeVisible();
     await expect(page.getByText(/Question 1 sur 10/i)).toBeVisible();
   });
 

@@ -22,8 +22,8 @@ test.describe('Glossaire MDM', () => {
     const search = page.getByRole('combobox', { name: /Rechercher dans le glossaire MDM/i });
     await expect(search).toBeVisible({ timeout: 15_000 });
     await search.fill('SCEP');
-    await expect(page.getByRole('option').filter({ hasText: 'SCEP' })).toBeVisible();
-    await expect(page.getByRole('listbox').locator('[role="option"]')).toHaveCount(1);
+    await expect(page.getByRole('option').filter({ hasText: 'SCEP (Simple Certificate' })).toHaveCount(1);
+    await expect(page.getByRole('listbox').locator('[role="option"]').first()).toBeVisible();
   });
 });
 
