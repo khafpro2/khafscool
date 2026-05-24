@@ -28,7 +28,6 @@ describe('video dub sync helpers', () => {
 
   it('defines synced dub manifests for pilot modules', () => {
     for (const [courseSlug, moduleSlug] of [
-      ['apple-cert-prep', 'device-support-basics'],
       ['jamf-pro-foundations', 'smart-groups-policies'],
       ['intune-ios-enrollment', 'ade-enrollment-basics'],
     ] as const) {

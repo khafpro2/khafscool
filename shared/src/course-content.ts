@@ -39,11 +39,6 @@ Vous apprendrez à identifier les symptômes matériels et logiciels les plus fr
 Prérequis : familiarité de base avec macOS et iOS/iPadOS, accès à un Mac de diagnostic et à quelques appareils de test. Aucune expérience MDM préalable n'est exigée, mais une connaissance des profils de configuration et de l'enrôlement automatisé (ADE) sera un atout pour la dernière partie du parcours.`,
     modules: {
       'device-support-basics': {
-        videoUrl: getModuleVideoLocalPublicUrl('apple-cert-prep', 'device-support-basics'),
-        videoTitle: "Vidéo : comprendre l'ABM et l'enrôlement MDM",
-        videoDurationMinutes: 8,
-        videoProvider: 'mp4',
-        videoSourceLanguage: 'fr',
         summary:
           'Maîtriser le triage matériel/logiciel sur Mac et iOS, sécuriser sauvegardes et restaurations, et relier support terrain et gestion MDM.',
         learningObjectives: [
@@ -200,8 +195,8 @@ Si plusieurs iPhones perdent simultanément le check-in après maintenance serve
           'Classez les vérifications à effectuer sur un iPad qui ne synchronise plus le MDM, de la connectivité locale jusqu’à la resynchronisation serveur.',
       },
       'acmt-exam-prep': {
-        videoUrl: 'placeholder',
-        videoProvider: 'placeholder',
+        videoUrl: getModuleVideoLocalPublicUrl('apple-cert-prep', 'acmt-exam-prep'),
+        videoProvider: 'mp4',
         videoTitle: 'Vidéo : Apple Diagnostics et préparation examen',
         videoDurationMinutes: 5,
         videoSourceLanguage: 'fr',
@@ -288,6 +283,11 @@ En consolidant sécurité, diagnostics, restauration et documentation, vous alig
           'Remettez dans l’ordre les étapes de diagnostic d’un Mac hors tension après une panne électrique, conformément au runbook atelier.',
       },
       'apps-vpp-management': {
+        videoUrl: getModuleVideoLocalPublicUrl('apple-cert-prep', 'apps-vpp-management'),
+        videoProvider: 'mp4',
+        videoTitle: 'Vidéo : apps VPP et apps gérées en entreprise',
+        videoDurationMinutes: 6,
+        videoSourceLanguage: 'fr',
         summary:
           'Comprendre VPP, apps gérées et distribution sur appareils supervisés — du ticket support à la coordination avec l’admin MDM.',
         learningObjectives: [
@@ -386,13 +386,11 @@ L’approche est pratique : chaque module s’appuie sur des scénarios réalist
 Prérequis : notions de gestion macOS/iOS, accès à une instance Jamf Pro (Cloud ou On-Prem) de labo, compte Apple Business Manager ou School Manager de test, et compréhension élémentaire des certificats et du protocole MDM Apple. Une expérience préalable avec des profils .mobileconfig est recommandée.`,
     modules: {
       'smart-groups-policies': {
-        videoUrl: 'https://www.youtube.com/watch?v=t3j9TkFfUJw',
-        videoTitle: 'Vidéo : introduction Jamf Pro',
+        videoUrl: getModuleVideoLocalPublicUrl('jamf-pro-foundations', 'smart-groups-policies'),
+        videoTitle: 'Vidéo : Smart Groups et politiques Jamf Pro',
         videoDurationMinutes: 10,
-        videoProvider: 'youtube',
-        videoSourceLanguage: 'en',
-        videoTranscriptFr:
-          'Cette vidéo présente Jamf Pro : console MDM Apple pour Mac, iPhone et iPad, Smart Groups dynamiques, politiques de configuration et déploiement logiciel en entreprise.',
+        videoProvider: 'mp4',
+        videoSourceLanguage: 'fr',
         summary:
           'Construire des Smart Groups dynamiques et associer des politiques Jamf Pro pour cibler finement Mac, iPhone ou iPad en déploiement pilote.',
         learningObjectives: [
@@ -571,13 +569,11 @@ Pour un comité mensuel, suivez : pourcentage Mac/iPhone avec check-in < 48 h, t
           'Priorisez le triage de trois Mac non conformes en commençant par la validité MDM, puis OS et espace disque.',
       },
       'enrollment-apple-integration': {
-        videoUrl: 'https://www.youtube.com/watch?v=_g-0V2AFCW0',
-        videoProvider: 'youtube',
+        videoUrl: getModuleVideoLocalPublicUrl('jamf-pro-foundations', 'enrollment-apple-integration'),
+        videoProvider: 'mp4',
         videoTitle: 'Vidéo : intégration ABM et enrôlement automatisé Jamf',
         videoDurationMinutes: 10,
-        videoSourceLanguage: 'en',
-        videoTranscriptFr:
-          'Cette vidéo Jamf 100 présente l’intégration Apple Business Manager avec Jamf Pro, la création de PreStage enrollments et le flux zero-touch à l’assistant de configuration (Remote Management).',
+        videoSourceLanguage: 'fr',
         summary:
           'Relier Apple Business Manager, certificats Push MDM et Automated Device Enrollment pour une flotte supervisée entièrement gérée par Jamf Pro.',
         learningObjectives: [
@@ -673,6 +669,11 @@ Maîtriser ABM + Push + PreStage garantit une flotte Jamf supervisée, reproduct
           'Ordonnez les étapes pour intégrer vingt Mac neufs depuis Apple Business Manager jusqu’à la validation du premier appareil géré.',
       },
       'api-automation-advanced-policies': {
+        videoUrl: getModuleVideoLocalPublicUrl('jamf-pro-foundations', 'api-automation-advanced-policies'),
+        videoProvider: 'mp4',
+        videoTitle: 'Vidéo : automatisation API Jamf Pro',
+        videoDurationMinutes: 8,
+        videoSourceLanguage: 'fr',
         summary:
           'Automatiser Jamf Pro via l’API REST, scripts avancés et politiques récurrentes pour industrialiser conformité, reporting et remédiation à l’échelle.',
         learningObjectives: [
@@ -999,13 +1000,11 @@ Les politiques de conformité Intune traduisent votre baseline sécurité en sig
           'Priorisez les actions admin face à un iPhone jailbreaké, un OS obsolète et un PIN absent.',
       },
       'app-protection-conditional-access': {
-        videoUrl: 'https://www.youtube.com/watch?v=F4PESZiEQhU',
-        videoProvider: 'youtube',
+        videoUrl: getModuleVideoLocalPublicUrl('intune-ios-enrollment', 'app-protection-conditional-access'),
+        videoProvider: 'mp4',
         videoTitle: 'Vidéo : App Protection et Conditional Access Intune',
         videoDurationMinutes: 8,
-        videoSourceLanguage: 'en',
-        videoTranscriptFr:
-          'Démonstration de création d’une App Protection Policy iOS pour Outlook (PIN, chiffrement, transfert de données) et assignation aux utilisateurs — base pour combiner MAM et Conditional Access Entra ID.',
+        videoSourceLanguage: 'fr',
         summary:
           'Protéger Outlook, Teams et données M365 sur iOS avec App Protection Policies Intune et Conditional Access Entra ID pour BYOD et flottes mixtes.',
         learningObjectives: [
@@ -1109,6 +1108,11 @@ En combinant App Protection et Conditional Access, Intune sécurise M365 sur iOS
           'Ordonnez le déploiement Outlook/Teams protégés : politique App Protection, Conditional Access, puis validation sur iPhone pilote.',
       },
       'vpp-abm-business-apps': {
+        videoUrl: getModuleVideoLocalPublicUrl('intune-ios-enrollment', 'vpp-abm-business-apps'),
+        videoProvider: 'mp4',
+        videoTitle: 'Vidéo : VPP, ABM et apps métier dans Intune',
+        videoDurationMinutes: 7,
+        videoSourceLanguage: 'fr',
         summary:
           'Connecter Apple Business Manager à Intune, synchroniser VPP et déployer apps métier, store et LOB sur iPhone/iPad supervisés.',
         learningObjectives: [
@@ -1259,17 +1263,19 @@ export function getModulePedagogy(
   return COURSE_PEDAGOGY[courseSlug]?.modules[moduleSlug];
 }
 
-/** Modules pilotes avec vidéo (modules 1 et 2 de chaque parcours MVP). */
+/** Modules avec vidéo explicative (trois ou quatre par parcours). */
 export const PILOT_VIDEO_MODULES = [
-  { courseSlug: 'apple-cert-prep', moduleSlug: 'device-support-basics' },
   { courseSlug: 'apple-cert-prep', moduleSlug: 'ios-troubleshooting' },
   { courseSlug: 'apple-cert-prep', moduleSlug: 'acmt-exam-prep' },
+  { courseSlug: 'apple-cert-prep', moduleSlug: 'apps-vpp-management' },
   { courseSlug: 'jamf-pro-foundations', moduleSlug: 'smart-groups-policies' },
   { courseSlug: 'jamf-pro-foundations', moduleSlug: 'inventory-basics' },
   { courseSlug: 'jamf-pro-foundations', moduleSlug: 'enrollment-apple-integration' },
+  { courseSlug: 'jamf-pro-foundations', moduleSlug: 'api-automation-advanced-policies' },
   { courseSlug: 'intune-ios-enrollment', moduleSlug: 'ade-enrollment-basics' },
   { courseSlug: 'intune-ios-enrollment', moduleSlug: 'compliance-policies' },
   { courseSlug: 'intune-ios-enrollment', moduleSlug: 'app-protection-conditional-access' },
+  { courseSlug: 'intune-ios-enrollment', moduleSlug: 'vpp-abm-business-apps' },
 ] as const;
 
 export function courseHasIntroVideo(courseSlug: string): boolean {

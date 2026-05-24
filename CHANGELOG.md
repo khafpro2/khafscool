@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.1] — 2026-05-25
+
+### Retrait vidéo ABM (module 1 Apple)
+- **Contenu** — module `device-support-basics` du parcours `apple-cert-prep` : suppression de la vidéo « comprendre l'ABM et l'enrôlement MDM » (aucune section vidéo sur l'unité 1)
+- **Pilote** — retrait de `device-support-basics` dans `PILOT_VIDEO_MODULES` (11 vidéos : 3 Apple, 4 Jamf, 4 Intune)
+- **Catalogue** — parcours Apple : `3 modules avec vidéo explicative` (hero + TrailCard)
+- Tests : `seed-video`, `video-dub-sync`, e2e `module-video`
+
 ## [0.3.0] — 2026-05-24
 
 ### Vidéo intro Jamf Pro (module 1)
