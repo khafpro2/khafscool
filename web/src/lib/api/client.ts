@@ -47,7 +47,7 @@ import type {
   WeeklyQuestsResponse,
 } from './types';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://127.0.0.1:4000';
 
 function resolveApiUrl(path: string) {
   if (typeof window !== 'undefined') return `/api/proxy${path}`;

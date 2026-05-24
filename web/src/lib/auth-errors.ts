@@ -85,6 +85,10 @@ export function resolveApiErrorMessage(
       return formatRateLimitMessage(error.retryAfterSeconds);
     }
 
+    if (error.code === 'API_UNREACHABLE' || error.code === 'LOGIN_FAILED' || error.code === 'REGISTER_FAILED') {
+      return 'Impossible de joindre le serveur. Vérifie que l’API est démarrée (pnpm dev:stack).';
+    }
+
     if (error.code === 'INVALID_CREDENTIALS') {
       return 'Email ou mot de passe incorrect.';
     }

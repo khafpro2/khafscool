@@ -12,8 +12,8 @@ test.describe('Auth integration (API live)', () => {
     await page.getByRole('button', { name: /Se connecter/i }).first().click();
 
     await expect(page).toHaveURL(/\/dashboard/, { timeout: 20_000 });
-    await expect(page.getByRole('heading', { name: /Mon apprentissage/i })).toBeVisible({
-      timeout: 15_000,
-    });
+    await expect(
+      page.getByRole('heading', { name: new RegExp(`Bonjour ${DEMO_ACCOUNT.displayName}`, 'i') })
+    ).toBeVisible({ timeout: 15_000 });
   });
 });

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { applySessionCookies } from '@/lib/auth-session.server';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://127.0.0.1:4000';
 
 type LoginBody = {
   email?: string;
@@ -53,6 +53,13 @@ export async function POST(request: Request) {
     );
     return response;
   } catch {
-    return NextResponse.json({ error: 'LOGIN_FAILED' }, { status: 502 });
+    return NextResponse.json(
+      {
+        error: 'API_UNREACHABLE',
+        message:
+          'Impossible de joindre le serveur. Vérifie que l’API est démarrée (pnpm dev:stack).',
+      },
+      { status: 502 },
+    );
   }
 }

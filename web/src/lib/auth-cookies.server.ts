@@ -12,6 +12,13 @@ function isProduction() {
   return process.env.NODE_ENV === 'production';
 }
 
+/** Secure cookies require HTTPS — disable on local/CI HTTP (e.g. Playwright `next start`). */
+export function authCookieSecure(): boolean {
+  if (process.env.AUTH_COOKIE_SECURE === 'true') return true;
+  if (process.env.AUTH_COOKIE_SECURE === 'false') return false;
+  return isProduction() && process.env.VERCEL === '1';
+}
+
 export function refreshCookieMaxAge(rememberMe: boolean) {
   return rememberMe ? REFRESH_REMEMBER_MAX_AGE_SEC : REFRESH_SESSION_MAX_AGE_SEC;
 }
@@ -21,7 +28,7 @@ export function buildAccessCookie(accessToken: string): ResponseCookie {
     name: ACCESS_COOKIE,
     value: accessToken,
     httpOnly: true,
-    secure: isProduction(),
+    secure: authCookieSecure(),
     sameSite: 'lax',
     path: '/',
     maxAge: ACCESS_MAX_AGE_SEC,
@@ -33,7 +40,7 @@ export function buildRefreshCookie(refreshToken: string, rememberMe: boolean): R
     name: REFRESH_COOKIE,
     value: refreshToken,
     httpOnly: true,
-    secure: isProduction(),
+    secure: authCookieSecure(),
     sameSite: 'lax',
     path: '/',
     maxAge: refreshCookieMaxAge(rememberMe),
@@ -45,7 +52,7 @@ export function buildRememberMeCookie(rememberMe: boolean): ResponseCookie {
     name: REMEMBER_COOKIE,
     value: rememberMe ? '1' : '0',
     httpOnly: true,
-    secure: isProduction(),
+    secure: authCookieSecure(),
     sameSite: 'lax',
     path: '/',
     maxAge: refreshCookieMaxAge(rememberMe),
@@ -57,7 +64,7 @@ export function clearAuthCookies(): ResponseCookie[] {
     name,
     value: '',
     httpOnly: true,
-    secure: isProduction(),
+    secure: authCookieSecure(),
     sameSite: 'lax',
     path: '/',
     maxAge: 0,
