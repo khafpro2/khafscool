@@ -26,6 +26,12 @@ describe('parseVideoEmbed', () => {
     expect(parsed?.embedUrl).toBe('https://cdn.example.com/intro.mp4');
   });
 
+  it('accepts local MP4 paths served from public/', () => {
+    const parsed = parseVideoEmbed('/media/videos/fr/apple-device-support-basics-fr.mp4', 'mp4');
+    expect(parsed?.provider).toBe('mp4');
+    expect(parsed?.embedUrl).toBe('/media/videos/fr/apple-device-support-basics-fr.mp4');
+  });
+
   it('returns placeholder mode without external URL', () => {
     expect(parseVideoEmbed(null, 'placeholder')).toEqual({
       provider: 'placeholder',
@@ -43,6 +49,7 @@ describe('parseVideoEmbed', () => {
 describe('extractYouTubeVideoId', () => {
   it('extracts ids from watch, youtu.be and embed URLs', () => {
     expect(extractYouTubeVideoId('https://www.youtube.com/watch?v=qrQyL5-SWFg')).toBe('qrQyL5-SWFg');
+    expect(extractYouTubeVideoId('https://www.youtube.com/watch?v=t3j9TkFfUJw')).toBe('t3j9TkFfUJw');
     expect(extractYouTubeVideoId('https://youtu.be/_g-0V2AFCW0')).toBe('_g-0V2AFCW0');
     expect(extractYouTubeVideoId('https://www.youtube-nocookie.com/embed/GrSaEcbyGh8')).toBe('GrSaEcbyGh8');
     expect(extractYouTubeVideoId(null)).toBeNull();

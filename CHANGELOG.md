@@ -2,6 +2,9 @@
 
 ## [0.3.0] — 2026-05-24
 
+### Vidéo intro Jamf Pro (module 1)
+- **Contenu** — module `smart-groups-policies` du parcours `jamf-pro-foundations` : vidéo YouTube principale `t3j9TkFfUJw` (« Vidéo : introduction Jamf Pro »)
+
 ### Vidéos module 3 (suite v0.3)
 - **Pilote** — 3 vidéos supplémentaires (module 3 par piste) : Apple Diagnostics (placeholder animé), Jamf ADE (YouTube Jamf 100), Intune App Protection (YouTube MD-102)
 - **Catalogue** — `TrailCard` : métadonnées `4 modules · 3 avec vidéo` quand des unités ont une vidéo

@@ -386,24 +386,13 @@ L’approche est pratique : chaque module s’appuie sur des scénarios réalist
 Prérequis : notions de gestion macOS/iOS, accès à une instance Jamf Pro (Cloud ou On-Prem) de labo, compte Apple Business Manager ou School Manager de test, et compréhension élémentaire des certificats et du protocole MDM Apple. Une expérience préalable avec des profils .mobileconfig est recommandée.`,
     modules: {
       'smart-groups-policies': {
-        videoUrl: getModuleVideoLocalPublicUrl('jamf-pro-foundations', 'smart-groups-policies'),
-        videoTitle: 'Vidéo : intégrer Jamf Pro à Apple Business Manager',
+        videoUrl: 'https://www.youtube.com/watch?v=t3j9TkFfUJw',
+        videoTitle: 'Vidéo : introduction Jamf Pro',
         videoDurationMinutes: 10,
-        videoProvider: 'mp4',
-        videoSourceLanguage: 'fr',
-        videoTranscriptFr: `Cette leçon couvre l’intégration de Jamf Pro avec Apple Business Manager (ABM) ou Apple School Manager (ASM) pour l’enrôlement automatisé des appareils (ADE).
-
-**1. Prérequis** — Compte ABM ou ASM actif sur business.apple.com ou school.apple.com.
-
-**2. Clé publique Jamf** — Dans Jamf Pro : Paramètres → Global → Enrôlement automatisé des appareils. Téléchargez la clé publique : certificat qui atteste auprès d’Apple que Jamf Pro est un serveur MDM de confiance.
-
-**3. Serveur MDM dans ABM** — Connectez-vous à ABM/ASM → Préférences → Ajouter un serveur MDM. Importez la clé publique, nommez le serveur, puis téléchargez le jeton serveur (.p7m).
-
-**4. Jeton dans Jamf Pro** — Uploadez le jeton dans Jamf Pro. La console synchronise la liste des appareils éligibles à l’ADE (Mac, iPhone, iPad achetés via Apple et rattachés à ABM).
-
-**5. PreStage Enrollment** — Créez un profil PreStage lié au serveur MDM : supervision, verrouillage MDM, options de l’assistant de configuration, gestion Activation Lock au niveau organisation.
-
-**6. Assignation et déploiement** — Assignez les appareils au serveur MDM Jamf dans ABM. Au premier allumage (ou après effacement), l’assistant de configuration inscrit automatiquement l’appareil en mode supervisé.`,
+        videoProvider: 'youtube',
+        videoSourceLanguage: 'en',
+        videoTranscriptFr:
+          'Cette vidéo présente Jamf Pro : console MDM Apple pour Mac, iPhone et iPad, Smart Groups dynamiques, politiques de configuration et déploiement logiciel en entreprise.',
         summary:
           'Construire des Smart Groups dynamiques et associer des politiques Jamf Pro pour cibler finement Mac, iPhone ou iPad en déploiement pilote.',
         learningObjectives: [

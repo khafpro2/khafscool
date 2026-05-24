@@ -47,9 +47,11 @@ describe('seed pilot module videos', () => {
 
   it('provides a French transcript for the Jamf intro video', () => {
     const pedagogy = getModulePedagogy('jamf-pro-foundations', 'smart-groups-policies');
-    expect(pedagogy?.videoSourceLanguage).toBe('fr');
+    expect(pedagogy?.videoSourceLanguage).toBe('en');
+    expect(pedagogy?.videoProvider).toBe('youtube');
+    expect(pedagogy?.videoUrl).toContain('t3j9TkFfUJw');
     expect(pedagogy?.videoTranscriptFr).toMatch(/Jamf Pro/i);
-    expect(pedagogy?.videoTranscriptFr).toMatch(/Apple Business Manager/i);
+    expect(pedagogy?.videoTranscriptFr).toMatch(/Smart Groups/i);
   });
 
   it('defines French dubbed audio for module 1 intro videos only', () => {
