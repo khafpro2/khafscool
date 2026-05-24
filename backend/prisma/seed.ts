@@ -19,6 +19,9 @@ type SeedModule = {
   learningObjectives: string[];
   keyTakeaways: string[];
   lessonContent: string;
+  videoUrl?: string | null;
+  videoTitle?: string | null;
+  videoDurationMinutes?: number | null;
   sortOrder: number;
   questions: SeedQuestion[];
   game: {
@@ -38,6 +41,9 @@ async function seedModule(courseId: string, module: SeedModule) {
       learningObjectives: module.learningObjectives,
       keyTakeaways: module.keyTakeaways,
       lessonContent: module.lessonContent,
+      videoUrl: module.videoUrl ?? null,
+      videoTitle: module.videoTitle ?? null,
+      videoDurationMinutes: module.videoDurationMinutes ?? null,
       sortOrder: module.sortOrder,
     },
     create: {
@@ -48,6 +54,9 @@ async function seedModule(courseId: string, module: SeedModule) {
       learningObjectives: module.learningObjectives,
       keyTakeaways: module.keyTakeaways,
       lessonContent: module.lessonContent,
+      videoUrl: module.videoUrl ?? null,
+      videoTitle: module.videoTitle ?? null,
+      videoDurationMinutes: module.videoDurationMinutes ?? null,
       sortOrder: module.sortOrder,
     },
   });

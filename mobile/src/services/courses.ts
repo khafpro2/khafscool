@@ -42,6 +42,10 @@ export interface CourseModule {
   learningObjectives?: string[];
   keyTakeaways?: string[];
   lessonContent?: string;
+  videoUrl?: string | null;
+  videoTitle?: string | null;
+  videoDurationMinutes?: number | null;
+  videoProvider?: import('@ama/shared/video-embed').VideoProvider;
   questions: CourseQuestion[];
   game?: {
     id?: string;
@@ -126,6 +130,11 @@ function normalizeCourse(course: CourseDetail): CourseDetail {
         learningObjectives: modulePedagogy?.learningObjectives ?? module.learningObjectives,
         keyTakeaways: modulePedagogy?.keyTakeaways ?? module.keyTakeaways,
         lessonContent: modulePedagogy?.lessonContent ?? module.lessonContent,
+        videoUrl: module.videoUrl ?? modulePedagogy?.videoUrl ?? null,
+        videoTitle: module.videoTitle ?? modulePedagogy?.videoTitle ?? null,
+        videoDurationMinutes:
+          module.videoDurationMinutes ?? modulePedagogy?.videoDurationMinutes ?? null,
+        videoProvider: modulePedagogy?.videoProvider,
       };
     }),
   };

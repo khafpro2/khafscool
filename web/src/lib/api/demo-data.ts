@@ -322,6 +322,11 @@ export function normalizeCourse(course: CourseDetail): CourseDetail {
         learningObjectives: modulePedagogy?.learningObjectives ?? module.learningObjectives,
         keyTakeaways: modulePedagogy?.keyTakeaways ?? module.keyTakeaways,
         lessonContent: modulePedagogy?.lessonContent ?? module.lessonContent,
+        videoUrl: module.videoUrl ?? modulePedagogy?.videoUrl ?? null,
+        videoTitle: module.videoTitle ?? modulePedagogy?.videoTitle ?? null,
+        videoDurationMinutes:
+          module.videoDurationMinutes ?? modulePedagogy?.videoDurationMinutes ?? null,
+        videoProvider: modulePedagogy?.videoProvider,
         questions: moduleQuizQuestions(
           module.questions.map((question) => ({
             ...question,

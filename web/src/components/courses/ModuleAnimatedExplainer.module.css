@@ -1,0 +1,104 @@
+.root {
+  display: grid;
+  gap: 0.65rem;
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  background: linear-gradient(145deg, rgba(37, 99, 235, 0.12), rgba(124, 58, 237, 0.1));
+  border: 1px solid var(--border-soft);
+}
+
+.svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.node {
+  fill: rgba(15, 23, 42, 0.55);
+  stroke: rgba(148, 163, 184, 0.45);
+  stroke-width: 1.5;
+}
+
+.nodeAccent {
+  fill: url(#ama-flow-accent);
+  stroke: rgba(255, 255, 255, 0.25);
+  stroke-width: 1.5;
+}
+
+.label,
+.labelLight {
+  fill: var(--fg);
+  font-size: 14px;
+  font-weight: 700;
+  text-anchor: middle;
+}
+
+.labelLight,
+.sublabelLight {
+  fill: #f8fafc;
+}
+
+.sublabel,
+.sublabelLight {
+  fill: var(--muted);
+  font-size: 12px;
+  text-anchor: middle;
+}
+
+.arrow,
+.arrowDelay {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-dasharray: 8 8;
+  animation: ama-flow-dash 1.4s linear infinite;
+}
+
+.arrowDelay {
+  animation-delay: 0.45s;
+}
+
+.pulse,
+.pulseDelay {
+  fill: var(--accent);
+  animation: ama-flow-pulse 1.6s ease-in-out infinite;
+}
+
+.pulseDelay {
+  animation-delay: 0.55s;
+}
+
+.caption {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+  text-align: center;
+}
+
+@keyframes ama-flow-dash {
+  to {
+    stroke-dashoffset: -32;
+  }
+}
+
+@keyframes ama-flow-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(0.85);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .arrow,
+  .arrowDelay,
+  .pulse,
+  .pulseDelay {
+    animation: none;
+  }
+}

@@ -22,6 +22,9 @@ describe('course sanitize', () => {
           keyTakeaways: ['Point clé A'],
           lessonContent: '## Leçon\n\nContenu pédagogique.',
           imageUrl: null,
+          videoUrl: 'https://www.youtube.com/watch?v=qrQyL5-SWFg',
+          videoTitle: "Vidéo : test",
+          videoDurationMinutes: 5,
           sortOrder: 1,
           questions: [
             {
@@ -67,6 +70,9 @@ describe('course sanitize', () => {
     expect(sanitized.modules[0]?.learningObjectives).toEqual(['Objectif A']);
     expect(sanitized.modules[0]?.keyTakeaways).toEqual(['Point clé A']);
     expect(sanitized.modules[0]?.lessonContent).toContain('Leçon');
+    expect(sanitized.modules[0]?.videoUrl).toContain('youtube.com');
+    expect(sanitized.modules[0]?.videoTitle).toBe('Vidéo : test');
+    expect(sanitized.modules[0]?.videoDurationMinutes).toBe(5);
     expect(sanitized.modules[0]?.questions[0]).toEqual({
       id: 'q1',
       type: 'MULTIPLE_CHOICE',

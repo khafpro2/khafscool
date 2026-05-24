@@ -152,6 +152,10 @@ export interface CourseModule {
   learningObjectives?: string[];
   keyTakeaways?: string[];
   lessonContent?: string;
+  videoUrl?: string | null;
+  videoTitle?: string | null;
+  videoDurationMinutes?: number | null;
+  videoProvider?: 'youtube' | 'vimeo' | 'mp4' | 'placeholder';
   questions: CourseQuestion[];
   game?: {
     id?: string;

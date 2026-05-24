@@ -4,6 +4,7 @@ import {
   jamfProFoundationsQuestions,
 } from './quiz-content';
 import { countLessonWords, sumLessonReadingMinutes } from './reading-time';
+import { moduleHasVideo, type VideoProvider } from './video-embed';
 
 export type ModulePedagogy = {
   summary: string;
@@ -11,6 +12,10 @@ export type ModulePedagogy = {
   keyTakeaways: string[];
   lessonContent: string;
   gameInstructions?: string;
+  videoUrl?: string;
+  videoTitle?: string;
+  videoDurationMinutes?: number;
+  videoProvider?: VideoProvider;
 };
 
 export type CoursePedagogy = {
@@ -29,6 +34,10 @@ Vous apprendrez à identifier les symptômes matériels et logiciels les plus fr
 Prérequis : familiarité de base avec macOS et iOS/iPadOS, accès à un Mac de diagnostic et à quelques appareils de test. Aucune expérience MDM préalable n'est exigée, mais une connaissance des profils de configuration et de l'enrôlement automatisé (ADE) sera un atout pour la dernière partie du parcours.`,
     modules: {
       'device-support-basics': {
+        videoUrl: 'https://www.youtube.com/watch?v=qrQyL5-SWFg',
+        videoTitle: "Vidéo : comprendre l'ABM et l'enrôlement MDM en 5 min",
+        videoDurationMinutes: 8,
+        videoProvider: 'youtube',
         summary:
           'Maîtriser le triage matériel/logiciel sur Mac et iOS, sécuriser sauvegardes et restaurations, et relier support terrain et gestion MDM.',
         learningObjectives: [
@@ -361,6 +370,10 @@ L’approche est pratique : chaque module s’appuie sur des scénarios réalist
 Prérequis : notions de gestion macOS/iOS, accès à une instance Jamf Pro (Cloud ou On-Prem) de labo, compte Apple Business Manager ou School Manager de test, et compréhension élémentaire des certificats et du protocole MDM Apple. Une expérience préalable avec des profils .mobileconfig est recommandée.`,
     modules: {
       'smart-groups-policies': {
+        videoUrl: 'https://www.youtube.com/watch?v=_g-0V2AFCW0',
+        videoTitle: 'Vidéo : intégrer Jamf Pro à Apple Business Manager',
+        videoDurationMinutes: 10,
+        videoProvider: 'youtube',
         summary:
           'Construire des Smart Groups dynamiques et associer des politiques Jamf Pro pour cibler finement Mac, iPhone ou iPad en déploiement pilote.',
         learningObjectives: [
@@ -745,6 +758,10 @@ L’objectif est de relier l’écosystème Apple (supervision, profils, ADE) au
 Prérequis : tenant Microsoft 365 avec Intune licencié, rôle Intune Administrator ou équivalent, accès Apple Business Manager, et notions de Conditional Access. Une flotte de test iOS/iPadOS (physique ou Apple Configurator) est fortement recommandée.`,
     modules: {
       'ade-enrollment-basics': {
+        videoUrl: 'https://www.youtube.com/watch?v=GrSaEcbyGh8',
+        videoTitle: "Vidéo : configurer l'ADE Intune avec ABM",
+        videoDurationMinutes: 11,
+        videoProvider: 'youtube',
         summary:
           'Associer Apple Business Manager à Intune, créer un profil ADE et valider l’enrôlement supervisé via l’assistant de configuration iOS/iPadOS.',
         learningObjectives: [
@@ -1196,6 +1213,37 @@ export function getModulePedagogy(
   moduleSlug: string
 ): ModulePedagogy | undefined {
   return COURSE_PEDAGOGY[courseSlug]?.modules[moduleSlug];
+}
+
+/** Modules pilotes avec vidéo intro (module 1 de chaque parcours MVP). */
+export const PILOT_VIDEO_MODULES = [
+  { courseSlug: 'apple-cert-prep', moduleSlug: 'device-support-basics' },
+  { courseSlug: 'jamf-pro-foundations', moduleSlug: 'smart-groups-policies' },
+  { courseSlug: 'intune-ios-enrollment', moduleSlug: 'ade-enrollment-basics' },
+] as const;
+
+export function courseHasIntroVideo(courseSlug: string): boolean {
+  const intro = PILOT_VIDEO_MODULES.find((entry) => entry.courseSlug === courseSlug);
+  if (!intro) return false;
+  const pedagogy = getModulePedagogy(intro.courseSlug, intro.moduleSlug);
+  return pedagogy ? moduleHasVideo(pedagogy) : false;
+}
+
+export function listPilotVideoModules(): Array<{
+  courseSlug: string;
+  moduleSlug: string;
+  videoTitle?: string;
+  videoUrl?: string;
+}> {
+  return PILOT_VIDEO_MODULES.map(({ courseSlug, moduleSlug }) => {
+    const pedagogy = getModulePedagogy(courseSlug, moduleSlug);
+    return {
+      courseSlug,
+      moduleSlug,
+      videoTitle: pedagogy?.videoTitle,
+      videoUrl: pedagogy?.videoUrl,
+    };
+  });
 }
 
 export { countLessonWords } from './reading-time';

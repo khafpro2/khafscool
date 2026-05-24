@@ -9,6 +9,7 @@ import { AuthRequestError, resolveApiErrorMessage } from '@/lib/auth-errors';
 import { buildAuthUrl, getAccessToken } from '@/lib/auth';
 import { KeyboardShortcutsHelp } from '@/components/courses/KeyboardShortcutsHelp';
 import { LessonContent, ModuleObjectives } from '@/components/courses/LessonContent';
+import { ModuleVideoSection } from '@/components/courses/ModuleVideoSection';
 import { formatTrack } from '@/lib/tracks';
 import {
   InteractiveMiniGame,
@@ -47,6 +48,7 @@ import {
   sumLessonReadingMinutes,
 } from '@ama/shared/reading-time';
 import { QUESTIONS_PER_MODULE } from '@ama/shared/constants';
+import { moduleHasVideo } from '@ama/shared/video-embed';
 
 export function CourseDetailClient({ slug }: { slug: string }) {
   const router = useRouter();
@@ -708,6 +710,13 @@ export function CourseDetailClient({ slug }: { slug: string }) {
                           Refais le quiz pour t&apos;entraîner : ta progression et tes points ne seront pas modifiés.
                         </p>
                       </Card>
+                      <ModuleVideoSection
+                        videoUrl={module.videoUrl}
+                        videoTitle={module.videoTitle}
+                        videoDurationMinutes={module.videoDurationMinutes}
+                        videoProvider={module.videoProvider}
+                        moduleTitle={module.title}
+                      />
                       {module.lessonContent ? <LessonContent content={module.lessonContent} /> : null}
                       <QuizPanel
                         module={module}
@@ -724,6 +733,13 @@ export function CourseDetailClient({ slug }: { slug: string }) {
                     </>
                   ) : (
                     <>
+                      <ModuleVideoSection
+                        videoUrl={module.videoUrl}
+                        videoTitle={module.videoTitle}
+                        videoDurationMinutes={module.videoDurationMinutes}
+                        videoProvider={module.videoProvider}
+                        moduleTitle={module.title}
+                      />
                       {module.lessonContent ? <LessonContent content={module.lessonContent} /> : null}
                       <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '0.75rem' }}>
                         <KeyboardShortcutsHelp
@@ -1022,6 +1038,11 @@ function ModuleSidebarNav({
                 <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--muted)' }}>
                   {formatReadingTimeLabel(countLessonWords(module.lessonContent))}
                 </span>
+              ) : null}
+              {moduleHasVideo(module) ? (
+                <Badge tone="neutral" style={{ width: 'fit-content', fontSize: '0.68rem' }}>
+                  {'\u{1F3AC}'} Vidéo
+                </Badge>
               ) : null}
               <span style={{ fontSize: '0.78rem', fontWeight: 800, color: 'var(--muted)' }}>
                 {moduleStatusIcon(status)} {moduleStatusLabel(status)}

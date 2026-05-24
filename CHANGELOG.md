@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.3.0] — 2026-05-24
+
+### Vidéos explicatives par module (pilote)
+- **Contenu** — champs optionnels `videoUrl`, `videoTitle`, `videoDurationMinutes`, `videoProvider` dans `@ama/shared/course-content` ; helper `parseVideoEmbed` (YouTube nocookie, Vimeo, MP4)
+- **Pilote** — 3 vidéos intro YouTube (module 1 Apple, Jamf, Intune) ; fallback `ModuleAnimatedExplainer` SVG/CSS animé (flux ABM → MDM)
+- **Web** — `ModuleVideoSection` au-dessus de la leçon : ratio 16:9, iframe lazy, titre + durée, message « Regardez la vidéo, puis lisez la leçon et passez le quiz »
+- **Mobile** — `ModuleVideoSection` natif : thumbnail « Voir la vidéo » + ouverture externe
+- **Prisma** — migration `Module.videoUrl`, `videoTitle`, `videoDurationMinutes` ; seed depuis course-content
+- **Catalogue / sidebar** — badge discret « Vidéo » si le module ou le parcours a une intro vidéo
+- Tests : `video-embed.test.ts`, `seed-video.test.ts`, e2e `module-video.spec.ts`
+
 ## [0.2.1] — 2026-05-24
 
 ### Déploiement, bandeau accueil et durcissement dons

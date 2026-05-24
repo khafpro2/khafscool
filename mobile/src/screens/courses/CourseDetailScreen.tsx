@@ -17,6 +17,8 @@ import { formatTrack, getTrackVisual } from '../../lib/design';
 import { useThemedStyles } from '../../hooks/useThemedStyles';
 import { toastBadgeUnlocked, toastModuleCompleted } from '../../lib/gamification-toasts';
 import { LessonContent } from '../../components/LessonContent';
+import { ModuleVideoSection } from '../../components/ModuleVideoSection';
+import { moduleHasVideo } from '@ama/shared/video-embed';
 import { ModuleObjectives } from '../../components/ModuleObjectives';
 import { QUESTIONS_PER_MODULE } from '@ama/shared/constants';
 import { countLessonWords, formatCourseHeroBanner, formatReadingTimeLabel, sumLessonReadingMinutes } from '@ama/shared/reading-time';
@@ -390,6 +392,9 @@ export function CourseDetailScreen() {
               <Text style={styles.stripStatus}>
                 {moduleStatusIcon(status)} {moduleStatusLabel(status)}
               </Text>
+              {moduleHasVideo(module) ? (
+                <Text style={styles.stripVideoBadge}>{'\u{1F3AC}'} Vidéo</Text>
+              ) : null}
             </Pressable>
           );
         })}
@@ -472,6 +477,13 @@ export function CourseDetailScreen() {
                         </Text>
                       </View>
                     ) : null}
+                    <ModuleVideoSection
+                      videoUrl={module.videoUrl}
+                      videoTitle={module.videoTitle}
+                      videoDurationMinutes={module.videoDurationMinutes}
+                      videoProvider={module.videoProvider}
+                      moduleTitle={module.title}
+                    />
                     {module.lessonContent ? (
                       <ScrollView
                         style={styles.lessonScroll}
@@ -870,6 +882,7 @@ function createStyles(colors: AppThemeColors) {
   stripIndex: { color: colors.muted, fontSize: 10, fontWeight: '800', textTransform: 'uppercase' },
   stripTitle: { color: colors.fg, fontWeight: '700', fontSize: 12, marginTop: 4, minHeight: 32 },
   stripStatus: { color: colors.accent, fontSize: 11, fontWeight: '800', marginTop: 6 },
+  stripVideoBadge: { color: colors.muted, fontSize: 10, fontWeight: '800', marginTop: 4 },
   moduleCard: {
     backgroundColor: colors.bgSoft,
     borderRadius: 18,
