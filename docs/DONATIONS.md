@@ -152,7 +152,7 @@ En complément de Stripe et du lien externe, la page `/soutenir#virement` affich
 
 Pour remplacer ces coordonnées (autre compte, autre entité), renseigner les variables `DONATION_BANK_*` et leurs variantes `NEXT_PUBLIC_` / `EXPO_PUBLIC_` dans `.env.example`. L’IBAN est une donnée publique volontairement affichée — aucun secret Stripe n’est stocké dans le dépôt.
 
-Contact reçu ou questions : `KTHIAM@HARMYTECH.COM` (voir `CONTACT_EMAIL`).
+Contact reçu ou questions : bouton « Assistance » sur `/soutenir` (voir `CONTACT_EMAIL` / `NEXT_PUBLIC_CONTACT_EMAIL`).
 
 ## Statistiques admin (lecture seule)
 

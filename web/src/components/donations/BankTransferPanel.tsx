@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { buildBankTransferShareText } from '@ama/shared/donation-bank';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { getContactEmail, getContactMailto } from '@/lib/contact';
+import { getContactMailto } from '@/lib/contact';
 import { formatIbanDisplay, getDonationBankDetails } from '@/lib/donation-bank';
 
 type CopyFieldProps = {
@@ -65,7 +65,6 @@ function CopyField({ label, value, copyValue, copyLabel, testId }: CopyFieldProp
 
 export function BankTransferPanel() {
   const details = getDonationBankDetails();
-  const contactEmail = getContactEmail();
   const contactMailto = getContactMailto();
   const ibanDisplay = formatIbanDisplay(details.iban);
 
@@ -125,7 +124,7 @@ export function BankTransferPanel() {
       <p className="muted" style={{ marginTop: '0.75rem', fontSize: '0.92rem' }}>
         Besoin d’un reçu ou d’une confirmation ?{' '}
         <a href={contactMailto} style={{ fontWeight: 700 }}>
-          {contactEmail}
+          Nous contacter
         </a>
       </p>
 

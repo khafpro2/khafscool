@@ -23,7 +23,7 @@ import { createDonationCheckout, fetchDonationStatus } from '@/lib/api/client';
 import type { DonationStatusResponse } from '@/lib/api/types';
 import { getAccessToken } from '@/lib/auth';
 import { AuthRequestError } from '@/lib/auth-errors';
-import { getContactEmail, getContactMailto } from '@/lib/contact';
+import { getContactMailto } from '@/lib/contact';
 import { formatIbanDisplay, getDonationBankDetails } from '@/lib/donation-bank';
 import { getDonationPaypalUrl } from '@/lib/donation-paypal';
 
@@ -147,7 +147,6 @@ export function DonationChoiceGrid() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const contactEmail = getContactEmail();
   const contactMailto = getContactMailto();
   const bankDetails = getDonationBankDetails();
   const paypalBaseUrl = getDonationPaypalUrl();
@@ -557,7 +556,7 @@ export function DonationChoiceGrid() {
             <p className="muted" style={{ marginTop: '0.75rem', fontSize: '0.92rem' }}>
               Besoin d’un reçu ?{' '}
               <a href={contactMailto} style={{ fontWeight: 700 }}>
-                {contactEmail}
+                Nous contacter
               </a>
             </p>
 

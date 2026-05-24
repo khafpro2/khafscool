@@ -118,6 +118,14 @@ test.describe('Page Soutenir', () => {
     ).toBeVisible();
   });
 
+  test('n’affiche pas l’email support en clair', async ({ page }) => {
+    await page.goto('/soutenir');
+    await expect(page.getByText('KTHIAM@HARMYTECH.COM')).toHaveCount(0);
+    const assistanceLink = page.getByRole('link', { name: 'Assistance' });
+    await expect(assistanceLink).toBeVisible();
+    await expect(assistanceLink).toHaveAttribute('href', /^mailto:/);
+  });
+
   test('expose le lien footer « Faire un don »', async ({ page }) => {
     await page.goto('/');
     const footerLink = page.getByRole('contentinfo').getByRole('link', { name: 'Faire un don' });

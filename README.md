@@ -44,8 +44,8 @@ Voir le détail dans [CHANGELOG.md](./CHANGELOG.md) (branche `cursor/progress-da
 
 Projet **MDM Academy Pro** (HarmyTech). Pour le support, les retours pédagogiques ou l’exercice de vos droits RGPD :
 
-- **E-mail** : [KTHIAM@HARMYTECH.COM](mailto:KTHIAM@HARMYTECH.COM)
-- Variable optionnelle : `NEXT_PUBLIC_CONTACT_EMAIL` (web) / `EXPO_PUBLIC_CONTACT_EMAIL` (mobile)
+- **Contact** : via le bouton « Nous contacter » ou « Assistance » sur le site (footer, à propos, profil RGPD, page Soutenir)
+- Variable optionnelle (mailto uniquement, non affichée) : `NEXT_PUBLIC_CONTACT_EMAIL` (web) / `EXPO_PUBLIC_CONTACT_EMAIL` (mobile)
 
 ## Stack
 

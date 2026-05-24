@@ -1,7 +1,7 @@
 'use client';
 
 import { DonationChoiceGrid } from '@/components/donations/DonationChoiceGrid';
-import { getContactEmail, getContactMailto } from '@/lib/contact';
+import { getContactMailto } from '@/lib/contact';
 
 const DONATION_FAQ = [
   {
@@ -22,7 +22,7 @@ const DONATION_FAQ = [
   {
     question: 'Comment obtenir le badge Supporter ?',
     answer:
-      'Connectez-vous à votre compte, puis faites un don depuis cette page. Le badge Supporter est attribué automatiquement après un don par carte (Stripe). Pour un don PayPal ou virement, le badge n’est pas automatique : écrivez à KTHIAM@HARMYTECH.COM avec l’e-mail de votre compte MDM Academy pour qu’on vous l’attribue manuellement.',
+      'Connectez-vous à votre compte, puis faites un don depuis cette page. Le badge Supporter est attribué automatiquement après un don par carte (Stripe). Pour un don PayPal ou virement, le badge n’est pas automatique : contactez-nous via le bouton Assistance en indiquant l’e-mail de votre compte MDM Academy pour qu’on vous l’attribue manuellement.',
   },
   {
     question: 'Où va mon don ?',
@@ -32,7 +32,6 @@ const DONATION_FAQ = [
 ] as const;
 
 export function SoutenirPageClient() {
-  const contactEmail = getContactEmail();
   const contactMailto = getContactMailto();
 
   return (
@@ -78,7 +77,7 @@ export function SoutenirPageClient() {
       <p className="muted" style={{ marginTop: '1.5rem', maxWidth: 640, fontSize: '0.95rem' }}>
         Une question sur les dons ou le fonctionnement de la plateforme ?{' '}
         <a href={contactMailto} style={{ fontWeight: 700 }}>
-          Assistance — {contactEmail}
+          Assistance
         </a>
       </p>
     </section>

@@ -14,7 +14,7 @@ import { PointsRankNavIndicator } from '@/components/layout/PointsRankNavIndicat
 import { StreakNavBadge } from '@/components/layout/StreakNavIndicator';
 import { Toaster } from '@/components/ui/Toast';
 import { Button } from '@/components/ui/Button';
-import { getContactEmail, getContactMailto } from '@/lib/contact';
+import { getContactMailto } from '@/lib/contact';
 import { LEARNING_PATHS } from '@/lib/learningPaths';
 import { SessionBootstrap } from '@/components/layout/SessionBootstrap';
 import { themeInitScript } from '@/lib/theme';
@@ -92,7 +92,6 @@ export const viewport: Viewport = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  const contactEmail = getContactEmail();
   const contactMailto = getContactMailto();
 
   return (
@@ -178,7 +177,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <div style={{ color: 'var(--muted)', fontSize: '0.8rem' }}>
               Non affilié à Apple Inc., Jamf ou Microsoft. ·{' '}
               <Link href={contactMailto} style={{ color: 'inherit' }}>
-                Support : {contactEmail}
+                Assistance
               </Link>
             </div>
           </div>

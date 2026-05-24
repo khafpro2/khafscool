@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { getContactEmail, getContactMailto } from '@/lib/contact';
+import { getContactMailto } from '@/lib/contact';
 
 export const metadata: Metadata = {
   title: 'Politique de confidentialité',
@@ -20,7 +20,6 @@ export const metadata: Metadata = {
 };
 
 export default function ConfidentialitePage() {
-  const contactEmail = getContactEmail();
   const contactMailto = getContactMailto();
 
   return (
@@ -54,9 +53,9 @@ export default function ConfidentialitePage() {
         <h2 style={{ fontSize: '1.15rem', fontWeight: 800 }}>Conservation et sécurité</h2>
         <p className="muted" style={{ marginTop: '0.5rem' }}>
           Les données sont conservées tant que votre compte est actif. Vous pouvez demander la suppression de
-          votre compte en nous contactant à{' '}
+          votre compte en{' '}
           <a href={contactMailto} style={{ fontWeight: 700 }}>
-            {contactEmail}
+            nous contactant
           </a>
           . Nous appliquons des mesures techniques raisonnables pour protéger l’accès à l’API et aux bases de
           données hébergeant votre progression.
@@ -69,9 +68,9 @@ export default function ConfidentialitePage() {
           Conformément au Règlement général sur la protection des données (RGPD), vous disposez d’un droit
           d’accès, de rectification, d’effacement, de limitation du traitement, de portabilité et d’opposition
           concernant vos données personnelles. Pour exercer ces droits ou poser une question sur le traitement de
-          vos données, contactez-nous à{' '}
+          vos données,{' '}
           <a href={contactMailto} style={{ fontWeight: 700 }}>
-            {contactEmail}
+            contactez-nous
           </a>
           . Vous pouvez également exporter ou supprimer votre compte depuis votre profil lorsque vous êtes
           connecté.

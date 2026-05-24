@@ -2,7 +2,7 @@ import { useRouter } from 'expo-router';
 import React from 'react';
 import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { DonationChoiceSection } from '../../components/donations/DonationChoiceSection';
-import { CONTACT_EMAIL, CONTACT_MAILTO } from '../../config';
+import { CONTACT_MAILTO } from '../../config';
 import { useThemedStyles } from '../../hooks/useThemedStyles';
 import type { AppThemeColors } from '../../lib/design';
 import type { DonationPaymentModeId } from '@ama/shared/donation-payment-modes';
@@ -43,7 +43,7 @@ export function DonateScreen({ initialAmountEuros, initialPaymentMode }: DonateS
       <View style={styles.footerCard}>
         <Text style={styles.footerTitle}>Une question sur les dons ?</Text>
         <Text style={styles.footerText}>
-          Écrivez-nous à {CONTACT_EMAIL} pour un reçu, une question ou un signalement.
+          Utilisez le bouton ci-dessous pour un reçu, une question ou un signalement.
         </Text>
         <Pressable style={styles.secondaryButton} onPress={openContactEmail}>
           <Text style={styles.secondaryButtonText}>Nous contacter</Text>

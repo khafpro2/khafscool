@@ -24,4 +24,25 @@ test.describe('Pages légales', () => {
     await expect(page.getByRole('contentinfo').getByRole('link', { name: 'Confidentialité' })).toBeVisible();
     await expect(page.getByRole('contentinfo').getByRole('link', { name: 'Conditions' })).toBeVisible();
   });
+
+  test('n’affiche pas l’email support en clair', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.getByText('KTHIAM@HARMYTECH.COM')).toHaveCount(0);
+    const assistanceLink = page.getByRole('contentinfo').getByRole('link', { name: 'Assistance' });
+    await expect(assistanceLink).toBeVisible();
+    await expect(assistanceLink).toHaveAttribute('href', /^mailto:/);
+  });
+
+  test('pages légales : lien contact sans email visible', async ({ page }) => {
+    await page.goto('/legal/confidentialite');
+    await expect(page.getByText('KTHIAM@HARMYTECH.COM')).toHaveCount(0);
+    await expect(page.getByRole('link', { name: 'contactez-nous' })).toHaveAttribute('href', /^mailto:/);
+
+    await page.goto('/legal/conditions');
+    await expect(page.getByText('KTHIAM@HARMYTECH.COM')).toHaveCount(0);
+    await expect(page.getByRole('link', { name: /contactez l’équipe HarmyTech/i })).toHaveAttribute(
+      'href',
+      /^mailto:/,
+    );
+  });
 });

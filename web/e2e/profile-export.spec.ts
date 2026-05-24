@@ -8,6 +8,7 @@ import {
   mockUserExport,
   mockUserExportPayload,
 } from './helpers/auth-mocks';
+import { seedCookieConsent } from './helpers/cookie-consent';
 
 const mockDashboardPayload = {
   user: mockDemoUser,
@@ -30,6 +31,7 @@ const mockDashboardPayload = {
 
 test.describe('Profil — export RGPD (compte connecté)', () => {
   test.beforeEach(async ({ page }) => {
+    await seedCookieConsent(page);
     await mockAuthenticatedSession(page);
     await mockDashboard(page, mockDashboardPayload);
     await mockCurrentUser(page);
@@ -42,6 +44,13 @@ test.describe('Profil — export RGPD (compte connecté)', () => {
     await expect(page).toHaveURL(/\/profile/);
     await expect(page.getByRole('heading', { name: /Export et suppression \(RGPD\)/i })).toBeVisible();
     await expect(page.getByRole('button', { name: /Exporter mes données \(JSON\)/i })).toBeVisible();
+  });
+
+  test('n’affiche pas l’email support en clair sur la section RGPD', async ({ page }) => {
+    await loginDemoUser(page, '/profile');
+
+    await expect(page.getByText('KTHIAM@HARMYTECH.COM')).toHaveCount(0);
+    await expect(page.getByRole('link', { name: 'Assistance' })).toHaveAttribute('href', /^mailto:/);
   });
 
   test('télécharge un export JSON via le proxy BFF', async ({ page }) => {
@@ -75,23 +84,25 @@ test.describe('Profil — export RGPD (compte connecté)', () => {
     await loginDemoUser(page, '/profile');
 
     await page.getByRole('button', { name: /Supprimer mon compte/i }).click();
-    await expect(page.getByRole('dialog')).toBeVisible();
+    const deleteDialog = page.getByRole('dialog', { name: /Supprimer définitivement/i });
+    await expect(deleteDialog).toBeVisible();
 
-    await page.getByLabel(/Saisis SUPPRIMER/i).fill('supprimer');
-    await page.getByRole('button', { name: /Confirmer la suppression/i }).click();
+    await deleteDialog.getByLabel(/Saisis SUPPRIMER/i).fill('supprimer');
+    await deleteDialog.getByRole('button', { name: /Confirmer la suppression/i }).click();
 
-    await expect(page.getByRole('alert')).toContainText('Saisis exactement SUPPRIMER');
-    await expect(page.getByRole('dialog')).toBeVisible();
+    await expect(deleteDialog.getByRole('alert')).toContainText('Saisis exactement SUPPRIMER');
+    await expect(deleteDialog).toBeVisible();
   });
 
   test('exige le mot de passe pour supprimer un compte e-mail', async ({ page }) => {
     await loginDemoUser(page, '/profile');
 
     await page.getByRole('button', { name: /Supprimer mon compte/i }).click();
-    await page.getByLabel(/Saisis SUPPRIMER/i).fill('SUPPRIMER');
-    await page.getByRole('button', { name: /Confirmer la suppression/i }).click();
+    const deleteDialog = page.getByRole('dialog', { name: /Supprimer définitivement/i });
+    await deleteDialog.getByLabel(/Saisis SUPPRIMER/i).fill('SUPPRIMER');
+    await deleteDialog.getByRole('button', { name: /Confirmer la suppression/i }).click();
 
-    await expect(page.getByRole('alert')).toContainText('Indique ton mot de passe actuel');
-    await expect(page.getByRole('dialog')).toBeVisible();
+    await expect(deleteDialog.getByRole('alert')).toContainText('Indique ton mot de passe actuel');
+    await expect(deleteDialog).toBeVisible();
   });
 });

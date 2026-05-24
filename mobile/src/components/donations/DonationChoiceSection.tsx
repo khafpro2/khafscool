@@ -8,7 +8,7 @@ import {
 } from '@ama/shared/donation-amounts';
 import { buildBankTransferShareText } from '@ama/shared/donation-bank';
 import { DEFAULT_DONATION_PAYPAL_REFERENCE } from '@ama/shared/donation-methods';
-import { CONTACT_EMAIL, CONTACT_MAILTO, WEB_URL } from '../../config';
+import { CONTACT_MAILTO, WEB_URL } from '../../config';
 import { useAppTheme } from '../../context/ThemeContext';
 import { useThemedStyles } from '../../hooks/useThemedStyles';
 import type { AppThemeColors } from '../../lib/design';
@@ -306,7 +306,7 @@ export function DonationChoiceSection({
             <Text style={styles.secondaryButtonText}>Voir sur le web</Text>
           </Pressable>
           <Pressable style={styles.secondaryButton} onPress={openContactEmail}>
-            <Text style={styles.secondaryButtonText}>Question — {CONTACT_EMAIL}</Text>
+            <Text style={styles.secondaryButtonText}>Assistance</Text>
           </Pressable>
         </View>
       ) : null}

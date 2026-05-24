@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { getContactEmail, getContactMailto } from '@/lib/contact';
+import { getContactMailto } from '@/lib/contact';
 
 export const metadata: Metadata = {
   title: 'Conditions d’utilisation',
@@ -20,7 +20,6 @@ export const metadata: Metadata = {
 };
 
 export default function ConditionsPage() {
-  const contactEmail = getContactEmail();
   const contactMailto = getContactMailto();
 
   return (
@@ -72,9 +71,9 @@ export default function ConditionsPage() {
         <h2 style={{ fontSize: '1.15rem', fontWeight: 800 }}>Contact</h2>
         <p className="muted" style={{ marginTop: '0.5rem' }}>
           Pour toute question sur l’utilisation du service, signaler un abus ou exercer vos droits relatifs aux
-          données personnelles, contactez l’équipe HarmyTech à{' '}
+          données personnelles,{' '}
           <a href={contactMailto} style={{ fontWeight: 700 }}>
-            {contactEmail}
+            contactez l’équipe HarmyTech
           </a>
           .
         </p>

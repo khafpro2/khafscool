@@ -3,6 +3,7 @@
 ## [0.2.1] — 2026-05-24
 
 ### Déploiement, bandeau accueil et durcissement dons
+- **Contact** — email support retiré de l’UI publique (web + mobile) ; liens « Nous contacter » / « Assistance » (mailto sans adresse visible)
 - **docs/QUICK-DEPLOY.md** — guide FR en 15 étapes : Vercel web + Railway API + Postgres, liste env vars, Stripe/PayPal prod
 - **Web accueil** — bandeau discret « Nouveau · v0.2.1 » (examen blanc, glossaire, dons 3 modes) ; dismiss `localStorage`
 - **Intune module 4** — encadré cas pratique supplémentaire (renouvellement token VPP avant go-live)
@@ -18,7 +19,7 @@
 - **Mobile** — `DonationChoiceSection` sur `/donate` : parité montants/modes avec le web
 - **Deep link mobile** — universal link style `/donate` et `/soutenir` → écran natif `DonateScreen` (scheme `applemdmacademy://` + associated domains via `EXPO_PUBLIC_WEB_URL`)
 - **Stripe Checkout** — spinner sur « Payer X € par carte » ; message d’erreur FR si l’API échoue
-- **FAQ** — badge Supporter : attribution manuelle PayPal/virement via KTHIAM@HARMYTECH.COM
+- **FAQ** — badge Supporter : attribution manuelle PayPal/virement via le bouton Assistance
 - **Parcours** — micro-CTA discret « Ce contenu vous aide ? Soutenir le projet » → `/soutenir?amount=5` (web sidebar, mobile `/donate?amount=5`)
 - **CI** — smoke `pnpm --filter backend test -- donations`
 - Tests e2e : `donate-redirect.spec.ts`, `soutenir.spec.ts`, `home-support.spec.ts`

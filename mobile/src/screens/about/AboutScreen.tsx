@@ -14,7 +14,7 @@ import { useAppTheme } from '../../context/ThemeContext';
 import type { AppThemeColors } from '../../lib/design';
 import { formatTrack, getTrackVisual } from '../../lib/design';
 import { useThemedStyles } from '../../hooks/useThemedStyles';
-import { CONTACT_EMAIL, CONTACT_MAILTO } from '../../config';
+import { CONTACT_MAILTO } from '../../config';
 
 const GITHUB_REPO_URL = 'https://github.com/khafpro2/khafscool';
 
@@ -124,7 +124,7 @@ export function AboutScreen() {
           public : signale un bug, propose une amélioration ou contribue aux parcours pédagogiques.
         </Text>
         <Text style={styles.cardText}>
-          Pour toute question ou demande relative à vos données, écrivez-nous à {CONTACT_EMAIL}.
+          Pour toute question ou demande relative à vos données, utilisez le bouton ci-dessous.
         </Text>
         <Pressable style={styles.secondaryButton} onPress={openContactEmail}>
           <Text style={styles.secondaryButtonText}>Nous contacter</Text>

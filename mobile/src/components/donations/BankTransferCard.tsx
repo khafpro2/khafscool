@@ -1,7 +1,7 @@
 import React from 'react';
 import { Linking, Pressable, Share, StyleSheet, Text, View } from 'react-native';
 import { buildBankTransferShareText } from '@ama/shared/donation-bank';
-import { CONTACT_EMAIL, CONTACT_MAILTO, WEB_URL } from '../../config';
+import { CONTACT_MAILTO, WEB_URL } from '../../config';
 import type { AppThemeColors } from '../../lib/design';
 import { useThemedStyles } from '../../hooks/useThemedStyles';
 import { formatIbanDisplay, getDonationBankDetails } from '../../lib/donation-bank';
@@ -100,7 +100,7 @@ export function BankTransferCard() {
         <Text style={styles.secondaryButtonText}>Voir sur le web (/soutenir#virement)</Text>
       </Pressable>
       <Pressable style={styles.secondaryButton} onPress={openContactEmail}>
-        <Text style={styles.secondaryButtonText}>Reçu ou question — {CONTACT_EMAIL}</Text>
+        <Text style={styles.secondaryButtonText}>Assistance</Text>
       </Pressable>
     </View>
   );
