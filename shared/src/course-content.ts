@@ -16,6 +16,10 @@ export type ModulePedagogy = {
   videoTitle?: string;
   videoDurationMinutes?: number;
   videoProvider?: VideoProvider;
+  /** Langue audio de la vidéo source (pour afficher une note ou une transcription). */
+  videoSourceLanguage?: 'fr' | 'en';
+  /** Transcription ou résumé pédagogique en français. */
+  videoTranscriptFr?: string;
 };
 
 export type CoursePedagogy = {
@@ -108,6 +112,10 @@ En résumé, le technicien Device Support efficace combine rigueur diagnostic, r
           'Ordonnez les étapes de dépannage d’un Mac bloqué au démarrage pour appliquer la logique « vérifier l’espace disque, puis mode sans échec, puis réinstallation conservatoire ».',
       },
       'ios-troubleshooting': {
+        videoUrl: 'placeholder',
+        videoProvider: 'placeholder',
+        videoTitle: 'Vidéo : dépannage iOS en environnement géré',
+        videoDurationMinutes: 4,
         summary:
           'Diagnostiquer connectivité, batterie et blocages courants sur iPhone/iPad avec une méthode reproductible, en tenant compte des profils d’entreprise et du MDM.',
         learningObjectives: [
@@ -374,6 +382,22 @@ Prérequis : notions de gestion macOS/iOS, accès à une instance Jamf Pro (Clou
         videoTitle: 'Vidéo : intégrer Jamf Pro à Apple Business Manager',
         videoDurationMinutes: 10,
         videoProvider: 'youtube',
+        videoSourceLanguage: 'en',
+        videoTranscriptFr: `Cette leçon Jamf 100 (en anglais à l’écran) couvre l’intégration de Jamf Pro avec Apple Business Manager (ABM) ou Apple School Manager (ASM) pour l’enrôlement automatisé des appareils (ADE).
+
+**1. Prérequis** — Compte ABM ou ASM actif sur business.apple.com ou school.apple.com.
+
+**2. Clé publique Jamf** — Dans Jamf Pro : Paramètres → Global → Enrôlement automatisé des appareils. Téléchargez la clé publique : certificat qui atteste auprès d’Apple que Jamf Pro est un serveur MDM de confiance.
+
+**3. Serveur MDM dans ABM** — Connectez-vous à ABM/ASM → Préférences → Ajouter un serveur MDM. Importez la clé publique, nommez le serveur, puis téléchargez le jeton serveur (.p7m).
+
+**4. Jeton dans Jamf Pro** — Uploadez le jeton dans Jamf Pro. La console synchronise la liste des appareils éligibles à l’ADE (Mac, iPhone, iPad achetés via Apple et rattachés à ABM).
+
+**5. PreStage Enrollment** — Créez un profil PreStage lié au serveur MDM : supervision, verrouillage MDM, options de l’assistant de configuration, gestion Activation Lock au niveau organisation.
+
+**6. Assignation et déploiement** — Assignez les appareils au serveur MDM Jamf dans ABM. Au premier allumage (ou après effacement), l’assistant de configuration inscrit automatiquement l’appareil en mode supervisé.
+
+Les sous-titres français sont activés par défaut dans le lecteur (CC). Si la piste « Français (générés automatiquement) » n’apparaît pas, cliquez sur l’icône CC puis choisissez Français.`,
         summary:
           'Construire des Smart Groups dynamiques et associer des politiques Jamf Pro pour cibler finement Mac, iPhone ou iPad en déploiement pilote.',
         learningObjectives: [
@@ -456,6 +480,11 @@ En maîtrisant Smart Groups et politiques, vous industrialisez le déploiement M
           'Ordonnez les étapes de déploiement d’un paquet sur un groupe pilote : Smart Group, politique, test, puis extension du scope.',
       },
       'inventory-basics': {
+        videoUrl: 'https://www.youtube.com/watch?v=Qe7zYNIezHc',
+        videoTitle: 'Vidéo : exporter un rapport inventaire Jamf Pro',
+        videoDurationMinutes: 2,
+        videoProvider: 'youtube',
+        videoSourceLanguage: 'en',
         summary:
           'Exploiter l’inventaire Jamf Pro, interpréter conformité et extension attributes pour prioriser les actions sur appareils hors norme.',
         learningObjectives: [
@@ -858,6 +887,11 @@ ADE + Intune pose les fondations d’un parc iOS supervisé, prêt pour conformi
           'Ordonnez les étapes pour préparer trente iPad scolaires depuis ABM jusqu’à la validation du premier appareil géré Intune.',
       },
       'compliance-policies': {
+        videoUrl: 'https://www.youtube.com/watch?v=oDm0KAbNVB8',
+        videoTitle: 'Vidéo : notifications de conformité Intune',
+        videoDurationMinutes: 8,
+        videoProvider: 'youtube',
+        videoSourceLanguage: 'en',
         summary:
           'Définir, assigner et remédier des politiques de conformité Intune pour iOS/iPadOS : version OS, code PIN, jailbreak et actions automatiques.',
         learningObjectives: [
@@ -1215,18 +1249,26 @@ export function getModulePedagogy(
   return COURSE_PEDAGOGY[courseSlug]?.modules[moduleSlug];
 }
 
-/** Modules pilotes avec vidéo intro (module 1 de chaque parcours MVP). */
+/** Modules pilotes avec vidéo (modules 1 et 2 de chaque parcours MVP). */
 export const PILOT_VIDEO_MODULES = [
   { courseSlug: 'apple-cert-prep', moduleSlug: 'device-support-basics' },
+  { courseSlug: 'apple-cert-prep', moduleSlug: 'ios-troubleshooting' },
   { courseSlug: 'jamf-pro-foundations', moduleSlug: 'smart-groups-policies' },
+  { courseSlug: 'jamf-pro-foundations', moduleSlug: 'inventory-basics' },
   { courseSlug: 'intune-ios-enrollment', moduleSlug: 'ade-enrollment-basics' },
+  { courseSlug: 'intune-ios-enrollment', moduleSlug: 'compliance-policies' },
 ] as const;
 
 export function courseHasIntroVideo(courseSlug: string): boolean {
-  const intro = PILOT_VIDEO_MODULES.find((entry) => entry.courseSlug === courseSlug);
-  if (!intro) return false;
-  const pedagogy = getModulePedagogy(intro.courseSlug, intro.moduleSlug);
-  return pedagogy ? moduleHasVideo(pedagogy) : false;
+  return countCourseVideoModules(courseSlug) > 0;
+}
+
+export function countCourseVideoModules(courseSlug: string): number {
+  return PILOT_VIDEO_MODULES.reduce((count, entry) => {
+    if (entry.courseSlug !== courseSlug) return count;
+    const pedagogy = getModulePedagogy(entry.courseSlug, entry.moduleSlug);
+    return pedagogy && moduleHasVideo(pedagogy) ? count + 1 : count;
+  }, 0);
 }
 
 export function listPilotVideoModules(): Array<{

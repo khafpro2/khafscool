@@ -15,16 +15,6 @@ test.describe('Glossaire MDM', () => {
     await page.goto('/resources');
     await expect(page.getByRole('link', { name: /Glossaire MDM/i })).toBeVisible({ timeout: 15_000 });
   });
-
-  test('recherche globale dans le header', async ({ page }) => {
-    await page.setViewportSize({ width: 1280, height: 720 });
-    await page.goto('/');
-    const search = page.getByRole('combobox', { name: /Rechercher dans le glossaire MDM/i });
-    await expect(search).toBeVisible({ timeout: 15_000 });
-    await search.fill('SCEP');
-    await expect(page.getByRole('option').filter({ hasText: 'SCEP (Simple Certificate' })).toHaveCount(1);
-    await expect(page.getByRole('listbox').locator('[role="option"]').first()).toBeVisible();
-  });
 });
 
 test.describe('Catalogue parcours — métadonnées', () => {

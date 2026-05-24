@@ -156,6 +156,11 @@ export interface CourseModule {
   videoTitle?: string | null;
   videoDurationMinutes?: number | null;
   videoProvider?: 'youtube' | 'vimeo' | 'mp4' | 'placeholder';
+  videoSourceLanguage?: 'fr' | 'en' | null;
+  videoTranscriptFr?: string | null;
+  videoDubFrSyncUrl?: string | null;
+  videoDubFrUrl?: string | null;
+  videoHeyGenFrUrl?: string | null;
   questions: CourseQuestion[];
   game?: {
     id?: string;

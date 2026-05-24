@@ -6,6 +6,8 @@ import {
   toDemoQuestions,
 } from '@ama/shared/quiz-content';
 import { getCoursePedagogy, getModulePedagogy } from '@ama/shared/course-content';
+import { getModuleVideoDubFr, getModuleVideoDubFrSyncUrl } from '@ama/shared/video-dub-fr';
+import { getModuleVideoHeyGenFr } from '@ama/shared/video-heygen-fr';
 import { apiFetch } from './api';
 import { getAccessToken } from './auth';
 
@@ -46,6 +48,11 @@ export interface CourseModule {
   videoTitle?: string | null;
   videoDurationMinutes?: number | null;
   videoProvider?: import('@ama/shared/video-embed').VideoProvider;
+  videoSourceLanguage?: 'fr' | 'en' | null;
+  videoTranscriptFr?: string | null;
+  videoDubFrSyncUrl?: string | null;
+  videoDubFrUrl?: string | null;
+  videoHeyGenFrUrl?: string | null;
   questions: CourseQuestion[];
   game?: {
     id?: string;
@@ -135,6 +142,17 @@ function normalizeCourse(course: CourseDetail): CourseDetail {
         videoDurationMinutes:
           module.videoDurationMinutes ?? modulePedagogy?.videoDurationMinutes ?? null,
         videoProvider: modulePedagogy?.videoProvider,
+        videoSourceLanguage: modulePedagogy?.videoSourceLanguage ?? null,
+        videoTranscriptFr: modulePedagogy?.videoTranscriptFr ?? null,
+        videoDubFrSyncUrl: (() => {
+          const dub = getModuleVideoDubFr(course.slug, module.slug);
+          return dub ? getModuleVideoDubFrSyncUrl(dub) : null;
+        })(),
+        videoDubFrUrl: (() => {
+          const dub = getModuleVideoDubFr(course.slug, module.slug);
+          return dub ? getModuleVideoDubFrSyncUrl(dub) : null;
+        })(),
+        videoHeyGenFrUrl: getModuleVideoHeyGenFr(course.slug, module.slug)?.url ?? null,
       };
     }),
   };

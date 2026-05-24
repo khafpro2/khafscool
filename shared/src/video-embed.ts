@@ -1,12 +1,41 @@
 export type VideoProvider = 'youtube' | 'vimeo' | 'mp4' | 'placeholder';
 
+export type VideoEmbedLocale = 'fr' | 'en';
+
+export type VideoEmbedOptions = {
+  /** Langue du lecteur et des sous-titres préférés (défaut : fr). */
+  locale?: VideoEmbedLocale;
+};
+
 export type ParsedVideoEmbed = {
   provider: VideoProvider;
   embedUrl: string | null;
   watchUrl: string | null;
 };
 
+function buildYouTubeEmbedUrl(videoId: string, locale: VideoEmbedLocale = 'fr'): string {
+  const params = new URLSearchParams({
+    rel: '0',
+    modestbranding: '1',
+    hl: locale,
+    cc_lang_pref: locale,
+    cc_load_policy: '1',
+  });
+  return `https://www.youtube-nocookie.com/embed/${videoId}?${params.toString()}`;
+}
+
+function buildYouTubeWatchUrl(videoId: string, locale: VideoEmbedLocale = 'fr'): string {
+  const params = new URLSearchParams({ v: videoId, hl: locale });
+  return `https://www.youtube.com/watch?${params.toString()}`;
+}
+
 const YOUTUBE_ID_PATTERN = /^[a-zA-Z0-9_-]{11}$/;
+
+/** Extrait l’identifiant YouTube d’une URL watch, youtu.be ou embed. */
+export function extractYouTubeVideoId(url: string | null | undefined): string | null {
+  if (!url?.trim()) return null;
+  return extractYouTubeId(url.trim());
+}
 
 function extractYouTubeId(url: string): string | null {
   try {
@@ -50,8 +79,10 @@ function extractVimeoId(url: string): string | null {
 /** Convertit une URL watch/CDN en URL d’embed sûre (sans autoplay). */
 export function parseVideoEmbed(
   url: string | undefined | null,
-  providerHint?: VideoProvider
+  providerHint?: VideoProvider,
+  options?: VideoEmbedOptions
 ): ParsedVideoEmbed | null {
+  const locale = options?.locale ?? 'fr';
   if (!url?.trim()) {
     if (providerHint === 'placeholder') {
       return { provider: 'placeholder', embedUrl: null, watchUrl: null };
@@ -68,16 +99,17 @@ export function parseVideoEmbed(
   if (youtubeId) {
     return {
       provider: 'youtube',
-      embedUrl: `https://www.youtube-nocookie.com/embed/${youtubeId}?rel=0&modestbranding=1`,
-      watchUrl: `https://www.youtube.com/watch?v=${youtubeId}`,
+      embedUrl: buildYouTubeEmbedUrl(youtubeId, locale),
+      watchUrl: buildYouTubeWatchUrl(youtubeId, locale),
     };
   }
 
   const vimeoId = extractVimeoId(trimmed);
   if (vimeoId) {
+    const vimeoParams = locale === 'fr' ? '?dnt=1&texttrack=fr' : '?dnt=1';
     return {
       provider: 'vimeo',
-      embedUrl: `https://player.vimeo.com/video/${vimeoId}?dnt=1`,
+      embedUrl: `https://player.vimeo.com/video/${vimeoId}${vimeoParams}`,
       watchUrl: `https://vimeo.com/${vimeoId}`,
     };
   }

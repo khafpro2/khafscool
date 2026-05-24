@@ -1,19 +1,22 @@
 import type { CSSProperties } from 'react';
 import {
   BRAND_ARIA_LABELS,
-  BRAND_PATHS,
   getBrandIconDimensions,
+  getBrandPaths,
   getBrandViewBox,
   resolveBrandPathFill,
   type BrandId,
   type BrandIconSize,
+  type BrandMark,
 } from '@/lib/brands';
 
-export type { BrandIconSize };
+export type { BrandIconSize, BrandMark };
 
 interface BrandIconProps {
   brand: BrandId;
   size?: BrandIconSize;
+  /** Jamf : `symbol` (défaut) = icône seule ; `full` = logo + wordmark. */
+  mark?: BrandMark;
   className?: string;
   style?: CSSProperties;
   /** Blanc sur fond coloré (Apple, Intune, Jamf). */
@@ -23,13 +26,15 @@ interface BrandIconProps {
 export function BrandIcon({
   brand,
   size = 'md',
+  mark = 'symbol',
   className,
   style,
   variant = 'default',
 }: BrandIconProps) {
-  const { width, height } = getBrandIconDimensions(brand, size);
-  const viewBox = getBrandViewBox(brand);
-  const paths = BRAND_PATHS[brand];
+  const resolvedMark = brand === 'jamf' ? mark : 'full';
+  const { width, height } = getBrandIconDimensions(brand, size, resolvedMark);
+  const viewBox = getBrandViewBox(brand, resolvedMark);
+  const paths = getBrandPaths(brand, resolvedMark);
 
   return (
     <svg

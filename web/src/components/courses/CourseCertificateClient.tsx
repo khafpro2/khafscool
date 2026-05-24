@@ -266,6 +266,10 @@ export function CourseCertificateClient({ slug }: { slug: string }) {
             Piste {formatTrack(course.track)} · {course.modules.length} unités · niveau {level}
           </p>
 
+          <p className="certificate-document__multimedia">
+            Formation multimédia — parcours enrichi de vidéos explicatives par module.
+          </p>
+
           {completedModuleTitles.length > 0 ? (
             <div className="certificate-document__modules">
               <p className="certificate-document__modules-label">Unités complétées</p>

@@ -1,21 +1,22 @@
 import { describe, expect, it } from 'vitest';
-import { parseVideoEmbed } from '@ama/shared/video-embed';
+import { extractYouTubeVideoId, parseVideoEmbed } from '@ama/shared/video-embed';
 
 describe('parseVideoEmbed', () => {
   it('converts YouTube watch URLs to nocookie embeds without autoplay', () => {
     const parsed = parseVideoEmbed('https://www.youtube.com/watch?v=qrQyL5-SWFg');
-    expect(parsed).toEqual({
-      provider: 'youtube',
-      embedUrl: 'https://www.youtube-nocookie.com/embed/qrQyL5-SWFg?rel=0&modestbranding=1',
-      watchUrl: 'https://www.youtube.com/watch?v=qrQyL5-SWFg',
-    });
+    expect(parsed?.provider).toBe('youtube');
+    expect(parsed?.embedUrl).toContain('youtube-nocookie.com/embed/qrQyL5-SWFg');
+    expect(parsed?.embedUrl).toContain('hl=fr');
+    expect(parsed?.embedUrl).toContain('cc_lang_pref=fr');
+    expect(parsed?.embedUrl).toContain('cc_load_policy=1');
+    expect(parsed?.watchUrl).toContain('hl=fr');
     expect(parsed?.embedUrl).not.toContain('autoplay');
   });
 
   it('supports youtu.be short links and Vimeo', () => {
     expect(parseVideoEmbed('https://youtu.be/_g-0V2AFCW0')?.provider).toBe('youtube');
     expect(parseVideoEmbed('https://vimeo.com/123456789')?.embedUrl).toBe(
-      'https://player.vimeo.com/video/123456789?dnt=1'
+      'https://player.vimeo.com/video/123456789?dnt=1&texttrack=fr'
     );
   });
 
@@ -36,5 +37,14 @@ describe('parseVideoEmbed', () => {
   it('rejects unsafe or unknown URLs', () => {
     expect(parseVideoEmbed('javascript:alert(1)')).toBeNull();
     expect(parseVideoEmbed('https://evil.example/not-video')).toBeNull();
+  });
+});
+
+describe('extractYouTubeVideoId', () => {
+  it('extracts ids from watch, youtu.be and embed URLs', () => {
+    expect(extractYouTubeVideoId('https://www.youtube.com/watch?v=qrQyL5-SWFg')).toBe('qrQyL5-SWFg');
+    expect(extractYouTubeVideoId('https://youtu.be/_g-0V2AFCW0')).toBe('_g-0V2AFCW0');
+    expect(extractYouTubeVideoId('https://www.youtube-nocookie.com/embed/GrSaEcbyGh8')).toBe('GrSaEcbyGh8');
+    expect(extractYouTubeVideoId(null)).toBeNull();
   });
 });

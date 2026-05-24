@@ -3,8 +3,11 @@ import { expect, test } from '@playwright/test';
 test.describe('Parcours d’apprentissage — smoke', () => {
   test('accueil charge', async ({ page }) => {
     await page.goto('/');
-    await expect(page.getByRole('heading', { name: /Maîtrise Apple, Jamf Pro et Intune/i })).toBeVisible();
-    await expect(page.getByRole('main').getByRole('link', { name: /Commencer gratuitement/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Hello' })).toBeVisible();
+    await expect(page.getByText('Je veux apprendre')).toBeVisible();
+    await expect(page.getByRole('link', { name: /Parcours Apple/i })).toBeVisible();
+    await expect(page.getByRole('link', { name: /Parcours Jamf/i })).toBeVisible();
+    await expect(page.getByRole('link', { name: /Parcours Intune/i })).toBeVisible();
   });
 
   test('/courses répond 200', async ({ page }) => {

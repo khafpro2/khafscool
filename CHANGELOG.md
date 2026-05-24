@@ -7,12 +7,17 @@
 
 ### Vidéos explicatives par module (pilote)
 - **Contenu** — champs optionnels `videoUrl`, `videoTitle`, `videoDurationMinutes`, `videoProvider` dans `@ama/shared/course-content` ; helper `parseVideoEmbed` (YouTube nocookie, Vimeo, MP4)
-- **Pilote** — 3 vidéos intro YouTube (module 1 Apple, Jamf, Intune) ; fallback `ModuleAnimatedExplainer` SVG/CSS animé (flux ABM → MDM)
-- **Web** — `ModuleVideoSection` au-dessus de la leçon : ratio 16:9, iframe lazy, titre + durée, message « Regardez la vidéo, puis lisez la leçon et passez le quiz »
-- **Mobile** — `ModuleVideoSection` natif : thumbnail « Voir la vidéo » + ouverture externe
+- **Pilote** — 6 vidéos (modules 1 et 2 de chaque parcours) : YouTube éducatif MDM/Apple/Jamf/Intune ou fallback `ModuleAnimatedExplainer` SVG/CSS animé
+- **Web** — `ModuleVideoSection` au-dessus de la leçon : ratio 16:9, iframe lazy, titre + durée, doublage FR synchronisé sur module 1
+- **Mobile** — `ModuleVideoSection` : lecteur YouTube inline (`WebView`) quand `videoUrl` présent ; placeholder animé sinon
 - **Prisma** — migration `Module.videoUrl`, `videoTitle`, `videoDurationMinutes` ; seed depuis course-content
-- **Catalogue / sidebar** — badge discret « Vidéo » si le module ou le parcours a une intro vidéo
+- **Catalogue / sidebar** — badge « 2 vidéos » si le parcours a plusieurs unités vidéo
+- **Certificat** — mention « Formation multimédia » sur la page certificat
 - Tests : `video-embed.test.ts`, `seed-video.test.ts`, e2e `module-video.spec.ts`
+
+### Contact et accueil
+- **Contact** — email support retiré de l’UI publique (web + mobile)
+- **Web accueil** — bandeau « Nouveau · v0.3.0 » ; fix API banner
 
 ## [0.2.1] — 2026-05-24
 

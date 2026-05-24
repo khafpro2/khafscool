@@ -1,6 +1,6 @@
 {
   "name": "@ama/shared",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "exports": {
@@ -17,7 +17,9 @@
     "./donation-bank": "./src/donation-bank.ts",
     "./donation-methods": "./src/donation-methods.ts",
     "./donation-amounts": "./src/donation-amounts.ts",
-    "./video-embed": "./src/video-embed.ts"
+    "./video-embed": "./src/video-embed.ts",
+    "./video-dub-fr": "./src/video-dub-fr.ts",
+    "./video-heygen-fr": "./src/video-heygen-fr.ts"
   },
   "scripts": {
     "build": "tsc",

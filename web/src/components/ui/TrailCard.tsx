@@ -37,7 +37,7 @@ export interface TrailCardProps {
   ctaSuffix?: React.ReactNode;
   status?: 'available' | 'in-progress' | 'completed';
   recommended?: boolean;
-  hasIntroVideo?: boolean;
+  videoModuleCount?: number;
 }
 
 export function TrailCard({
@@ -60,7 +60,7 @@ export function TrailCard({
   ctaSuffix,
   status,
   recommended,
-  hasIntroVideo,
+  videoModuleCount,
 }: TrailCardProps) {
   const visual = getTrackVisual(track);
   const effectiveLevel = level ?? inferLevelFromModules(totalModules);
@@ -141,8 +141,10 @@ export function TrailCard({
           <Badge tone="warning">
             {effectivePoints} pts
           </Badge>
-          {hasIntroVideo ? (
-            <Badge tone="neutral">{'\u{1F3AC}'} Vidéo</Badge>
+          {videoModuleCount && videoModuleCount > 0 ? (
+            <Badge tone="neutral">
+              {'\u{1F3AC}'} {videoModuleCount > 1 ? `${videoModuleCount} vidéos` : 'Vidéo'}
+            </Badge>
           ) : null}
         </div>
 

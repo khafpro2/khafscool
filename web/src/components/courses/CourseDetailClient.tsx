@@ -715,6 +715,11 @@ export function CourseDetailClient({ slug }: { slug: string }) {
                         videoTitle={module.videoTitle}
                         videoDurationMinutes={module.videoDurationMinutes}
                         videoProvider={module.videoProvider}
+                        videoSourceLanguage={module.videoSourceLanguage}
+                        videoTranscriptFr={module.videoTranscriptFr}
+                        videoHeyGenFrUrl={module.videoHeyGenFrUrl}
+                        videoDubFrSyncUrl={module.videoDubFrSyncUrl}
+                        videoDubFrUrl={module.videoDubFrUrl}
                         moduleTitle={module.title}
                       />
                       {module.lessonContent ? <LessonContent content={module.lessonContent} /> : null}
@@ -738,6 +743,11 @@ export function CourseDetailClient({ slug }: { slug: string }) {
                         videoTitle={module.videoTitle}
                         videoDurationMinutes={module.videoDurationMinutes}
                         videoProvider={module.videoProvider}
+                        videoSourceLanguage={module.videoSourceLanguage}
+                        videoTranscriptFr={module.videoTranscriptFr}
+                        videoHeyGenFrUrl={module.videoHeyGenFrUrl}
+                        videoDubFrSyncUrl={module.videoDubFrSyncUrl}
+                        videoDubFrUrl={module.videoDubFrUrl}
                         moduleTitle={module.title}
                       />
                       {module.lessonContent ? <LessonContent content={module.lessonContent} /> : null}

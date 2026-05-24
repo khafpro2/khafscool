@@ -12,3 +12,4 @@ export * from './donation-methods';
 export * from './donation-amounts';
 export * from './donation-payment-modes';
 export * from './video-embed';
+export * from './video-dub-fr';

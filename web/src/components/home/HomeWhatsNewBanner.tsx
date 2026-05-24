@@ -51,10 +51,10 @@ export function HomeWhatsNewBanner() {
             textTransform: 'uppercase',
           }}
         >
-          Nouveau · v0.2.1
+          Nouveau · v0.3.0
         </span>
         <span className="muted" style={{ flex: '1 1 220px' }}>
-          Examen blanc (pool 44 Q),{' '}
+          Vidéos explicatives (2 unités/piste),{' '}
           <Link href="/resources/glossaire" style={{ fontWeight: 700 }}>
             glossaire MDM
           </Link>{' '}

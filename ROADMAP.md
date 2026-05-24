@@ -25,14 +25,15 @@ Feuille de route produit et technique pour le monorepo Apple MDM Academy.
 - [ ] **OAuth production** — credentials Apple / Google / Microsoft ([guide](./docs/OAUTH-PRODUCTION.md))
 - [ ] **Analytics (optionnel)** — mesure d’usage avec consentement cookies respecté
 
-## v0.3.0 — Vidéos explicatives (en cours — PR #6)
+## v0.3.0 — Vidéos explicatives (livré — PR #6)
 
 - [x] **Modèle contenu** — champs `videoUrl`, `videoTitle`, `videoDurationMinutes`, `videoProvider` dans `@ama/shared/course-content` + helper `parseVideoEmbed`
-- [x] **Pilote 3 vidéos** — module 1 de chaque parcours (YouTube éducatif MDM/Apple ou animation SVG légère)
+- [x] **Pilote 6 vidéos** — modules 1 et 2 de chaque parcours (YouTube éducatif ou animation SVG légère)
 - [x] **Web** — `ModuleVideoSection` (16:9, lazy iframe, dark mode, aria-label, pas d’autoplay)
-- [x] **Mobile** — thumbnail cliquable « Voir la vidéo » (`Linking.openURL`)
+- [x] **Mobile** — lecteur YouTube inline (`WebView`) quand `videoUrl` présent
 - [x] **Prisma + seed** — colonnes nullable `Module.videoUrl`, `videoTitle`, `videoDurationMinutes`
-- [x] **Catalogue / sidebar** — badge discret « Vidéo »
+- [x] **Catalogue / sidebar** — badge « 2 vidéos » par parcours pilote
+- [x] **Certificat** — mention « Formation multimédia »
 - [ ] **OAuth production** — credentials Apple / Google / Microsoft ([guide](./docs/OAUTH-PRODUCTION.md))
 - [ ] **Analytics (optionnel)** — mesure d’usage avec consentement cookies respecté
 

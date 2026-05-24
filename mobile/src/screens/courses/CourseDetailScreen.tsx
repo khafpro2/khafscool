@@ -478,10 +478,15 @@ export function CourseDetailScreen() {
                       </View>
                     ) : null}
                     <ModuleVideoSection
+                      courseSlug={courseSlug}
                       videoUrl={module.videoUrl}
                       videoTitle={module.videoTitle}
                       videoDurationMinutes={module.videoDurationMinutes}
                       videoProvider={module.videoProvider}
+                      videoSourceLanguage={module.videoSourceLanguage}
+                      videoTranscriptFr={module.videoTranscriptFr}
+                      videoHeyGenFrUrl={module.videoHeyGenFrUrl}
+                      videoDubFrUrl={module.videoDubFrUrl}
                       moduleTitle={module.title}
                     />
                     {module.lessonContent ? (

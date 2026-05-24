@@ -1,0 +1,35 @@
+{
+  "basename": "intune-ade-enrollment-basics-fr",
+  "segments": [
+    {
+      "atSec": 0,
+      "url": "/media/dubs/intune-ade-enrollment-basics-fr-01.mp3",
+      "durationSec": 7.85
+    },
+    {
+      "atSec": 14,
+      "url": "/media/dubs/intune-ade-enrollment-basics-fr-02.mp3",
+      "durationSec": 11.69
+    },
+    {
+      "atSec": 134,
+      "url": "/media/dubs/intune-ade-enrollment-basics-fr-03.mp3",
+      "durationSec": 13.2
+    },
+    {
+      "atSec": 377,
+      "url": "/media/dubs/intune-ade-enrollment-basics-fr-04.mp3",
+      "durationSec": 4.99
+    },
+    {
+      "atSec": 528,
+      "url": "/media/dubs/intune-ade-enrollment-basics-fr-05.mp3",
+      "durationSec": 10.75
+    },
+    {
+      "atSec": 650,
+      "url": "/media/dubs/intune-ade-enrollment-basics-fr-06.mp3",
+      "durationSec": 7.13
+    }
+  ]
+}

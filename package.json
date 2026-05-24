@@ -1,6 +1,6 @@
 {
   "name": "apple-mdm-academy",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "private": true,
   "scripts": {
     "dev": "turbo run dev",
@@ -20,7 +20,13 @@
     "db:seed": "pnpm --filter backend exec tsx prisma/seed.ts",
     "smoke:api": "node scripts/smoke-api.mjs",
     "smoke:web": "node scripts/smoke-web.mjs",
-    "smoke:all": "pnpm smoke:api && pnpm smoke:web"
+    "smoke:all": "pnpm smoke:api && pnpm smoke:web",
+    "dub:generate": "pnpm --filter backend exec tsx ../scripts/generate-video-dubs-fr.ts",
+    "heygen:translate": "pnpm --filter backend exec tsx ../scripts/heygen-translate-pilot-videos.ts",
+    "heygen:generate": "pnpm --filter backend exec tsx ../scripts/heygen-generate-course-videos.ts",
+    "heygen:status": "pnpm --filter backend exec tsx ../scripts/heygen-translate-pilot-videos.ts -- --status",
+    "heygen:generate:status": "pnpm --filter backend exec tsx ../scripts/heygen-generate-course-videos.ts -- --status",
+    "heygen:register": "pnpm --filter backend exec tsx ../scripts/heygen-translate-pilot-videos.ts --"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",

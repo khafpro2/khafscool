@@ -4,19 +4,13 @@ import { AppErrorBoundary } from '@/components/ErrorBoundary';
 import { ApiHealthPoller } from '@/components/layout/ApiHealthPoller';
 import { ApiStatusBanner } from '@/components/layout/ApiStatusBanner';
 import { DemoModeBanner } from '@/components/layout/DemoModeBanner';
-import { SiteMobileNav } from '@/components/layout/SiteMobileNav';
-import { SiteNavLinks } from '@/components/layout/SiteNavLinks';
-import { ThemeToggle } from '@/components/theme/ThemeToggle';
+import { SiteHeaderActions } from '@/components/layout/SiteHeaderActions';
 import { CookieConsentBanner } from '@/components/layout/CookieConsentBanner';
-import { GlossaryNavSearch } from '@/components/layout/GlossaryNavSearch';
 import { AnalyticsOptInBanner } from '@/components/layout/AnalyticsOptInBanner';
-import { PointsRankNavIndicator } from '@/components/layout/PointsRankNavIndicator';
-import { StreakNavBadge } from '@/components/layout/StreakNavIndicator';
 import { Toaster } from '@/components/ui/Toast';
-import { Button } from '@/components/ui/Button';
 import { getContactMailto } from '@/lib/contact';
-import { LEARNING_PATHS } from '@/lib/learningPaths';
 import { SessionBootstrap } from '@/components/layout/SessionBootstrap';
+import { bodyFont, displayFont } from '@/lib/fonts';
 import { themeInitScript } from '@/lib/theme';
 import './globals.css';
 
@@ -95,7 +89,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   const contactMailto = getContactMailto();
 
   return (
-    <html lang="fr" suppressHydrationWarning>
+    <html lang="fr" className={`${bodyFont.variable} ${displayFont.variable}`} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
@@ -104,47 +98,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <a href="#main-content" className="skip-link">
           Aller au contenu
         </a>
-        <header className="site-header">
-          <div className="container site-header-inner">
+        <header className="site-header site-header-minimal">
+          <div className="container site-header-inner site-header-inner-minimal">
             <Link href="/" className="site-logo" aria-label="Retour à l'accueil MDM Academy">
               <span className="site-logo-mark" aria-hidden>
                 M
               </span>
-              <span>
-                MDM <span style={{ color: 'var(--accent)' }}>Academy</span>
+              <span className="site-logo-wordmark">
+                <span className="site-logo-mdm">MDM</span>
+                <span className="site-logo-academy">Academy</span>
               </span>
             </Link>
-            <nav className="site-nav" aria-label="Navigation principale">
-              <div className="nav-dropdown">
-                <Link href="/courses" className="nav-dropdown-trigger">
-                  Apprendre
-                </Link>
-                <div className="nav-dropdown-menu" role="menu">
-                  {LEARNING_PATHS.map((path) => (
-                    <Link key={path.slug} href={path.href} role="menuitem">
-                      {path.shortTitle}
-                    </Link>
-                  ))}
-                  <Link href="/courses" role="menuitem" className="nav-dropdown-all">
-                    Tous les parcours →
-                  </Link>
-                </div>
-              </div>
-              <SiteNavLinks />
-              <GlossaryNavSearch />
-            </nav>
-            <SiteMobileNav />
-            <div className="site-actions">
-              <PointsRankNavIndicator />
-              <StreakNavBadge />
-              <ThemeToggle />
-              <Button href="/profile" variant="ghost" size="sm" className="site-action-profile">
-                Profil
-              </Button>
-              <Button href="/auth" size="sm" className="site-action-cta">
-                Commencer gratuitement
-              </Button>
-            </div>
+            <SiteHeaderActions />
           </div>
         </header>
         <ApiHealthPoller />

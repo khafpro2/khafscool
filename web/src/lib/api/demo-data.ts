@@ -1,4 +1,6 @@
 import { getCoursePedagogy, getModulePedagogy } from '@ama/shared/course-content';
+import { getModuleVideoDubFr, getModuleVideoDubFrSyncUrl } from '@ama/shared/video-dub-fr';
+import { getModuleVideoHeyGenFr } from '@ama/shared/video-heygen-fr';
 import { DEMO_ACCOUNT } from '@ama/shared/constants';
 import { moduleQuizQuestions } from '@ama/shared/quiz-content';
 import {
@@ -327,6 +329,17 @@ export function normalizeCourse(course: CourseDetail): CourseDetail {
         videoDurationMinutes:
           module.videoDurationMinutes ?? modulePedagogy?.videoDurationMinutes ?? null,
         videoProvider: modulePedagogy?.videoProvider,
+        videoSourceLanguage: modulePedagogy?.videoSourceLanguage ?? null,
+        videoTranscriptFr: modulePedagogy?.videoTranscriptFr ?? null,
+        videoDubFrSyncUrl: (() => {
+          const dub = getModuleVideoDubFr(course.slug, module.slug);
+          return dub ? getModuleVideoDubFrSyncUrl(dub) : null;
+        })(),
+        videoDubFrUrl: (() => {
+          const dub = getModuleVideoDubFr(course.slug, module.slug);
+          return dub ? getModuleVideoDubFrSyncUrl(dub) : null;
+        })(),
+        videoHeyGenFrUrl: getModuleVideoHeyGenFr(course.slug, module.slug)?.url ?? null,
         questions: moduleQuizQuestions(
           module.questions.map((question) => ({
             ...question,
