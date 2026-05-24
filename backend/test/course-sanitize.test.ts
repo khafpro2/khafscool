@@ -35,6 +35,20 @@ describe('course sanitize', () => {
               ],
               correctOption: 'b',
               explanation: 'Parce que B',
+              examOnly: false,
+            },
+            {
+              id: 'q-bonus',
+              moduleId: 'module-1',
+              type: 'MULTIPLE_CHOICE',
+              prompt: 'Bonus examen ?',
+              options: [
+                { id: 'a', label: 'A' },
+                { id: 'b', label: 'B' },
+              ],
+              correctOption: 'a',
+              explanation: 'Parce que A',
+              examOnly: true,
             },
           ],
           game: {
@@ -68,6 +82,8 @@ describe('course sanitize', () => {
       scenario: 'Scénario',
       steps: [{ id: 1, label: 'Étape 1' }],
     });
+    expect(sanitized.modules[0]?.questions).toHaveLength(1);
+    expect(sanitized.modules[0]?.questions.map((question) => question.id)).toEqual(['q1']);
     expect(sanitizeQuestion).toBeDefined();
     expect(sanitizeGame(null)).toBeNull();
   });

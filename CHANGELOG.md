@@ -22,6 +22,14 @@
 - Champ Prisma `Question.examOnly` ; quiz module filtre les bonus ; pool examen blanc **44 Q** par parcours
 - Tests : `quiz-content.test.ts`, `glossary.test.ts`, `seed-content.test.ts`, e2e header glossaire
 
+### Quiz module vs pool examen blanc
+- **GET /courses/:slug** — `sanitizeModule` exclut les questions `examOnly` du quiz module (10 Q affichées)
+- **GET /courses/:slug/practice-exam** — pool **44 Q** (40 parcours + 4 bonus module final) ; 10 tirées au hasard
+- **Web** — page `/courses/[slug]/examen` : « Pool de 44 questions · 10 tirées au hasard » + message badge ≥ 70 %
+- **Mobile** — `CoursePracticeExamScreen` aligné sur le pool 44 ; recherche glossaire sur `GlossaryScreen`
+- Tests : `course-sanitize.test.ts` (filtre examOnly), `practice-exam.routes.test.ts` (poolSize 44)
+- **README** — rappel `pnpm db:migrate && pnpm db:seed` après migration `examOnly`
+
 ## [0.2.0] — 2026-05-23
 
 Release **MDM Academy Pro v0.2** (branche `cursor/progress-dashboard-auth-v2`, PR #6) — contenu enrichi, 4 modules par piste, glossaire, révision et examen blanc.

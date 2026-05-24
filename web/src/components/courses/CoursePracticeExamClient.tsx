@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { computePracticeExamScorePercent, PRACTICE_EXAM_PASS_PERCENT, PRACTICE_EXAM_QUESTION_COUNT } from '@ama/shared/practice-exam';
 import {
@@ -103,10 +102,21 @@ export function CoursePracticeExamClient({ slug }: { slug: string }) {
     if (!examFinished || scoreRecorded || !state || state.usesDemo) return;
 
     const token = getAccessToken();
-    if (!token) return;
+    const attemptToken = state.exam.attemptToken;
+    if (!token || !attemptToken) return;
+
+    const submissionAnswers = state.exam.questions.map((question) => ({
+      questionId: question.id,
+      selectedOption: answers[question.id],
+    }));
+
+    if (submissionAnswers.some((answer) => !answer.selectedOption)) return;
 
     setScoreRecorded(true);
-    void recordPracticeExamScore(slug, token, scorePercent)
+    void recordPracticeExamScore(slug, token, {
+      attemptToken,
+      answers: submissionAnswers as { questionId: string; selectedOption: string }[],
+    })
       .then((result) => {
         if (result.badgeEarned) toastBadgeUnlocked(result.badgeEarned);
         if (result.questCompleted) {
@@ -119,7 +129,7 @@ export function CoursePracticeExamClient({ slug }: { slug: string }) {
       .catch(() => {
         setScoreRecorded(false);
       });
-  }, [examFinished, scorePercent, scoreRecorded, slug, state]);
+  }, [answers, examFinished, scoreRecorded, slug, state]);
 
   const handleSelectAnswer = useCallback((questionId: string, optionId: string) => {
     setAnswers((current) => ({ ...current, [questionId]: optionId }));
@@ -191,8 +201,8 @@ export function CoursePracticeExamClient({ slug }: { slug: string }) {
       <section style={{ padding: '2rem 0' }}>
         <h1 style={{ fontSize: '2rem', fontWeight: 800 }}>Examen blanc verrouillé</h1>
         <p className="muted" style={{ marginTop: '0.5rem', maxWidth: 560 }}>
-          Termine les 4 modules du parcours pour accéder à l&apos;examen blanc ({PRACTICE_EXAM_QUESTION_COUNT}{' '}
-          questions tirées parmi les {state?.exam.poolSize ?? 40} du parcours).
+          Termine les 4 modules du parcours pour accéder à l&apos;examen blanc — pool de{' '}
+          {state?.exam.poolSize ?? 44} questions, {PRACTICE_EXAM_QUESTION_COUNT} tirées au hasard.
         </p>
         <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', marginTop: '1rem' }}>
           <Button href={`/courses/${slug}`}>Reprendre le parcours</Button>
@@ -227,8 +237,11 @@ export function CoursePracticeExamClient({ slug }: { slug: string }) {
           {exam.course.title}
         </h1>
         <p style={{ marginTop: '0.55rem', maxWidth: 640, color: 'rgba(255,255,255,0.94)' }}>
-          {exam.questionCount} questions aléatoires · banque de {exam.poolSize} · piste {formatTrack(exam.course.track)} —
-          entraînement sans impact sur ta progression.
+          Pool de {exam.poolSize} questions · {exam.questionCount} tirées au hasard · piste{' '}
+          {formatTrack(exam.course.track)} — entraînement sans impact sur ta progression.
+        </p>
+        <p style={{ marginTop: '0.45rem', maxWidth: 640, color: 'rgba(255,255,255,0.88)', fontSize: '0.9rem' }}>
+          Objectif certification : ≥ {PRACTICE_EXAM_PASS_PERCENT} % pour débloquer le badge « Examen blanc réussi ».
         </p>
         {usesDemo ? (
           <p
@@ -309,8 +322,8 @@ function PracticeExamResults({
           </h2>
           <p style={{ marginTop: '0.5rem', lineHeight: 1.55 }}>
             {passed
-              ? 'Bon niveau de préparation — revois les explications des questions manquées avant la certification.'
-              : 'Continue à réviser avec la fiche synthèse et les modules du parcours avant de retenter l’examen.'}
+              ? `Seuil de réussite atteint (≥ ${PRACTICE_EXAM_PASS_PERCENT} %) — le badge « Examen blanc réussi » est enregistré sur ton profil. Revois les explications des questions manquées avant la certification.`
+              : `Score inférieur à ${PRACTICE_EXAM_PASS_PERCENT} % — continue avec la fiche révision et les modules du parcours, puis retente l'examen pour viser le badge « Examen blanc réussi ».`}
           </p>
         </div>
       </div>

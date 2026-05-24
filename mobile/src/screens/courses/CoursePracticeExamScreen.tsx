@@ -9,7 +9,9 @@ import {
   Text,
   View,
 } from 'react-native';
-import { PRACTICE_EXAM_QUESTION_COUNT } from '@ama/shared/practice-exam';
+import { getPracticeExamPoolSize } from '@ama/shared/constants';
+import type { CourseSlug } from '@ama/shared/learning-paths';
+import { PRACTICE_EXAM_PASS_PERCENT, PRACTICE_EXAM_QUESTION_COUNT } from '@ama/shared/practice-exam';
 import { WEB_URL } from '../../config';
 import { TrackIcon } from '../../components/TrackIcon';
 import { useAppTheme } from '../../context/ThemeContext';
@@ -27,7 +29,7 @@ export function CoursePracticeExamScreen() {
 
   const [courseTitle, setCourseTitle] = useState('');
   const [track, setTrack] = useState<'APPLE' | 'JAMF' | 'INTUNE'>('APPLE');
-  const [poolSize, setPoolSize] = useState(40);
+  const [poolSize, setPoolSize] = useState(44);
   const [blocked, setBlocked] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -42,8 +44,7 @@ export function CoursePracticeExamScreen() {
 
         setCourseTitle(course.title);
         setTrack(course.track as 'APPLE' | 'JAMF' | 'INTUNE');
-        const totalQuestions = course.modules.reduce((sum, module) => sum + module.questions.length, 0);
-        setPoolSize(totalQuestions || 40);
+        setPoolSize(getPracticeExamPoolSize(slug as CourseSlug));
 
         try {
           const progress = await fetchCourseProgress(slug);
@@ -83,8 +84,8 @@ export function CoursePracticeExamScreen() {
       <View style={styles.blockedContainer}>
         <Text style={styles.blockedTitle}>Examen blanc verrouillé</Text>
         <Text style={styles.blockedText}>
-          Termine les 4 modules du parcours pour accéder à l&apos;examen blanc ({PRACTICE_EXAM_QUESTION_COUNT}{' '}
-          questions parmi {poolSize}).
+          Termine les 4 modules du parcours pour accéder à l&apos;examen blanc — pool de {poolSize} questions,{' '}
+          {PRACTICE_EXAM_QUESTION_COUNT} tirées au hasard.
         </Text>
         <Pressable style={styles.primaryButton} onPress={() => router.replace(`/course/${slug}`)}>
           <Text style={styles.primaryButtonText}>Reprendre le parcours</Text>
@@ -100,15 +101,16 @@ export function CoursePracticeExamScreen() {
         <TrackIcon track={track} size="md" style={{ marginBottom: 8 }} />
         <Text style={styles.heroTitle}>{courseTitle}</Text>
         <Text style={styles.heroText}>
-          {PRACTICE_EXAM_QUESTION_COUNT} questions aléatoires · banque de {poolSize} · piste {formatTrack(track)}
+          Pool de {poolSize} questions · {PRACTICE_EXAM_QUESTION_COUNT} tirées au hasard · piste {formatTrack(track)}
         </Text>
       </View>
 
       <View style={styles.infoCard}>
         <Text style={styles.infoTitle}>Entraînement sans impact progression</Text>
         <Text style={styles.infoText}>
-          L&apos;examen blanc pioche {PRACTICE_EXAM_QUESTION_COUNT} QCM dans les {poolSize} questions du parcours.
-          Ouvre la version web pour répondre avec le même quiz interactif que sur ordinateur.
+          L&apos;examen blanc pioche {PRACTICE_EXAM_QUESTION_COUNT} QCM dans un pool de {poolSize} questions (dont les
+          bonus réservés à l&apos;examen). Objectif ≥ {PRACTICE_EXAM_PASS_PERCENT} % pour le badge « Examen blanc réussi
+          ». Ouvre la version web pour répondre avec le même quiz interactif que sur ordinateur.
         </Text>
       </View>
 

@@ -23,8 +23,8 @@ describe('GET /courses/:slug/practice-exam', () => {
     vi.mocked(prisma.course.findUnique).mockReset();
   });
 
-  it('returns 10 sanitized questions with moduleId', async () => {
-    const questions = Array.from({ length: 10 }, (_, index) => ({
+  it('returns 10 sanitized questions with moduleId from a 44-question pool', async () => {
+    const moduleQuestions = Array.from({ length: 10 }, (_, index) => ({
       id: `q-${index}`,
       moduleId: 'module-1',
       type: 'MULTIPLE_CHOICE',
@@ -35,7 +35,29 @@ describe('GET /courses/:slug/practice-exam', () => {
       ],
       correctOption: 'b',
       explanation: 'Parce que B',
+      examOnly: false,
     }));
+
+    const bonusQuestions = Array.from({ length: 4 }, (_, index) => ({
+      id: `bonus-${index}`,
+      moduleId: 'module-4',
+      type: 'MULTIPLE_CHOICE',
+      prompt: `Bonus ${index + 1}?`,
+      options: [
+        { id: 'a', label: 'A' },
+        { id: 'b', label: 'B' },
+      ],
+      correctOption: 'a',
+      explanation: 'Parce que A',
+      examOnly: true,
+    }));
+
+    const moduleQuestionsFor = (moduleId: string, prefix: string) =>
+      moduleQuestions.map((question, index) => ({
+        ...question,
+        id: `${prefix}-${index}`,
+        moduleId,
+      }));
 
     vi.mocked(prisma.course.findUnique).mockResolvedValue({
       id: 'course-1',
@@ -58,7 +80,7 @@ describe('GET /courses/:slug/practice-exam', () => {
           lessonContent: '',
           imageUrl: null,
           sortOrder: 1,
-          questions,
+          questions: moduleQuestionsFor('module-1', 'q1'),
         },
         {
           id: 'module-2',
@@ -71,10 +93,7 @@ describe('GET /courses/:slug/practice-exam', () => {
           lessonContent: '',
           imageUrl: null,
           sortOrder: 2,
-          questions: questions.map((question, index) => ({
-            ...question,
-            id: `q2-${index}`,
-          })),
+          questions: moduleQuestionsFor('module-2', 'q2'),
         },
         {
           id: 'module-3',
@@ -87,10 +106,7 @@ describe('GET /courses/:slug/practice-exam', () => {
           lessonContent: '',
           imageUrl: null,
           sortOrder: 3,
-          questions: questions.map((question, index) => ({
-            ...question,
-            id: `q3-${index}`,
-          })),
+          questions: moduleQuestionsFor('module-3', 'q3'),
         },
         {
           id: 'module-4',
@@ -103,10 +119,7 @@ describe('GET /courses/:slug/practice-exam', () => {
           lessonContent: '',
           imageUrl: null,
           sortOrder: 4,
-          questions: questions.map((question, index) => ({
-            ...question,
-            id: `q4-${index}`,
-          })),
+          questions: [...moduleQuestionsFor('module-4', 'q4'), ...bonusQuestions],
         },
       ],
     } as never);
@@ -123,8 +136,11 @@ describe('GET /courses/:slug/practice-exam', () => {
     const body = response.json();
     expect(body.course.slug).toBe('apple-cert-prep');
     expect(body.questionCount).toBe(10);
-    expect(body.poolSize).toBe(40);
+    expect(body.poolSize).toBe(44);
+    expect(body.expectedPoolSize).toBe(44);
     expect(body.questions).toHaveLength(10);
+    expect(typeof body.attemptToken).toBe('string');
+    expect(body.attemptToken.length).toBeGreaterThan(20);
     for (const question of body.questions) {
       expect(question.moduleId).toBeTruthy();
       expect(question).not.toHaveProperty('correctOption');
