@@ -8,7 +8,7 @@ export const contentType = 'image/png';
 
 const TRACK_GRADIENTS: Record<string, string> = {
   APPLE: 'linear-gradient(135deg, #1d1d1f 0%, #52525b 100%)',
-  JAMF: 'linear-gradient(135deg, #ea580c 0%, #f59e0b 100%)',
+  JAMF: 'linear-gradient(135deg, #5a9200 0%, #76B900 100%)',
   INTUNE: 'linear-gradient(135deg, #2563eb 0%, #38bdf8 100%)',
 };
 

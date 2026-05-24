@@ -2,6 +2,9 @@
 
 ## [0.3.0] — 2026-05-24
 
+### Marque Jamf
+- **UI** — wordmark Jamf en vert officiel `#76B900` (tokens CSS, parcours, badges, Open Graph) ; dégradés track/badges alignés sur la charte Jamf
+
 ### Vidéos explicatives par module (pilote)
 - **Contenu** — champs optionnels `videoUrl`, `videoTitle`, `videoDurationMinutes`, `videoProvider` dans `@ama/shared/course-content` ; helper `parseVideoEmbed` (YouTube nocookie, Vimeo, MP4)
 - **Pilote** — 3 vidéos intro YouTube (module 1 Apple, Jamf, Intune) ; fallback `ModuleAnimatedExplainer` SVG/CSS animé (flux ABM → MDM)

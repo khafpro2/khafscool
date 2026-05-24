@@ -101,8 +101,8 @@ const BADGE_VISUALS: Record<string, BadgeVisual> = {
   'jamf-engineer': {
     label: 'Ingénieur Jamf',
     brand: 'jamf',
-    color: '#a23d00',
-    bg: '#fff1e4',
+    color: '#5a9200',
+    bg: '#eef7e0',
   },
   'intune-professional': {
     label: 'Professionnel Intune',
@@ -207,8 +207,8 @@ const TRACK_VISUALS: Record<string, TrackVisual> = {
   JAMF: {
     label: 'Jamf Pro',
     brand: 'jamf',
-    color: '#ff5b00',
-    gradient: ['#ff5b00', '#ff9e2c'],
+    color: '#76B900',
+    gradient: ['#5a9200', '#76B900'],
   },
   INTUNE: {
     label: 'Microsoft Intune',

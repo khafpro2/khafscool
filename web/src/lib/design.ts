@@ -1,4 +1,4 @@
-import type { BrandId } from '@/lib/brands';
+import { JAMF_GREEN, type BrandId } from '@/lib/brands';
 
 export type { BrandId } from '@/lib/brands';
 export { getBadgeBrand, getTrackBrand } from '@/lib/brands';
@@ -25,7 +25,7 @@ const TRACK_VISUALS: Record<string, TrackVisual> = {
   JAMF: {
     label: 'Jamf Pro',
     brand: 'jamf',
-    color: '#ea580c',
+    color: JAMF_GREEN,
     gradient: 'var(--track-jamf)',
     defaultLevel: 'Intermédiaire',
   },
@@ -96,8 +96,8 @@ const BADGE_VISUALS: Record<string, BadgeVisual> = {
   'jamf-engineer': {
     label: 'Ingénieur Jamf',
     brand: 'jamf',
-    color: '#a23d00',
-    bg: '#fff1e4',
+    color: '#5a9200',
+    bg: '#eef7e0',
   },
   'intune-professional': {
     label: 'Professionnel Intune',
