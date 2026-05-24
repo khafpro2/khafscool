@@ -1,8 +1,7 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  extractYouTubeVideoId,
   formatVideoDurationLabel,
   moduleHasVideo,
   parseVideoEmbed,
@@ -12,8 +11,12 @@ import { Badge } from '@/components/ui/Badge';
 import { ModuleAnimatedExplainer } from '@/components/courses/ModuleAnimatedExplainer';
 import { LessonContent } from '@/components/courses/LessonContent';
 import { ModuleVideoFrenchDubPlayer } from '@/components/courses/ModuleVideoFrenchDubPlayer';
+import { isVideoWatched, markVideoWatched } from '@/lib/video-watched';
+
+const VIDEO_WATCH_SECONDS = 30;
 
 type ModuleVideoSectionProps = {
+  moduleId?: string;
   videoUrl?: string | null;
   videoTitle?: string | null;
   videoDurationMinutes?: number | null;
@@ -27,6 +30,7 @@ type ModuleVideoSectionProps = {
 };
 
 export function ModuleVideoSection({
+  moduleId,
   videoUrl,
   videoTitle,
   videoDurationMinutes,
@@ -37,10 +41,30 @@ export function ModuleVideoSection({
   videoDubFrUrl,
   moduleTitle,
 }: ModuleVideoSectionProps) {
+  const [localVideoMissing, setLocalVideoMissing] = useState(false);
+  const watchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const parsed = useMemo(
     () => parseVideoEmbed(videoUrl, videoProvider, { locale: 'fr' }),
     [videoUrl, videoProvider]
   );
+
+  const scheduleVideoWatched = useCallback(() => {
+    if (!moduleId || isVideoWatched(moduleId)) return;
+    if (watchTimerRef.current) return;
+    watchTimerRef.current = setTimeout(() => {
+      markVideoWatched(moduleId);
+      watchTimerRef.current = null;
+    }, VIDEO_WATCH_SECONDS * 1000);
+  }, [moduleId]);
+
+  useEffect(() => {
+    return () => {
+      if (watchTimerRef.current) {
+        clearTimeout(watchTimerRef.current);
+        watchTimerRef.current = null;
+      }
+    };
+  }, [moduleId, videoUrl]);
 
   if (!moduleHasVideo({ videoUrl, videoProvider })) {
     return null;
@@ -49,14 +73,11 @@ export function ModuleVideoSection({
   const title = videoTitle ?? (moduleTitle ? `Vidéo : ${moduleTitle}` : 'Vidéo explicative');
   const durationLabel = formatVideoDurationLabel(videoDurationMinutes);
   const ariaLabel = durationLabel ? `${title} — ${durationLabel}` : title;
-  const youtubeVideoId = extractYouTubeVideoId(videoUrl);
+  const localVideoSrc = parsed?.provider === 'mp4' ? parsed.embedUrl : null;
   const syncUrl = videoDubFrSyncUrl ?? videoDubFrUrl;
   const hasHeyGenFrenchVideo = Boolean(videoHeyGenFrUrl?.trim());
   const hasSyncedFrenchDub =
-    !hasHeyGenFrenchVideo &&
-    Boolean(syncUrl?.trim()) &&
-    parsed?.provider === 'youtube' &&
-    Boolean(youtubeVideoId);
+    !hasHeyGenFrenchVideo && Boolean(syncUrl?.trim()) && Boolean(localVideoSrc);
 
   return (
     <section className="module-video-section" aria-label={ariaLabel}>
@@ -71,63 +92,71 @@ export function ModuleVideoSection({
 
       <p className="muted module-video-section-lead">
         {hasHeyGenFrenchVideo
-          ? 'Vidéo entièrement doublée en français (HeyGen) — image et voix synchronisées.'
+          ? 'Vidéo en français (voix Lifa) — hébergée sur Apple MDM Academy.'
           : hasSyncedFrenchDub
-            ? 'Regardez la vidéo : le doublage français est calé sur chaque passage affiché à l’écran.'
+            ? 'Regardez la vidéo locale : le doublage français est calé sur chaque passage.'
             : 'Regardez la vidéo, puis lisez la leçon et passez le quiz.'}
       </p>
 
       {hasHeyGenFrenchVideo ? (
         <div className="module-video-dub-sync">
           <div className="module-video-frame">
-            <video controls preload="metadata" playsInline aria-label={`${title} — version française`}>
+            <video
+              controls
+              preload="metadata"
+              playsInline
+              aria-label={`${title} — version française`}
+              onLoadedData={scheduleVideoWatched}
+            >
               <source src={videoHeyGenFrUrl!} type="video/mp4" />
               Votre navigateur ne prend pas en charge la lecture vidéo.
             </video>
           </div>
           <div className="module-video-dub-controls">
             <Badge tone="accent" icon={'\u{1F399}\uFE0F'}>
-              Doublage HeyGen — français natif
+              Voix Lifa
             </Badge>
-            {parsed?.watchUrl ? (
-              <a
-                href={parsed.watchUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="module-video-dub-original-link"
-              >
-                Version anglaise sur YouTube
-              </a>
-            ) : null}
           </div>
         </div>
       ) : hasSyncedFrenchDub ? (
-        <ModuleVideoFrenchDubPlayer
-          youtubeVideoId={youtubeVideoId!}
-          syncUrl={syncUrl!}
-          title={title}
-          originalWatchUrl={parsed?.watchUrl}
-        />
+        <ModuleVideoFrenchDubPlayer videoSrc={localVideoSrc!} syncUrl={syncUrl!} title={title} />
       ) : parsed?.provider === 'placeholder' || !parsed?.embedUrl ? (
         <div className="module-video-frame module-video-frame--plain">
-          <ModuleAnimatedExplainer title={title} />
+          <ModuleAnimatedExplainer title={title} onReady={scheduleVideoWatched} />
         </div>
       ) : parsed.provider === 'mp4' ? (
         <div className="module-video-frame">
-          <video controls preload="none" playsInline aria-label={ariaLabel}>
-            <source src={parsed.embedUrl} type="video/mp4" />
-            Votre navigateur ne prend pas en charge la lecture vidéo.
-          </video>
+          {localVideoMissing ? (
+            <ModuleAnimatedExplainer title={title} onReady={scheduleVideoWatched} />
+          ) : (
+            <video
+              controls
+              preload="metadata"
+              playsInline
+              aria-label={ariaLabel}
+              onError={() => setLocalVideoMissing(true)}
+              onLoadedData={scheduleVideoWatched}
+            >
+              <source src={parsed.embedUrl} type="video/mp4" />
+              Votre navigateur ne prend pas en charge la lecture vidéo.
+            </video>
+          )}
         </div>
-      ) : (
+      ) : parsed.provider === 'youtube' || parsed.provider === 'vimeo' ? (
         <div className="module-video-frame">
           <iframe
-            src={parsed.embedUrl}
-            title={title}
+            src={parsed.embedUrl ?? undefined}
+            title={ariaLabel}
             loading="lazy"
-            allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerPolicy="strict-origin-when-cross-origin"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             allowFullScreen
+            onLoad={scheduleVideoWatched}
           />
+        </div>
+      ) : (
+        <div className="module-video-frame module-video-frame--plain">
+          <ModuleAnimatedExplainer title={title} onReady={scheduleVideoWatched} />
         </div>
       )}
 

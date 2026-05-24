@@ -33,23 +33,37 @@ export function sumLessonReadingMinutes(contents: string[]): number {
   );
 }
 
-/** Bandeau hero parcours : « N modules · Q questions · ~M min de lecture ». */
+/** Bandeau hero parcours : « N modules · Q questions · ~M min de lecture » (+ vidéos si présentes). */
 export function formatCourseHeroBanner(
   moduleCount: number,
   totalReadingMinutes: number,
-  questionsPerModule = 10
+  questionsPerModule = 10,
+  videoModuleCount?: number
 ): string {
   const moduleLabel = moduleCount > 1 ? 'modules' : 'module';
-  return `${moduleCount} ${moduleLabel} · ${questionsPerModule} questions · ~${totalReadingMinutes} min de lecture`;
+  const base = `${moduleCount} ${moduleLabel} · ${questionsPerModule} questions · ~${totalReadingMinutes} min de lecture`;
+  const videoSuffix = formatCourseHeroVideoSuffix(videoModuleCount ?? 0);
+  return videoSuffix ? `${base} · ${videoSuffix}` : base;
 }
 
-/** Métadonnées catalogue : « ~M min · N modules · Q questions ». */
+/** Métadonnées catalogue : « ~M min · N modules · Q avec vidéo » ou « · Q questions ». */
 export function formatTrailCatalogMeta(
   moduleCount: number,
   totalReadingMinutes: number,
-  questionsPerModule = 10
+  questionsPerModule = 10,
+  videoModuleCount?: number
 ): string {
-  const totalQuestions = moduleCount * questionsPerModule;
   const moduleLabel = moduleCount > 1 ? 'modules' : 'module';
-  return `~${totalReadingMinutes} min · ${moduleCount} ${moduleLabel} · ${totalQuestions} questions`;
+  const videoPart =
+    videoModuleCount && videoModuleCount > 0
+      ? `${videoModuleCount} avec vidéo`
+      : `${moduleCount * questionsPerModule} questions`;
+  return `~${totalReadingMinutes} min · ${moduleCount} ${moduleLabel} · ${videoPart}`;
+}
+
+/** Suffixe hero parcours quand des unités ont une vidéo explicative. */
+export function formatCourseHeroVideoSuffix(videoModuleCount: number): string | null {
+  if (!videoModuleCount || videoModuleCount <= 0) return null;
+  const label = videoModuleCount > 1 ? 'modules' : 'module';
+  return `${videoModuleCount} ${label} avec vidéo explicative`;
 }

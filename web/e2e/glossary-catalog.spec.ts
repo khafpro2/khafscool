@@ -20,7 +20,7 @@ test.describe('Glossaire MDM', () => {
 test.describe('Catalogue parcours — métadonnées', () => {
   test('affiche durée, modules et questions totales', async ({ page }) => {
     await page.goto('/courses');
-    await expect(page.getByText(/~\d+ min · 4 modules · 40 questions/i)).toHaveCount(3, {
+    await expect(page.getByText(/~\d+ min · 4 modules · \d+ avec vidéo/i)).toHaveCount(3, {
       timeout: 15_000,
     });
   });

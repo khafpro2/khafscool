@@ -71,7 +71,12 @@ export function TrailCard({
   const inProgress = status ? status === 'in-progress' : percent > 0 && percent < 100;
   const isCompleted = status ? status === 'completed' : percent >= 100;
   const ctaLabel = cta ?? (isCompleted ? 'Revoir' : inProgress ? 'Continuer' : 'Démarrer');
-  const catalogMeta = formatTrailCatalogLabel(totalModules, readingMinutes, questionsPerModule);
+  const catalogMeta = formatTrailCatalogLabel(
+    totalModules,
+    readingMinutes,
+    questionsPerModule,
+    videoModuleCount
+  );
   const shouldShowProgress = showProgress || inProgress || isCompleted;
 
   return (
@@ -211,10 +216,16 @@ function mapTrackReward(track?: string | null) {
 function formatTrailCatalogLabel(
   totalModules?: number,
   readingMinutes?: number,
-  questionsPerModule?: number
+  questionsPerModule?: number,
+  videoModuleCount?: number
 ) {
   if (!totalModules || typeof readingMinutes !== 'number' || readingMinutes <= 0) {
     return null;
   }
-  return formatTrailCatalogMeta(totalModules, readingMinutes, questionsPerModule ?? QUESTIONS_PER_MODULE);
+  return formatTrailCatalogMeta(
+    totalModules,
+    readingMinutes,
+    questionsPerModule ?? QUESTIONS_PER_MODULE,
+    videoModuleCount
+  );
 }

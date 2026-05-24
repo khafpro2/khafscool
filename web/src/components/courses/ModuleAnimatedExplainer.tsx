@@ -1,9 +1,20 @@
 'use client';
 
+import { useEffect } from 'react';
 import styles from './ModuleAnimatedExplainer.module.css';
 
 /** Animation SVG légère : achat ABM → serveur MDM → appareil supervisé. */
-export function ModuleAnimatedExplainer({ title }: { title?: string }) {
+export function ModuleAnimatedExplainer({
+  title,
+  onReady,
+}: {
+  title?: string;
+  onReady?: () => void;
+}) {
+  useEffect(() => {
+    onReady?.();
+  }, [onReady]);
+
   return (
     <div className={styles.root} role="img" aria-label={title ?? 'Schéma animé du flux ABM vers MDM'}>
       <svg viewBox="0 0 640 220" className={styles.svg} aria-hidden>

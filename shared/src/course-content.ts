@@ -5,6 +5,7 @@ import {
 } from './quiz-content';
 import { countLessonWords, sumLessonReadingMinutes } from './reading-time';
 import { moduleHasVideo, type VideoProvider } from './video-embed';
+import { getModuleVideoLocalPublicUrl } from './video-local';
 
 export type ModulePedagogy = {
   summary: string;
@@ -38,10 +39,11 @@ Vous apprendrez à identifier les symptômes matériels et logiciels les plus fr
 Prérequis : familiarité de base avec macOS et iOS/iPadOS, accès à un Mac de diagnostic et à quelques appareils de test. Aucune expérience MDM préalable n'est exigée, mais une connaissance des profils de configuration et de l'enrôlement automatisé (ADE) sera un atout pour la dernière partie du parcours.`,
     modules: {
       'device-support-basics': {
-        videoUrl: 'https://www.youtube.com/watch?v=qrQyL5-SWFg',
-        videoTitle: "Vidéo : comprendre l'ABM et l'enrôlement MDM en 5 min",
+        videoUrl: getModuleVideoLocalPublicUrl('apple-cert-prep', 'device-support-basics'),
+        videoTitle: "Vidéo : comprendre l'ABM et l'enrôlement MDM",
         videoDurationMinutes: 8,
-        videoProvider: 'youtube',
+        videoProvider: 'mp4',
+        videoSourceLanguage: 'fr',
         summary:
           'Maîtriser le triage matériel/logiciel sur Mac et iOS, sécuriser sauvegardes et restaurations, et relier support terrain et gestion MDM.',
         learningObjectives: [
@@ -112,10 +114,11 @@ En résumé, le technicien Device Support efficace combine rigueur diagnostic, r
           'Ordonnez les étapes de dépannage d’un Mac bloqué au démarrage pour appliquer la logique « vérifier l’espace disque, puis mode sans échec, puis réinstallation conservatoire ».',
       },
       'ios-troubleshooting': {
-        videoUrl: 'placeholder',
-        videoProvider: 'placeholder',
+        videoUrl: getModuleVideoLocalPublicUrl('apple-cert-prep', 'ios-troubleshooting'),
+        videoProvider: 'mp4',
         videoTitle: 'Vidéo : dépannage iOS en environnement géré',
         videoDurationMinutes: 4,
+        videoSourceLanguage: 'fr',
         summary:
           'Diagnostiquer connectivité, batterie et blocages courants sur iPhone/iPad avec une méthode reproductible, en tenant compte des profils d’entreprise et du MDM.',
         learningObjectives: [
@@ -197,6 +200,11 @@ Si plusieurs iPhones perdent simultanément le check-in après maintenance serve
           'Classez les vérifications à effectuer sur un iPad qui ne synchronise plus le MDM, de la connectivité locale jusqu’à la resynchronisation serveur.',
       },
       'acmt-exam-prep': {
+        videoUrl: 'placeholder',
+        videoProvider: 'placeholder',
+        videoTitle: 'Vidéo : Apple Diagnostics et préparation examen',
+        videoDurationMinutes: 5,
+        videoSourceLanguage: 'fr',
         summary:
           'Consolider les domaines clés Apple Device Support : sécurité, sauvegarde, restauration, diagnostics matériels et préparation méthodique à l’examen.',
         learningObjectives: [
@@ -378,12 +386,12 @@ L’approche est pratique : chaque module s’appuie sur des scénarios réalist
 Prérequis : notions de gestion macOS/iOS, accès à une instance Jamf Pro (Cloud ou On-Prem) de labo, compte Apple Business Manager ou School Manager de test, et compréhension élémentaire des certificats et du protocole MDM Apple. Une expérience préalable avec des profils .mobileconfig est recommandée.`,
     modules: {
       'smart-groups-policies': {
-        videoUrl: 'https://www.youtube.com/watch?v=_g-0V2AFCW0',
+        videoUrl: getModuleVideoLocalPublicUrl('jamf-pro-foundations', 'smart-groups-policies'),
         videoTitle: 'Vidéo : intégrer Jamf Pro à Apple Business Manager',
         videoDurationMinutes: 10,
-        videoProvider: 'youtube',
-        videoSourceLanguage: 'en',
-        videoTranscriptFr: `Cette leçon Jamf 100 (en anglais à l’écran) couvre l’intégration de Jamf Pro avec Apple Business Manager (ABM) ou Apple School Manager (ASM) pour l’enrôlement automatisé des appareils (ADE).
+        videoProvider: 'mp4',
+        videoSourceLanguage: 'fr',
+        videoTranscriptFr: `Cette leçon couvre l’intégration de Jamf Pro avec Apple Business Manager (ABM) ou Apple School Manager (ASM) pour l’enrôlement automatisé des appareils (ADE).
 
 **1. Prérequis** — Compte ABM ou ASM actif sur business.apple.com ou school.apple.com.
 
@@ -395,9 +403,7 @@ Prérequis : notions de gestion macOS/iOS, accès à une instance Jamf Pro (Clou
 
 **5. PreStage Enrollment** — Créez un profil PreStage lié au serveur MDM : supervision, verrouillage MDM, options de l’assistant de configuration, gestion Activation Lock au niveau organisation.
 
-**6. Assignation et déploiement** — Assignez les appareils au serveur MDM Jamf dans ABM. Au premier allumage (ou après effacement), l’assistant de configuration inscrit automatiquement l’appareil en mode supervisé.
-
-Les sous-titres français sont activés par défaut dans le lecteur (CC). Si la piste « Français (générés automatiquement) » n’apparaît pas, cliquez sur l’icône CC puis choisissez Français.`,
+**6. Assignation et déploiement** — Assignez les appareils au serveur MDM Jamf dans ABM. Au premier allumage (ou après effacement), l’assistant de configuration inscrit automatiquement l’appareil en mode supervisé.`,
         summary:
           'Construire des Smart Groups dynamiques et associer des politiques Jamf Pro pour cibler finement Mac, iPhone ou iPad en déploiement pilote.',
         learningObjectives: [
@@ -480,11 +486,11 @@ En maîtrisant Smart Groups et politiques, vous industrialisez le déploiement M
           'Ordonnez les étapes de déploiement d’un paquet sur un groupe pilote : Smart Group, politique, test, puis extension du scope.',
       },
       'inventory-basics': {
-        videoUrl: 'https://www.youtube.com/watch?v=Qe7zYNIezHc',
+        videoUrl: getModuleVideoLocalPublicUrl('jamf-pro-foundations', 'inventory-basics'),
         videoTitle: 'Vidéo : exporter un rapport inventaire Jamf Pro',
         videoDurationMinutes: 2,
-        videoProvider: 'youtube',
-        videoSourceLanguage: 'en',
+        videoProvider: 'mp4',
+        videoSourceLanguage: 'fr',
         summary:
           'Exploiter l’inventaire Jamf Pro, interpréter conformité et extension attributes pour prioriser les actions sur appareils hors norme.',
         learningObjectives: [
@@ -576,6 +582,13 @@ Pour un comité mensuel, suivez : pourcentage Mac/iPhone avec check-in < 48 h, t
           'Priorisez le triage de trois Mac non conformes en commençant par la validité MDM, puis OS et espace disque.',
       },
       'enrollment-apple-integration': {
+        videoUrl: 'https://www.youtube.com/watch?v=_g-0V2AFCW0',
+        videoProvider: 'youtube',
+        videoTitle: 'Vidéo : intégration ABM et enrôlement automatisé Jamf',
+        videoDurationMinutes: 10,
+        videoSourceLanguage: 'en',
+        videoTranscriptFr:
+          'Cette vidéo Jamf 100 présente l’intégration Apple Business Manager avec Jamf Pro, la création de PreStage enrollments et le flux zero-touch à l’assistant de configuration (Remote Management).',
         summary:
           'Relier Apple Business Manager, certificats Push MDM et Automated Device Enrollment pour une flotte supervisée entièrement gérée par Jamf Pro.',
         learningObjectives: [
@@ -787,10 +800,11 @@ L’objectif est de relier l’écosystème Apple (supervision, profils, ADE) au
 Prérequis : tenant Microsoft 365 avec Intune licencié, rôle Intune Administrator ou équivalent, accès Apple Business Manager, et notions de Conditional Access. Une flotte de test iOS/iPadOS (physique ou Apple Configurator) est fortement recommandée.`,
     modules: {
       'ade-enrollment-basics': {
-        videoUrl: 'https://www.youtube.com/watch?v=GrSaEcbyGh8',
+        videoUrl: getModuleVideoLocalPublicUrl('intune-ios-enrollment', 'ade-enrollment-basics'),
         videoTitle: "Vidéo : configurer l'ADE Intune avec ABM",
         videoDurationMinutes: 11,
-        videoProvider: 'youtube',
+        videoProvider: 'mp4',
+        videoSourceLanguage: 'fr',
         summary:
           'Associer Apple Business Manager à Intune, créer un profil ADE et valider l’enrôlement supervisé via l’assistant de configuration iOS/iPadOS.',
         learningObjectives: [
@@ -887,11 +901,11 @@ ADE + Intune pose les fondations d’un parc iOS supervisé, prêt pour conformi
           'Ordonnez les étapes pour préparer trente iPad scolaires depuis ABM jusqu’à la validation du premier appareil géré Intune.',
       },
       'compliance-policies': {
-        videoUrl: 'https://www.youtube.com/watch?v=oDm0KAbNVB8',
+        videoUrl: getModuleVideoLocalPublicUrl('intune-ios-enrollment', 'compliance-policies'),
         videoTitle: 'Vidéo : notifications de conformité Intune',
         videoDurationMinutes: 8,
-        videoProvider: 'youtube',
-        videoSourceLanguage: 'en',
+        videoProvider: 'mp4',
+        videoSourceLanguage: 'fr',
         summary:
           'Définir, assigner et remédier des politiques de conformité Intune pour iOS/iPadOS : version OS, code PIN, jailbreak et actions automatiques.',
         learningObjectives: [
@@ -996,6 +1010,13 @@ Les politiques de conformité Intune traduisent votre baseline sécurité en sig
           'Priorisez les actions admin face à un iPhone jailbreaké, un OS obsolète et un PIN absent.',
       },
       'app-protection-conditional-access': {
+        videoUrl: 'https://www.youtube.com/watch?v=F4PESZiEQhU',
+        videoProvider: 'youtube',
+        videoTitle: 'Vidéo : App Protection et Conditional Access Intune',
+        videoDurationMinutes: 8,
+        videoSourceLanguage: 'en',
+        videoTranscriptFr:
+          'Démonstration de création d’une App Protection Policy iOS pour Outlook (PIN, chiffrement, transfert de données) et assignation aux utilisateurs — base pour combiner MAM et Conditional Access Entra ID.',
         summary:
           'Protéger Outlook, Teams et données M365 sur iOS avec App Protection Policies Intune et Conditional Access Entra ID pour BYOD et flottes mixtes.',
         learningObjectives: [
@@ -1253,10 +1274,13 @@ export function getModulePedagogy(
 export const PILOT_VIDEO_MODULES = [
   { courseSlug: 'apple-cert-prep', moduleSlug: 'device-support-basics' },
   { courseSlug: 'apple-cert-prep', moduleSlug: 'ios-troubleshooting' },
+  { courseSlug: 'apple-cert-prep', moduleSlug: 'acmt-exam-prep' },
   { courseSlug: 'jamf-pro-foundations', moduleSlug: 'smart-groups-policies' },
   { courseSlug: 'jamf-pro-foundations', moduleSlug: 'inventory-basics' },
+  { courseSlug: 'jamf-pro-foundations', moduleSlug: 'enrollment-apple-integration' },
   { courseSlug: 'intune-ios-enrollment', moduleSlug: 'ade-enrollment-basics' },
   { courseSlug: 'intune-ios-enrollment', moduleSlug: 'compliance-policies' },
+  { courseSlug: 'intune-ios-enrollment', moduleSlug: 'app-protection-conditional-access' },
 ] as const;
 
 export function courseHasIntroVideo(courseSlug: string): boolean {

@@ -48,7 +48,9 @@ import {
   sumLessonReadingMinutes,
 } from '@ama/shared/reading-time';
 import { QUESTIONS_PER_MODULE } from '@ama/shared/constants';
+import { countCourseVideoModules } from '@ama/shared/course-content';
 import { moduleHasVideo } from '@ama/shared/video-embed';
+import { isVideoWatched, VIDEO_WATCHED_EVENT } from '@/lib/video-watched';
 
 export function CourseDetailClient({ slug }: { slug: string }) {
   const router = useRouter();
@@ -470,7 +472,13 @@ export function CourseDetailClient({ slug }: { slug: string }) {
   const totalReadingMinutes = sumLessonReadingMinutes(
     course.modules.map((module) => module.lessonContent ?? '')
   );
-  const heroBanner = formatCourseHeroBanner(totalModules, totalReadingMinutes, QUESTIONS_PER_MODULE);
+  const videoModuleCount = countCourseVideoModules(slug);
+  const heroBanner = formatCourseHeroBanner(
+    totalModules,
+    totalReadingMinutes,
+    QUESTIONS_PER_MODULE,
+    videoModuleCount
+  );
 
   return (
     <section style={{ padding: '1rem 0 3rem' }}>
@@ -711,6 +719,7 @@ export function CourseDetailClient({ slug }: { slug: string }) {
                         </p>
                       </Card>
                       <ModuleVideoSection
+                        moduleId={module.id}
                         videoUrl={module.videoUrl}
                         videoTitle={module.videoTitle}
                         videoDurationMinutes={module.videoDurationMinutes}
@@ -739,6 +748,7 @@ export function CourseDetailClient({ slug }: { slug: string }) {
                   ) : (
                     <>
                       <ModuleVideoSection
+                        moduleId={module.id}
                         videoUrl={module.videoUrl}
                         videoTitle={module.videoTitle}
                         videoDurationMinutes={module.videoDurationMinutes}
@@ -1002,6 +1012,20 @@ function ModuleSidebarNav({
   activeModuleId?: string;
   onSelectModule: (moduleId: string, moduleSlug: string) => void;
 }) {
+  const [watchedModuleIds, setWatchedModuleIds] = useState<Set<string>>(() => new Set());
+
+  useEffect(() => {
+    const sync = () => {
+      const ids = course.modules
+        .filter((module) => moduleHasVideo(module) && isVideoWatched(module.id))
+        .map((module) => module.id);
+      setWatchedModuleIds(new Set(ids));
+    };
+    sync();
+    window.addEventListener(VIDEO_WATCHED_EVENT, sync);
+    return () => window.removeEventListener(VIDEO_WATCHED_EVENT, sync);
+  }, [course.modules]);
+
   return (
     <Card variant="soft">
       <p className="section-eyebrow">Unités du parcours</p>
@@ -1051,7 +1075,7 @@ function ModuleSidebarNav({
               ) : null}
               {moduleHasVideo(module) ? (
                 <Badge tone="neutral" style={{ width: 'fit-content', fontSize: '0.68rem' }}>
-                  {'\u{1F3AC}'} Vidéo
+                  {'\u{1F3AC}'} {watchedModuleIds.has(module.id) ? 'Vidéo vue' : 'Vidéo'}
                 </Badge>
               ) : null}
               <span style={{ fontSize: '0.78rem', fontWeight: 800, color: 'var(--muted)' }}>

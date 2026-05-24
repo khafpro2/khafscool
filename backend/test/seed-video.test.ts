@@ -1,17 +1,25 @@
 import { describe, expect, it } from 'vitest';
-import { getModulePedagogy, listPilotVideoModules, PILOT_VIDEO_MODULES } from '@ama/shared/course-content';
+import {
+  countCourseVideoModules,
+  getModulePedagogy,
+  listPilotVideoModules,
+  PILOT_VIDEO_MODULES,
+} from '@ama/shared/course-content';
 import { getModuleVideoDubFr, getModuleVideoDubFrSyncUrl } from '@ama/shared/video-dub-fr';
 
 describe('seed pilot module videos', () => {
-  it('defines six pilot videos (modules 1 and 2 per track)', () => {
-    expect(PILOT_VIDEO_MODULES).toHaveLength(6);
+  it('defines nine pilot videos (modules 1–3 per track)', () => {
+    expect(PILOT_VIDEO_MODULES).toHaveLength(9);
     expect(listPilotVideoModules().map((entry) => entry.moduleSlug)).toEqual([
       'device-support-basics',
       'ios-troubleshooting',
+      'acmt-exam-prep',
       'smart-groups-policies',
       'inventory-basics',
+      'enrollment-apple-integration',
       'ade-enrollment-basics',
       'compliance-policies',
+      'app-protection-conditional-access',
     ]);
   });
 
@@ -22,16 +30,24 @@ describe('seed pilot module videos', () => {
       expect(pedagogy?.videoDurationMinutes, `${courseSlug}/${moduleSlug}`).toBeGreaterThan(0);
       if (pedagogy?.videoProvider === 'placeholder') {
         expect(pedagogy.videoUrl).toBe('placeholder');
+      } else if (pedagogy?.videoProvider === 'youtube') {
+        expect(pedagogy?.videoUrl, `${courseSlug}/${moduleSlug}`).toMatch(/youtube\.com|youtu\.be/);
       } else {
-        expect(pedagogy?.videoUrl, `${courseSlug}/${moduleSlug}`).toMatch(/^https:\/\//);
-        expect(pedagogy?.videoProvider).toBe('youtube');
+        expect(pedagogy?.videoUrl, `${courseSlug}/${moduleSlug}`).toMatch(/^\/media\/videos\//);
+        expect(pedagogy?.videoProvider).toBe('mp4');
       }
     }
   });
 
+  it('counts three video modules per course track', () => {
+    expect(countCourseVideoModules('apple-cert-prep')).toBe(3);
+    expect(countCourseVideoModules('jamf-pro-foundations')).toBe(3);
+    expect(countCourseVideoModules('intune-ios-enrollment')).toBe(3);
+  });
+
   it('provides a French transcript for the Jamf intro video', () => {
     const pedagogy = getModulePedagogy('jamf-pro-foundations', 'smart-groups-policies');
-    expect(pedagogy?.videoSourceLanguage).toBe('en');
+    expect(pedagogy?.videoSourceLanguage).toBe('fr');
     expect(pedagogy?.videoTranscriptFr).toMatch(/Jamf Pro/i);
     expect(pedagogy?.videoTranscriptFr).toMatch(/Apple Business Manager/i);
   });

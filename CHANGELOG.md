@@ -2,6 +2,14 @@
 
 ## [0.3.0] — 2026-05-24
 
+### Vidéos module 3 (suite v0.3)
+- **Pilote** — 3 vidéos supplémentaires (module 3 par piste) : Apple Diagnostics (placeholder animé), Jamf ADE (YouTube Jamf 100), Intune App Protection (YouTube MD-102)
+- **Catalogue** — `TrailCard` : métadonnées `4 modules · 3 avec vidéo` quand des unités ont une vidéo
+- **Hero parcours** — suffixe `3 modules avec vidéo explicative` sur `/courses/[slug]`
+- **Web** — `localStorage` `video-watched-{moduleId}` après 30 s (iframe/lecteur) ; badge sidebar « Vidéo vue »
+- **Web** — lecteur YouTube/Vimeo en iframe (`youtube-nocookie`) pour les unités module 3 Jamf/Intune
+- Tests : `seed-video`, `reading-time`, e2e catalogue et hero
+
 ### Marque Jamf
 - **UI** — wordmark Jamf en vert officiel `#76B900` (tokens CSS, parcours, badges, Open Graph) ; dégradés track/badges alignés sur la charte Jamf
 

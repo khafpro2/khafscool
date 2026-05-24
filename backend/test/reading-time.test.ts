@@ -4,6 +4,7 @@ import {
   estimateReadingMinutes,
   formatReadingTimeLabel,
   formatCourseHeroBanner,
+  formatCourseHeroVideoSuffix,
   formatTrailCatalogMeta,
   sumLessonReadingMinutes,
   READING_WORDS_PER_MINUTE,
@@ -38,10 +39,20 @@ describe('reading time', () => {
 
   it('formats course hero banner for four-module tracks', () => {
     expect(formatCourseHeroBanner(4, 18, 10)).toBe('4 modules · 10 questions · ~18 min de lecture');
+    expect(formatCourseHeroBanner(4, 18, 10, 3)).toBe(
+      '4 modules · 10 questions · ~18 min de lecture · 3 modules avec vidéo explicative'
+    );
+  });
+
+  it('formats course hero video suffix', () => {
+    expect(formatCourseHeroVideoSuffix(0)).toBeNull();
+    expect(formatCourseHeroVideoSuffix(3)).toBe('3 modules avec vidéo explicative');
+    expect(formatCourseHeroVideoSuffix(1)).toBe('1 module avec vidéo explicative');
   });
 
   it('formats trail catalog meta with reading sum', () => {
     expect(formatTrailCatalogMeta(4, 18, 10)).toBe('~18 min · 4 modules · 40 questions');
+    expect(formatTrailCatalogMeta(4, 18, 10, 3)).toBe('~18 min · 4 modules · 3 avec vidéo');
   });
 
   it('exposes positive reading minutes for MVP courses', () => {

@@ -85,11 +85,12 @@ test.describe('Parcours d’apprentissage — smoke', () => {
     ).toBeVisible();
   });
 
-  test('hero parcours affiche bandeau 4 modules', async ({ page }) => {
+  test('hero parcours affiche bandeau 4 modules et vidéos', async ({ page }) => {
     await page.goto('/courses/apple-cert-prep');
     await expect(page.getByText(/4 modules · 10 questions · ~\d+ min de lecture/i)).toBeVisible({
       timeout: 15_000,
     });
+    await expect(page.getByText(/3 modules avec vidéo explicative/i)).toBeVisible();
   });
 
   test('lien « Aller au contenu » visible au focus', async ({ page }) => {
