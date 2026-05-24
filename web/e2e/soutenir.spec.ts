@@ -121,7 +121,7 @@ test.describe('Page Soutenir', () => {
   test('n’affiche pas l’email support en clair', async ({ page }) => {
     await page.goto('/soutenir');
     await expect(page.getByText('KTHIAM@HARMYTECH.COM')).toHaveCount(0);
-    const assistanceLink = page.getByRole('link', { name: 'Assistance' });
+    const assistanceLink = page.locator('#main-content').getByRole('link', { name: 'Assistance' });
     await expect(assistanceLink).toBeVisible();
     await expect(assistanceLink).toHaveAttribute('href', /^mailto:/);
   });
