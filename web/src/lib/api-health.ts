@@ -11,9 +11,14 @@ import {
 
 const HEALTH_POLL_MS = 45_000;
 
+function healthCheckUrl(): string {
+  if (typeof window !== 'undefined') return '/api/proxy/health';
+  return `${API_URL}/health`;
+}
+
 export async function checkApiHealth(): Promise<boolean> {
   try {
-    const res = await fetch(`${API_URL}/health`, {
+    const res = await fetch(healthCheckUrl(), {
       cache: 'no-store',
       signal: AbortSignal.timeout(5_000),
     });
