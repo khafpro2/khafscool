@@ -12,12 +12,28 @@ const checkAnswerBodySchema = z.object({
 });
 
 const practiceExamScoreBodySchema = z.object({
-  scorePercent: z
-    .number({ required_error: 'scorePercent requis', invalid_type_error: 'scorePercent doit être un nombre' })
-    .int('scorePercent doit être un entier')
-    .min(0, 'scorePercent doit être entre 0 et 100')
-    .max(100, 'scorePercent doit être entre 0 et 100'),
+  attemptToken: z.string().min(1, 'attemptToken requis'),
+  answers: z
+    .array(
+      z.object({
+        questionId: z.string().min(1, 'questionId requis'),
+        selectedOption: z.string().min(1, 'selectedOption requis'),
+      })
+    )
+    .min(1, 'answers requis'),
 });
+
+const completeModuleBodySchema = z.object({
+  quizAnswers: z.record(z.string().min(1), z.string().min(1)).optional(),
+  gameOrder: z.array(z.number().int()).optional(),
+  reviewMode: z.boolean().optional(),
+});
+
+export type CompleteModuleRequestBody = z.infer<typeof completeModuleBodySchema>;
+
+export function parseCompleteModuleRequest(body: unknown) {
+  return completeModuleBodySchema.safeParse(body ?? {});
+}
 
 const certificationSprintRequestSchema = z.object({
   track: z.nativeEnum(CourseTrack, {
@@ -65,7 +81,7 @@ export async function getPracticeExam(
   reply: FastifyReply
 ) {
   try {
-    const data = await practiceExam.getPracticeExam(req.params.slug);
+    const data = await practiceExam.getPracticeExam(req.params.slug, req.user.sub);
     return reply.send(data);
   } catch (e) {
     if ((e as Error).message === 'COURSE_NOT_FOUND') {
@@ -76,7 +92,10 @@ export async function getPracticeExam(
 }
 
 export async function recordPracticeExamScore(
-  req: FastifyRequest<{ Params: { slug: string }; Body: { scorePercent?: number } }>,
+  req: FastifyRequest<{
+    Params: { slug: string };
+    Body: { attemptToken?: string; answers?: { questionId: string; selectedOption: string }[] };
+  }>,
   reply: FastifyReply
 ) {
   const parsedBody = practiceExamScoreBodySchema.safeParse(req.body ?? {});
@@ -91,16 +110,31 @@ export async function recordPracticeExamScore(
   }
 
   try {
+    const attempt = practiceExam.verifyPracticeExamAttempt(parsedBody.data.attemptToken);
+    if (attempt.sub !== req.user.sub || attempt.slug !== req.params.slug) {
+      return reply.status(400).send({ error: 'INVALID_PRACTICE_EXAM_ATTEMPT' });
+    }
+
+    const grade = await practiceExam.gradePracticeExamAnswers(attempt.questionIds, parsedBody.data.answers);
     const result = await gamification.recordPracticeExamResult(
       req.user.sub,
       req.params.slug,
-      parsedBody.data.scorePercent
+      grade.scorePercent
     );
-    return reply.send(result);
+    return reply.send({ ...result, correctCount: grade.correct, totalQuestions: grade.total });
   } catch (e) {
     const message = (e as Error).message;
     if (message === 'COURSE_NOT_FOUND' || message === 'COURSE_NOT_COMPLETE') {
       return reply.status(404).send({ error: message });
+    }
+    if (
+      message === 'INVALID_PRACTICE_EXAM_ATTEMPT' ||
+      message === 'INCOMPLETE_PRACTICE_EXAM_ANSWERS' ||
+      message === 'UNKNOWN_PRACTICE_EXAM_QUESTION' ||
+      message === 'DUPLICATE_PRACTICE_EXAM_ANSWER' ||
+      message === 'INVALID_PRACTICE_EXAM_QUESTIONS'
+    ) {
+      return reply.status(400).send({ error: message });
     }
     throw e;
   }
@@ -176,12 +210,23 @@ export async function getCourseProgress(
 export async function completeModule(
   req: FastifyRequest<{
     Params: { id: string };
-    Body: { quizAnswers?: Record<string, string>; gameOrder?: number[]; reviewMode?: boolean };
+    Body: CompleteModuleRequestBody;
   }>,
   reply: FastifyReply
 ) {
+  const parsedBody = parseCompleteModuleRequest(req.body);
+  if (!parsedBody.success) {
+    return reply.status(400).send({
+      error: 'INVALID_COMPLETE_MODULE_REQUEST',
+      details: parsedBody.error.issues.map((issue) => ({
+        field: issue.path.join('.') || 'body',
+        message: issue.message,
+      })),
+    });
+  }
+
   try {
-    const result = await gamification.completeModule(req.user.sub, req.params.id, req.body ?? {});
+    const result = await gamification.completeModule(req.user.sub, req.params.id, parsedBody.data);
     return reply.send(result);
   } catch (e) {
     if ((e as Error).message === 'MODULE_NOT_FOUND') {

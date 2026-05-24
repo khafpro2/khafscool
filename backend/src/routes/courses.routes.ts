@@ -28,7 +28,10 @@ export async function coursesRoutes(app: FastifyInstance) {
     { preHandler: requireAuth },
     courses.getPracticeExam
   );
-  app.post<{ Params: { slug: string }; Body: { scorePercent?: number } }>(
+  app.post<{
+    Params: { slug: string };
+    Body: { attemptToken?: string; answers?: { questionId: string; selectedOption: string }[] };
+  }>(
     '/courses/:slug/practice-exam/score',
     { preHandler: requireAuth, config: quizRateLimitRouteConfig },
     courses.recordPracticeExamScore

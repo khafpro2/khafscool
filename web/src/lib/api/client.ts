@@ -40,6 +40,7 @@ import type {
   LeaderboardResponse,
   PracticeExamData,
   PracticeExamScoreResult,
+  PracticeExamScoreSubmission,
   PublicCourseCatalogItem,
   UserBadgesResult,
   UserProgressData,
@@ -48,16 +49,42 @@ import type {
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
 
+function resolveApiUrl(path: string) {
+  if (typeof window !== 'undefined') return `/api/proxy${path}`;
+  return `${API_URL}${path}`;
+}
+
+function useBrowserProxy() {
+  return typeof window !== 'undefined';
+}
+
 async function apiRequest<T>(path: string, init: RequestInit = {}) {
-  const requestInit = withJsonHeaders(init);
+  const useProxy = useBrowserProxy();
+  const url = resolveApiUrl(path);
+  const headers = new Headers(init.headers as HeadersInit);
+
+  if (!headers.has('Content-Type') && init.body) {
+    headers.set('Content-Type', 'application/json');
+  }
+
+  if (useProxy) {
+    headers.delete('Authorization');
+  }
+
+  const requestInit: RequestInit = {
+    ...init,
+    headers,
+    credentials: useProxy ? 'include' : init.credentials,
+    cache: 'no-store',
+  };
 
   try {
-    let res = await fetch(`${API_URL}${path}`, requestInit);
+    let res = await fetch(url, requestInit);
 
-    if (res.status === 401 && hasAuthorizationHeader(requestInit.headers)) {
+    if (res.status === 401 && useProxy) {
       const refreshed = await refreshSession();
       if (refreshed) {
-        res = await fetch(`${API_URL}${path}`, withAuthorizationHeader(requestInit, refreshed.accessToken));
+        res = await fetch(url, requestInit);
       }
     }
 
@@ -84,33 +111,8 @@ function isNetworkError(error: unknown) {
   return error instanceof TypeError || (error instanceof Error && error.name === 'AbortError');
 }
 
-function withJsonHeaders(init: RequestInit): RequestInit {
-  return {
-    ...init,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(init.headers ?? {}),
-    },
-    cache: 'no-store',
-  };
-}
-
-function hasAuthorizationHeader(headers: RequestInit['headers']) {
-  return Boolean(headers && 'Authorization' in headers && headers.Authorization);
-}
-
-function withAuthorizationHeader(init: RequestInit, token: string): RequestInit {
-  return {
-    ...init,
-    headers: {
-      ...(init.headers as Record<string, string>),
-      Authorization: `Bearer ${token}`,
-    },
-  };
-}
-
-function authHeader(token?: string): Record<string, string> {
-  return token ? { Authorization: `Bearer ${token}` } : {};
+function authHeader(_token?: string): Record<string, string> {
+  return {};
 }
 
 async function authRequest<T>(path: string, body: unknown): Promise<T> {
@@ -278,11 +280,15 @@ export async function exportUserData(token: string): Promise<UserDataExport> {
   return data;
 }
 
-export async function deleteAccount(token: string, confirm: 'SUPPRIMER'): Promise<{ ok: true }> {
+export async function deleteAccount(
+  token: string,
+  confirm: 'SUPPRIMER',
+  currentPassword?: string
+): Promise<{ ok: true }> {
   return apiRequest<{ ok: true }>('/users/me', {
     method: 'DELETE',
     headers: authHeader(token),
-    body: JSON.stringify({ confirm }),
+    body: JSON.stringify({ confirm, ...(currentPassword ? { currentPassword } : {}) }),
   });
 }
 
@@ -379,12 +385,12 @@ export async function fetchPracticeExam(slug: string, token?: string): Promise<P
 export async function recordPracticeExamScore(
   slug: string,
   token: string,
-  scorePercent: number
+  submission: PracticeExamScoreSubmission
 ): Promise<PracticeExamScoreResult> {
   return apiRequest<PracticeExamScoreResult>(`/courses/${slug}/practice-exam/score`, {
     method: 'POST',
     headers: authHeader(token),
-    body: JSON.stringify({ scorePercent }),
+    body: JSON.stringify(submission),
   });
 }
 
