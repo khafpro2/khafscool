@@ -1,5 +1,4 @@
 import type { BrandId } from '@/lib/brands';
-import { getBadgeBrand, getTrackBrand } from '@/lib/brands';
 
 export type { BrandId } from '@/lib/brands';
 export { getBadgeBrand, getTrackBrand } from '@/lib/brands';

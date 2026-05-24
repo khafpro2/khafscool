@@ -287,6 +287,7 @@ export function InteractiveMiniGame({
                 onDragStart={() => handleDragStart(index)}
                 onDragOver={(event) => handleDragOver(event, index)}
                 onDragEnd={handleDragEnd}
+                onKeyDown={(event) => handleKeyboardReorder(event, index)}
               >
                 <span className="mini-game-step-rank" aria-hidden>
                   {index + 1}

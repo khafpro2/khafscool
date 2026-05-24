@@ -1,5 +1,4 @@
 import type { BrandId } from './brands';
-import { getBadgeBrand, getTrackBrand } from './brands';
 
 /** Tokens alignés sur MDM Academy Pro (web) */
 export type AppThemeColors = {

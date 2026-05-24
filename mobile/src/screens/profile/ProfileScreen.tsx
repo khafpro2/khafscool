@@ -22,7 +22,7 @@ import { RecentActivitySection } from '../../components/profile/RecentActivitySe
 import type { CompletedCourseSummary, LearnerDashboard } from '../../services/progress';
 import { fetchLearnerDashboard } from '../../services/progress';
 import { clearTokens } from '../../services/auth';
-import { changePassword, deleteAccount, exportUserData, logoutAllSessions, updateDisplayName } from '../../services/api';
+import { changePassword, deleteAccount, exportUserData, fetchCurrentUser, logoutAllSessions, updateDisplayName } from '../../services/api';
 import {
   buildPointsRankNavSnapshot,
   formatLeaderboardRankLabel,
@@ -51,8 +51,10 @@ export function ProfileScreen() {
   const [isExporting, setIsExporting] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState('');
+  const [deletePassword, setDeletePassword] = useState('');
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [accountProvider, setAccountProvider] = useState<string | undefined>();
 
   async function loadProfile() {
     setLoading(true);
@@ -64,6 +66,10 @@ export function ProfileScreen() {
       writePointsRankNavCache(
         buildPointsRankNavSnapshot(result.data.progress.points, leaderboard.data.currentUserRank),
       );
+      const currentUser = await fetchCurrentUser();
+      setAccountProvider(currentUser?.provider);
+    } else {
+      setAccountProvider(undefined);
     }
     setLoading(false);
   }
@@ -159,14 +165,21 @@ export function ProfileScreen() {
       return;
     }
 
+    const isLocalAccount =
+      !accountProvider || accountProvider === 'LOCAL' || accountProvider === 'EMAIL';
+    if (isLocalAccount && !deletePassword.trim()) {
+      setDeleteError('Indique ton mot de passe actuel.');
+      return;
+    }
+
     setIsDeleting(true);
     try {
-      await deleteAccount('SUPPRIMER');
+      await deleteAccount('SUPPRIMER', isLocalAccount ? deletePassword : undefined);
       await clearTokens();
       setShowDeleteModal(false);
       router.replace('/');
     } catch {
-      setDeleteError('Impossible de supprimer le compte. Réessaie.');
+      setDeleteError('Impossible de supprimer le compte. Vérifie ton mot de passe et réessaie.');
     } finally {
       setIsDeleting(false);
     }
@@ -221,6 +234,9 @@ export function ProfileScreen() {
   const remainingPoints = rank.nextPoints != null ? Math.max(0, rank.nextPoints - data.progress.points) : 0;
   const completedCourses = data.completedCourses ?? [];
   const recentActivity = data.recentActivity ?? [];
+  const isLocalAccount =
+    source === 'api' &&
+    (!accountProvider || accountProvider === 'LOCAL' || accountProvider === 'EMAIL');
   const leaderboardLabel =
     source === 'api' && pointsRankNav
       ? formatLeaderboardRankLabel(pointsRankNav.leaderboardRank)
@@ -454,63 +470,71 @@ export function ProfileScreen() {
           <Text style={styles.sectionTitle}>Sécurité</Text>
           <Text style={styles.sectionHint}>Mot de passe et sessions actives</Text>
 
-          <Text style={styles.securityLabel}>Mot de passe actuel</Text>
-          <TextInput
-            value={currentPassword}
-            onChangeText={(text) => {
-              setCurrentPassword(text);
-              if (passwordError) setPasswordError(null);
-            }}
-            secureTextEntry
-            autoCapitalize="none"
-            autoCorrect={false}
-            accessibilityLabel="Mot de passe actuel"
-            style={[styles.securityInput, passwordError ? styles.nameEditInputError : null]}
-          />
-          <Text style={styles.securityLabel}>Nouveau mot de passe</Text>
-          <TextInput
-            value={newPassword}
-            onChangeText={(text) => {
-              setNewPassword(text);
-              if (passwordError) setPasswordError(null);
-            }}
-            secureTextEntry
-            autoCapitalize="none"
-            autoCorrect={false}
-            accessibilityLabel="Nouveau mot de passe"
-            style={styles.securityInput}
-          />
-          <Text style={styles.securityLabel}>Confirmer le mot de passe</Text>
-          <TextInput
-            value={confirmPassword}
-            onChangeText={(text) => {
-              setConfirmPassword(text);
-              if (passwordError) setPasswordError(null);
-            }}
-            secureTextEntry
-            autoCapitalize="none"
-            autoCorrect={false}
-            accessibilityLabel="Confirmer le mot de passe"
-            style={styles.securityInput}
-          />
-          {passwordError ? (
-            <Text style={styles.nameEditError} accessibilityRole="alert">
-              {passwordError}
-            </Text>
+          {isLocalAccount ? (
+            <>
+              <Text style={styles.securityLabel}>Mot de passe actuel</Text>
+              <TextInput
+                value={currentPassword}
+                onChangeText={(text) => {
+                  setCurrentPassword(text);
+                  if (passwordError) setPasswordError(null);
+                }}
+                secureTextEntry
+                autoCapitalize="none"
+                autoCorrect={false}
+                accessibilityLabel="Mot de passe actuel"
+                style={[styles.securityInput, passwordError ? styles.nameEditInputError : null]}
+              />
+              <Text style={styles.securityLabel}>Nouveau mot de passe</Text>
+              <TextInput
+                value={newPassword}
+                onChangeText={(text) => {
+                  setNewPassword(text);
+                  if (passwordError) setPasswordError(null);
+                }}
+                secureTextEntry
+                autoCapitalize="none"
+                autoCorrect={false}
+                accessibilityLabel="Nouveau mot de passe"
+                style={styles.securityInput}
+              />
+              <Text style={styles.securityLabel}>Confirmer le mot de passe</Text>
+              <TextInput
+                value={confirmPassword}
+                onChangeText={(text) => {
+                  setConfirmPassword(text);
+                  if (passwordError) setPasswordError(null);
+                }}
+                secureTextEntry
+                autoCapitalize="none"
+                autoCorrect={false}
+                accessibilityLabel="Confirmer le mot de passe"
+                style={styles.securityInput}
+              />
+              {passwordError ? (
+                <Text style={styles.nameEditError} accessibilityRole="alert">
+                  {passwordError}
+                </Text>
+              ) : (
+                <Text style={styles.nameEditHint}>Minimum 8 caractères pour les comptes e-mail.</Text>
+              )}
+              <Pressable
+                style={[styles.nameEditButton, isSavingPassword ? styles.nameEditButtonDisabled : null]}
+                onPress={() => void handleChangePassword()}
+                disabled={isSavingPassword}
+                accessibilityRole="button"
+                accessibilityLabel="Changer le mot de passe"
+              >
+                <Text style={styles.nameEditButtonText}>
+                  {isSavingPassword ? 'Enregistrement…' : 'Changer le mot de passe'}
+                </Text>
+              </Pressable>
+            </>
           ) : (
-            <Text style={styles.nameEditHint}>Minimum 8 caractères pour les comptes e-mail.</Text>
-          )}
-          <Pressable
-            style={[styles.nameEditButton, isSavingPassword ? styles.nameEditButtonDisabled : null]}
-            onPress={() => void handleChangePassword()}
-            disabled={isSavingPassword}
-            accessibilityRole="button"
-            accessibilityLabel="Changer le mot de passe"
-          >
-            <Text style={styles.nameEditButtonText}>
-              {isSavingPassword ? 'Enregistrement…' : 'Changer le mot de passe'}
+            <Text style={styles.sectionHint}>
+              Connexion via {formatAuthProvider(accountProvider)} — le mot de passe se gère depuis ce fournisseur.
             </Text>
-          </Pressable>
+          )}
 
           <Pressable
             style={[styles.logoutAllButton, isLoggingOutAll ? styles.nameEditButtonDisabled : null]}
@@ -547,6 +571,7 @@ export function ProfileScreen() {
             style={styles.deleteAccountButton}
             onPress={() => {
               setDeleteConfirm('');
+              setDeletePassword('');
               setDeleteError(null);
               setShowDeleteModal(true);
             }}
@@ -586,6 +611,23 @@ export function ProfileScreen() {
               accessibilityLabel="Confirmation suppression compte"
               style={[styles.securityInput, deleteError ? styles.nameEditInputError : null]}
             />
+            {isLocalAccount ? (
+              <>
+                <Text style={styles.securityLabel}>Mot de passe actuel</Text>
+                <TextInput
+                  value={deletePassword}
+                  onChangeText={(text) => {
+                    setDeletePassword(text);
+                    if (deleteError) setDeleteError(null);
+                  }}
+                  secureTextEntry
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  accessibilityLabel="Mot de passe actuel pour suppression"
+                  style={[styles.securityInput, deleteError ? styles.nameEditInputError : null]}
+                />
+              </>
+            ) : null}
             {deleteError ? (
               <Text style={styles.nameEditError} accessibilityRole="alert">
                 {deleteError}
@@ -915,4 +957,15 @@ function createStyles(colors: AppThemeColors) {
     modalCancelButton: { marginTop: 10, padding: 12, alignItems: 'center' },
     modalCancelText: { color: colors.accent, fontWeight: '700' },
   });
+}
+
+function formatAuthProvider(provider?: string) {
+  const map: Record<string, string> = {
+    EMAIL: 'E-mail',
+    LOCAL: 'E-mail',
+    APPLE: 'Apple',
+    GOOGLE: 'Google',
+    MICROSOFT: 'Microsoft',
+  };
+  return map[provider ?? ''] ?? provider ?? 'OAuth';
 }

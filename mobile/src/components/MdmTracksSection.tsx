@@ -5,7 +5,6 @@ import { LEARNING_PATHS } from '@ama/shared/learning-paths';
 import { BrandIcon } from './BrandIcon';
 import { TrackIcon } from './TrackIcon';
 import type { CourseSummary } from '../services/progress';
-import { useAppTheme } from '../context/ThemeContext';
 import type { AppThemeColors } from '../lib/design';
 import { formatTrack, getTrackVisual } from '../lib/design';
 import { useThemedStyles } from '../hooks/useThemedStyles';

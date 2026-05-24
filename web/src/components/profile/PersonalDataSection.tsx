@@ -8,12 +8,15 @@ import { showToast } from '@/lib/toast-store';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 
-export function PersonalDataSection() {
+export function PersonalDataSection({ provider }: { provider?: string }) {
   const [isExporting, setIsExporting] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [confirmText, setConfirmText] = useState('');
+  const [deletePassword, setDeletePassword] = useState('');
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  const isLocalAccount = !provider || provider === 'LOCAL' || provider === 'EMAIL';
 
   async function handleExport() {
     const token = getAccessToken();
@@ -50,6 +53,11 @@ export function PersonalDataSection() {
       return;
     }
 
+    if (isLocalAccount && !deletePassword.trim()) {
+      setDeleteError('Indique ton mot de passe actuel.');
+      return;
+    }
+
     const token = getAccessToken();
     if (!token) {
       setDeleteError('Connecte-toi pour supprimer ton compte.');
@@ -58,7 +66,7 @@ export function PersonalDataSection() {
 
     setIsDeleting(true);
     try {
-      await deleteAccount(token, 'SUPPRIMER');
+      await deleteAccount(token, 'SUPPRIMER', isLocalAccount ? deletePassword : undefined);
       clearAuthTokens();
       setShowDeleteModal(false);
       showToast({
@@ -68,7 +76,7 @@ export function PersonalDataSection() {
       });
       window.location.href = buildAuthUrl('/');
     } catch {
-      setDeleteError(`Impossible de supprimer le compte. Réessaie ou contacte le support à ${getContactEmail()}.`);
+      setDeleteError(`Impossible de supprimer le compte. Vérifie ton mot de passe ou contacte le support à ${getContactEmail()}.`);
     } finally {
       setIsDeleting(false);
     }
@@ -105,6 +113,7 @@ export function PersonalDataSection() {
             style={{ background: '#dc2626', borderColor: '#dc2626', color: '#fff' }}
             onClick={() => {
               setConfirmText('');
+              setDeletePassword('');
               setDeleteError(null);
               setShowDeleteModal(true);
             }}
@@ -172,6 +181,36 @@ export function PersonalDataSection() {
                   fontWeight: 700,
                 }}
               />
+              {isLocalAccount ? (
+                <>
+                  <label
+                    htmlFor="delete-password"
+                    className="muted"
+                    style={{ fontSize: '0.78rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: '0.85rem', display: 'block' }}
+                  >
+                    Mot de passe actuel
+                  </label>
+                  <input
+                    id="delete-password"
+                    type="password"
+                    value={deletePassword}
+                    onChange={(event) => {
+                      setDeletePassword(event.target.value);
+                      if (deleteError) setDeleteError(null);
+                    }}
+                    autoComplete="current-password"
+                    style={{
+                      width: '100%',
+                      marginTop: '0.5rem',
+                      padding: '0.55rem 0.75rem',
+                      borderRadius: 'var(--radius-md)',
+                      border: `1px solid ${deleteError ? '#dc2626' : 'var(--border)'}`,
+                      background: 'var(--surface)',
+                      color: 'var(--fg)',
+                    }}
+                  />
+                </>
+              ) : null}
               {deleteError ? (
                 <p role="alert" style={{ marginTop: '0.5rem', color: '#dc2626', fontSize: '0.88rem', fontWeight: 600 }}>
                   {deleteError}

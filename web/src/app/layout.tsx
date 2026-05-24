@@ -16,6 +16,7 @@ import { Toaster } from '@/components/ui/Toast';
 import { Button } from '@/components/ui/Button';
 import { getContactEmail, getContactMailto } from '@/lib/contact';
 import { LEARNING_PATHS } from '@/lib/learningPaths';
+import { SessionBootstrap } from '@/components/layout/SessionBootstrap';
 import { themeInitScript } from '@/lib/theme';
 import './globals.css';
 
@@ -100,6 +101,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
       <body>
+        <SessionBootstrap />
         <a href="#main-content" className="skip-link">
           Aller au contenu
         </a>

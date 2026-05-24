@@ -395,7 +395,7 @@ async function main() {
   ]);
 
   const passwordHash = await bcrypt.hash(DEMO_ACCOUNT.password, 12);
-  await prisma.user.upsert({
+  const demoUser = await prisma.user.upsert({
     where: { email: DEMO_ACCOUNT.email },
     update: {
       displayName: DEMO_ACCOUNT.displayName,
@@ -409,6 +409,35 @@ async function main() {
       provider: AuthProvider.LOCAL,
     },
   });
+
+  await prisma.userProgress.upsert({
+    where: { userId: demoUser.id },
+    update: { points: 120, level: 'TECHNICIAN' },
+    create: { userId: demoUser.id, points: 120, level: 'TECHNICIAN' },
+  });
+
+  const appleModules = await prisma.module.findMany({
+    where: { courseId: appleCourse.id },
+    select: { id: true },
+  });
+
+  for (const moduleRow of appleModules) {
+    await prisma.moduleProgress.upsert({
+      where: { userId_moduleId: { userId: demoUser.id, moduleId: moduleRow.id } },
+      update: {
+        quizScore: 100,
+        gameScore: 100,
+        completedAt: new Date(),
+      },
+      create: {
+        userId: demoUser.id,
+        moduleId: moduleRow.id,
+        quizScore: 100,
+        gameScore: 100,
+        completedAt: new Date(),
+      },
+    });
+  }
 
   console.log(
     '✅ Seed OK — parcours:',

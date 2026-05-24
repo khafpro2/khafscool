@@ -143,7 +143,10 @@ describe('DELETE /users/me', () => {
   });
 
   it('deletes the authenticated user when confirmation matches', async () => {
-    vi.mocked(prisma.user.findUnique).mockResolvedValue({ id: 'user-1' } as never);
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({
+      id: 'user-1',
+      provider: AuthProvider.GOOGLE,
+    } as never);
     vi.mocked(prisma.user.delete).mockResolvedValue({ id: 'user-1' } as never);
 
     const reply = { status: vi.fn().mockReturnThis(), send: vi.fn() };
@@ -154,6 +157,25 @@ describe('DELETE /users/me', () => {
 
     expect(prisma.user.delete).toHaveBeenCalledWith({ where: { id: 'user-1' } });
     expect(reply.send).toHaveBeenCalledWith({ ok: true });
+  });
+
+  it('requires password for local accounts', async () => {
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({
+      id: 'user-1',
+      provider: AuthProvider.LOCAL,
+      passwordHash: 'hash',
+    } as never);
+
+    const reply = { status: vi.fn().mockReturnThis(), send: vi.fn() };
+    await deleteCurrentUser(
+      { user: { sub: 'user-1' }, body: { confirm: 'SUPPRIMER' } } as never,
+      reply as never
+    );
+
+    expect(reply.status).toHaveBeenCalledWith(400);
+    expect(reply.send).toHaveBeenCalledWith(
+      expect.objectContaining({ error: 'PASSWORD_REQUIRED_FOR_DELETE' })
+    );
   });
 
   it('requires authentication on the route', async () => {

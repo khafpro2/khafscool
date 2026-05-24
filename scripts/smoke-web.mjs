@@ -24,6 +24,7 @@ const pages = [
   { path: '/diagnostics', label: 'diagnostics', marker: 'Diagnostics navigateur' },
   { path: '/mvp', label: 'mvp', marker: 'MVP testable' },
   { path: '/demo', label: 'demo', marker: 'Guide de démonstration' },
+  { path: '/soutenir', label: 'soutenir', marker: 'Soutenir MDM Academy Pro' },
 ];
 
 function log(message) {

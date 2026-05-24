@@ -1,6 +1,5 @@
 import type { ExpoConfig } from 'expo/config';
-
-const appJson = require('./app.json');
+import appJson from './app.json';
 
 function webHostFromEnv(): string | null {
   const webUrl = process.env.EXPO_PUBLIC_WEB_URL ?? 'http://localhost:3000';

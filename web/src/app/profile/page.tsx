@@ -198,7 +198,9 @@ export default function ProfilePage() {
         />
       ) : null}
 
-      {hasToken && fromApi ? <PersonalDataSection /> : null}
+      {hasToken && fromApi ? (
+        <PersonalDataSection provider={user.provider ?? storedUser?.provider} />
+      ) : null}
 
       <QuickLinksCard />
 
@@ -358,7 +360,8 @@ function ProfileHero({
               textTransform: 'uppercase',
             }}
           >
-            <span aria-hidden>{rank.icon}</span> Compte apprenant
+            <span aria-hidden>{isSupporter ? '\u{1F49A}' : rank.icon}</span>{' '}
+            {isSupporter ? 'Supporter' : 'Compte apprenant'}
           </span>
           <h1 style={{ fontSize: '2rem', fontWeight: 800, marginTop: '0.5rem' }}>{displayName}</h1>
           <p style={{ marginTop: '0.25rem', color: 'rgba(255,255,255,0.88)', fontSize: '0.95rem' }}>{email}</p>

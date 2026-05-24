@@ -1,10 +1,11 @@
 import type { AuthResponse, AuthUser } from './api';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
-const ACCESS_KEY = 'ama_access';
-const REFRESH_KEY = 'ama_refresh';
 const USER_KEY = 'ama_user';
 const REMEMBER_KEY = 'ama_remember_me';
+
+/** Indique une session HttpOnly côté navigateur (jeton non lisible en JS). */
+export const COOKIE_SESSION = '__cookie_session__';
 
 /** Jeton d’accès JWT — renouvelé automatiquement via le refresh token. */
 export const ACCESS_TOKEN_TTL_MINUTES = 15;
@@ -31,26 +32,43 @@ export function writeRememberMePreference(rememberMe: boolean) {
   window.localStorage.setItem(REMEMBER_KEY, rememberMe ? '1' : '0');
 }
 
-export function storeAuthTokens(auth: AuthResponse, options?: StoreAuthOptions) {
+export async function storeAuthTokens(auth: AuthResponse, options?: StoreAuthOptions) {
   if (typeof window === 'undefined') return;
+
   const rememberMe = options?.rememberMe ?? auth.rememberMe ?? readRememberMePreference();
   writeRememberMePreference(rememberMe);
 
-  const refreshMaxAge = rememberMe ? REFRESH_REMEMBER_MAX_AGE_SEC : REFRESH_SESSION_MAX_AGE_SEC;
+  const res = await fetch('/api/auth/session', {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      accessToken: auth.accessToken,
+      refreshToken: auth.refreshToken,
+      rememberMe,
+    }),
+    cache: 'no-store',
+  });
 
-  window.localStorage.setItem(ACCESS_KEY, auth.accessToken);
-  window.localStorage.setItem(REFRESH_KEY, auth.refreshToken);
+  if (!res.ok) {
+    throw new Error('SESSION_PERSIST_FAILED');
+  }
+
   window.localStorage.setItem(USER_KEY, JSON.stringify(auth.user));
-  setCookie(ACCESS_KEY, auth.accessToken, 60 * 60);
-  setCookie(REFRESH_KEY, auth.refreshToken, refreshMaxAge);
+}
+
+export function storeAuthenticatedUser(user: AuthUser) {
+  if (typeof window === 'undefined') return;
+  window.localStorage.setItem(USER_KEY, JSON.stringify(user));
 }
 
 export function getAccessToken() {
-  return readStoredValue(ACCESS_KEY);
+  if (typeof window === 'undefined') return undefined;
+  return getStoredUser() ? COOKIE_SESSION : undefined;
 }
 
 export function getRefreshToken() {
-  return readStoredValue(REFRESH_KEY);
+  return undefined;
 }
 
 export function getStoredUser(): AuthUser | null {
@@ -72,42 +90,30 @@ export function updateStoredUserDisplayName(displayName: string) {
 }
 
 export function getAuthTokenPresence() {
-  if (typeof window === 'undefined') {
-    return {
-      accessTokenCookie: false,
-      accessTokenLocal: false,
-      refreshTokenCookie: false,
-      refreshTokenLocal: false,
-      rememberMe: true,
-    };
-  }
-
+  const hasUser = Boolean(getStoredUser());
   return {
-    accessTokenCookie: Boolean(readCookie(ACCESS_KEY)),
-    accessTokenLocal: Boolean(window.localStorage.getItem(ACCESS_KEY)),
-    refreshTokenCookie: Boolean(readCookie(REFRESH_KEY)),
-    refreshTokenLocal: Boolean(window.localStorage.getItem(REFRESH_KEY)),
+    accessTokenCookie: hasUser,
+    accessTokenLocal: false,
+    refreshTokenCookie: hasUser,
+    refreshTokenLocal: false,
     rememberMe: readRememberMePreference(),
   };
 }
 
 export async function refreshSession(): Promise<RefreshedSession | null> {
-  const refreshToken = getRefreshToken();
-  if (!refreshToken) return null;
-
   try {
-    const res = await fetch(`${API_URL}/auth/refresh`, {
+    const res = await fetch('/api/auth/refresh', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ refreshToken }),
+      credentials: 'include',
       cache: 'no-store',
     });
 
     if (!res.ok) throw new Error(`Refresh failed ${res.status}`);
 
-    const session = (await res.json()) as RefreshedSession;
-    storeSessionTokens(session);
-    return session;
+    return {
+      accessToken: COOKIE_SESSION,
+      refreshToken: COOKIE_SESSION,
+    };
   } catch {
     clearAuthTokens();
     return null;
@@ -115,33 +121,24 @@ export async function refreshSession(): Promise<RefreshedSession | null> {
 }
 
 export async function logoutSession() {
-  const accessToken = getAccessToken();
-  const refreshToken = getRefreshToken();
-
   try {
-    if (accessToken && refreshToken) {
-      const res = await sendLogout(accessToken, refreshToken);
-      if (res.status === 401) {
-        const refreshed = await refreshSession();
-        if (refreshed) await sendLogout(refreshed.accessToken, refreshed.refreshToken);
-      }
-    }
+    await fetch('/api/auth/logout', {
+      method: 'POST',
+      credentials: 'include',
+      cache: 'no-store',
+    });
   } finally {
     clearAuthTokens();
   }
 }
 
 export async function logoutAllDevices() {
-  const accessToken = getAccessToken();
-
   try {
-    if (accessToken) {
-      let res = await sendLogoutAll(accessToken);
-      if (res.status === 401) {
-        const refreshed = await refreshSession();
-        if (refreshed) res = await sendLogoutAll(refreshed.accessToken);
-      }
-    }
+    await fetch('/api/auth/logout', {
+      method: 'POST',
+      credentials: 'include',
+      cache: 'no-store',
+    });
   } finally {
     clearAuthTokens();
   }
@@ -149,62 +146,35 @@ export async function logoutAllDevices() {
 
 export function clearAuthTokens() {
   if (typeof window === 'undefined') return;
-  window.localStorage.removeItem(ACCESS_KEY);
-  window.localStorage.removeItem(REFRESH_KEY);
   window.localStorage.removeItem(USER_KEY);
-  setCookie(ACCESS_KEY, '', 0);
-  setCookie(REFRESH_KEY, '', 0);
+  void fetch('/api/auth/session', {
+    method: 'DELETE',
+    credentials: 'include',
+    cache: 'no-store',
+  });
 }
 
-function storeSessionTokens(session: RefreshedSession) {
+export async function bootstrapAuthSession() {
   if (typeof window === 'undefined') return;
-  const rememberMe = readRememberMePreference();
-  const refreshMaxAge = rememberMe ? REFRESH_REMEMBER_MAX_AGE_SEC : REFRESH_SESSION_MAX_AGE_SEC;
 
-  window.localStorage.setItem(ACCESS_KEY, session.accessToken);
-  window.localStorage.setItem(REFRESH_KEY, session.refreshToken);
-  setCookie(ACCESS_KEY, session.accessToken, 60 * 60);
-  setCookie(REFRESH_KEY, session.refreshToken, refreshMaxAge);
-}
+  try {
+    const res = await fetch('/api/auth/session', {
+      credentials: 'include',
+      cache: 'no-store',
+    });
 
-function sendLogout(accessToken: string, refreshToken: string) {
-  return fetch(`${API_URL}/auth/logout`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${accessToken}`,
-    },
-    body: JSON.stringify({ refreshToken }),
-    cache: 'no-store',
-  });
-}
+    if (!res.ok) {
+      clearAuthTokens();
+      return;
+    }
 
-function sendLogoutAll(accessToken: string) {
-  return fetch(`${API_URL}/auth/logout-all`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${accessToken}`,
-    },
-    cache: 'no-store',
-  });
-}
-
-function readStoredValue(key: string) {
-  if (typeof window === 'undefined') return undefined;
-  return window.localStorage.getItem(key) ?? readCookie(key) ?? undefined;
-}
-
-function setCookie(name: string, value: string, maxAge: number) {
-  document.cookie = `${name}=${encodeURIComponent(value)}; path=/; max-age=${maxAge}; SameSite=Lax`;
-}
-
-function readCookie(name: string) {
-  const value = document.cookie
-    .split('; ')
-    .find((entry) => entry.startsWith(`${name}=`))
-    ?.split('=')[1];
-  return value ? decodeURIComponent(value) : undefined;
+    const data = (await res.json()) as { authenticated?: boolean };
+    if (!data.authenticated) {
+      clearAuthTokens();
+    }
+  } catch {
+    // Ignore network errors during bootstrap.
+  }
 }
 
 /** Accepte uniquement un chemin relatif interne (ex. `/dashboard`). */
@@ -222,4 +192,10 @@ export function buildAuthUrl(redirectPath?: string): string {
   const safe = sanitizeRedirectPath(redirectPath);
   if (!safe || safe === '/auth') return '/auth';
   return `/auth?redirect=${encodeURIComponent(safe)}`;
+}
+
+export function buildOAuthStartUrl(provider: string, redirectPath?: string): string {
+  const safe = sanitizeRedirectPath(redirectPath) ?? '/dashboard';
+  const params = new URLSearchParams({ redirect: safe });
+  return `${API_URL}/auth/${provider}/start?${params.toString()}`;
 }

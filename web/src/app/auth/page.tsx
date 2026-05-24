@@ -2,9 +2,10 @@
 
 import { FormEvent, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { API_URL, login, register } from '@/lib/api';
+import { login, register } from '@/lib/api';
 import {
   ACCESS_TOKEN_TTL_MINUTES,
+  buildOAuthStartUrl,
   getAccessToken,
   logoutSession,
   readRememberMePreference,
@@ -76,7 +77,7 @@ export default function AuthPage() {
         mode === 'login'
           ? await login(email, password, rememberMe)
           : await register(email, password, displayName || email.split('@')[0]);
-      storeAuthTokens(auth, { rememberMe: mode === 'register' ? true : rememberMe });
+      await storeAuthTokens(auth, { rememberMe: mode === 'register' ? true : rememberMe });
       setHasSession(true);
       router.push(redirectPath);
     } catch (error) {
@@ -257,7 +258,7 @@ export default function AuthPage() {
               {SSO_PROVIDERS.map((provider) => (
                 <Button
                   key={provider.id}
-                  href={`${API_URL}/auth/${provider.id}/start?redirect=${encodeURIComponent(redirectPath)}`}
+                  href={buildOAuthStartUrl(provider.id, redirectPath)}
                   variant={provider.variant}
                   fullWidth
                   icon={provider.brand ? undefined : provider.icon}

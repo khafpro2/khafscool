@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from 'react';
-import { Linking, Pressable, Share, StyleSheet, Text, TextInput, View } from 'react-native';
+import React, { useEffect, useMemo, useState } from 'react';
+import { ActivityIndicator, Alert, Linking, Pressable, Share, StyleSheet, Text, TextInput, View } from 'react-native';
 import {
   buildDonationBankReference,
   buildPaypalUrlWithAmount,
@@ -14,6 +14,11 @@ import { useThemedStyles } from '../../hooks/useThemedStyles';
 import type { AppThemeColors } from '../../lib/design';
 import { formatIbanDisplay, getDonationBankDetails } from '../../lib/donation-bank';
 import { getDonationPaypalUrl } from '../../lib/donation-paypal';
+import {
+  createDonationCheckout,
+  fetchDonationStatus,
+  type DonationStatusResponse,
+} from '../../services/donations';
 
 import { DONATION_PAYMENT_MODES, type DonationPaymentModeId } from '@ama/shared/donation-payment-modes';
 
@@ -54,6 +59,19 @@ export function DonationChoiceSection({
   const [customAmount, setCustomAmount] = useState(initialAmount.customAmount);
   const [useCustomAmount, setUseCustomAmount] = useState(initialAmount.useCustomAmount);
   const [paymentMode, setPaymentMode] = useState<PaymentMode>(initialPaymentMode ?? 'carte');
+  const [donationStatus, setDonationStatus] = useState<DonationStatusResponse | null>(null);
+  const [loadingStatus, setLoadingStatus] = useState(true);
+  const [submittingCard, setSubmittingCard] = useState(false);
+
+  useEffect(() => {
+    void fetchDonationStatus()
+      .then(setDonationStatus)
+      .finally(() => setLoadingStatus(false));
+  }, []);
+
+  const checkoutEnabled = donationStatus?.mode === 'live';
+  const fallbackUrl = donationStatus?.fallbackUrl;
+  const paypalConfigured = donationStatus?.paypal?.status === 'configured';
 
   const bankDetails = getDonationBankDetails();
   const paypalBaseUrl = getDonationPaypalUrl();
@@ -84,7 +102,40 @@ export function DonationChoiceSection({
   function openCardCheckout() {
     const amountQuery =
       effectiveAmountCents != null ? `?amount=${effectiveAmountCents / 100}` : '';
+    if (fallbackUrl) {
+      void Linking.openURL(fallbackUrl);
+      return;
+    }
     void Linking.openURL(`${WEB_URL}/soutenir${amountQuery}#carte`);
+  }
+
+  async function handleCardPayment() {
+    if (effectiveAmountCents == null || effectiveAmountCents < 100) {
+      Alert.alert('Montant invalide', 'Indique un montant d’au moins 1 €.');
+      return;
+    }
+
+    if (!checkoutEnabled) {
+      openCardCheckout();
+      return;
+    }
+
+    setSubmittingCard(true);
+    try {
+      const response = await createDonationCheckout(effectiveAmountCents);
+      if (response.checkoutUrl) {
+        await Linking.openURL(response.checkoutUrl);
+        return;
+      }
+      openCardCheckout();
+    } catch {
+      Alert.alert(
+        'Paiement indisponible',
+        'Impossible d’ouvrir Stripe pour le moment. Réessaie ou choisis PayPal / virement.'
+      );
+    } finally {
+      setSubmittingCard(false);
+    }
   }
 
   function openPayPal() {
@@ -110,6 +161,13 @@ export function DonationChoiceSection({
 
   return (
     <View style={styles.root}>
+      {loadingStatus ? (
+        <View style={styles.loadingRow}>
+          <ActivityIndicator color={colors.accent} />
+          <Text style={styles.hint}>Chargement des options de don…</Text>
+        </View>
+      ) : null}
+
       <Text style={styles.stepTitle}>1. Choisissez un montant</Text>
       <View style={styles.amountRow}>
         {PRESET_DONATION_AMOUNTS_CENTS.map((amount) => {
@@ -181,22 +239,41 @@ export function DonationChoiceSection({
         <View style={styles.actionCard}>
           <Text style={styles.actionEyebrow}>Carte bancaire (Stripe)</Text>
           <Text style={styles.actionBody}>
-            Paiement sécurisé via Stripe — don unique. MDM Academy reste 100 % gratuite.
+            {checkoutEnabled
+              ? 'Paiement sécurisé via Stripe Checkout — don unique.'
+              : donationStatus?.message ??
+                'Paiement par carte via la page web Soutenir ou lien externe.'}
           </Text>
-          <Pressable style={styles.primaryButton} onPress={openCardCheckout}>
+          <Pressable
+            style={[styles.primaryButton, submittingCard ? styles.buttonDisabled : null]}
+            onPress={() => void handleCardPayment()}
+            disabled={submittingCard}
+          >
             <Text style={styles.primaryButtonText}>
-              {formattedAmount ? `Payer ${formattedAmount} par carte` : 'Payer par carte'}
+              {submittingCard
+                ? 'Ouverture Stripe…'
+                : formattedAmount
+                  ? `Payer ${formattedAmount} par carte`
+                  : 'Payer par carte'}
             </Text>
           </Pressable>
-          <Text style={styles.hint}>Redirection vers la page web /soutenir (Stripe Checkout).</Text>
+          <Text style={styles.hint}>
+            {checkoutEnabled
+              ? 'Redirection vers Stripe Checkout dans le navigateur.'
+              : 'Redirection vers la page web /soutenir.'}
+          </Text>
         </View>
       ) : null}
 
       {paymentMode === 'paypal' ? (
         <View style={styles.actionCard}>
           <Text style={styles.actionEyebrow}>PayPal</Text>
-          <Text style={styles.actionBody}>Don sécurisé via PayPal — montant {formattedAmount ?? 'libre'}.</Text>
-          {paypalLink ? (
+          <Text style={styles.actionBody}>
+            {paypalConfigured
+              ? `Don sécurisé via PayPal — montant ${formattedAmount ?? 'libre'}.`
+              : 'PayPal non configuré — utilise la page web Soutenir.'}
+          </Text>
+          {paypalLink && paypalConfigured ? (
             <>
               <Pressable style={styles.primaryButton} onPress={openPayPal}>
                 <Text style={styles.primaryButtonText}>Ouvrir PayPal</Text>
@@ -240,6 +317,12 @@ export function DonationChoiceSection({
 function createStyles(colors: AppThemeColors) {
   return StyleSheet.create({
     root: { gap: 12 },
+    loadingRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+      marginBottom: 4,
+    },
     stepTitle: {
       color: colors.fg,
       fontSize: 15,
@@ -352,6 +435,7 @@ function createStyles(colors: AppThemeColors) {
       paddingHorizontal: 16,
       paddingVertical: 12,
     },
+    buttonDisabled: { opacity: 0.65 },
     primaryButtonText: { color: '#FFFFFF', fontWeight: '800', fontSize: 15, textAlign: 'center' },
     secondaryButton: {
       marginTop: 10,

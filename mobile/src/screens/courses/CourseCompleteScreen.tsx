@@ -15,7 +15,6 @@ import {
 import { WEB_URL } from '../../config';
 import { BrandIcon } from '../../components/BrandIcon';
 import { TrackIcon } from '../../components/TrackIcon';
-import { useAppTheme } from '../../context/ThemeContext';
 import type { AppThemeColors } from '../../lib/design';
 import { estimatePoints, formatTrack, getBadgeVisual, getTrackVisual, inferLevelFromModules } from '../../lib/design';
 import { useThemedStyles } from '../../hooks/useThemedStyles';
@@ -36,7 +35,6 @@ const CONFETTI_PIECES = ['\u{1F389}', '\u2B50', '\u{1F3C6}', '\u2728', '\u{1F34F
 
 export function CourseCompleteScreen() {
   const router = useRouter();
-  const { colors } = useAppTheme();
   const styles = useThemedStyles(createStyles);
   const params = useLocalSearchParams<{
     slug?: string;

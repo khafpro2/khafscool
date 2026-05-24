@@ -17,7 +17,7 @@ import { API_URL } from '../../config';
 import { useAppTheme } from '../../context/ThemeContext';
 import type { AppThemeColors } from '../../lib/design';
 import { useThemedStyles } from '../../hooks/useThemedStyles';
-import { loginWithEmail, registerWithEmail } from '../../services/api';
+import { loginWithEmail, registerWithEmail, exchangeOAuthSession } from '../../services/api';
 import { saveTokens } from '../../services/auth';
 
 WebBrowser.maybeCompleteAuthSession();
@@ -89,6 +89,15 @@ export function WelcomeScreen({ onAuthSuccess }: WelcomeScreenProps) {
 
       if (result.type === 'success' && result.url) {
         const parsed = Linking.parse(result.url);
+        const sessionCode = parsed.queryParams?.sessionCode;
+        if (typeof sessionCode === 'string') {
+          const auth = await exchangeOAuthSession(sessionCode);
+          await saveTokens(auth.accessToken, auth.refreshToken);
+          Alert.alert('Connexion réussie', 'Bienvenue sur MDM Academy Pro !');
+          onAuthSuccess?.();
+          return;
+        }
+
         const access = parsed.queryParams?.accessToken;
         const refresh = parsed.queryParams?.refreshToken;
         if (typeof access === 'string' && typeof refresh === 'string') {

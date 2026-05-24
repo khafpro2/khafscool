@@ -35,6 +35,9 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
+      - name: Lint
+        run: pnpm lint
+
       - name: Audit dependencies
         run: pnpm audit --audit-level high
         continue-on-error: true
@@ -52,6 +55,27 @@ jobs:
         env:
           NEXT_PUBLIC_API_URL: http://localhost:4000
         run: pnpm --filter web build
+
+      - name: Smoke web (production build)
+        run: |
+          pnpm --filter web start &
+          WEB_PID=$!
+          for i in $(seq 1 30); do
+            if curl -sf http://127.0.0.1:3000/ >/dev/null; then
+              break
+            fi
+            if [ "$i" -eq 30 ]; then
+              echo "Web failed to start"
+              kill "$WEB_PID" 2>/dev/null || true
+              exit 1
+            fi
+            sleep 1
+          done
+          WEB_URL=http://127.0.0.1:3000 pnpm smoke:web
+          kill "$WEB_PID" 2>/dev/null || true
+
+      - name: Validate mobile build
+        run: pnpm --filter mobile build
 
   integration:
     runs-on: ubuntu-latest
@@ -138,6 +162,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Build web for E2E
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:4000
+        run: pnpm --filter web build
+
       - name: Install Playwright Chromium
         run: pnpm --filter web exec playwright install --with-deps chromium
 
@@ -146,3 +175,80 @@ jobs:
           CI: true
           NEXT_PUBLIC_API_URL: http://localhost:4000
         run: pnpm --filter web test:e2e
+
+  e2e-auth-integration:
+    runs-on: ubuntu-latest
+    needs: build-test
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: apple_mdm_academy
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d apple_mdm_academy"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/apple_mdm_academy
+      JWT_SECRET: ci-test-jwt-secret-min-32-characters-long
+      JWT_REFRESH_SECRET: ci-test-refresh-secret-min-32-chars-long
+      CI: true
+      E2E_LIVE_API: '1'
+      NEXT_PUBLIC_API_URL: http://localhost:4000
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Enable pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Migrate and seed database
+        run: |
+          pnpm db:migrate
+          pnpm db:seed
+
+      - name: Build backend and web
+        run: |
+          pnpm --filter backend build
+          pnpm --filter web build
+
+      - name: Start API
+        run: |
+          pnpm --filter backend start &
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:4000/health; then
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "API failed to start"
+          exit 1
+
+      - name: Install Playwright Chromium
+        run: pnpm --filter web exec playwright install --with-deps chromium
+
+      - name: Run auth integration E2E
+        run: |
+          pnpm --filter web exec playwright test e2e/auth-integration.spec.ts
+          pnpm --filter web exec playwright test e2e/donations-integration.spec.ts
+          pnpm --filter web exec playwright test e2e/practice-exam-integration.spec.ts
+          pnpm --filter web exec playwright test e2e/profile-export-integration.spec.ts

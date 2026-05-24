@@ -2,7 +2,7 @@
 
 Guide pour activer l’authentification SSO en production sur Apple MDM Academy (API Fastify + web Next.js + mobile Expo).
 
-> **État actuel du code** : en développement, le callback OAuth simule un profil utilisateur sans appeler les API fournisseurs (`backend/src/services/oauth.service.ts`). En production, vous devez implémenter l’échange `code → tokens` et la récupération du profil (`userinfo` / JWT id_token) côté serveur avant de mettre les credentials live.
+> **État actuel du code** : Google, Microsoft et Apple sont implémentés côté serveur (`backend/src/services/oauth.service.ts`). En développement, un provider `stub` simule un profil sans appeler les API réelles. PKCE et codes de session OAuth sont des **JWT signés** (multi-instance).
 
 ## Vue d’ensemble du flux
 
@@ -10,16 +10,14 @@ Guide pour activer l’authentification SSO en production sur Apple MDM Academy 
 [Web / Mobile]
     │  Clic « Continuer avec … »
     ▼
-GET /auth/:provider/start?redirect=…   (API)
-    │  Redirection vers le fournisseur (PKCE)
+GET /auth/:provider/start?redirect=…   (API, PKCE state JWT)
     ▼
-[Fournisseur OAuth]
-    │  Autorisation utilisateur
+[Fournisseur OAuth] → callback API
     ▼
-GET /auth/:provider/callback?code=…&state=…   (API)
-    │  Échange code, création/liaison compte, émission JWT
+[API] sessionCode JWT éphémère (60 s)
     ▼
-[Web] cookies + localStorage   |   [Mobile] deep link applemdmacademy://auth?accessToken=…
+[Web] /auth/oauth-complete?sessionCode=… → POST /api/auth/oauth-exchange → cookies HttpOnly
+[Mobile] applemdmacademy://auth?sessionCode=… → POST /auth/oauth/exchange → SecureStore
 ```
 
 Routes API concernées :
@@ -30,6 +28,7 @@ Routes API concernées :
 | GET | `/auth/google/start` | Démarre Google OAuth |
 | GET | `/auth/microsoft/start` | Démarre Microsoft Entra ID |
 | GET | `/auth/:provider/callback` | Callback serveur (redirect URI enregistrée chez le fournisseur) |
+| POST | `/auth/oauth/exchange` | Échange `sessionCode` → `{ accessToken, refreshToken, user }` |
 
 ## Variables d’environnement (API)
 

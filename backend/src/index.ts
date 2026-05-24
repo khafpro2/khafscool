@@ -1,6 +1,7 @@
 import { Readable } from 'node:stream';
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
+import helmet from '@fastify/helmet';
 import { assertProductionSecrets, env } from './config/env.js';
 import type { BillingWebhookRequest } from './controllers/billing.controller.js';
 import { authRoutes } from './routes/auth.routes.js';
@@ -32,6 +33,28 @@ await app.register(cors, {
   origin: env.corsOrigin ?? true,
   credentials: true,
 });
+
+await app.register(helmet, {
+  contentSecurityPolicy: false,
+  crossOriginEmbedderPolicy: false,
+});
+
+app.setErrorHandler((error, _request, reply) => {
+  const err = error as Error & { statusCode?: number };
+  const statusCode = err.statusCode && err.statusCode >= 400 ? err.statusCode : 500;
+  if (statusCode >= 500) {
+    app.log.error(err);
+  }
+
+  const message =
+    statusCode >= 500 && !env.isDev ? 'Erreur interne du serveur' : err.message || 'Erreur interne du serveur';
+
+  return reply.status(statusCode).send({
+    error: statusCode >= 500 ? 'INTERNAL_ERROR' : 'REQUEST_ERROR',
+    message,
+  });
+});
+
 await app.register(healthRoutes);
 await app.register(authRoutes);
 await app.register(coursesRoutes);

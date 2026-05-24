@@ -1,6 +1,5 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { useAppTheme } from '../context/ThemeContext';
 import type { AppThemeColors } from '../lib/design';
 import { useThemedStyles } from '../hooks/useThemedStyles';
 import { TRACK_FILTERS, formatTrackFilter, type TrackFilter } from '../lib/track-filters';

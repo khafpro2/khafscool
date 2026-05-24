@@ -15,7 +15,6 @@ import { formatTrack } from '@/lib/tracks';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { Button } from '@/components/ui/Button';
 import { ShareContentButton } from '@/components/courses/ShareContentButton';
-import { Card } from '@/components/ui/Card';
 import { TrackIcon } from '@/components/ui/TrackIcon';
 import { getTrackVisual } from '@/lib/design';
 

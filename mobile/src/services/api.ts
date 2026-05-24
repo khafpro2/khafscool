@@ -46,6 +46,24 @@ export async function registerWithEmail(
   return res.json() as Promise<AuthResponse>;
 }
 
+export async function exchangeOAuthSession(sessionCode: string): Promise<AuthResponse> {
+  const res = await fetch(`${API_URL}/auth/oauth/exchange`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ sessionCode }),
+  });
+  if (!res.ok) throw new Error(`OAuth exchange failed ${res.status}`);
+  return res.json() as Promise<AuthResponse>;
+}
+
+export async function fetchCurrentUser(): Promise<(AuthUser & { provider?: string }) | null> {
+  try {
+    return await apiFetch<AuthUser & { provider?: string }>('/auth/me');
+  } catch {
+    return null;
+  }
+}
+
 export async function updateDisplayName(displayName: string): Promise<AuthUser> {
   const data = await apiFetch<{ user: AuthUser }>('/users/me', {
     method: 'PATCH',
@@ -89,10 +107,13 @@ export async function exportUserData(): Promise<UserDataExport> {
   return apiFetch<UserDataExport>('/users/me/export');
 }
 
-export async function deleteAccount(confirm: 'SUPPRIMER'): Promise<{ ok: true }> {
+export async function deleteAccount(confirm: 'SUPPRIMER', currentPassword?: string): Promise<{ ok: true }> {
   return apiFetch<{ ok: true }>('/users/me', {
     method: 'DELETE',
-    body: JSON.stringify({ confirm }),
+    body: JSON.stringify({
+      confirm,
+      ...(currentPassword ? { currentPassword } : {}),
+    }),
   });
 }
 

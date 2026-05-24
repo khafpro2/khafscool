@@ -310,6 +310,7 @@ export async function fetchDashboard(token?: string): Promise<DashboardData> {
         completedCourses: data.completedCourses ?? [],
         learningStreak: data.learningStreak ?? defaultLearningStreak(),
         recentActivity: data.recentActivity ?? [],
+        fromApi: true,
       };
     }
 

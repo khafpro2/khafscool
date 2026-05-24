@@ -13,7 +13,6 @@ import type {
   CertificationSprintSummary,
   CertificationSprintTrack,
   CourseDetail,
-  CourseNextModule,
   CourseProgressData,
   CourseSummary,
   DashboardData,
@@ -218,6 +217,7 @@ export function mockDashboard(): DashboardData {
         pointsEarned: 27,
       },
     ],
+    fromApi: false,
   };
 }
 
@@ -243,6 +243,7 @@ export function toDashboardData(data: UserProgressData): DashboardData {
     certificationSprint: data.certificationSprint ?? null,
     courses: data.courses,
     recentActivity: data.recentActivity ?? [],
+    fromApi: true,
   };
 }
 

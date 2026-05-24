@@ -57,6 +57,8 @@ export interface DashboardData {
   completedCourses?: CompletedCourseSummary[];
   learningStreak?: LearningStreak;
   recentActivity?: RecentActivityItem[];
+  /** True when loaded from the live API (not demo fallback). */
+  fromApi?: boolean;
 }
 
 export type CertificationSprintTrack = 'APPLE' | 'JAMF' | 'INTUNE';

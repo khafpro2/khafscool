@@ -22,6 +22,7 @@ export async function authRoutes(app: FastifyInstance) {
     '/auth/:provider/callback',
     auth.oauthCallback
   );
+  app.post<{ Body: unknown }>('/auth/oauth/exchange', auth.exchangeOAuthSession);
   app.post<{ Body: unknown }>('/auth/register', auth.registerLocal);
   app.post<{ Body: unknown }>('/auth/login', auth.loginLocal);
   app.post<{ Body: unknown }>('/auth/refresh', auth.refreshTokens);
