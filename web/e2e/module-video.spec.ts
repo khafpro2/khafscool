@@ -13,7 +13,7 @@ test.describe('Module — section vidéo pilote', () => {
     ).toHaveCount(0);
     await expect(page.locator('.module-video-section')).toHaveCount(0);
     await expect(
-      page.getByRole('heading', { name: 'Fondamentaux du support Apple', exact: true })
+      page.getByRole('heading', { name: 'Fondamentaux Device Support', exact: true })
     ).toBeVisible({
       timeout: 15_000,
     });
