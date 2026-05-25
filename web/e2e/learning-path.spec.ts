@@ -90,7 +90,7 @@ test.describe('Parcours d’apprentissage — smoke', () => {
     await expect(page.getByText(/4 modules · 10 questions · ~\d+ min de lecture/i)).toBeVisible({
       timeout: 15_000,
     });
-    await expect(page.getByText(/3 modules avec vidéo explicative/i)).toBeVisible();
+    await expect(page.getByText(/4 modules avec vidéo explicative/i)).toBeVisible();
   });
 
   test('lien « Aller au contenu » visible au focus', async ({ page }) => {

@@ -1,11 +1,18 @@
 # Changelog
 
+## [0.3.2] — 2026-05-25
+
+### Vidéo module 1 Apple (ABM / ADE)
+- **Contenu** — module `device-support-basics` : vidéo YouTube Jamf 100 « Automated Device Enrollment » (`_g-0V2AFCW0`) — ABM, supervision, Activation Lock, enrôlement MDM obligatoire
+- **Pilote** — réintégration de `device-support-basics` dans `PILOT_VIDEO_MODULES` (12 vidéos : 4 Apple, 4 Jamf, 4 Intune)
+- **Catalogue** — parcours Apple : `4 modules avec vidéo explicative` (hero + TrailCard)
+- Tests : `seed-video`, e2e `module-video`, `learning-path`
+
 ## [0.3.1] — 2026-05-25
 
 ### Retrait vidéo ABM (module 1 Apple)
-- **Contenu** — module `device-support-basics` du parcours `apple-cert-prep` : suppression de la vidéo « comprendre l'ABM et l'enrôlement MDM » (aucune section vidéo sur l'unité 1)
-- **Pilote** — retrait de `device-support-basics` dans `PILOT_VIDEO_MODULES` (11 vidéos : 3 Apple, 4 Jamf, 4 Intune)
-- **Catalogue** — parcours Apple : `3 modules avec vidéo explicative` (hero + TrailCard)
+- **Contenu** — module `device-support-basics` : retrait de la vidéo ManageEngine « comprendre l'ABM et l'enrôlement MDM » (`qrQyL5-SWFg`)
+- **Pilote** — retrait temporaire de `device-support-basics` dans `PILOT_VIDEO_MODULES` (11 vidéos)
 - Tests : `seed-video`, `video-dub-sync`, e2e `module-video`
 
 ## [0.3.0] — 2026-05-24
