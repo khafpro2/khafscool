@@ -78,8 +78,9 @@ pnpm setup
 # Après un git pull (schéma ou contenu modifié) :
 # pnpm db:migrate && pnpm db:seed
 #
-# Migration `Question.examOnly` : le seed idempotent recrée les bonus examen blanc
-# (44 Q par parcours). Toujours enchaîner migrate puis seed après pull.
+# Le seed est idempotent : upsert des parcours/modules, recréation des questions par module
+# (bonus examen blanc 44 Q par parcours). Toujours enchaîner migrate puis seed après pull
+# pour aligner Postgres sur shared/ (vidéos pilotes, comptages « 3 avec vidéo » Apple, etc.).
 
 # 3. API + web en un terminal (Ctrl+C arrête tout)
 pnpm dev:stack

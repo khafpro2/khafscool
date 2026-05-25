@@ -14,6 +14,9 @@ CI=true pnpm install --frozen-lockfile
 echo "==> verify-release : Prisma generate"
 pnpm db:generate
 
+echo "==> verify-release : garde-fou vidéo ADE module 1 Apple"
+bash scripts/check-no-ade-video.sh
+
 echo "==> verify-release : tests backend"
 pnpm --filter backend test
 

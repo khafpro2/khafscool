@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.12] — 2026-05-25
+
+### Catalogue, garde-fou ADE et seed
+- **Catalogue `/courses`** — parcours Apple : métadonnées **3 avec vidéo** (module 1 `device-support-basics` sans section vidéo ADE/ABM) ; Jamf et Intune **4 avec vidéo**
+- **CI** — script `scripts/check-no-ade-video.sh` : refuse le titre interdit « Vidéo : ABM, supervision et enrôlement automatisé (ADE) » dans le contenu partagé
+- **README** — note seed idempotent après `git pull` (`pnpm db:migrate && pnpm db:seed`)
+- Tests : e2e `glossary-catalog` (badge Apple 3 vidéos), `check-no-ade-video.sh` en CI
+
 ## [0.3.11] — 2026-05-25
 
 ### Grille vidéos module 2 et catalogue

@@ -9,8 +9,8 @@ Document de reprise pour **Claude Code** ou tout agent après un `git push`. Cur
 | Dépôt | `apple-mdm-academy` (monorepo pnpm) |
 | Branche de travail | `cursor/progress-dashboard-auth-v2` |
 | Pull request | [#6](https://github.com/khafpro2/khafscool/pull/6) — **ne pas merger** sans checklist [MERGE.md](../MERGE.md) |
-| Version cible | `0.3.11` |
-| SHA de référence | `0371a12` — `feat: complete module 2 videos and update PR description` |
+| Version cible | `0.3.12` |
+| SHA de référence | voir `git log -1` sur la branche après push v0.3.12 |
 
 ## État projet (2026-05-25)
 
