@@ -4,7 +4,7 @@ import { AppErrorBoundary } from '@/components/ErrorBoundary';
 import { ApiHealthPoller } from '@/components/layout/ApiHealthPoller';
 import { ApiStatusBanner } from '@/components/layout/ApiStatusBanner';
 import { DemoModeBanner } from '@/components/layout/DemoModeBanner';
-import { SiteHeaderActions } from '@/components/layout/SiteHeaderActions';
+import { SiteHeader } from '@/components/layout/SiteHeader';
 import { CookieConsentBanner } from '@/components/layout/CookieConsentBanner';
 import { AnalyticsOptInBanner } from '@/components/layout/AnalyticsOptInBanner';
 import { Toaster } from '@/components/ui/Toast';
@@ -98,20 +98,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <a href="#main-content" className="skip-link">
           Aller au contenu
         </a>
-        <header className="site-header site-header-minimal">
-          <div className="container site-header-inner site-header-inner-minimal">
-            <Link href="/" className="site-logo" aria-label="Retour à l'accueil MDM Academy">
-              <span className="site-logo-mark" aria-hidden>
-                M
-              </span>
-              <span className="site-logo-wordmark">
-                <span className="site-logo-mdm">MDM</span>
-                <span className="site-logo-academy">Academy</span>
-              </span>
-            </Link>
-            <SiteHeaderActions />
-          </div>
-        </header>
+        <SiteHeader />
         <ApiHealthPoller />
         <ApiStatusBanner />
         <DemoModeBanner />

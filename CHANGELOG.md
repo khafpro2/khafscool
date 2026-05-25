@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.3] — 2026-05-25
+
+### Accueil sans header
+- **Web accueil** — retrait de la barre de navigation globale (`SiteHeader`) sur `/` uniquement ; footer, lien « Aller au contenu » et contenu Hello + 3 pistes inchangés
+- **Autres pages** — header conservé (parcours, dashboard, glossaire, etc.)
+- Tests e2e : `learning-path.spec.ts` (absence header accueil, présence sur `/courses`)
+
 ## [0.3.2] — 2026-05-25
 
 ### Vidéos 100 % françaises (pilote 12 modules)
