@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
 import * as Linking from 'expo-linking';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { API_URL } from '../../config';
 import { useAppTheme } from '../../context/ThemeContext';
 import type { AppThemeColors } from '../../lib/design';
@@ -33,6 +34,7 @@ interface WelcomeScreenProps {
 }
 
 export function WelcomeScreen({ onAuthSuccess }: WelcomeScreenProps) {
+  const insets = useSafeAreaInsets();
   const { colors } = useAppTheme();
   const styles = useThemedStyles(createStyles);
   const [mode, setMode] = useState<'login' | 'register'>('login');
@@ -121,7 +123,14 @@ export function WelcomeScreen({ onAuthSuccess }: WelcomeScreenProps) {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <ScrollView
-        contentContainerStyle={styles.container}
+        contentContainerStyle={[
+          styles.container,
+          {
+            paddingTop: Math.max(insets.top, 16) + 12,
+            paddingBottom: Math.max(insets.bottom, 20) + 16,
+            paddingHorizontal: Math.max(insets.left, insets.right, 20),
+          },
+        ]}
         keyboardShouldPersistTaps="handled"
       >
         <Text style={styles.eyebrow}>MDM Academy Pro</Text>
@@ -245,8 +254,8 @@ function createStyles(colors: AppThemeColors) {
     flex: { flex: 1, backgroundColor: colors.bg },
     container: {
       flexGrow: 1,
-      padding: 24,
       justifyContent: 'center',
+      minHeight: '100%',
       backgroundColor: colors.bg,
     },
     eyebrow: {

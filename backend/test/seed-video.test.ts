@@ -65,6 +65,15 @@ describe('seed pilot module videos', () => {
     expect(pedagogy?.videoProvider).toBeUndefined();
   });
 
+  it('uses French YouTube on Apple module 2 ios-troubleshooting', () => {
+    const pedagogy = getModulePedagogy('apple-cert-prep', 'ios-troubleshooting');
+    expect(pedagogy?.videoUrl).toBe('https://www.youtube.com/watch?v=lgMDK4zU114');
+    expect(pedagogy?.videoTitle).toBe('Vidéo : dépannage iOS en environnement géré');
+    expect(pedagogy?.videoProvider).toBe('youtube');
+    expect(pedagogy?.videoSourceLanguage).toBe('fr');
+    expect(pedagogy?.videoTitle).not.toMatch(/ADE|ABM/i);
+  });
+
   it('uses YouTube intro on Jamf module 1 (not Smart Groups titled video)', () => {
     const pedagogy = getModulePedagogy('jamf-pro-foundations', 'smart-groups-policies');
     expect(pedagogy?.videoUrl).toBe('https://www.youtube.com/watch?v=t3j9TkFfUJw');

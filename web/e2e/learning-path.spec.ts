@@ -12,6 +12,9 @@ test.describe('Parcours d’apprentissage — smoke', () => {
     await expect(page.getByRole('link', { name: /Parcours Apple/i })).toBeVisible();
     await expect(page.getByRole('link', { name: /Parcours Jamf/i })).toBeVisible();
     await expect(page.getByRole('link', { name: /Parcours Intune/i })).toBeVisible();
+    await expect(page.locator('.api-status-banner')).toHaveCount(0);
+    await expect(page.locator('.demo-mode-banner')).toHaveCount(0);
+    await expect(page.locator('.cookie-consent-banner')).toHaveCount(0);
   });
 
   test('accueil sans header ni footer — parcours conserve la nav et le footer', async ({ page }) => {

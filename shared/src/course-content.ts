@@ -109,9 +109,11 @@ En résumé, le technicien Device Support efficace combine rigueur diagnostic, r
           'Ordonnez les étapes de dépannage d’un Mac bloqué au démarrage pour appliquer la logique « vérifier l’espace disque, puis mode sans échec, puis réinstallation conservatoire ».',
       },
       'ios-troubleshooting': {
-        ...getPilotModuleVideoConfig('apple-cert-prep', 'ios-troubleshooting'),
+        videoUrl: 'https://www.youtube.com/watch?v=lgMDK4zU114',
         videoTitle: 'Vidéo : dépannage iOS en environnement géré',
+        videoProvider: 'youtube',
         videoDurationMinutes: 4,
+        videoSourceLanguage: 'fr',
         summary:
           'Diagnostiquer connectivité, batterie et blocages courants sur iPhone/iPad avec une méthode reproductible, en tenant compte des profils d’entreprise et du MDM.',
         learningObjectives: [

@@ -14,6 +14,7 @@ export const VIDEO_HEYGEN_FR_BY_MODULE: Record<string, Record<string, VideoHeyGe
   'apple-cert-prep': {
     'ios-troubleshooting': {
       basename: 'apple-ios-troubleshooting-fr',
+      sourceYouTubeUrl: 'https://www.youtube.com/watch?v=lgMDK4zU114',
       heygenTitle: 'Apple MDM Academy — Dépannage iOS en environnement géré (FR)',
     },
     'acmt-exam-prep': {

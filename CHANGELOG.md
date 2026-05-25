@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.8] — 2026-05-25
+
+### Accueil minimal et mobile
+- **Web accueil** — masquage sur `/` de `ApiStatusBanner`, `DemoModeBanner`, `CookieConsentBanner` et `AnalyticsOptInBanner` (plein écran Hello sans chrome)
+- **Mobile** — `WelcomeScreen` et `LearnerDashboardScreen` : safe area (encoches), espacement accueil aligné web
+- **Vidéo Apple module 2** — `ios-troubleshooting` : YouTube FR `lgMDK4zU114` (redémarrage forcé iPhone), titre « Vidéo : dépannage iOS en environnement géré » (pas de titre ADE)
+- Tests : `seed-video`, e2e `learning-path` (absence bannières accueil)
+
 ## [0.3.7] — 2026-05-25
 
 ### Version 0.3.7

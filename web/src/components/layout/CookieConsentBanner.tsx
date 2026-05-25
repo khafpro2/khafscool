@@ -1,10 +1,13 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { readCookieConsent, writeCookieConsent } from '@/lib/cookie-consent';
 
+/** Masqué sur `/` — accueil plein écran ; consentement sur les autres pages. */
 export function CookieConsentBanner() {
+  const pathname = usePathname();
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -17,7 +20,7 @@ export function CookieConsentBanner() {
     window.dispatchEvent(new Event('ama:cookie-consent'));
   }
 
-  if (!visible) return null;
+  if (pathname === '/' || !visible) return null;
 
   return (
     <div

@@ -1,5 +1,6 @@
 'use client';
 
+import { usePathname } from 'next/navigation';
 import { useSyncExternalStore } from 'react';
 import { getAccessToken } from '@/lib/auth';
 import { isDemoModeActive, subscribeDemoMode } from '@/lib/demo-mode-store';
@@ -24,8 +25,12 @@ function useDemoBannerState() {
   return { demoMode, hasToken };
 }
 
+/** Masqué sur `/` — accueil plein écran sans chrome latéral. */
 export function DemoModeBanner() {
+  const pathname = usePathname();
   const { demoMode, hasToken } = useDemoBannerState();
+
+  if (pathname === '/') return null;
 
   if (demoMode) {
     return (

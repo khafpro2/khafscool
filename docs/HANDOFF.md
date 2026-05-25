@@ -9,18 +9,27 @@ Document de reprise pour **Claude Code** ou tout agent après un `git push`. Cur
 | Dépôt | `apple-mdm-academy` (monorepo pnpm) |
 | Branche de travail | `cursor/progress-dashboard-auth-v2` |
 | Pull request | [#6](https://github.com/khafpro2/khafscool/pull/6) — **ne pas merger** sans checklist [MERGE.md](../MERGE.md) |
-| Version cible | `0.2.1` |
+| Version cible | `0.3.8` |
+| SHA de référence | `a6ba660` — `feat: minimal home chrome and mobile welcome polish` |
+
+## État projet (2026-05-25)
+
+- **CI** — verte sur PR #6 après push `0.3.8` ; vérifier `gh pr checks 6` avant merge.
+- **Accueil web** — `/` plein écran : pas de header/footer global, pas de bannières API/démo/cookies/analytics (smoke `learning-path.spec.ts`).
+- **Vidéos pilotes** — 11 modules (`PILOT_VIDEO_MODULES`) ; Apple module 1 sans vidéo ADE ; Apple module 2 (`ios-troubleshooting`) YouTube FR `lgMDK4zU114` ; Jamf module 1 YouTube `t3j9TkFfUJw` ; Intune module 1 MP4 HeyGen FR.
+- **Mobile** — `WelcomeScreen` et `LearnerDashboardScreen` avec safe area ; accueil connecté via onglet `(tabs)/index`.
 
 ## Règles produit (à ne pas casser)
 
 1. **Langue** — UI, quiz, leçons, toasts et messages d’erreur en **français**.
-2. **Accueil** — `/` sans `.site-header`, sans `.site-footer` ni `contentinfo`, ni lien « Retour à l'accueil MDM Academy » (smoke `learning-path.spec.ts`).
+2. **Accueil** — `/` sans `.site-header`, sans `.site-footer` ni `contentinfo`, sans bannières globales (`ApiStatusBanner`, `DemoModeBanner`, `CookieConsentBanner`, `AnalyticsOptInBanner`), ni lien « Retour à l'accueil MDM Academy » (smoke `learning-path.spec.ts`).
 3. **Contact** — pas d’email HarmyTech visible en clair ; boutons « Assistance » / « Nous contacter » en `mailto:` uniquement (`NEXT_PUBLIC_CONTACT_EMAIL` optionnel).
 4. **Compte démo** — `demo@mdmacademy.local` / `DemoTest2026!` (`@ama/shared/constants` → `DEMO_ACCOUNT`), affiché sur `/demo` et seed API.
 5. **Vidéos pilotes** — MP4 HeyGen FR quand prêt ; sinon placeholder ou YouTube **whitelist** via `videoSourceLanguage: 'fr'` (`canEmbedExternalVideo`).
 6. **Module 1 Apple** (`device-support-basics`) — **pas** de section vidéo ADE / ABM.
-7. **Module 1 Jamf** (`smart-groups-policies`) — intro YouTube `t3j9TkFfUJw`, titre **`Vidéo : introduction Jamf Pro`** (jamais « Smart Groups et politiques Jamf Pro » comme titre vidéo).
-8. **Module 1 Intune** (`ade-enrollment-basics`) — MP4 FR `intune-ade-enrollment-basics-fr.mp4`.
+7. **Module 2 Apple** (`ios-troubleshooting`) — YouTube FR `lgMDK4zU114`, titre **`Vidéo : dépannage iOS en environnement géré`** (jamais titre ADE/ABM sur la section vidéo).
+8. **Module 1 Jamf** (`smart-groups-policies`) — intro YouTube `t3j9TkFfUJw`, titre **`Vidéo : introduction Jamf Pro`** (jamais « Smart Groups et politiques Jamf Pro » comme titre vidéo).
+9. **Module 1 Intune** (`ade-enrollment-basics`) — MP4 FR `intune-ade-enrollment-basics-fr.mp4`.
 
 ## Workflow git → Cursor
 

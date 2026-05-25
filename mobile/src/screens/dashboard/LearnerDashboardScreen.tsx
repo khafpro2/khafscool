@@ -8,6 +8,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BrandIcon } from '../../components/BrandIcon';
 import { AlmostCompleteBanner } from '../../components/dashboard/AlmostCompleteBanner';
 import { ContinueLearningSection } from '../../components/home/ContinueLearningSection';
@@ -53,6 +54,7 @@ type SprintMessage = {
 };
 
 export function LearnerDashboardScreen({ onSignOut }: LearnerDashboardScreenProps) {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const { colors } = useAppTheme();
   const styles = useThemedStyles(createStyles);
@@ -174,7 +176,17 @@ export function LearnerDashboardScreen({ onSignOut }: LearnerDashboardScreenProp
   const primaryCtaLabel = nextCourse?.nextModule ? 'Continuer le parcours' : 'Commencer gratuitement';
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={[
+        styles.content,
+        {
+          paddingTop: Math.max(insets.top, 12) + 8,
+          paddingBottom: Math.max(insets.bottom, 24) + 72,
+          paddingHorizontal: Math.max(insets.left, insets.right, 20),
+        },
+      ]}
+    >
       <View style={styles.header}>
         <View style={{ flex: 1 }}>
           <Text style={styles.eyebrow}>Espace apprenant</Text>
@@ -612,7 +624,7 @@ function formatSprintDate(value: string) {
 function createStyles(colors: AppThemeColors) {
   return StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.bg },
-  content: { padding: 24, paddingBottom: 40 },
+  content: { paddingBottom: 8 },
   loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.bg },
   loadingText: { marginTop: 12, color: colors.muted, fontSize: 15 },
   header: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 18 },
