@@ -1,14 +1,13 @@
 import type { Metadata, Viewport } from 'next';
-import Link from 'next/link';
 import { AppErrorBoundary } from '@/components/ErrorBoundary';
 import { ApiHealthPoller } from '@/components/layout/ApiHealthPoller';
 import { ApiStatusBanner } from '@/components/layout/ApiStatusBanner';
 import { DemoModeBanner } from '@/components/layout/DemoModeBanner';
+import { SiteFooter } from '@/components/layout/SiteFooter';
 import { SiteHeader } from '@/components/layout/SiteHeader';
 import { CookieConsentBanner } from '@/components/layout/CookieConsentBanner';
 import { AnalyticsOptInBanner } from '@/components/layout/AnalyticsOptInBanner';
 import { Toaster } from '@/components/ui/Toast';
-import { getContactMailto } from '@/lib/contact';
 import { SessionBootstrap } from '@/components/layout/SessionBootstrap';
 import { bodyFont, displayFont } from '@/lib/fonts';
 import { themeInitScript } from '@/lib/theme';
@@ -86,8 +85,6 @@ export const viewport: Viewport = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  const contactMailto = getContactMailto();
-
   return (
     <html lang="fr" className={`${bodyFont.variable} ${displayFont.variable}`} suppressHydrationWarning>
       <head>
@@ -108,32 +105,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Toaster />
         <CookieConsentBanner />
         <AnalyticsOptInBanner />
-        <footer className="site-footer">
-          <div className="container site-footer-inner">
-            <div>
-              <strong>MDM Academy</strong> · Apple, Jamf Pro et Intune en mode jeu
-            </div>
-            <div style={{ display: 'flex', gap: '1.25rem', flexWrap: 'wrap', alignItems: 'center' }}>
-              <Link href="/courses">Parcours</Link>
-              <Link href="/resources">Ressources</Link>
-              <Link href="/about">À propos</Link>
-              <Link href={contactMailto}>Nous contacter</Link>
-              <Link href="/soutenir">Faire un don</Link>
-              <Link href="/demo">Démo</Link>
-              <Link href="/diagnostics" className="site-footer-tools">
-                Diagnostics
-              </Link>
-              <Link href="/legal/confidentialite">Confidentialité</Link>
-              <Link href="/legal/conditions">Conditions</Link>
-            </div>
-            <div style={{ color: 'var(--muted)', fontSize: '0.8rem' }}>
-              Non affilié à Apple Inc., Jamf ou Microsoft. ·{' '}
-              <Link href={contactMailto} style={{ color: 'inherit' }}>
-                Assistance
-              </Link>
-            </div>
-          </div>
-        </footer>
+        <SiteFooter />
       </body>
     </html>
   );

@@ -20,13 +20,13 @@ test.describe('Pages légales', () => {
   });
 
   test('expose les liens légaux dans le footer', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/courses');
     await expect(page.getByRole('contentinfo').getByRole('link', { name: 'Confidentialité' })).toBeVisible();
     await expect(page.getByRole('contentinfo').getByRole('link', { name: 'Conditions' })).toBeVisible();
   });
 
   test('n’affiche pas l’email support en clair', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/courses');
     await expect(page.getByText('KTHIAM@HARMYTECH.COM')).toHaveCount(0);
     const assistanceLink = page.getByRole('contentinfo').getByRole('link', { name: 'Assistance' });
     await expect(assistanceLink).toBeVisible();

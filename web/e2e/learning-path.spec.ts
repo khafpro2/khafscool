@@ -4,6 +4,8 @@ test.describe('Parcours d’apprentissage — smoke', () => {
   test('accueil charge', async ({ page }) => {
     await page.goto('/');
     await expect(page.locator('.site-header')).toHaveCount(0);
+    await expect(page.locator('.site-footer')).toHaveCount(0);
+    await expect(page.getByRole('contentinfo')).toHaveCount(0);
     await expect(page.getByRole('link', { name: /Retour à l'accueil MDM Academy/i })).toHaveCount(0);
     await expect(page.getByRole('heading', { name: 'Hello' })).toBeVisible();
     await expect(page.getByText('Je veux apprendre')).toBeVisible();
@@ -12,9 +14,10 @@ test.describe('Parcours d’apprentissage — smoke', () => {
     await expect(page.getByRole('link', { name: /Parcours Intune/i })).toBeVisible();
   });
 
-  test('accueil sans header — parcours conserve la nav', async ({ page }) => {
+  test('accueil sans header ni footer — parcours conserve la nav et le footer', async ({ page }) => {
     await page.goto('/courses');
     await expect(page.locator('.site-header')).toBeVisible();
+    await expect(page.locator('.site-footer')).toBeVisible();
     await expect(page.getByRole('link', { name: /Retour à l'accueil MDM Academy/i })).toBeVisible();
   });
 
