@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { BrandIcon } from '@/components/ui/BrandIcon';
 import { getTrackVisual } from '@/lib/design';
 import { LEARNING_PATHS, type LearningPathMeta } from '@/lib/learningPaths';
+import { openCookiePreferences } from '@/lib/cookie-consent';
 
 const HELLO = 'Hello';
 
@@ -38,6 +39,16 @@ export function HomeWelcomeScreen() {
           <TrackChoiceLink key={path.slug} path={path} index={index} />
         ))}
       </ul>
+
+      <p className="home-welcome-prefs">
+        <button
+          type="button"
+          className="home-welcome-prefs-link"
+          onClick={() => openCookiePreferences()}
+        >
+          Préférences
+        </button>
+      </p>
     </section>
   );
 }

@@ -9,20 +9,20 @@ Document de reprise pour **Claude Code** ou tout agent après un `git push`. Cur
 | Dépôt | `apple-mdm-academy` (monorepo pnpm) |
 | Branche de travail | `cursor/progress-dashboard-auth-v2` |
 | Pull request | [#6](https://github.com/khafpro2/khafscool/pull/6) — **ne pas merger** sans checklist [MERGE.md](../MERGE.md) |
-| Version cible | `0.3.8` |
-| SHA de référence | `5cf5fd9` — `feat: minimal home chrome` + fix e2e cookies |
+| Version cible | `0.3.9` |
+| SHA de référence | `94cd79d` — `feat: module 3 french videos and home cookie link` |
 
 ## État projet (2026-05-25)
 
-- **CI** — verte sur PR #6 après push `0.3.8` ; vérifier `gh pr checks 6` avant merge.
-- **Accueil web** — `/` plein écran : pas de header/footer global, pas de bannières API/démo/cookies/analytics (smoke `learning-path.spec.ts`).
-- **Vidéos pilotes** — 11 modules (`PILOT_VIDEO_MODULES`) ; Apple module 1 sans vidéo ADE ; Apple module 2 (`ios-troubleshooting`) YouTube FR `lgMDK4zU114` ; Jamf module 1 YouTube `t3j9TkFfUJw` ; Intune module 1 MP4 HeyGen FR.
+- **CI** — vérifier `gh pr checks 6` avant merge.
+- **Accueil web** — `/` plein écran : pas de header/footer global, pas de bannières API/démo/cookies/analytics ; lien **Préférences** → modale cookies (`CookiePreferencesModal`).
+- **Vidéos pilotes** — 11 modules (`PILOT_VIDEO_MODULES`) ; module 3 par piste : `acmt-exam-prep` (MP4 FR), `api-automation-advanced-policies` et `vpp-abm-business-apps` (placeholder FR) ; Apple module 1 sans vidéo ADE ; Jamf module 1 YouTube `t3j9TkFfUJw`.
 - **Mobile** — `WelcomeScreen` et `LearnerDashboardScreen` avec safe area ; accueil connecté via onglet `(tabs)/index`.
 
 ## Règles produit (à ne pas casser)
 
 1. **Langue** — UI, quiz, leçons, toasts et messages d’erreur en **français**.
-2. **Accueil** — `/` sans `.site-header`, sans `.site-footer` ni `contentinfo`, sans bannières globales (`ApiStatusBanner`, `DemoModeBanner`, `CookieConsentBanner`, `AnalyticsOptInBanner`), ni lien « Retour à l'accueil MDM Academy » (smoke `learning-path.spec.ts`).
+2. **Accueil** — `/` sans `.site-header`, sans `.site-footer` ni `contentinfo`, sans bannières globales ; lien **Préférences** ouvre la modale cookies (smoke `learning-path.spec.ts`).
 3. **Contact** — pas d’email HarmyTech visible en clair ; boutons « Assistance » / « Nous contacter » en `mailto:` uniquement (`NEXT_PUBLIC_CONTACT_EMAIL` optionnel).
 4. **Compte démo** — `demo@mdmacademy.local` / `DemoTest2026!` (`@ama/shared/constants` → `DEMO_ACCOUNT`), affiché sur `/demo` et seed API.
 5. **Vidéos pilotes** — MP4 HeyGen FR quand prêt ; sinon placeholder ou YouTube **whitelist** via `videoSourceLanguage: 'fr'` (`canEmbedExternalVideo`).
@@ -30,6 +30,7 @@ Document de reprise pour **Claude Code** ou tout agent après un `git push`. Cur
 7. **Module 2 Apple** (`ios-troubleshooting`) — YouTube FR `lgMDK4zU114`, titre **`Vidéo : dépannage iOS en environnement géré`** (jamais titre ADE/ABM sur la section vidéo).
 8. **Module 1 Jamf** (`smart-groups-policies`) — intro YouTube `t3j9TkFfUJw`, titre **`Vidéo : introduction Jamf Pro`** (jamais « Smart Groups et politiques Jamf Pro » comme titre vidéo).
 9. **Module 1 Intune** (`ade-enrollment-basics`) — MP4 FR `intune-ade-enrollment-basics-fr.mp4`.
+10. **Module 3 pilote** — `acmt-exam-prep` MP4 FR ; `api-automation-advanced-policies` et `vpp-abm-business-apps` placeholder (pas de titre ADE sur module 1 Apple).
 
 ## Workflow git → Cursor
 

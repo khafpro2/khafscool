@@ -6,6 +6,7 @@ import { DemoModeBanner } from '@/components/layout/DemoModeBanner';
 import { SiteFooter } from '@/components/layout/SiteFooter';
 import { SiteHeader } from '@/components/layout/SiteHeader';
 import { CookieConsentBanner } from '@/components/layout/CookieConsentBanner';
+import { CookiePreferencesModal } from '@/components/layout/CookiePreferencesModal';
 import { AnalyticsOptInBanner } from '@/components/layout/AnalyticsOptInBanner';
 import { Toaster } from '@/components/ui/Toast';
 import { SessionBootstrap } from '@/components/layout/SessionBootstrap';
@@ -104,6 +105,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </main>
         <Toaster />
         <CookieConsentBanner />
+        <CookiePreferencesModal />
         <AnalyticsOptInBanner />
         <SiteFooter />
       </body>

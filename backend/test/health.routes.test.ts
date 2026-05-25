@@ -42,7 +42,7 @@ describe('health routes', () => {
     expect(response.json()).toEqual({
       ok: true,
       service: 'apple-mdm-academy-api',
-      version: '0.3.8',
+      version: '0.3.9',
     });
 
     await app.close();

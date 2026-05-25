@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.9] — 2026-05-25
+
+### Vidéos module 3 et cookies accueil
+- **Module 3 pilote** — Apple `acmt-exam-prep` : MP4 HeyGen FR ; Jamf `api-automation-advanced-policies` et Intune `vpp-abm-business-apps` : placeholder animé FR (`videoSourceLanguage: 'fr'`)
+- **Accueil** — lien discret « Préférences » sous les pistes : modale cookies (même contenu que la bannière `/courses`) sans bannière fixe sur `/`
+- **Jamf module 1** — intro YouTube `t3j9TkFfUJw`, titre **Vidéo : introduction Jamf Pro** (inchangé, whitelist `fr`)
+- Tests : `seed-video` (module 3), e2e `learning-path` (Préférences + modale)
+
 ## [0.3.8] — 2026-05-25
 
 ### Accueil minimal et mobile

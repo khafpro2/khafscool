@@ -93,6 +93,24 @@ describe('seed pilot module videos', () => {
     expect(getModuleVideoDubFr('jamf-pro-foundations', 'enrollment-apple-integration')).toBeDefined();
   });
 
+  it('serves module 3 pilot videos (FR MP4 or placeholder)', () => {
+    const acmt = getModulePedagogy('apple-cert-prep', 'acmt-exam-prep');
+    expect(acmt?.videoProvider).toBe('mp4');
+    expect(acmt?.videoUrl).toBe('/media/videos/fr/apple-acmt-exam-prep-fr.mp4');
+    expect(acmt?.videoTitle).toBe('Vidéo : Apple Diagnostics et préparation examen');
+    expect(acmt?.videoTitle).not.toMatch(/ADE|ABM/i);
+
+    const jamfApi = getModulePedagogy('jamf-pro-foundations', 'api-automation-advanced-policies');
+    expect(jamfApi?.videoProvider).toBe('placeholder');
+    expect(jamfApi?.videoUrl).toBe('placeholder');
+    expect(jamfApi?.videoTitle).toBe('Vidéo : automatisation API Jamf Pro');
+
+    const intuneVpp = getModulePedagogy('intune-ios-enrollment', 'vpp-abm-business-apps');
+    expect(intuneVpp?.videoProvider).toBe('placeholder');
+    expect(intuneVpp?.videoUrl).toBe('placeholder');
+    expect(intuneVpp?.videoTitle).toBe('Vidéo : VPP, ABM et apps métier dans Intune');
+  });
+
   it('serves ready HeyGen modules as local French MP4', () => {
     const readyCases = [
       ['apple-cert-prep', 'acmt-exam-prep', '/media/videos/fr/apple-acmt-exam-prep-fr.mp4'],

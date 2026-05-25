@@ -1,5 +1,6 @@
 export const COOKIE_CONSENT_KEY = 'ama:cookie-consent';
 export const COOKIE_CONSENT_VERSION = 1;
+export const COOKIE_PREFERENCES_OPEN_EVENT = 'ama:open-cookie-preferences';
 
 export type CookieConsentRecord = {
   version: number;
@@ -38,4 +39,10 @@ export function readCookieConsent(): CookieConsentRecord | null {
 export function writeCookieConsent(record: CookieConsentRecord = buildCookieConsentRecord()) {
   if (typeof window === 'undefined') return;
   window.localStorage.setItem(COOKIE_CONSENT_KEY, JSON.stringify(record));
+}
+
+/** Ouvre la fenêtre de préférences cookies (accueil ou autres pages). */
+export function openCookiePreferences() {
+  if (typeof window === 'undefined') return;
+  window.dispatchEvent(new Event(COOKIE_PREFERENCES_OPEN_EVENT));
 }

@@ -15,6 +15,16 @@ test.describe('Parcours d’apprentissage — smoke', () => {
     await expect(page.locator('.api-status-banner')).toHaveCount(0);
     await expect(page.locator('.demo-mode-banner')).toHaveCount(0);
     await expect(page.locator('.cookie-consent-banner')).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Préférences' })).toBeVisible();
+  });
+
+  test('lien Préférences ouvre la modale cookies sur l’accueil', async ({ page }) => {
+    await page.goto('/');
+    await page.getByRole('button', { name: 'Préférences' }).click();
+    const modal = page.getByRole('dialog', { name: /Cookies et stockage local/i });
+    await expect(modal).toBeVisible({ timeout: 10_000 });
+    await modal.getByRole('button', { name: /J'ai compris/i }).click();
+    await expect(modal).toBeHidden();
   });
 
   test('accueil sans header ni footer — parcours conserve la nav et le footer', async ({ page }) => {
