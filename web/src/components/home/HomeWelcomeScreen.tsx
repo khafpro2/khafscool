@@ -5,8 +5,6 @@ import Link from 'next/link';
 import { BrandIcon } from '@/components/ui/BrandIcon';
 import { getTrackVisual } from '@/lib/design';
 import { LEARNING_PATHS, type LearningPathMeta } from '@/lib/learningPaths';
-import { openCookiePreferences } from '@/lib/cookie-consent';
-
 const HELLO = 'Hello';
 
 const TRACK_LABELS: Record<LearningPathMeta['track'], string> = {
@@ -39,28 +37,6 @@ export function HomeWelcomeScreen() {
           <TrackChoiceLink key={path.slug} path={path} index={index} />
         ))}
       </ul>
-
-      <nav className="home-welcome-nav" aria-label="Accès rapide">
-        <Link href="/courses" className="home-welcome-nav-link">
-          Parcours
-        </Link>
-        <span className="home-welcome-nav-sep" aria-hidden>
-          ·
-        </span>
-        <Link href="/auth" className="home-welcome-nav-link">
-          Connexion
-        </Link>
-      </nav>
-
-      <p className="home-welcome-prefs">
-        <button
-          type="button"
-          className="home-welcome-prefs-link"
-          onClick={() => openCookiePreferences()}
-        >
-          Préférences
-        </button>
-      </p>
     </section>
   );
 }
