@@ -2,10 +2,9 @@
 
 ## [0.3.5] — 2026-05-25
 
-### Vidéo intro Jamf Pro (module 1)
-- **Contenu** — module `smart-groups-policies` (`jamf-pro-foundations`) : restauration YouTube `t3j9TkFfUJw` (« Vidéo : introduction Jamf Pro », ~10 min) ; `videoSourceLanguage: 'fr'` pour iframe + sous-titres FR
-- **Pilote** — réintégration de `smart-groups-policies` dans `PILOT_VIDEO_MODULES` (11 vidéos ; catalogue Jamf **4 avec vidéo**)
-- Retrait doublage TTS / entrée HeyGen « Smart Groups et politiques »
+### Retrait vidéo Smart Groups (module 1 Jamf)
+- **Contenu** — module `smart-groups-policies` (`jamf-pro-foundations`) : retrait de la vidéo « Smart Groups et politiques Jamf Pro » et de l’intro YouTube `t3j9TkFfUJw` (MP4/doublage) ; leçon et quiz inchangés
+- **Pilote** — retrait de `smart-groups-policies` dans `PILOT_VIDEO_MODULES` (10 vidéos ; catalogue Jamf **3 avec vidéo**)
 - Tests : `seed-video`, `video-dub-sync`, e2e `module-video`
 
 ## [0.3.4] — 2026-05-25
