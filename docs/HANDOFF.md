@@ -10,7 +10,7 @@ Document de reprise pour **Claude Code** ou tout agent après un `git push`. Cur
 | Branche de travail | `cursor/progress-dashboard-auth-v2` |
 | Pull request | [#6](https://github.com/khafpro2/khafscool/pull/6) — **ne pas merger** sans checklist [MERGE.md](../MERGE.md) |
 | Version cible | `0.3.13` |
-| SHA de référence | voir `git log -1` sur la branche après push v0.3.13 |
+| SHA de référence | `3d05577` (v0.3.13) |
 
 ## État projet (2026-05-25)
 
