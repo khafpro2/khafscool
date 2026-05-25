@@ -1,4 +1,5 @@
 import type { VideoProvider } from './video-embed';
+import { getModuleVideoDubFr } from './video-dub-fr';
 import { VIDEO_HEYGEN_FR_BY_MODULE } from './video-heygen-fr';
 import { VIDEO_HEYGEN_FR_MANIFEST } from './video-heygen-fr-manifest';
 
@@ -23,8 +24,15 @@ export function isModuleVideoHeyGenFrReady(courseSlug: string, moduleSlug: strin
   return VIDEO_HEYGEN_FR_MANIFEST[basename]?.ready === true;
 }
 
+function getDubSourceVideoUrl(courseSlug: string, moduleSlug: string): string | null {
+  const heygen = VIDEO_HEYGEN_FR_BY_MODULE[courseSlug]?.[moduleSlug];
+  if (!heygen?.sourceLocalFilename) return null;
+  if (!getModuleVideoDubFr(courseSlug, moduleSlug)) return null;
+  return `/media/videos/sources/${heygen.sourceLocalFilename}`;
+}
+
 /**
- * Vidéo pilote : MP4 français si HeyGen prêt, sinon placeholder animé FR (jamais YouTube EN).
+ * Vidéo pilote : MP4 HeyGen FR si prêt, sinon MP4 source EN + doublage TTS synchronisé, sinon placeholder.
  */
 export function getPilotModuleVideoConfig(
   courseSlug: string,
@@ -38,6 +46,16 @@ export function getPilotModuleVideoConfig(
       videoSourceLanguage: 'fr',
     };
   }
+
+  const dubSourceUrl = getDubSourceVideoUrl(courseSlug, moduleSlug);
+  if (dubSourceUrl) {
+    return {
+      videoUrl: dubSourceUrl,
+      videoProvider: 'mp4',
+      videoSourceLanguage: 'fr',
+    };
+  }
+
   return {
     videoUrl: 'placeholder',
     videoProvider: 'placeholder',

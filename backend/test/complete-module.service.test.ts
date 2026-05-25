@@ -188,7 +188,7 @@ describe('checkQuestionAnswer', () => {
     vi.clearAllMocks();
   });
 
-  it('returns correctness and explanation without exposing the correct option', async () => {
+  it('returns correctness and explanation; reveals correct option after a wrong answer', async () => {
     prismaMock.module.findUnique.mockResolvedValue({ id: 'module-1' });
     prismaMock.question.findFirst.mockResolvedValue({
       id: 'q1',
@@ -204,6 +204,7 @@ describe('checkQuestionAnswer', () => {
     await expect(checkQuestionAnswer('user-1', 'module-1', 'q1', 'a')).resolves.toEqual({
       correct: false,
       explanation: 'Parce que B',
+      correctOptionId: 'b',
     });
   });
 });

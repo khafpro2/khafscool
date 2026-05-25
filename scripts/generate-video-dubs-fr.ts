@@ -19,10 +19,12 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.join(__dirname, '..');
 const outDir = path.join(root, 'web/public/media/dubs');
 const voice = process.env.DUB_VOICE ?? 'fr-FR-HenriNeural';
+const pythonBin = process.env.PYTHON_BIN ?? 'python3';
+const onlyModule = process.env.DUB_ONLY_MODULE;
 
 function assertEdgeTts() {
   try {
-    execFileSync('python3', ['-m', 'edge_tts', '--version'], { stdio: 'pipe' });
+    execFileSync(pythonBin, ['-m', 'edge_tts', '--version'], { stdio: 'pipe' });
   } catch {
     console.error('edge-tts manquant. Installez-le : pip install edge-tts');
     process.exit(1);
@@ -41,7 +43,16 @@ function mp3DurationSec(filePath: string): number {
 assertEdgeTts();
 fs.mkdirSync(outDir, { recursive: true });
 
-for (const entry of listVideoDubFrEntries()) {
+const dubEntries = listVideoDubFrEntries().filter((entry) => {
+  if (!onlyModule) return true;
+  const [courseSlug, moduleSlug] = onlyModule.includes('/') ? onlyModule.split('/') : ['', onlyModule];
+  if (courseSlug && moduleSlug) {
+    return entry.courseSlug === courseSlug && entry.moduleSlug === moduleSlug;
+  }
+  return entry.moduleSlug === onlyModule;
+});
+
+for (const entry of dubEntries) {
   const manifest: VideoDubFrSyncManifest = {
     basename: entry.basename,
     segments: [],
@@ -60,7 +71,7 @@ for (const entry of listVideoDubFrEntries()) {
     fs.writeFileSync(txtPath, segment.script, 'utf8');
     console.log(`  [${index}] t=${segment.atSec}s → ${filename}`);
     execFileSync(
-      'python3',
+      pythonBin,
       ['-m', 'edge_tts', '--voice', voice, '-f', txtPath, '--write-media', outPath],
       { stdio: 'inherit' }
     );

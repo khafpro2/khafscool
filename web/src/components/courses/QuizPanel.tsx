@@ -4,6 +4,12 @@ import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent, 
 import Link from 'next/link';
 import type { CourseModule } from '@/lib/api';
 import { findGlossaryTermInText, glossaryWebHref } from '@ama/shared/glossary';
+import {
+  getQuizQuestionTypeMeta,
+  listIncorrectQuestionIds,
+  truncateQuizPrompt,
+  type QuizQuestionTypeMeta,
+} from '@ama/shared/quiz-learning';
 import { resolveApiErrorMessage } from '@/lib/auth-errors';
 import { getTrackVisual } from '@/lib/design';
 import { Badge } from '@/components/ui/Badge';
@@ -17,6 +23,7 @@ export const QUIZ_PASS_PERCENT = 50;
 export type QuestionCheckResult = {
   correct: boolean;
   explanation?: string;
+  correctOptionId?: string;
 };
 
 type QuizPanelProps = {
@@ -31,6 +38,8 @@ type QuizPanelProps = {
   onRevealAll: () => Promise<void>;
   onFinishQuiz?: () => void;
   estimatedGameScore?: number;
+  /** Points clés de la leçon — affichés dans le récap si score faible. */
+  keyTakeaways?: string[];
 };
 
 const CORRECT_MESSAGES = [
@@ -80,16 +89,28 @@ export function QuizPanel({
   onCheckAnswer,
   onFinishQuiz,
   estimatedGameScore = 0,
+  keyTakeaways = [],
 }: QuizPanelProps) {
   const questions = module.questions;
   const totalQuestions = questions.length;
+  const questionIds = useMemo(() => questions.map((question) => question.id), [questions]);
   const trackVisual = getTrackVisual(track);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [focusWrongOnly, setFocusWrongOnly] = useState(false);
+  const [learningTipDismissed, setLearningTipDismissed] = useState(false);
   const [checkingQuestionId, setCheckingQuestionId] = useState<string | null>(null);
   const [checkError, setCheckError] = useState<string | null>(null);
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
   const feedbackRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    try {
+      setLearningTipDismissed(sessionStorage.getItem('ama-quiz-learning-tip') === '1');
+    } catch {
+      setLearningTipDismissed(false);
+    }
+  }, []);
 
   const correctCount = useMemo(
     () => countCorrectAnswers(questionResults),
@@ -109,7 +130,22 @@ export function QuizPanel({
   );
   const allRevealed =
     reviewMode || (totalQuestions > 0 && revealedCount === totalQuestions);
+  const incorrectQuestionIds = useMemo(
+    () => listIncorrectQuestionIds(questionIds, questionResults),
+    [questionIds, questionResults]
+  );
+  const wrongReviewIndices = useMemo(
+    () =>
+      incorrectQuestionIds
+        .map((id) => questions.findIndex((question) => question.id === id))
+        .filter((index) => index >= 0),
+    [incorrectQuestionIds, questions]
+  );
   const progressStep = allRevealed ? totalQuestions : Math.max(revealedCount, currentIndex + 1);
+  const wrongReviewPosition =
+    focusWrongOnly && wrongReviewIndices.length > 0
+      ? wrongReviewIndices.indexOf(currentIndex) + 1
+      : 0;
 
   const currentQuestion = questions[currentIndex];
   const currentQuestionId = currentQuestion?.id;
@@ -137,6 +173,11 @@ export function QuizPanel({
     }
   }, [currentIndex, totalQuestions]);
 
+  useEffect(() => {
+    setFocusWrongOnly(false);
+    setCurrentIndex(0);
+  }, [module.id]);
+
   const goToQuestion = useCallback(
     (index: number) => {
       if (index < 0 || index >= totalQuestions) return;
@@ -146,6 +187,28 @@ export function QuizPanel({
     },
     [totalQuestions]
   );
+
+  const goToNextWrong = useCallback(() => {
+    if (!wrongReviewIndices.length) return;
+    const pos = wrongReviewIndices.indexOf(currentIndex);
+    const nextIndex = pos < 0 ? wrongReviewIndices[0] : wrongReviewIndices[(pos + 1) % wrongReviewIndices.length];
+    goToQuestion(nextIndex);
+  }, [currentIndex, goToQuestion, wrongReviewIndices]);
+
+  const startWrongReview = useCallback(() => {
+    if (!wrongReviewIndices.length) return;
+    setFocusWrongOnly(true);
+    goToQuestion(wrongReviewIndices[0]);
+  }, [goToQuestion, wrongReviewIndices]);
+
+  function dismissLearningTip() {
+    setLearningTipDismissed(true);
+    try {
+      sessionStorage.setItem('ama-quiz-learning-tip', '1');
+    } catch {
+      /* ignore */
+    }
+  }
 
   async function handleCheckAnswer() {
     if (!currentQuestionId || !selectedOptionId || currentRevealed) return;
@@ -208,8 +271,12 @@ export function QuizPanel({
               </span>
             )}
             <div>
-              <p className="quiz-panel-eyebrow">Quiz · {trackVisual.label}</p>
-              <h3 className="quiz-panel-title">Teste tes connaissances</h3>
+              <p className="quiz-panel-eyebrow">
+                {reviewMode ? 'Révision' : 'Mode apprentissage'} · {trackVisual.label}
+              </p>
+              <h3 className="quiz-panel-title">
+                {reviewMode ? 'Réentraîne-toi sur cette unité' : 'Teste tes connaissances'}
+              </h3>
             </div>
           </div>
           <div className="quiz-panel-stats" aria-live="polite" aria-atomic="true">
@@ -224,11 +291,46 @@ export function QuizPanel({
       </header>
 
       <div className="quiz-panel-body">
+        {!learningTipDismissed && !allRevealed && (
+          <aside className="quiz-learning-tip" aria-label="Conseils pour apprendre">
+            <p className="quiz-learning-tip-title">
+              <span aria-hidden>{'\u{1F9E0}'}</span> Comment tirer le meilleur de ce quiz
+            </p>
+            <ul className="quiz-learning-tip-list">
+              <li>Une question à la fois — lis l’explication avant de passer à la suivante.</li>
+              <li>Les badges indiquent le type (scénario, dépannage, concept).</li>
+              <li>En cas d’erreur, la bonne réponse s’affiche pour ancrer le savoir.</li>
+            </ul>
+            <Button type="button" size="sm" variant="secondary" onClick={dismissLearningTip}>
+              Compris
+            </Button>
+          </aside>
+        )}
+
+        {focusWrongOnly && wrongReviewIndices.length > 0 && (
+          <p className="quiz-wrong-focus-banner" role="status">
+            Révision ciblée : erreur {wrongReviewPosition}/{wrongReviewIndices.length}
+            <Button
+              type="button"
+              size="sm"
+              variant="secondary"
+              className="quiz-wrong-focus-exit"
+              onClick={() => setFocusWrongOnly(false)}
+            >
+              Voir tout le quiz
+            </Button>
+          </p>
+        )}
+
         <ProgressBar
           value={progressStep}
           max={totalQuestions}
           tone={allRevealed ? 'success' : 'accent'}
-          label={`Question ${Math.min(currentIndex + 1, totalQuestions)} sur ${totalQuestions}`}
+          label={
+            focusWrongOnly && wrongReviewIndices.length > 0
+              ? `Erreur ${wrongReviewPosition} sur ${wrongReviewIndices.length} · question ${currentIndex + 1}/${totalQuestions}`
+              : `Question ${Math.min(currentIndex + 1, totalQuestions)} sur ${totalQuestions}`
+          }
           showValueLabel
           className="quiz-progress"
         />
@@ -261,6 +363,9 @@ export function QuizPanel({
             feedbackMessage={feedbackMessage}
             feedbackRef={feedbackRef}
             glossaryTerm={glossaryTerm}
+            typeMeta={getQuizQuestionTypeMeta(currentQuestion.type)}
+            correctOptionFallback={currentQuestion.correctOption}
+            correctOptionId={checkResult?.correctOptionId}
             onSelect={(optionId) => {
               if (!currentRevealed) onSelectAnswer(currentQuestion.id, optionId);
             }}
@@ -290,7 +395,7 @@ export function QuizPanel({
             Précédent
           </Button>
 
-          <span className="quiz-nav-dots" aria-hidden>
+          <span className="quiz-nav-dots" role="tablist" aria-label="Questions du quiz">
             {questions.map((question, index) => {
               const answered = Boolean(answers[question.id]);
               const revealed = revealedQuestions.has(question.id);
@@ -301,11 +406,26 @@ export function QuizPanel({
               else if (revealed && !correct) dotClass += ' quiz-dot-incorrect';
               else if (answered) dotClass += ' quiz-dot-answered';
 
-              return <span key={question.id} className={dotClass} />;
+              return (
+                <button
+                  key={question.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={index === currentIndex}
+                  aria-label={`Question ${index + 1}${revealed ? (correct ? ', correcte' : ', à revoir') : ''}`}
+                  className={dotClass}
+                  disabled={!revealed}
+                  onClick={() => goToQuestion(index)}
+                />
+              );
             })}
           </span>
 
-          {currentIndex < totalQuestions - 1 ? (
+          {focusWrongOnly && wrongReviewIndices.length > 0 ? (
+            <Button type="button" size="sm" onClick={goToNextWrong} disabled={!currentRevealed}>
+              Erreur suivante
+            </Button>
+          ) : currentIndex < totalQuestions - 1 ? (
             <Button
               type="button"
               size="sm"
@@ -325,6 +445,15 @@ export function QuizPanel({
           )}
         </nav>
 
+        {allRevealed && incorrectQuestionIds.length > 0 && !focusWrongOnly && (
+          <div className="quiz-wrong-actions">
+            <Button type="button" size="sm" onClick={startWrongReview}>
+              Revoir mes {incorrectQuestionIds.length} erreur
+              {incorrectQuestionIds.length > 1 ? 's' : ''}
+            </Button>
+          </div>
+        )}
+
         {allRevealed && (
           <QuizRecap
             correctCount={correctCount}
@@ -332,6 +461,16 @@ export function QuizPanel({
             estimatedScore={estimatedScore}
             estimatedPointsEarned={estimatedPointsEarned}
             passPercent={QUIZ_PASS_PERCENT}
+            keyTakeaways={keyTakeaways}
+            wrongQuestions={questions.filter((question) =>
+              incorrectQuestionIds.includes(question.id)
+            )}
+            onReviewQuestion={(questionId) => {
+              const index = questions.findIndex((item) => item.id === questionId);
+              if (index < 0) return;
+              setFocusWrongOnly(false);
+              goToQuestion(index);
+            }}
           />
         )}
 
@@ -359,6 +498,9 @@ type QuizQuestionStepProps = {
   feedbackMessage: string | null;
   feedbackRef: RefObject<HTMLDivElement | null>;
   glossaryTerm?: { id: string; term: string };
+  typeMeta: QuizQuestionTypeMeta;
+  correctOptionId?: string;
+  correctOptionFallback?: string;
   onSelect: (optionId: string) => void;
   onCheck: () => void;
   onEnterAdvance: () => void;
@@ -378,12 +520,17 @@ function QuizQuestionStep({
   feedbackMessage,
   feedbackRef,
   glossaryTerm,
+  typeMeta,
+  correctOptionId,
+  correctOptionFallback,
   onSelect,
   onCheck,
   onEnterAdvance,
 }: QuizQuestionStepProps) {
   const isCorrect = revealed && checkResult?.correct === true;
   const isIncorrect = revealed && checkResult?.correct === false;
+  const revealedCorrectOptionId =
+    correctOptionId ?? (isIncorrect && correctOptionFallback ? correctOptionFallback : undefined);
   const canValidate = Boolean(selectedOptionId) && !revealed && !disabled;
   const optionRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
@@ -452,9 +599,15 @@ function QuizQuestionStep({
 
       <fieldset className="quiz-fieldset">
         <legend className="quiz-legend">
-          <span className="quiz-question-index" style={{ color: trackColor }}>
-            Question {index + 1}/{total}
-          </span>
+          <div className="quiz-question-meta-row">
+            <span className="quiz-question-index" style={{ color: trackColor }}>
+              Question {index + 1}/{total}
+            </span>
+            <Badge tone="neutral" icon={typeMeta.icon}>
+              {typeMeta.shortLabel}
+            </Badge>
+          </div>
+          <p className="quiz-question-type-tip muted">{typeMeta.tip}</p>
           <h4 className="quiz-question-prompt">{question.prompt}</h4>
         </legend>
 
@@ -463,10 +616,16 @@ function QuizQuestionStep({
             const selected = selectedOptionId === option.id;
             const isWrongSelection = revealed && selected && checkResult?.correct === false;
             const isCorrectSelection = revealed && selected && checkResult?.correct === true;
+            const isRevealedCorrect =
+              revealed &&
+              revealedCorrectOptionId &&
+              option.id === revealedCorrectOptionId &&
+              !isCorrectSelection;
 
             let stateClass = 'quiz-option';
             if (isCorrectSelection) stateClass += ' quiz-option-correct';
             else if (isWrongSelection) stateClass += ' quiz-option-incorrect';
+            else if (isRevealedCorrect) stateClass += ' quiz-option-reveal-correct';
             else if (selected) stateClass += ' quiz-option-selected';
 
             return (
@@ -497,6 +656,11 @@ function QuizQuestionStep({
                 {isWrongSelection && (
                   <span className="quiz-option-icon quiz-option-icon-incorrect" aria-hidden>
                     {'\u2717'}
+                  </span>
+                )}
+                {isRevealedCorrect && (
+                  <span className="quiz-option-icon quiz-option-icon-correct" aria-hidden>
+                    {'\u2713'}
                   </span>
                 )}
               </button>
@@ -550,10 +714,17 @@ function QuizQuestionStep({
           </div>
         )}
 
+        {revealed && isIncorrect && revealedCorrectOptionId && (
+          <p className="quiz-correct-answer-hint" role="status">
+            La bonne réponse est l’option{' '}
+            <strong>{revealedCorrectOptionId.toUpperCase()}</strong> — relis l’explication ci-dessous.
+          </p>
+        )}
+
         {revealed && checkResult?.explanation && (
-          <aside className="quiz-explanation">
+          <aside className={`quiz-explanation${isIncorrect ? ' quiz-explanation-emphasis' : ''}`}>
             <p className="quiz-explanation-title">
-              <span aria-hidden>{'\u{1F4A1}'}</span> Explication
+              <span aria-hidden>{'\u{1F4A1}'}</span> {isIncorrect ? 'Pourquoi ?' : 'Explication'}
             </p>
             <p className="quiz-explanation-text">{checkResult.explanation}</p>
           </aside>
@@ -569,12 +740,18 @@ function QuizRecap({
   estimatedScore,
   estimatedPointsEarned,
   passPercent,
+  keyTakeaways,
+  wrongQuestions,
+  onReviewQuestion,
 }: {
   correctCount: number;
   totalQuestions: number;
   estimatedScore: number;
   estimatedPointsEarned: number;
   passPercent: number;
+  keyTakeaways?: string[];
+  wrongQuestions: CourseModule['questions'];
+  onReviewQuestion: (questionId: string) => void;
 }) {
   const minCorrect = Math.ceil((passPercent / 100) * totalQuestions);
   const meetsMinimum = estimatedScore >= passPercent;
@@ -602,6 +779,38 @@ function QuizRecap({
         <p style={{ marginTop: '0.5rem', fontSize: '0.88rem', color: '#92400e' }}>
           Tu peux valider l'unité, mais revoir les explications améliorera ton score et tes points.
         </p>
+      )}
+
+      {wrongQuestions.length > 0 && (
+        <div className="quiz-recap-wrong-list">
+          <p className="quiz-recap-wrong-title">À revoir avant de valider</p>
+          <ul>
+            {wrongQuestions.map((question) => (
+              <li key={question.id}>
+                <span className="quiz-recap-wrong-prompt">{truncateQuizPrompt(question.prompt)}</span>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => onReviewQuestion(question.id)}
+                >
+                  Revoir
+                </Button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {!meetsMinimum && keyTakeaways && keyTakeaways.length > 0 && (
+        <div className="quiz-recap-takeaways">
+          <p className="quiz-recap-takeaways-title">Rappel — points clés de la leçon</p>
+          <ul>
+            {keyTakeaways.slice(0, 3).map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        </div>
       )}
     </div>
   );

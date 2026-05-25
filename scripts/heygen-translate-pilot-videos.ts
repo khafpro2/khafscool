@@ -7,6 +7,7 @@
  *   - HEYGEN_API_KEY dans .env à la racine
  *   - URL HTTPS publique du fichier source (MP4 direct, pas une page YouTube)
  *     → variable HEYGEN_SOURCE_VIDEO_URL ou HEYGEN_SOURCE_<BASENAME>_URL
+ *   - Ou fichier local dans web/public/media/videos/sources/ (upload HeyGen automatique)
  *
  * Usage :
  *   pnpm heygen:translate              # soumet + attend + télécharge
@@ -25,18 +26,24 @@ import { fileURLToPath } from 'node:url';
 import {
   getModuleVideoHeyGenFrPublicUrl,
   listVideoHeyGenFrEntries,
-  type VideoHeyGenFrManifest,
 } from '@ama/shared/video-heygen-fr';
+import { syncHeyGenManifestFromDisk } from './heygen-manifest-sync';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.join(__dirname, '..');
 const outDir = path.join(root, 'web/public/media/videos/fr');
+const sourcesDir = path.join(root, 'web/public/media/videos/sources');
 const jobsPath = path.join(outDir, 'heygen-jobs.json');
-const manifestTsPath = path.join(root, 'shared/src/video-heygen-fr-manifest.ts');
 
 const API_BASE = 'https://api.heygen.com/v3';
+const HEYGEN_MAX_ASSET_BYTES = 32 * 1024 * 1024;
 const OUTPUT_LANGUAGE = process.env.HEYGEN_OUTPUT_LANGUAGE ?? 'French (France)';
 const POLL_MS = Number(process.env.HEYGEN_POLL_MS ?? 30_000);
+/** true = garde l’image source, traduit l’audio seulement (pas d’avatar HeyGen). */
+const TRANSLATE_AUDIO_ONLY = process.env.HEYGEN_TRANSLATE_AUDIO_ONLY !== 'false';
+const TRANSLATE_MODE = process.env.HEYGEN_TRANSLATE_MODE ?? 'speed';
+/** Voix clone pour Video Translate — uniquement si HEYGEN_BRAND_VOICE_ID est défini (Video Agent utilise HEYGEN_VOICE_ID). */
+const BRAND_VOICE_ID = process.env.HEYGEN_BRAND_VOICE_ID?.trim() || '';
 
 type HeyGenJob = {
   courseSlug: string;
@@ -80,6 +87,88 @@ function requireApiKey(): string {
   return key;
 }
 
+type VideoAssetInput =
+  | { type: 'url'; url: string; label: string }
+  | { type: 'asset_id'; asset_id: string; label: string };
+
+function isLocalWebUrl(url: string): boolean {
+  return /localhost|127\.0\.0\.1/i.test(url);
+}
+
+function resolveLocalSourcePath(filename: string): string | null {
+  const primary = path.join(sourcesDir, filename);
+  if (!fs.existsSync(primary)) return null;
+
+  const stat = fs.statSync(primary);
+  if (stat.size <= HEYGEN_MAX_ASSET_BYTES) return primary;
+
+  const uploadVariant = primary.replace(/\.mp4$/i, '.upload.mp4');
+  if (fs.existsSync(uploadVariant) && fs.statSync(uploadVariant).size <= HEYGEN_MAX_ASSET_BYTES) {
+    return uploadVariant;
+  }
+
+  return stat.size <= HEYGEN_MAX_ASSET_BYTES ? primary : null;
+}
+
+async function uploadHeyGenAsset(apiKey: string, filePath: string): Promise<string> {
+  const buffer = fs.readFileSync(filePath);
+  if (buffer.length > HEYGEN_MAX_ASSET_BYTES) {
+    throw new Error(
+      `Fichier trop volumineux pour HeyGen (${Math.round(buffer.length / 1024 / 1024)} Mo > 32 Mo) : ${filePath}`
+    );
+  }
+
+  const form = new FormData();
+  form.append('file', new Blob([buffer], { type: 'video/mp4' }), path.basename(filePath));
+
+  const response = await fetch(`${API_BASE}/assets`, {
+    method: 'POST',
+    headers: { 'x-api-key': apiKey },
+    body: form,
+  });
+
+  const body = (await response.json()) as {
+    data?: { asset_id?: string };
+    error?: { message?: string };
+  };
+  if (!response.ok) {
+    throw new Error(`${response.status} /assets: ${body.error?.message ?? response.statusText}`);
+  }
+
+  const assetId = body.data?.asset_id;
+  if (!assetId) throw new Error(`Réponse HeyGen sans asset_id pour ${filePath}`);
+  return assetId;
+}
+
+async function resolveSourceVideo(
+  apiKey: string,
+  basename: string,
+  sourceLocalFilename?: string
+): Promise<VideoAssetInput | null> {
+  const envUrl = sourceUrlForBasename(basename);
+  if (envUrl) return { type: 'url', url: envUrl, label: envUrl };
+
+  const webUrl = process.env.WEB_URL?.trim();
+  if (sourceLocalFilename && webUrl && !isLocalWebUrl(webUrl)) {
+    const publicUrl = `${webUrl.replace(/\/+$/, '')}/media/videos/sources/${sourceLocalFilename}`;
+    return { type: 'url', url: publicUrl, label: publicUrl };
+  }
+
+  if (!sourceLocalFilename) return null;
+
+  const localPath = resolveLocalSourcePath(sourceLocalFilename);
+  if (!localPath) {
+    console.warn(
+      `⚠️  ${basename} — source locale introuvable ou > 32 Mo : ${path.join(sourcesDir, sourceLocalFilename)}`
+    );
+    return null;
+  }
+
+  console.log(`   📁 Upload HeyGen : ${path.basename(localPath)} (${Math.round(fs.statSync(localPath).size / 1024 / 1024)} Mo)`);
+  const assetId = await uploadHeyGenAsset(apiKey, localPath);
+  return { type: 'asset_id', asset_id: assetId, label: `asset:${assetId}` };
+}
+
 function sourceUrlForBasename(basename: string): string | null {
   const specific = process.env[`HEYGEN_SOURCE_${basename.replace(/-/g, '_').toUpperCase()}_URL`];
   if (specific?.trim()) return specific.trim();
@@ -115,63 +204,82 @@ async function heygenFetch<T>(apiKey: string, route: string, init?: RequestInit)
   return body;
 }
 
-function writeManifestTs(manifest: VideoHeyGenFrManifest) {
-  const content = `/** Généré par pnpm heygen:translate — ne pas éditer à la main. */
-import type { VideoHeyGenFrManifest } from './video-heygen-fr';
-
-export const VIDEO_HEYGEN_FR_MANIFEST: VideoHeyGenFrManifest = ${JSON.stringify(manifest, null, 2)} as const;
-`;
-  fs.writeFileSync(manifestTsPath, content, 'utf8');
+function writeManifest() {
+  syncHeyGenManifestFromDisk('pnpm heygen:translate');
 }
 
-function syncManifestFromJobs(jobs: HeyGenJob[]) {
-  const manifest: VideoHeyGenFrManifest = {};
-  for (const job of jobs) {
-    const mp4Path = path.join(outDir, `${job.basename}.mp4`);
-    if (fs.existsSync(mp4Path)) {
-      manifest[job.basename] = {
-        ready: true,
-        url: getModuleVideoHeyGenFrPublicUrl({ basename: job.basename, sourceYouTubeUrl: '', heygenTitle: '' }),
-        videoTranslationId: job.videoTranslationId,
-        generatedAt: job.updatedAt ?? new Date().toISOString(),
-      };
-    }
+async function tryDownloadJobMp4(job: HeyGenJob, downloadUrl: string): Promise<boolean> {
+  const mp4Path = path.join(outDir, `${job.basename}.mp4`);
+  if (fs.existsSync(mp4Path)) return true;
+
+  console.log(`   ⬇️  Téléchargement MP4…`);
+  const videoResponse = await fetch(downloadUrl);
+  if (!videoResponse.ok) {
+    console.error(`   ❌ Téléchargement échoué (${videoResponse.status})`);
+    return false;
   }
-  writeManifestTs(manifest);
+
+  fs.mkdirSync(outDir, { recursive: true });
+  fs.writeFileSync(mp4Path, Buffer.from(await videoResponse.arrayBuffer()));
+  job.outputVideoUrl = downloadUrl;
+  job.status = 'completed';
+  job.updatedAt = new Date().toISOString();
+  console.log(`   ✅ ${job.basename}.mp4`);
+  return true;
 }
 
-async function submitJobs(apiKey: string) {
+async function submitJobs(apiKey: string, moduleFilter: string | null, force = false) {
   const store = readJobs();
   const byBasename = new Map(store.jobs.map((job) => [job.basename, job]));
 
   for (const entry of listVideoHeyGenFrEntries()) {
-    const existing = byBasename.get(entry.basename);
-    if (existing?.videoTranslationId && existing.status !== 'failed') {
-      console.log(`⏭  ${entry.basename} — job existant ${existing.videoTranslationId}`);
+    if (moduleFilter && entry.moduleSlug !== moduleFilter) continue;
+
+    const mp4Path = path.join(outDir, `${entry.basename}.mp4`);
+    if (!force && fs.existsSync(mp4Path)) {
+      console.log(`⏭  ${entry.basename} — MP4 FR déjà présent`);
       continue;
     }
 
-    const sourceVideoUrl = sourceUrlForBasename(entry.basename);
-    if (!sourceVideoUrl) {
-      console.warn(
-        `⚠️  ${entry.basename} — pas d'URL source. Définissez HEYGEN_SOURCE_${entry.basename.replace(/-/g, '_').toUpperCase()}_URL`
-      );
-      console.warn(`    YouTube (référence) : ${entry.sourceYouTubeUrl}`);
+    const existing = byBasename.get(entry.basename);
+    const retryFailed = process.argv.includes('--retry-failed');
+    const mayResubmit = force || retryFailed || existing?.status === 'failed';
+    if (!mayResubmit && existing?.videoTranslationId) {
+      console.log(`⏭  ${entry.basename} — job existant ${existing.videoTranslationId}`);
+      continue;
+    }
+    if (retryFailed && existing?.status === 'failed') {
+      console.log(`🔄 Nouvelle tentative : ${entry.basename}`);
+    }
+
+    const sourceVideo = await resolveSourceVideo(apiKey, entry.basename, entry.sourceLocalFilename);
+    if (!sourceVideo) {
+      if (!entry.sourceLocalFilename) {
+        console.warn(`⚠️  ${entry.basename} — pas de source locale. Générez via pnpm heygen:generate ou définissez HEYGEN_SOURCE_*_URL`);
+      } else {
+        console.warn(
+          `⚠️  ${entry.basename} — pas d'URL source. Définissez HEYGEN_SOURCE_${entry.basename.replace(/-/g, '_').toUpperCase()}_URL`
+        );
+      }
       continue;
     }
 
     console.log(`📤 Soumission HeyGen : ${entry.heygenTitle}`);
-    const payload = {
-      video: { type: 'url', url: sourceVideoUrl },
+    const payload: Record<string, unknown> = {
+      video:
+        sourceVideo.type === 'url'
+          ? { type: 'url', url: sourceVideo.url }
+          : { type: 'asset_id', asset_id: sourceVideo.asset_id },
       output_languages: [OUTPUT_LANGUAGE],
       title: entry.heygenTitle,
       input_language: 'English',
-      translate_audio_only: false,
-      mode: 'precision',
+      translate_audio_only: TRANSLATE_AUDIO_ONLY,
+      mode: TRANSLATE_MODE,
       enable_dynamic_duration: true,
       keep_the_same_format: true,
       enable_watermark: false,
     };
+    if (BRAND_VOICE_ID) payload.brand_voice_id = BRAND_VOICE_ID;
 
     const result = await heygenFetch<{ data?: { video_translation_ids?: string[] } }>(
       apiKey,
@@ -189,7 +297,7 @@ async function submitJobs(apiKey: string) {
       moduleSlug: entry.moduleSlug,
       basename: entry.basename,
       title: entry.heygenTitle,
-      sourceVideoUrl,
+      sourceVideoUrl: sourceVideo.label,
       videoTranslationId,
       status: 'pending',
       updatedAt: new Date().toISOString(),
@@ -210,8 +318,15 @@ async function pollAndDownload(apiKey: string) {
 
   for (const job of store.jobs) {
     if (!job.videoTranslationId) continue;
-    if (job.status === 'completed' && fs.existsSync(path.join(outDir, `${job.basename}.mp4`))) {
+    const mp4Path = path.join(outDir, `${job.basename}.mp4`);
+    if (fs.existsSync(mp4Path)) {
+      job.status = 'completed';
       continue;
+    }
+
+    if (job.outputVideoUrl) {
+      console.log(`🔍 ${job.basename} — reprise URL enregistrée…`);
+      if (await tryDownloadJobMp4(job, job.outputVideoUrl)) continue;
     }
 
     console.log(`🔍 ${job.basename} (${job.videoTranslationId})…`);
@@ -235,23 +350,11 @@ async function pollAndDownload(apiKey: string) {
     }
 
     const downloadUrl = detail.data.video_url;
-    job.outputVideoUrl = downloadUrl;
-    console.log(`   ⬇️  Téléchargement MP4…`);
-
-    const videoResponse = await fetch(downloadUrl);
-    if (!videoResponse.ok) {
-      throw new Error(`Téléchargement échoué (${videoResponse.status})`);
-    }
-
-    const buffer = Buffer.from(await videoResponse.arrayBuffer());
-    fs.mkdirSync(outDir, { recursive: true });
-    fs.writeFileSync(path.join(outDir, `${job.basename}.mp4`), buffer);
-    job.status = 'completed';
-    console.log(`   ✅ ${job.basename}.mp4`);
+    await tryDownloadJobMp4(job, downloadUrl);
   }
 
   writeJobs(store);
-  syncManifestFromJobs(store.jobs);
+  writeManifest();
 }
 
 function registerLocalBasename(basename: string) {
@@ -278,8 +381,8 @@ function registerLocalBasename(basename: string) {
   job.updatedAt = new Date().toISOString();
   const others = store.jobs.filter((item) => item.basename !== basename);
   writeJobs({ jobs: [...others, job] });
-  syncManifestFromJobs([job]);
-  console.log(`Enregistré : ${basename} → ${getModuleVideoHeyGenFrPublicUrl({ basename, sourceYouTubeUrl: '', heygenTitle: '' })}`);
+  writeManifest();
+  console.log(`Enregistré : ${basename} → ${getModuleVideoHeyGenFrPublicUrl({ basename, heygenTitle: basename })}`);
 }
 
 function printStatus() {
@@ -318,7 +421,23 @@ async function main() {
   }
 
   const apiKey = requireApiKey();
-  await submitJobs(apiKey);
+  const moduleFilter = args.includes('--module') ? args[args.indexOf('--module') + 1] ?? null : null;
+  const force = args.includes('--force');
+
+  if (force && moduleFilter) {
+    const entry = listVideoHeyGenFrEntries().find((item) => item.moduleSlug === moduleFilter);
+    if (entry) {
+      const mp4Path = path.join(outDir, `${entry.basename}.mp4`);
+      if (fs.existsSync(mp4Path)) {
+        fs.unlinkSync(mp4Path);
+        console.log(`🗑  ${entry.basename}.mp4 supprimé (--force)`);
+      }
+      const store = readJobs();
+      writeJobs({ jobs: store.jobs.filter((item) => item.basename !== entry.basename) });
+    }
+  }
+
+  await submitJobs(apiKey, moduleFilter, force);
 
   let pending = true;
   while (pending) {
@@ -327,7 +446,6 @@ async function main() {
     pending = store.jobs.some(
       (job) =>
         job.videoTranslationId &&
-        job.status !== 'completed' &&
         job.status !== 'failed' &&
         !fs.existsSync(path.join(outDir, `${job.basename}.mp4`))
     );

@@ -356,6 +356,8 @@ export interface CompleteModuleResult {
 export interface CheckAnswerResult {
   correct: boolean;
   explanation?: string;
+  /** Option correcte (a–d) — renvoyée après une erreur pour l’apprentissage. */
+  correctOptionId?: string;
 }
 
 export interface PracticeExamQuestion extends CourseQuestion {

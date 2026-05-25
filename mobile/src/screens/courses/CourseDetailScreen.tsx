@@ -24,6 +24,11 @@ import { QUESTIONS_PER_MODULE } from '@ama/shared/constants';
 import { countLessonWords, formatCourseHeroBanner, formatReadingTimeLabel, sumLessonReadingMinutes } from '@ama/shared/reading-time';
 import { findGlossaryTermInText, glossaryMobilePath } from '@ama/shared/glossary';
 import {
+  getQuizQuestionTypeMeta,
+  listIncorrectQuestionIds,
+  truncateQuizPrompt,
+} from '@ama/shared/quiz-learning';
+import {
   CheckAnswerResult,
   CourseDetail,
   CourseModule,
@@ -63,6 +68,8 @@ export function CourseDetailScreen() {
   const [revealedQuestions, setRevealedQuestions] = useState<Set<string>>(new Set());
   const [checkingQuestionId, setCheckingQuestionId] = useState<string | null>(null);
   const [quizQuestionIndex, setQuizQuestionIndex] = useState(0);
+  const [quizFocusWrongOnly, setQuizFocusWrongOnly] = useState(false);
+  const [quizLearningTipDismissed, setQuizLearningTipDismissed] = useState(false);
   const [quizFeedback, setQuizFeedback] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [localResult, setLocalResult] = useState<string | null>(null);
@@ -118,6 +125,12 @@ export function CourseDetailScreen() {
       scrollRef.current?.scrollTo({ y: 420, animated: true });
     });
   }, [activeModule?.id, loading]);
+
+  useEffect(() => {
+    setQuizQuestionIndex(0);
+    setQuizFocusWrongOnly(false);
+    setQuizFeedback(null);
+  }, [activeModule?.id]);
 
   const canSubmit = useMemo(() => {
     if (!activeModule?.questions.length) return false;
@@ -509,15 +522,74 @@ export function CourseDetailScreen() {
                       const revealed = revealedQuestions.has(question.id);
                       const correctCount = Object.values(questionResults).filter((r) => r.correct).length;
                       const isLast = safeIndex >= total - 1;
+                      const allRevealed = module.questions.every((item) =>
+                        revealedQuestions.has(item.id)
+                      );
+                      const incorrectIds = listIncorrectQuestionIds(
+                        module.questions.map((item) => item.id),
+                        questionResults
+                      );
+                      const wrongIndices = incorrectIds
+                        .map((id) => module.questions.findIndex((item) => item.id === id))
+                        .filter((index) => index >= 0);
+
+                      const wrongReviewPosition =
+                        quizFocusWrongOnly && wrongIndices.length > 0
+                          ? wrongIndices.indexOf(safeIndex) + 1
+                          : 0;
+                      const goToNextWrong = () => {
+                        if (!wrongIndices.length) return;
+                        const pos = wrongIndices.indexOf(safeIndex);
+                        const nextIndex =
+                          pos < 0
+                            ? wrongIndices[0]
+                            : wrongIndices[(pos + 1) % wrongIndices.length];
+                        setQuizQuestionIndex(nextIndex);
+                        setQuizFeedback(null);
+                      };
 
                       return (
                         <View style={styles.quizStepper}>
+                          {!quizLearningTipDismissed && !allRevealed ? (
+                            <View style={styles.quizLearningTip}>
+                              <Text style={styles.quizLearningTipTitle}>
+                                {'\u{1F9E0}'} Comment tirer le meilleur de ce quiz
+                              </Text>
+                              <Text style={styles.quizLearningTipItem}>
+                                • Une question à la fois — lis l’explication avant la suivante.
+                              </Text>
+                              <Text style={styles.quizLearningTipItem}>
+                                • Les badges indiquent le type (scénario, dépannage, concept).
+                              </Text>
+                              <Text style={styles.quizLearningTipItem}>
+                                • En cas d’erreur, la bonne réponse s’affiche pour ancrer le savoir.
+                              </Text>
+                              <Pressable
+                                onPress={() => setQuizLearningTipDismissed(true)}
+                                style={styles.quizLearningTipBtn}
+                              >
+                                <Text style={styles.quizLearningTipBtnText}>Compris</Text>
+                              </Pressable>
+                            </View>
+                          ) : null}
+                          {quizFocusWrongOnly && wrongIndices.length > 0 ? (
+                            <View style={styles.quizWrongFocusBanner}>
+                              <Text style={styles.quizWrongFocusText}>
+                                Révision ciblée : erreur {wrongReviewPosition}/{wrongIndices.length}
+                              </Text>
+                              <Pressable onPress={() => setQuizFocusWrongOnly(false)}>
+                                <Text style={styles.quizWrongFocusExit}>Voir tout le quiz</Text>
+                              </Pressable>
+                            </View>
+                          ) : null}
                           <View style={styles.quizHeaderRow}>
                             <Text style={styles.quizScoreLive}>
                               {correctCount}/{total} bonnes réponses
                             </Text>
                             <Text style={styles.quizStepLabel}>
-                              Question {safeIndex + 1}/{total}
+                              {quizFocusWrongOnly && wrongIndices.length > 0
+                                ? `Erreur ${wrongReviewPosition}/${wrongIndices.length} · Q${safeIndex + 1}/${total}`
+                                : `Question ${safeIndex + 1}/${total}`}
                             </Text>
                           </View>
                           <ProgressBar
@@ -526,6 +598,17 @@ export function CourseDetailScreen() {
                             styles={styles}
                           />
                           <View style={styles.questionBlock}>
+                            {(() => {
+                              const typeMeta = getQuizQuestionTypeMeta(question.type);
+                              return (
+                                <>
+                                  <Text style={styles.quizTypeBadge}>
+                                    {typeMeta.icon} {typeMeta.shortLabel}
+                                  </Text>
+                                  <Text style={styles.quizTypeTip}>{typeMeta.tip}</Text>
+                                </>
+                              );
+                            })()}
                             <Text style={styles.questionPrompt}>{question.prompt}</Text>
                             {question.options.map((option, optionIndex) => {
                               const selected = selectedOption === option.id;
@@ -533,6 +616,16 @@ export function CourseDetailScreen() {
                                 revealed && selected && checkResult?.correct === false;
                               const isCorrectSelection =
                                 revealed && selected && checkResult?.correct === true;
+                              const revealedCorrectId =
+                                checkResult?.correctOptionId ??
+                                (isWrongSelection && question.correctOption
+                                  ? question.correctOption
+                                  : undefined);
+                              const isRevealedCorrect =
+                                revealed &&
+                                revealedCorrectId &&
+                                option.id === revealedCorrectId &&
+                                !isCorrectSelection;
 
                               return (
                                 <Pressable
@@ -550,9 +643,11 @@ export function CourseDetailScreen() {
                                       ? styles.optionCorrect
                                       : isWrongSelection
                                         ? styles.optionIncorrect
-                                        : selected
-                                          ? styles.optionSelected
-                                          : null,
+                                        : isRevealedCorrect
+                                          ? styles.optionRevealCorrect
+                                          : selected
+                                            ? styles.optionSelected
+                                            : null,
                                   ]}
                                 >
                                   <Text style={styles.optionLetter}>
@@ -594,9 +689,27 @@ export function CourseDetailScreen() {
                                 {quizFeedback}
                               </Text>
                             ) : null}
+                            {revealed &&
+                            checkResult?.correct === false &&
+                            (checkResult.correctOptionId ?? question.correctOption) ? (
+                              <Text style={styles.quizCorrectAnswerHint}>
+                                La bonne réponse est l’option{' '}
+                                <Text style={styles.quizCorrectAnswerHintStrong}>
+                                  {(checkResult.correctOptionId ?? question.correctOption ?? '').toUpperCase()}
+                                </Text>{' '}
+                                — relis l’explication ci-dessous.
+                              </Text>
+                            ) : null}
                             {revealed && checkResult?.explanation ? (
-                              <View style={styles.explanationBox}>
-                                <Text style={styles.explanationTitle}>💡 Explication</Text>
+                              <View
+                                style={[
+                                  styles.explanationBox,
+                                  checkResult.correct === false ? styles.explanationBoxEmphasis : null,
+                                ]}
+                              >
+                                <Text style={styles.explanationTitle}>
+                                  {checkResult.correct === false ? '💡 Pourquoi ?' : '💡 Explication'}
+                                </Text>
                                 <Text style={styles.explanationText}>{checkResult.explanation}</Text>
                                 {(() => {
                                   const glossaryTerm = findGlossaryTermInText(
@@ -630,7 +743,15 @@ export function CourseDetailScreen() {
                             >
                               <Text style={styles.quizNavBtnText}>Précédent</Text>
                             </Pressable>
-                            {!isLast ? (
+                            {quizFocusWrongOnly && wrongIndices.length > 0 ? (
+                              <Pressable
+                                disabled={!revealed}
+                                onPress={goToNextWrong}
+                                style={[styles.quizNavBtnPrimary, !revealed ? styles.buttonDisabled : null]}
+                              >
+                                <Text style={styles.quizNavBtnPrimaryText}>Erreur suivante</Text>
+                              </Pressable>
+                            ) : !isLast ? (
                               <Pressable
                                 disabled={!revealed}
                                 onPress={() => {
@@ -654,24 +775,72 @@ export function CourseDetailScreen() {
                         </View>
                       );
                     })()}
-                    {activeModule &&
-                    activeModule.questions.every((item) => revealedQuestions.has(item.id)) ? (
-                      <QuizRecap
-                        correctCount={Object.values(questionResults).filter((r) => r.correct).length}
-                        totalQuestions={activeModule.questions.length}
-                        estimatedScore={computeQuizScorePercent(
-                          activeModule.questions.length,
-                          questionResults
-                        )}
-                        estimatedPoints={modulePointsFromScores(
-                          computeQuizScorePercent(activeModule.questions.length, questionResults),
-                          activeModule.game ? 100 : 0
-                        )}
-                        passPercent={QUIZ_PASS_PERCENT}
-                        styles={styles}
-                        colors={colors}
-                      />
-                    ) : null}
+                    {(() => {
+                      if (!module.questions.length) return null;
+                      const quizAllRevealed = module.questions.every((item) =>
+                        revealedQuestions.has(item.id)
+                      );
+                      const quizIncorrectIds = listIncorrectQuestionIds(
+                        module.questions.map((item) => item.id),
+                        questionResults
+                      );
+                      const quizWrongIndices = quizIncorrectIds
+                        .map((id) => module.questions.findIndex((item) => item.id === id))
+                        .filter((index) => index >= 0);
+
+                      return (
+                        <>
+                          {quizAllRevealed && quizWrongIndices.length > 0 && !quizFocusWrongOnly ? (
+                            <Pressable
+                              style={styles.quizRetryWrongBtn}
+                              onPress={() => {
+                                setQuizFocusWrongOnly(true);
+                                setQuizQuestionIndex(quizWrongIndices[0]);
+                                setQuizFeedback(null);
+                              }}
+                            >
+                              <Text style={styles.quizRetryWrongBtnText}>
+                                Revoir mes {quizWrongIndices.length} erreur
+                                {quizWrongIndices.length > 1 ? 's' : ''}
+                              </Text>
+                            </Pressable>
+                          ) : null}
+                          {quizAllRevealed ? (
+                            <QuizRecap
+                              correctCount={
+                                Object.values(questionResults).filter((r) => r.correct).length
+                              }
+                              totalQuestions={module.questions.length}
+                              estimatedScore={computeQuizScorePercent(
+                                module.questions.length,
+                                questionResults
+                              )}
+                              estimatedPoints={modulePointsFromScores(
+                                computeQuizScorePercent(module.questions.length, questionResults),
+                                module.game ? 100 : 0
+                              )}
+                              passPercent={QUIZ_PASS_PERCENT}
+                              keyTakeaways={module.keyTakeaways}
+                              wrongQuestions={module.questions.filter((item) =>
+                                quizIncorrectIds.includes(item.id)
+                              )}
+                              onReviewQuestion={(questionId) => {
+                                const index = module.questions.findIndex(
+                                  (item) => item.id === questionId
+                                );
+                                if (index >= 0) {
+                                  setQuizFocusWrongOnly(false);
+                                  setQuizQuestionIndex(index);
+                                  setQuizFeedback(null);
+                                }
+                              }}
+                              styles={styles}
+                              colors={colors}
+                            />
+                          ) : null}
+                        </>
+                      );
+                    })()}
                     {localResult ? <Text style={styles.localResult}>{localResult}</Text> : null}
                     <Pressable
                       disabled={!canSubmit || submitting}
@@ -779,6 +948,9 @@ function QuizRecap({
   estimatedScore,
   estimatedPoints,
   passPercent,
+  keyTakeaways,
+  wrongQuestions,
+  onReviewQuestion,
   styles,
   colors,
 }: {
@@ -787,6 +959,9 @@ function QuizRecap({
   estimatedScore: number;
   estimatedPoints: number;
   passPercent: number;
+  keyTakeaways?: string[];
+  wrongQuestions: { id: string; prompt: string }[];
+  onReviewQuestion: (questionId: string) => void;
   styles: ReturnType<typeof createStyles>;
   colors: AppThemeColors;
 }) {
@@ -814,6 +989,31 @@ function QuizRecap({
         <Text style={styles.quizRecapHint}>
           Tu peux valider l'unité, mais revoir les explications améliorera ton score.
         </Text>
+      ) : null}
+      {wrongQuestions.length > 0 ? (
+        <View style={styles.quizRecapWrongList}>
+          <Text style={styles.quizRecapWrongTitle}>À revoir avant de valider</Text>
+          {wrongQuestions.map((question) => (
+            <View key={question.id} style={styles.quizRecapWrongRow}>
+              <Text style={styles.quizRecapWrongPrompt} numberOfLines={2}>
+                {truncateQuizPrompt(question.prompt, 60)}
+              </Text>
+              <Pressable onPress={() => onReviewQuestion(question.id)}>
+                <Text style={styles.quizRecapWrongLink}>Revoir</Text>
+              </Pressable>
+            </View>
+          ))}
+        </View>
+      ) : null}
+      {!meetsMinimum && keyTakeaways && keyTakeaways.length > 0 ? (
+        <View style={styles.quizRecapTakeaways}>
+          <Text style={styles.quizRecapTakeawaysTitle}>Rappel — points clés de la leçon</Text>
+          {keyTakeaways.slice(0, 3).map((item) => (
+            <Text key={item} style={styles.quizRecapTakeawayItem}>
+              • {item}
+            </Text>
+          ))}
+        </View>
       ) : null}
     </View>
   );
@@ -1023,6 +1223,48 @@ function createStyles(colors: AppThemeColors) {
   quizRecapTitle: { fontWeight: '800', fontSize: 15 },
   quizRecapBody: { marginTop: 6, fontSize: 13, lineHeight: 19 },
   quizRecapHint: { marginTop: 8, fontSize: 13, color: '#92400e', lineHeight: 18 },
+  quizRetryWrongBtn: {
+    marginTop: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 10,
+    backgroundColor: colors.accentSoft,
+    alignSelf: 'flex-start',
+  },
+  quizRetryWrongBtnText: {
+    color: colors.accent,
+    fontWeight: '700',
+    fontSize: 14,
+  },
+  quizRecapWrongList: {
+    marginTop: 12,
+    paddingTop: 10,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: colors.border,
+  },
+  quizRecapWrongTitle: {
+    fontWeight: '700',
+    fontSize: 13,
+    color: colors.fg,
+    marginBottom: 6,
+  },
+  quizRecapWrongRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
+    marginBottom: 6,
+  },
+  quizRecapWrongPrompt: {
+    flex: 1,
+    fontSize: 12,
+    color: colors.muted,
+  },
+  quizRecapWrongLink: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: colors.accent,
+  },
   option: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1048,6 +1290,71 @@ function createStyles(colors: AppThemeColors) {
   optionSelected: { borderColor: colors.accent, backgroundColor: colors.accentSoft, borderWidth: 2 },
   optionCorrect: { borderColor: colors.success, backgroundColor: colors.accentTealSoft },
   optionIncorrect: { borderColor: colors.warning, backgroundColor: colors.demoBannerBg },
+  optionRevealCorrect: { borderColor: colors.success, backgroundColor: colors.accentTealSoft },
+  quizTypeBadge: {
+    alignSelf: 'flex-start',
+    fontSize: 12,
+    fontWeight: '700',
+    color: colors.muted,
+    marginBottom: 4,
+  },
+  quizTypeTip: {
+    fontSize: 12,
+    color: colors.muted,
+    lineHeight: 18,
+    marginBottom: 10,
+  },
+  quizLearningTip: {
+    marginBottom: 12,
+    padding: 12,
+    borderRadius: 12,
+    backgroundColor: colors.accentSoft,
+    borderWidth: 1,
+    borderColor: colors.border,
+    gap: 6,
+  },
+  quizLearningTipTitle: { fontWeight: '800', color: colors.fg, fontSize: 14 },
+  quizLearningTipItem: { color: colors.muted, fontSize: 12, lineHeight: 18 },
+  quizLearningTipBtn: {
+    alignSelf: 'flex-start',
+    marginTop: 4,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 8,
+    backgroundColor: colors.bgSoft,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  quizLearningTipBtnText: { color: colors.accent, fontWeight: '700', fontSize: 12 },
+  quizWrongFocusBanner: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
+    marginBottom: 10,
+    padding: 10,
+    borderRadius: 10,
+    backgroundColor: colors.demoBannerBg,
+    borderWidth: 1,
+    borderColor: colors.warning,
+  },
+  quizWrongFocusText: { flex: 1, color: colors.fg, fontSize: 13, fontWeight: '600' },
+  quizWrongFocusExit: { color: colors.accent, fontWeight: '700', fontSize: 13 },
+  quizCorrectAnswerHint: {
+    marginTop: 8,
+    fontSize: 13,
+    color: colors.warning,
+    lineHeight: 18,
+  },
+  quizCorrectAnswerHintStrong: { fontWeight: '800', color: colors.fg },
+  explanationBoxEmphasis: {
+    borderColor: colors.warning,
+    backgroundColor: colors.demoBannerBg,
+  },
+  quizRecapTakeaways: { marginTop: 12, gap: 4 },
+  quizRecapTakeawaysTitle: { fontWeight: '800', color: colors.fg, fontSize: 13 },
+  quizRecapTakeawayItem: { color: colors.muted, fontSize: 12, lineHeight: 18 },
   optionText: { flex: 1, color: colors.fg, lineHeight: 20 },
   optionTextSelected: { color: colors.accent, fontWeight: '700' },
   optionTextSuccess: { color: colors.success, fontWeight: '700' },

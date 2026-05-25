@@ -491,6 +491,7 @@ export async function checkQuestionAnswer(
   return {
     correct,
     explanation: question.explanation,
+    ...(correct ? {} : { correctOptionId: question.correctOption }),
   };
 }
 

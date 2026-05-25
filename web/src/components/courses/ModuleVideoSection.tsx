@@ -109,7 +109,7 @@ export function ModuleVideoSection({
           : hasHeyGenFrenchVideo
             ? 'Vidéo explicative en français — hébergée sur Apple MDM Academy.'
             : hasSyncedFrenchDub
-              ? 'Regardez la vidéo locale : le doublage français est calé sur chaque passage.'
+              ? 'Vidéo muette + voix française synchronisée sur chaque passage — idéal pour mémoriser.'
               : 'Regardez la vidéo, puis lisez la leçon et passez le quiz.'}
       </p>
 

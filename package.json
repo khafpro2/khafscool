@@ -22,11 +22,18 @@
     "smoke:web": "node scripts/smoke-web.mjs",
     "smoke:all": "pnpm smoke:api && pnpm smoke:web",
     "dub:generate": "pnpm --filter backend exec tsx ../scripts/generate-video-dubs-fr.ts",
+    "dub:generate:jamf-m1": "PYTHON_BIN=\"${PYTHON_BIN:-.venv-dub/bin/python3}\" DUB_ONLY_MODULE=jamf-pro-foundations/smart-groups-policies pnpm dub:generate",
     "heygen:translate": "pnpm --filter backend exec tsx ../scripts/heygen-translate-pilot-videos.ts",
     "heygen:generate": "pnpm --filter backend exec tsx ../scripts/heygen-generate-course-videos.ts",
     "heygen:status": "pnpm --filter backend exec tsx ../scripts/heygen-translate-pilot-videos.ts -- --status",
     "heygen:generate:status": "pnpm --filter backend exec tsx ../scripts/heygen-generate-course-videos.ts -- --status",
-    "heygen:register": "pnpm --filter backend exec tsx ../scripts/heygen-translate-pilot-videos.ts --"
+    "heygen:register": "pnpm --filter backend exec tsx ../scripts/heygen-translate-pilot-videos.ts --",
+    "heygen:sync": "pnpm --filter backend exec tsx ../scripts/heygen-manifest-sync.ts",
+    "heygen:download": "pnpm --filter backend exec tsx ../scripts/heygen-generate-course-videos.ts -- --download",
+    "heygen:recover": "pnpm --filter backend exec tsx ../scripts/heygen-generate-course-videos.ts -- --recover",
+    "heygen:submit": "pnpm --filter backend exec tsx ../scripts/heygen-generate-course-videos.ts -- --submit --force",
+    "videos:audit": "pnpm --filter backend exec tsx ../scripts/videos-audit.ts",
+    "heygen:retry-failed": "pnpm --filter backend exec tsx ../scripts/heygen-translate-pilot-videos.ts -- --retry-failed"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",

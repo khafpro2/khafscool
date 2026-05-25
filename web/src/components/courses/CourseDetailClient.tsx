@@ -280,6 +280,7 @@ export function CourseDetailClient({ slug }: { slug: string }) {
     return {
       correct,
       explanation: question?.explanation,
+      ...(!correct && question?.correctOption ? { correctOptionId: question.correctOption } : {}),
     };
   }
 
@@ -738,7 +739,8 @@ export function CourseDetailClient({ slug }: { slug: string }) {
                         answers={answers}
                         questionResults={activeQuestionResults}
                         revealedQuestions={activeRevealedQuestions}
-                        reviewMode={false}
+                        reviewMode
+                        keyTakeaways={module.keyTakeaways}
                         onSelectAnswer={handleSelectAnswer}
                         onCheckAnswer={handleCheckAnswer}
                         onRevealAll={handleRevealAllQuestions}
@@ -787,6 +789,7 @@ export function CourseDetailClient({ slug }: { slug: string }) {
                         questionResults={activeQuestionResults}
                         revealedQuestions={activeRevealedQuestions}
                         reviewMode={false}
+                        keyTakeaways={module.keyTakeaways}
                         onSelectAnswer={handleSelectAnswer}
                         onCheckAnswer={handleCheckAnswer}
                         onRevealAll={handleRevealAllQuestions}
