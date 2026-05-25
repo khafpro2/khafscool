@@ -408,7 +408,7 @@ export const DEMO_COURSES: CourseDetail[] = [
     title: 'Parcours Apple — Device Support & MDM',
     track: 'APPLE',
     description: 'Diagnostic, sécurité et préparation aux fondamentaux Apple Device Support.',
-    progressPercent: 0,
+    progressPercent: 75,
     modules: [
       {
         id: 'demo-apple-module-1',
@@ -489,7 +489,7 @@ export const DEMO_COURSES: CourseDetail[] = [
     title: 'Fondamentaux Jamf Pro',
     track: 'JAMF',
     description: 'Découvrir inventaire, smart groups, politiques et bonnes pratiques MDM.',
-    progressPercent: 0,
+    progressPercent: 75,
     modules: [
       {
         id: 'demo-jamf-module-1',
@@ -580,7 +580,7 @@ export const DEMO_COURSES: CourseDetail[] = [
     title: 'Microsoft Intune — Enrôlement iOS/iPadOS',
     track: 'INTUNE',
     description: 'Enrôlement ADE, conformité et App Protection pour flottes Apple dans Intune.',
-    progressPercent: 0,
+    progressPercent: 75,
     modules: [
       {
         id: 'demo-intune-module-1',

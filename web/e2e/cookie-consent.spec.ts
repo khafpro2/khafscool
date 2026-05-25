@@ -24,6 +24,19 @@ test.describe('Bannière cookies', () => {
     expect(stored).toContain('"version":1');
   });
 
+  test('lien Préférences sur l’accueil ouvre la modale cookies', async ({ page }) => {
+    await page.goto('/');
+    await page.getByRole('button', { name: 'Préférences' }).click();
+    const modal = page.getByRole('dialog', { name: /Cookies et stockage local/i });
+    await expect(modal).toBeVisible({ timeout: 10_000 });
+    await expect(modal.getByRole('link', { name: 'En savoir plus' })).toHaveAttribute(
+      'href',
+      '/legal/confidentialite'
+    );
+    await modal.getByRole('button', { name: /J'ai compris/i }).click();
+    await expect(modal).toBeHidden();
+  });
+
   test('ne réaffiche pas la bannière si le consentement est enregistré', async ({ page }) => {
     await page.addInitScript(
       (key) => {

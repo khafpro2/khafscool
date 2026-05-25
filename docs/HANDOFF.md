@@ -9,15 +9,15 @@ Document de reprise pour **Claude Code** ou tout agent après un `git push`. Cur
 | Dépôt | `apple-mdm-academy` (monorepo pnpm) |
 | Branche de travail | `cursor/progress-dashboard-auth-v2` |
 | Pull request | [#6](https://github.com/khafpro2/khafscool/pull/6) — **ne pas merger** sans checklist [MERGE.md](../MERGE.md) |
-| Version cible | `0.3.9` |
-| SHA de référence | `11693c9` — `feat: module 3 french videos and home cookie link` |
+| Version cible | `0.3.10` |
+| SHA de référence | `6dc40ff` — `feat: module 4 videos and polish` |
 
 ## État projet (2026-05-25)
 
 - **CI** — vérifier `gh pr checks 6` avant merge.
 - **Accueil web** — `/` plein écran : pas de header/footer global, pas de bannières API/démo/cookies/analytics ; lien **Préférences** → modale cookies (`CookiePreferencesModal`).
-- **Vidéos pilotes** — 11 modules (`PILOT_VIDEO_MODULES`) ; module 3 par piste : `acmt-exam-prep` (MP4 FR), `api-automation-advanced-policies` et `vpp-abm-business-apps` (placeholder FR) ; Apple module 1 sans vidéo ADE ; Jamf module 1 YouTube `t3j9TkFfUJw`.
-- **Mobile** — `WelcomeScreen` et `LearnerDashboardScreen` avec safe area ; accueil connecté via onglet `(tabs)/index`.
+- **Vidéos pilotes** — 11 modules (`PILOT_VIDEO_MODULES`) ; module 4 par piste : `apps-vpp-management`, `api-automation-advanced-policies`, `vpp-abm-business-apps` (placeholder FR) ; module 3 : `acmt-exam-prep` (MP4 FR) ; Apple module 1 sans vidéo ADE ; Jamf module 1 YouTube `t3j9TkFfUJw`.
+- **Mobile** — `WelcomeScreen` : lien **Préférences cookies** → `/legal/confidentialite` ; safe area sur accueil et dashboard.
 
 ## Règles produit (à ne pas casser)
 
@@ -30,7 +30,8 @@ Document de reprise pour **Claude Code** ou tout agent après un `git push`. Cur
 7. **Module 2 Apple** (`ios-troubleshooting`) — YouTube FR `lgMDK4zU114`, titre **`Vidéo : dépannage iOS en environnement géré`** (jamais titre ADE/ABM sur la section vidéo).
 8. **Module 1 Jamf** (`smart-groups-policies`) — intro YouTube `t3j9TkFfUJw`, titre **`Vidéo : introduction Jamf Pro`** (jamais « Smart Groups et politiques Jamf Pro » comme titre vidéo).
 9. **Module 1 Intune** (`ade-enrollment-basics`) — MP4 FR `intune-ade-enrollment-basics-fr.mp4`.
-10. **Module 3 pilote** — `acmt-exam-prep` MP4 FR ; `api-automation-advanced-policies` et `vpp-abm-business-apps` placeholder (pas de titre ADE sur module 1 Apple).
+10. **Module 3 pilote** — `acmt-exam-prep` MP4 FR ; `app-protection-conditional-access` placeholder ou YouTube whitelist `fr`.
+11. **Module 4 pilote** — `apps-vpp-management`, `api-automation-advanced-policies`, `vpp-abm-business-apps` placeholder FR (pas de titre ADE sur module 1 Apple).
 
 ## Workflow git → Cursor
 

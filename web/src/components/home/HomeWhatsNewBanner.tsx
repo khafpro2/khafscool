@@ -51,10 +51,10 @@ export function HomeWhatsNewBanner() {
             textTransform: 'uppercase',
           }}
         >
-          Nouveau · v0.3.9
+          Nouveau · v0.3.10
         </span>
         <span className="muted" style={{ flex: '1 1 220px' }}>
-          Vidéos explicatives (2 unités/piste),{' '}
+          Vidéos module 4 (placeholders FR), préférences cookies mobile,{' '}
           <Link href="/resources/glossaire" style={{ fontWeight: 700 }}>
             glossaire MDM
           </Link>{' '}

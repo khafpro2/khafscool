@@ -14,7 +14,7 @@ import {
 import * as WebBrowser from 'expo-web-browser';
 import * as Linking from 'expo-linking';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { API_URL } from '../../config';
+import { API_URL, WEB_URL } from '../../config';
 import { useAppTheme } from '../../context/ThemeContext';
 import type { AppThemeColors } from '../../lib/design';
 import { useThemedStyles } from '../../hooks/useThemedStyles';
@@ -244,6 +244,16 @@ export function WelcomeScreen({ onAuthSuccess }: WelcomeScreenProps) {
             )}
           </Pressable>
         ))}
+
+        <Pressable
+          style={styles.cookiePrefsLink}
+          onPress={() => void Linking.openURL(`${WEB_URL}/legal/confidentialite`)}
+          disabled={isBusy}
+          accessibilityRole="link"
+          accessibilityLabel="Préférences cookies — politique de confidentialité"
+        >
+          <Text style={styles.cookiePrefsText}>Préférences cookies</Text>
+        </Pressable>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -348,6 +358,17 @@ function createStyles(colors: AppThemeColors) {
       borderWidth: 1.5,
     },
     ssoButtonText: { textAlign: 'center', fontWeight: '700', fontSize: 15 },
+    cookiePrefsLink: {
+      marginTop: 16,
+      paddingVertical: 8,
+      alignSelf: 'center',
+    },
+    cookiePrefsText: {
+      color: colors.muted,
+      fontSize: 13,
+      fontWeight: '600',
+      textDecorationLine: 'underline',
+    },
     disabled: { opacity: 0.65 },
   });
 }

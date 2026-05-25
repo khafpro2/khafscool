@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.10] — 2026-05-25
+
+### Vidéos module 4 et cookies mobile
+- **Module 4 pilote** — Apple `apps-vpp-management`, Jamf `api-automation-advanced-policies`, Intune `vpp-abm-business-apps` : placeholders animés FR (`videoSourceLanguage: 'fr'`) ; module 1 Apple toujours sans vidéo ADE
+- **Mobile** — lien « Préférences cookies » sur `WelcomeScreen` (politique de confidentialité web)
+- **E2E** — modale cookies accueil (`cookie-consent.spec.ts`), placeholders module 4 (`module-video.spec.ts`), comptages vidéo (`seed-video`)
+- Tests : `seed-video`, e2e `module-video`, `cookie-consent`, `learning-path`
+
 ## [0.3.9] — 2026-05-25
 
 ### Vidéos module 3 et cookies accueil

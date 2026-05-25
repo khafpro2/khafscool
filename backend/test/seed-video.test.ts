@@ -93,6 +93,22 @@ describe('seed pilot module videos', () => {
     expect(getModuleVideoDubFr('jamf-pro-foundations', 'enrollment-apple-integration')).toBeDefined();
   });
 
+  it('serves module 4 pilot videos as French placeholders', () => {
+    const appleVpp = getModulePedagogy('apple-cert-prep', 'apps-vpp-management');
+    expect(appleVpp?.videoProvider).toBe('placeholder');
+    expect(appleVpp?.videoUrl).toBe('placeholder');
+    expect(appleVpp?.videoTitle).toBe('Vidéo : apps VPP et apps gérées en entreprise');
+    expect(appleVpp?.videoTitle).not.toMatch(/ADE|ABM/i);
+
+    const jamfApi = getModulePedagogy('jamf-pro-foundations', 'api-automation-advanced-policies');
+    expect(jamfApi?.videoProvider).toBe('placeholder');
+    expect(jamfApi?.videoUrl).toBe('placeholder');
+
+    const intuneVpp = getModulePedagogy('intune-ios-enrollment', 'vpp-abm-business-apps');
+    expect(intuneVpp?.videoProvider).toBe('placeholder');
+    expect(intuneVpp?.videoUrl).toBe('placeholder');
+  });
+
   it('serves module 3 pilot videos (FR MP4 or placeholder)', () => {
     const acmt = getModulePedagogy('apple-cert-prep', 'acmt-exam-prep');
     expect(acmt?.videoProvider).toBe('mp4');
