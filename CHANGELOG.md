@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.5] — 2026-05-25
+
+### Retrait vidéo Smart Groups (module 1 Jamf)
+- **Contenu** — module `smart-groups-policies` (`jamf-pro-foundations`) : retrait de la vidéo « Smart Groups et politiques Jamf Pro » et de l’intro YouTube `t3j9TkFfUJw` (MP4/doublage) ; leçon et quiz inchangés
+- **Pilote** — retrait de `smart-groups-policies` dans `PILOT_VIDEO_MODULES` (10 vidéos ; catalogue Jamf **3 avec vidéo**)
+- Tests : `seed-video`, `video-dub-sync`, e2e `module-video`
+
 ## [0.3.4] — 2026-05-25
 
 ### Retrait vidéo ADE (module 1 Apple)

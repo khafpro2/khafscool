@@ -28,7 +28,7 @@ describe('video dub sync helpers', () => {
 
   it('defines synced dub manifests for pilot modules', () => {
     for (const [courseSlug, moduleSlug] of [
-      ['jamf-pro-foundations', 'smart-groups-policies'],
+      ['jamf-pro-foundations', 'enrollment-apple-integration'],
       ['intune-ios-enrollment', 'ade-enrollment-basics'],
     ] as const) {
       const dub = getModuleVideoDubFr(courseSlug, moduleSlug);

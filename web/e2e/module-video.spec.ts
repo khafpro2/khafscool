@@ -17,18 +17,18 @@ test.describe('Module — section vidéo pilote', () => {
     });
   });
 
-  test('affiche le doublage FR sur le module 1 Jamf (sans YouTube EN)', async ({ page }) => {
+  test('n’affiche pas de section vidéo Smart Groups sur le module 1 Jamf', async ({ page }) => {
     await page.goto('/courses/jamf-pro-foundations#module-smart-groups-policies');
-    const videoSection = page.getByRole('region', {
-      name: /Vidéo : Smart Groups et politiques Jamf Pro/i,
-    });
-    await expect(videoSection).toBeVisible({ timeout: 15_000 });
-    await expect(videoSection.locator('.pill').filter({ hasText: 'Français' }).first()).toBeVisible();
     await expect(
-      videoSection.getByText(/vidéo muette \+ voix française synchronisée/i)
-    ).toBeVisible();
-    await expect(videoSection.locator('video')).toHaveCount(1);
-    await expect(videoSection.locator('iframe[src*="youtube"]')).toHaveCount(0);
+      page.getByRole('region', { name: /Vidéo : Smart Groups et politiques Jamf Pro/i })
+    ).toHaveCount(0);
+    await expect(
+      page.getByRole('region', { name: /Vidéo : introduction Jamf Pro/i })
+    ).toHaveCount(0);
+    await expect(page.locator('.module-video-section')).toHaveCount(0);
+    await expect(page.getByRole('heading', { name: /Smart Groups et politiques/i })).toBeVisible({
+      timeout: 15_000,
+    });
   });
 
   test('affiche la vidéo MP4 HeyGen française sur le module 1 Intune', async ({ page }) => {

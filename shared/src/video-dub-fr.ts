@@ -25,9 +25,46 @@ export type VideoDubFrSyncManifest = {
 };
 
 export const VIDEO_DUB_FR_BY_MODULE: Record<string, Record<string, VideoDubFrEntry>> = {
+  'apple-cert-prep': {
+    'device-support-basics': {
+      basename: 'apple-device-support-basics-fr',
+      segments: [
+        {
+          atSec: 0,
+          script:
+            "Cette leçon présente Apple Business Manager et l'enrôlement automatisé MDM pour les flottes Apple en entreprise.",
+        },
+        {
+          atSec: 29,
+          script:
+            "Apple Business Manager, ABM, est le portail Apple qui centralise l'achat d'appareils, l'assignation au serveur MDM et l'enrôlement automatisé, aussi appelé ADE.",
+        },
+        {
+          atSec: 65,
+          script:
+            "L'intégration avec votre solution MDM permet d'inscrire automatiquement les Mac, iPhone et iPad dès l'assistant de configuration, en mode supervisé.",
+        },
+        {
+          atSec: 119,
+          script:
+            "Les étapes clés : créer le compte ABM, enregistrer votre serveur MDM, synchroniser les numéros de série, puis déployer un profil d'enrôlement automatisé.",
+        },
+        {
+          atSec: 249,
+          script:
+            "Les appareils supervisés acceptent des restrictions que l'utilisateur ne peut pas retirer : profils Wi-Fi, certificats, applications d'entreprise et politiques de sécurité.",
+        },
+        {
+          atSec: 470,
+          script:
+            "Pour le support terrain, retenez qu'un appareil géré via ABM nécessite souvent un réenrôlement après une restauration complète hors procédure MDM.",
+        },
+      ],
+    },
+  },
   'jamf-pro-foundations': {
-    'smart-groups-policies': {
-      basename: 'jamf-smart-groups-policies-fr',
+    'enrollment-apple-integration': {
+      basename: 'jamf-enrollment-apple-integration-fr',
       segments: [
         {
           atSec: 24,

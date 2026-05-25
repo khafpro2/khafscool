@@ -9,13 +9,12 @@ import { getPilotModuleVideoConfig, isModuleVideoHeyGenFrReady } from '@ama/shar
 import { getModuleVideoDubFr, getModuleVideoDubFrSyncUrl } from '@ama/shared/video-dub-fr';
 
 describe('seed pilot module videos', () => {
-  it('defines eleven pilot videos (Apple module 1 sans vidéo ADE)', () => {
-    expect(PILOT_VIDEO_MODULES).toHaveLength(11);
+  it('defines ten pilot videos (modules 1 Apple et Jamf sans vidéo)', () => {
+    expect(PILOT_VIDEO_MODULES).toHaveLength(10);
     expect(listPilotVideoModules().map((entry) => entry.moduleSlug)).toEqual([
       'ios-troubleshooting',
       'acmt-exam-prep',
       'apps-vpp-management',
-      'smart-groups-policies',
       'inventory-basics',
       'enrollment-apple-integration',
       'api-automation-advanced-policies',
@@ -46,7 +45,7 @@ describe('seed pilot module videos', () => {
 
   it('counts video modules per course track', () => {
     expect(countCourseVideoModules('apple-cert-prep')).toBe(3);
-    expect(countCourseVideoModules('jamf-pro-foundations')).toBe(4);
+    expect(countCourseVideoModules('jamf-pro-foundations')).toBe(3);
     expect(countCourseVideoModules('intune-ios-enrollment')).toBe(4);
   });
 
@@ -57,14 +56,12 @@ describe('seed pilot module videos', () => {
     expect(pedagogy?.videoProvider).toBeUndefined();
   });
 
-  it('uses dub-sync for Jamf module 1 when HeyGen is pending', () => {
+  it('omits video metadata on Jamf module 1 (no Smart Groups intro video)', () => {
     const pedagogy = getModulePedagogy('jamf-pro-foundations', 'smart-groups-policies');
-    expect(isModuleVideoHeyGenFrReady('jamf-pro-foundations', 'smart-groups-policies')).toBe(false);
-    expect(pedagogy?.videoProvider).toBe('mp4');
-    expect(pedagogy?.videoUrl).toBe('/media/videos/sources/jamf-smart-groups-policies-en.mp4');
-    expect(getModuleVideoDubFr('jamf-pro-foundations', 'smart-groups-policies')?.basename).toBe(
-      'jamf-smart-groups-policies-fr'
-    );
+    expect(pedagogy?.videoUrl).toBeUndefined();
+    expect(pedagogy?.videoTitle).toBeUndefined();
+    expect(pedagogy?.videoProvider).toBeUndefined();
+    expect(getModuleVideoDubFr('jamf-pro-foundations', 'smart-groups-policies')).toBeUndefined();
   });
 
   it('uses dub-sync for Jamf ABM module when HeyGen is pending', () => {
@@ -101,14 +98,13 @@ describe('seed pilot module videos', () => {
     }
   });
 
-  it('defines French dubbed audio for module 1 intro videos only', () => {
+  it('defines French dubbed audio for pilot intro videos with dub sync', () => {
     const introModules = PILOT_VIDEO_MODULES.filter(
       (entry) =>
-        entry.moduleSlug === 'smart-groups-policies' ||
         entry.moduleSlug === 'enrollment-apple-integration' ||
         entry.moduleSlug === 'ade-enrollment-basics'
     );
-    expect(introModules).toHaveLength(3);
+    expect(introModules).toHaveLength(2);
 
     for (const { courseSlug, moduleSlug } of introModules) {
       const dub = getModuleVideoDubFr(courseSlug, moduleSlug);

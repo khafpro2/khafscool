@@ -380,9 +380,6 @@ L’approche est pratique : chaque module s’appuie sur des scénarios réalist
 Prérequis : notions de gestion macOS/iOS, accès à une instance Jamf Pro (Cloud ou On-Prem) de labo, compte Apple Business Manager ou School Manager de test, et compréhension élémentaire des certificats et du protocole MDM Apple. Une expérience préalable avec des profils .mobileconfig est recommandée.`,
     modules: {
       'smart-groups-policies': {
-        ...getPilotModuleVideoConfig('jamf-pro-foundations', 'smart-groups-policies'),
-        videoTitle: 'Vidéo : Smart Groups et politiques Jamf Pro',
-        videoDurationMinutes: 10,
         summary:
           'Construire des Smart Groups dynamiques et associer des politiques Jamf Pro pour cibler finement Mac, iPhone ou iPad en déploiement pilote.',
         learningObjectives: [
@@ -1246,7 +1243,6 @@ export const PILOT_VIDEO_MODULES = [
   { courseSlug: 'apple-cert-prep', moduleSlug: 'ios-troubleshooting' },
   { courseSlug: 'apple-cert-prep', moduleSlug: 'acmt-exam-prep' },
   { courseSlug: 'apple-cert-prep', moduleSlug: 'apps-vpp-management' },
-  { courseSlug: 'jamf-pro-foundations', moduleSlug: 'smart-groups-policies' },
   { courseSlug: 'jamf-pro-foundations', moduleSlug: 'inventory-basics' },
   { courseSlug: 'jamf-pro-foundations', moduleSlug: 'enrollment-apple-integration' },
   { courseSlug: 'jamf-pro-foundations', moduleSlug: 'api-automation-advanced-policies' },
