@@ -51,7 +51,7 @@ export function HomeWhatsNewBanner() {
             textTransform: 'uppercase',
           }}
         >
-          Nouveau · v0.3.0
+          Nouveau · v0.3.7
         </span>
         <span className="muted" style={{ flex: '1 1 220px' }}>
           Vidéos explicatives (2 unités/piste),{' '}

@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.7] — 2026-05-25
+
+### Version 0.3.7
+- **Accueil plein écran** — hero Hello centré sur 100vh ; padding `main` retiré sur `/` uniquement
+- **Versions** — alignement `package.json` (racine, web, backend, shared, mobile), API health et bannière « Nouveau »
+
 ## [0.3.6] — 2026-05-25
 
 ### Accueil sans footer

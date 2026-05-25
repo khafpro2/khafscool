@@ -1,4 +1,4 @@
-export const WHATS_NEW_BANNER_VERSION = '0.3.0';
+export const WHATS_NEW_BANNER_VERSION = '0.3.7';
 
 export const WHATS_NEW_BANNER_STORAGE_KEY = `ama:whats-new-${WHATS_NEW_BANNER_VERSION}-dismissed`;
 
