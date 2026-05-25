@@ -4447,9 +4447,16 @@ html[data-theme='dark'] .analytics-opt-in-banner {
   font-size: 1.15rem;
 }
 
-/* Accueil minimal — Hello animé + 3 pistes */
+/* Accueil minimal — Hello animé + 3 pistes (plein écran) */
+main:has(.home-page-minimal) {
+  padding-top: 0 !important;
+  padding-bottom: 0;
+}
+
 .home-page-minimal {
   padding-bottom: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
 }
 
 .home-welcome {
@@ -4457,9 +4464,11 @@ html[data-theme='dark'] .analytics-opt-in-banner {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: min(78vh, 720px);
+  min-height: 100vh;
+  min-height: 100dvh;
   text-align: center;
-  padding: clamp(2rem, 6vw, 4rem) 0 clamp(2.5rem, 5vw, 3.5rem);
+  padding: clamp(1.5rem, 5vw, 2.5rem) clamp(1rem, 4vw, 1.5rem);
+  box-sizing: border-box;
 }
 
 .home-hello-title {
