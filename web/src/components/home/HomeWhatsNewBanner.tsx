@@ -51,7 +51,7 @@ export function HomeWhatsNewBanner() {
             textTransform: 'uppercase',
           }}
         >
-          Nouveau · v0.3.10
+          Nouveau · v0.3.11
         </span>
         <span className="muted" style={{ flex: '1 1 220px' }}>
           Vidéos module 4 (placeholders FR), préférences cookies mobile,{' '}

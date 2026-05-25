@@ -9,14 +9,14 @@ Document de reprise pour **Claude Code** ou tout agent après un `git push`. Cur
 | Dépôt | `apple-mdm-academy` (monorepo pnpm) |
 | Branche de travail | `cursor/progress-dashboard-auth-v2` |
 | Pull request | [#6](https://github.com/khafpro2/khafscool/pull/6) — **ne pas merger** sans checklist [MERGE.md](../MERGE.md) |
-| Version cible | `0.3.10` |
-| SHA de référence | `8a06049` — `feat: module 4 videos and polish` |
+| Version cible | `0.3.11` |
+| SHA de référence | `2f9d97e` — `feat: complete module 2 videos and update PR description` |
 
 ## État projet (2026-05-25)
 
 - **CI** — vérifier `gh pr checks 6` avant merge.
 - **Accueil web** — `/` plein écran : pas de header/footer global, pas de bannières API/démo/cookies/analytics ; lien **Préférences** → modale cookies (`CookiePreferencesModal`).
-- **Vidéos pilotes** — 11 modules (`PILOT_VIDEO_MODULES`) ; module 4 par piste : `apps-vpp-management`, `api-automation-advanced-policies`, `vpp-abm-business-apps` (placeholder FR) ; module 3 : `acmt-exam-prep` (MP4 FR) ; Apple module 1 sans vidéo ADE ; Jamf module 1 YouTube `t3j9TkFfUJw`.
+- **Vidéos pilotes** — 11 modules (`PILOT_VIDEO_MODULES`) ; module 2 : `inventory-basics` et `compliance-policies` (MP4 FR), `ios-troubleshooting` (YouTube FR) ; module 4 par piste : placeholders FR ; module 3 : `acmt-exam-prep` (MP4 FR) ; Apple module 1 sans vidéo ADE ; Jamf module 1 YouTube `t3j9TkFfUJw`.
 - **Mobile** — `WelcomeScreen` : lien **Préférences cookies** → `/legal/confidentialite` ; safe area sur accueil et dashboard.
 
 ## Règles produit (à ne pas casser)

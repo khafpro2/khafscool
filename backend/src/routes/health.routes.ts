@@ -22,7 +22,7 @@ export async function getDatabaseHealth(): Promise<DatabaseHealthResponse> {
   }
 }
 
-const API_VERSION = '0.3.10';
+const API_VERSION = '0.3.11';
 
 export async function healthRoutes(app: FastifyInstance) {
   app.get('/health', async () => ({

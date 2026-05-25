@@ -76,4 +76,37 @@ test.describe('Module — section vidéo pilote', () => {
     const sidebar = page.getByRole('navigation', { name: /Unités du parcours/i });
     await expect(sidebar.getByRole('button', { name: /Unité 1/i }).getByText(/Vidéo/)).toBeVisible();
   });
+
+  test('affiche YouTube FR sur le module 2 Apple (dépannage iOS)', async ({ page }) => {
+    await page.goto('/courses/apple-cert-prep#module-ios-troubleshooting');
+    const videoSection = page.getByRole('region', {
+      name: /Vidéo : dépannage iOS en environnement géré/i,
+    });
+    await expect(videoSection).toBeVisible({ timeout: 15_000 });
+    await expect(videoSection.locator('iframe[src*="lgMDK4zU114"]')).toHaveCount(1);
+    await expect(videoSection.getByText(/Vidéo française bientôt disponible/i)).toHaveCount(0);
+    await expect(videoSection.getByText(/ADE|ABM/i)).toHaveCount(0);
+  });
+
+  test('affiche MP4 FR sur le module 2 Jamf (inventaire)', async ({ page }) => {
+    await page.goto('/courses/jamf-pro-foundations#module-inventory-basics');
+    const videoSection = page.getByRole('region', {
+      name: /Vidéo : exporter un rapport inventaire Jamf Pro/i,
+    });
+    await expect(videoSection).toBeVisible({ timeout: 15_000 });
+    await expect(videoSection.locator('.pill').filter({ hasText: 'Français' }).first()).toBeVisible();
+    await expect(videoSection.locator('video source[src*="jamf-inventory-basics-fr"]')).toHaveCount(1);
+    await expect(videoSection.locator('iframe[src*="youtube"]')).toHaveCount(0);
+  });
+
+  test('affiche MP4 FR sur le module 2 Intune (conformité)', async ({ page }) => {
+    await page.goto('/courses/intune-ios-enrollment#module-compliance-policies');
+    const videoSection = page.getByRole('region', {
+      name: /Vidéo : notifications de conformité Intune/i,
+    });
+    await expect(videoSection).toBeVisible({ timeout: 15_000 });
+    await expect(videoSection.locator('.pill').filter({ hasText: 'Français' }).first()).toBeVisible();
+    await expect(videoSection.locator('video source[src*="intune-compliance-policies-fr"]')).toHaveCount(1);
+    await expect(videoSection.locator('iframe[src*="youtube"]')).toHaveCount(0);
+  });
 });

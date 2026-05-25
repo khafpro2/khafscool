@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.3.11] — 2026-05-25
+
+### Grille vidéos module 2 et catalogue
+- **Module 2 pilote** — Jamf `inventory-basics` : MP4 HeyGen FR (`jamf-inventory-basics-fr.mp4`) ; Intune `compliance-policies` : MP4 FR (`intune-compliance-policies-fr.mp4`) ; Apple `ios-troubleshooting` : YouTube FR `lgMDK4zU114` (inchangé)
+- **Module 1 Apple** — `device-support-basics` : **sans** section vidéo ADE/ABM (leçon et quiz inchangés)
+- **Catalogue** — métadonnées cohérentes sur les 3 parcours (4 modules) : Apple **3 avec vidéo**, Jamf et Intune **4 avec vidéo** (`TrailCard`, hero parcours)
+- **PR #6** — description FR résumant v0.3.7–0.3.11 (accueil épuré, dons, vidéos FR, intro Jamf `t3j9TkFfUJw`, pas de vidéo ADE module 1 Apple)
+- Tests : `seed-video`, e2e `module-video` (modules 2), `glossary-catalog`
+
 ## [0.3.10] — 2026-05-25
 
 ### Vidéos module 4 et cookies mobile
