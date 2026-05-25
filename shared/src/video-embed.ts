@@ -118,6 +118,10 @@ export function parseVideoEmbed(
     return { provider: 'mp4', embedUrl: trimmed, watchUrl: trimmed };
   }
 
+  if (/^\/media\/videos\/.+\.(mp4|webm)$/i.test(trimmed)) {
+    return { provider: 'mp4', embedUrl: trimmed, watchUrl: null };
+  }
+
   return null;
 }
 
@@ -131,4 +135,9 @@ export function moduleHasVideo(module: {
   videoProvider?: VideoProvider;
 }): boolean {
   return Boolean(module.videoUrl?.trim()) || module.videoProvider === 'placeholder';
+}
+
+/** Iframe YouTube/Vimeo uniquement si la source est déclarée en français. */
+export function canEmbedExternalVideo(videoSourceLanguage?: VideoEmbedLocale | null): boolean {
+  return videoSourceLanguage === 'fr';
 }

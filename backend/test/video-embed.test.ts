@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { extractYouTubeVideoId, parseVideoEmbed } from '@ama/shared/video-embed';
+import { canEmbedExternalVideo, extractYouTubeVideoId, parseVideoEmbed } from '@ama/shared/video-embed';
 
 describe('parseVideoEmbed', () => {
   it('converts YouTube watch URLs to nocookie embeds without autoplay', () => {
@@ -43,6 +43,15 @@ describe('parseVideoEmbed', () => {
   it('rejects unsafe or unknown URLs', () => {
     expect(parseVideoEmbed('javascript:alert(1)')).toBeNull();
     expect(parseVideoEmbed('https://evil.example/not-video')).toBeNull();
+  });
+});
+
+describe('canEmbedExternalVideo', () => {
+  it('allows embed only when source language is French', () => {
+    expect(canEmbedExternalVideo('fr')).toBe(true);
+    expect(canEmbedExternalVideo('en')).toBe(false);
+    expect(canEmbedExternalVideo(null)).toBe(false);
+    expect(canEmbedExternalVideo(undefined)).toBe(false);
   });
 });
 

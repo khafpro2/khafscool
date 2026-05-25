@@ -29,11 +29,14 @@ export interface CourseQuestion {
   prompt: string;
   options: { id: string; label: string }[];
   explanation?: string;
+  /** Présent en mode démo local uniquement (jamais exposé par l’API). */
+  correctOption?: string;
 }
 
 export interface CheckAnswerResult {
   correct: boolean;
   explanation?: string;
+  correctOptionId?: string;
 }
 
 export interface CourseModule {

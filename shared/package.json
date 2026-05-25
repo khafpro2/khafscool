@@ -18,8 +18,10 @@
     "./donation-methods": "./src/donation-methods.ts",
     "./donation-amounts": "./src/donation-amounts.ts",
     "./video-embed": "./src/video-embed.ts",
+    "./video-local": "./src/video-local.ts",
     "./video-dub-fr": "./src/video-dub-fr.ts",
-    "./video-heygen-fr": "./src/video-heygen-fr.ts"
+    "./video-heygen-fr": "./src/video-heygen-fr.ts",
+    "./quiz-learning": "./src/quiz-learning.ts"
   },
   "scripts": {
     "build": "tsc",

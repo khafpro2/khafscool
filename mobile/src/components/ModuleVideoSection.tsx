@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 import { WebView } from 'react-native-webview';
 import {
+  canEmbedExternalVideo,
   formatVideoDurationLabel,
   moduleHasVideo,
   parseVideoEmbed,
@@ -25,11 +26,16 @@ type ModuleVideoSectionProps = {
   moduleTitle?: string;
 };
 
-function youtubeThumbnailId(url?: string | null, provider?: VideoProvider): string | null {
-  const parsed = parseVideoEmbed(url, provider, { locale: 'fr' });
-  if (parsed?.provider !== 'youtube' || !parsed.watchUrl) return null;
-  const match = parsed.watchUrl.match(/v=([a-zA-Z0-9_-]{11})/);
-  return match?.[1] ?? null;
+function localVideoPageHtml(videoUrl: string, title: string): string {
+  const safeTitle = title.replace(/"/g, '&quot;');
+  return `<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width, initial-scale=1" /><style>
+    html,body{margin:0;background:#0f172a;height:100%;display:flex;align-items:center;justify-content:center}
+    video{width:100%;max-height:100vh;background:#000}
+  </style></head><body>
+    <video controls playsinline preload="metadata" title="${safeTitle}" aria-label="${safeTitle}">
+      <source src="${videoUrl}" type="video/mp4" />
+    </video>
+  </body></html>`;
 }
 
 export function ModuleVideoSection({
@@ -58,16 +64,24 @@ export function ModuleVideoSection({
   const title = videoTitle ?? (moduleTitle ? `Vidéo : ${moduleTitle}` : 'Vidéo explicative');
   const durationLabel = formatVideoDurationLabel(videoDurationMinutes);
   const ariaLabel = durationLabel ? `${title} — ${durationLabel}` : title;
-  const watchUrl = parsed?.watchUrl;
-  const ytId = youtubeThumbnailId(videoUrl, videoProvider);
+  const localVideoSrc = parsed?.provider === 'mp4' ? parsed.embedUrl : null;
   const hasHeyGenFrenchVideo = Boolean(videoHeyGenFrUrl?.trim());
   const hasFrenchDub =
-    !hasHeyGenFrenchVideo &&
-    Boolean(videoDubFrUrl?.trim()) &&
-    parsed?.provider === 'youtube' &&
-    Boolean(ytId);
+    !hasHeyGenFrenchVideo && Boolean(videoDubFrUrl?.trim()) && Boolean(localVideoSrc);
+  const allowExternalEmbed = canEmbedExternalVideo(videoSourceLanguage);
+  const showFrenchPending =
+    parsed?.provider === 'placeholder' ||
+    !parsed?.embedUrl ||
+    ((parsed?.provider === 'youtube' || parsed?.provider === 'vimeo') && !allowExternalEmbed);
   const syncedWebUrl = courseSlug ? `${WEB_URL}/courses/${courseSlug}` : null;
   const heyGenVideoUrl = videoHeyGenFrUrl ? `${WEB_URL}${videoHeyGenFrUrl}` : null;
+  const localVideoUrl = localVideoSrc ? `${WEB_URL}${localVideoSrc}` : null;
+
+  const openCourseWeb = () => {
+    if (syncedWebUrl) {
+      void Linking.openURL(syncedWebUrl);
+    }
+  };
 
   const openHeyGenVideo = () => {
     if (heyGenVideoUrl) {
@@ -77,61 +91,60 @@ export function ModuleVideoSection({
     }
   };
 
-  const openSyncedDub = () => {
-    if (syncedWebUrl) {
-      void Linking.openURL(syncedWebUrl);
-    }
-  };
-
-  const openOriginalVideo = () => {
-    if (watchUrl) {
-      void Linking.openURL(watchUrl);
-    }
-  };
-
   return (
     <View style={styles.root} accessibilityRole="summary" accessibilityLabel={title}>
       <View style={styles.headerRow}>
         <Text style={styles.title}>{title}</Text>
-        {durationLabel ? <Text style={styles.duration}>{durationLabel}</Text> : null}
+        <View style={styles.badgeRow}>
+          <Text style={styles.frenchBadge}>{'\u{1F1EB}\u{1F1F7}'} Français</Text>
+          {durationLabel ? <Text style={styles.duration}>{durationLabel}</Text> : null}
+        </View>
       </View>
 
       <Text style={styles.hint}>
-        {hasHeyGenFrenchVideo
-          ? 'Vidéo entièrement doublée en français (HeyGen). Ouvrez la version FR sur le site web.'
-          : hasFrenchDub
-            ? 'Le doublage français remplace le son original sur le site web. Ouvrez le parcours dans le navigateur.'
-            : 'Regardez la vidéo, puis lisez la leçon et passez le quiz.'}
-        {!hasHeyGenFrenchVideo && !hasFrenchDub && videoSourceLanguage === 'en'
-          ? ' Sous-titres FR disponibles dans YouTube (CC).'
-          : ''}
+        {showFrenchPending
+          ? 'Vidéo française bientôt disponible — schéma animé et leçon ci-dessous.'
+          : hasHeyGenFrenchVideo
+            ? 'Vidéo française (voix Lifa) — hébergée sur le site web.'
+            : hasFrenchDub
+              ? 'Doublage synchronisé disponible sur le site web (vidéo locale + voix Lifa).'
+              : 'Regardez la vidéo, puis lisez la leçon et passez le quiz.'}
       </Text>
 
       {hasHeyGenFrenchVideo ? (
         <View style={styles.dubBlock}>
-          <ModuleAnimatedExplainer title={title} />
+          {localVideoUrl && !showFrenchPending ? (
+            <View style={styles.embedFrame} accessibilityLabel={ariaLabel}>
+              <WebView
+                source={{ html: localVideoPageHtml(heyGenVideoUrl ?? localVideoUrl, title) }}
+                style={styles.webview}
+                allowsFullscreenVideo
+                mediaPlaybackRequiresUserAction
+                javaScriptEnabled
+                allowsInlineMediaPlayback
+                scrollEnabled={false}
+              />
+            </View>
+          ) : (
+            <ModuleAnimatedExplainer title={title} />
+          )}
           <Pressable
             onPress={openHeyGenVideo}
             disabled={!heyGenVideoUrl && !syncedWebUrl}
             style={({ pressed }) => [styles.dubButton, pressed ? styles.thumbnailPressed : null]}
             accessibilityRole="button"
-            accessibilityLabel={`Voir la vidéo française HeyGen — ${title}`}
+            accessibilityLabel={`Voir la vidéo française — ${title}`}
           >
             <Text style={styles.dubButtonEmoji}>{'\u{1F3AC}\uFE0F'}</Text>
-            <Text style={styles.dubButtonText}>Voir la vidéo en français</Text>
-            <Text style={styles.dubButtonSub}>Doublage HeyGen — image et voix synchronisées</Text>
+            <Text style={styles.dubButtonText}>Ouvrir la vidéo en français</Text>
+            <Text style={styles.dubButtonSub}>Voix Lifa — sans YouTube</Text>
           </Pressable>
-          {watchUrl ? (
-            <Pressable onPress={openOriginalVideo} accessibilityRole="link">
-              <Text style={styles.originalLink}>Version anglaise sur YouTube</Text>
-            </Pressable>
-          ) : null}
         </View>
       ) : hasFrenchDub ? (
         <View style={styles.dubBlock}>
           <ModuleAnimatedExplainer title={title} />
           <Pressable
-            onPress={openSyncedDub}
+            onPress={openCourseWeb}
             disabled={!syncedWebUrl}
             style={({ pressed }) => [styles.dubButton, pressed ? styles.thumbnailPressed : null]}
             accessibilityRole="button"
@@ -139,20 +152,15 @@ export function ModuleVideoSection({
           >
             <Text style={styles.dubButtonEmoji}>{'\u{1F399}\uFE0F'}</Text>
             <Text style={styles.dubButtonText}>Voir avec doublage français</Text>
-            <Text style={styles.dubButtonSub}>Vidéo muette + voix off synchronisée</Text>
+            <Text style={styles.dubButtonSub}>Vidéo locale + voix synchronisée</Text>
           </Pressable>
-          {watchUrl ? (
-            <Pressable onPress={openOriginalVideo} accessibilityRole="link">
-              <Text style={styles.originalLink}>Version anglaise sur YouTube</Text>
-            </Pressable>
-          ) : null}
         </View>
-      ) : parsed?.provider === 'placeholder' || !parsed?.embedUrl ? (
+      ) : showFrenchPending ? (
         <ModuleAnimatedExplainer title={title} />
-      ) : (
+      ) : parsed?.provider === 'mp4' && localVideoUrl ? (
         <View style={styles.embedFrame} accessibilityLabel={ariaLabel}>
           <WebView
-            source={{ uri: parsed.embedUrl }}
+            source={{ html: localVideoPageHtml(localVideoUrl, title) }}
             style={styles.webview}
             allowsFullscreenVideo
             mediaPlaybackRequiresUserAction
@@ -161,6 +169,8 @@ export function ModuleVideoSection({
             scrollEnabled={false}
           />
         </View>
+      ) : (
+        <ModuleAnimatedExplainer title={title} />
       )}
 
       {videoTranscriptFr ? (
@@ -193,7 +203,7 @@ const createStyles = (colors: AppThemeColors) =>
     },
     headerRow: {
       flexDirection: 'row',
-      alignItems: 'center',
+      alignItems: 'flex-start',
       justifyContent: 'space-between',
       gap: 8,
     },
@@ -202,6 +212,15 @@ const createStyles = (colors: AppThemeColors) =>
       color: colors.fg,
       fontWeight: '800',
       fontSize: 15,
+    },
+    badgeRow: {
+      alignItems: 'flex-end',
+      gap: 4,
+    },
+    frenchBadge: {
+      color: colors.accent,
+      fontWeight: '800',
+      fontSize: 11,
     },
     duration: {
       color: colors.muted,
@@ -240,42 +259,8 @@ const createStyles = (colors: AppThemeColors) =>
       fontSize: 12,
       textAlign: 'center',
     },
-    originalLink: {
-      color: colors.accent,
-      fontWeight: '700',
-      fontSize: 13,
-      textAlign: 'center',
-      textDecorationLine: 'underline',
-    },
-    thumbnail: {
-      aspectRatio: 16 / 9,
-      borderRadius: 12,
-      overflow: 'hidden',
-      borderWidth: 1,
-      borderColor: colors.border,
-      backgroundColor: '#0f172a',
-    },
     thumbnailPressed: {
       opacity: 0.88,
-    },
-    thumbnailInner: {
-      flex: 1,
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: 16,
-      gap: 6,
-    },
-    thumbnailEmoji: {
-      fontSize: 34,
-    },
-    thumbnailCta: {
-      color: '#fff',
-      fontWeight: '800',
-      fontSize: 16,
-    },
-    thumbnailProvider: {
-      color: 'rgba(255,255,255,0.78)',
-      fontSize: 12,
     },
     embedFrame: {
       aspectRatio: 16 / 9,

@@ -2,11 +2,12 @@
 
 ## [0.3.2] — 2026-05-25
 
-### Vidéo module 1 Apple (ABM / ADE)
-- **Contenu** — module `device-support-basics` : vidéo YouTube Jamf 100 « Automated Device Enrollment » (`_g-0V2AFCW0`) — ABM, supervision, Activation Lock, enrôlement MDM obligatoire
-- **Pilote** — réintégration de `device-support-basics` dans `PILOT_VIDEO_MODULES` (12 vidéos : 4 Apple, 4 Jamf, 4 Intune)
-- **Catalogue** — parcours Apple : `4 modules avec vidéo explicative` (hero + TrailCard)
-- Tests : `seed-video`, e2e `module-video`, `learning-path`
+### Vidéos 100 % françaises (pilote 12 modules)
+- **Politique** — `videoSourceLanguage: 'fr'` obligatoire pour toute iframe YouTube/Vimeo ; sources `en` ou MP4 HeyGen non prêts → `ModuleAnimatedExplainer` + message « Vidéo française bientôt disponible » (jamais d’autoplay YouTube EN)
+- **Contenu** — `getPilotModuleVideoConfig` : MP4 FR HeyGen si manifest `ready`, sinon `placeholder` ; 4 modules prêts (`acmt-exam-prep`, `inventory-basics`, `ade-enrollment-basics`, `compliance-policies`)
+- **Web / mobile** — badge « Français » sur le lecteur ; `canEmbedExternalVideo` dans `@ama/shared/video-embed`
+- **Pilote** — 12 vidéos (4 Apple, 4 Jamf, 4 Intune), toutes déclarées `fr`
+- Tests : `seed-video`, `video-embed`, e2e `module-video`
 
 ## [0.3.1] — 2026-05-25
 

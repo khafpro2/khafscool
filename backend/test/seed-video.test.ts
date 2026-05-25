@@ -5,6 +5,7 @@ import {
   listPilotVideoModules,
   PILOT_VIDEO_MODULES,
 } from '@ama/shared/course-content';
+import { getPilotModuleVideoConfig, isModuleVideoHeyGenFrReady } from '@ama/shared/video-local';
 import { getModuleVideoDubFr, getModuleVideoDubFrSyncUrl } from '@ama/shared/video-dub-fr';
 
 describe('seed pilot module videos', () => {
@@ -29,14 +30,16 @@ describe('seed pilot module videos', () => {
   it('seeds video metadata from course-content for pilot modules', () => {
     for (const { courseSlug, moduleSlug } of PILOT_VIDEO_MODULES) {
       const pedagogy = getModulePedagogy(courseSlug, moduleSlug);
+      const expected = getPilotModuleVideoConfig(courseSlug, moduleSlug);
       expect(pedagogy?.videoTitle, `${courseSlug}/${moduleSlug}`).toMatch(/^Vidéo :/);
       expect(pedagogy?.videoDurationMinutes, `${courseSlug}/${moduleSlug}`).toBeGreaterThan(0);
+      expect(pedagogy?.videoSourceLanguage, `${courseSlug}/${moduleSlug}`).toBe('fr');
+      expect(pedagogy?.videoProvider, `${courseSlug}/${moduleSlug}`).toBe(expected.videoProvider);
+      expect(pedagogy?.videoUrl, `${courseSlug}/${moduleSlug}`).toBe(expected.videoUrl);
       if (pedagogy?.videoProvider === 'placeholder') {
         expect(pedagogy.videoUrl).toBe('placeholder');
-      } else if (pedagogy?.videoProvider === 'youtube') {
-        expect(pedagogy?.videoUrl, `${courseSlug}/${moduleSlug}`).toMatch(/youtube\.com|youtu\.be/);
       } else {
-        expect(pedagogy?.videoUrl, `${courseSlug}/${moduleSlug}`).toMatch(/^\/media\/videos\//);
+        expect(pedagogy?.videoUrl, `${courseSlug}/${moduleSlug}`).toMatch(/^\/media\/videos\/fr\//);
         expect(pedagogy?.videoProvider).toBe('mp4');
       }
     }
@@ -48,19 +51,37 @@ describe('seed pilot module videos', () => {
     expect(countCourseVideoModules('intune-ios-enrollment')).toBe(4);
   });
 
-  it('serves Apple module 1 video as YouTube (Jamf 100 ADE)', () => {
+  it('uses placeholder until HeyGen French MP4 is ready', () => {
     const pedagogy = getModulePedagogy('apple-cert-prep', 'device-support-basics');
-    expect(pedagogy?.videoProvider).toBe('youtube');
-    expect(pedagogy?.videoUrl).toContain('youtube.com/watch?v=_g-0V2AFCW0');
+    expect(pedagogy?.videoSourceLanguage).toBe('fr');
+    expect(isModuleVideoHeyGenFrReady('apple-cert-prep', 'device-support-basics')).toBe(false);
+    expect(pedagogy?.videoProvider).toBe('placeholder');
+    expect(pedagogy?.videoUrl).toBe('placeholder');
     expect(pedagogy?.videoTitle).toMatch(/ABM|ADE|supervision/i);
-    expect(pedagogy?.videoSourceLanguage).toBe('en');
   });
 
-  it('serves Jamf smart groups video as local French MP4', () => {
-    const pedagogy = getModulePedagogy('jamf-pro-foundations', 'smart-groups-policies');
-    expect(pedagogy?.videoSourceLanguage).toBe('fr');
-    expect(pedagogy?.videoProvider).toBe('mp4');
-    expect(pedagogy?.videoUrl).toBe('/media/videos/fr/jamf-smart-groups-policies-fr.mp4');
+  it('serves ready HeyGen modules as local French MP4', () => {
+    const readyCases = [
+      ['apple-cert-prep', 'acmt-exam-prep', '/media/videos/fr/apple-acmt-exam-prep-fr.mp4'],
+      ['jamf-pro-foundations', 'inventory-basics', '/media/videos/fr/jamf-inventory-basics-fr.mp4'],
+      [
+        'intune-ios-enrollment',
+        'ade-enrollment-basics',
+        '/media/videos/fr/intune-ade-enrollment-basics-fr.mp4',
+      ],
+      [
+        'intune-ios-enrollment',
+        'compliance-policies',
+        '/media/videos/fr/intune-compliance-policies-fr.mp4',
+      ],
+    ] as const;
+
+    for (const [courseSlug, moduleSlug, url] of readyCases) {
+      expect(isModuleVideoHeyGenFrReady(courseSlug, moduleSlug)).toBe(true);
+      const pedagogy = getModulePedagogy(courseSlug, moduleSlug);
+      expect(pedagogy?.videoProvider).toBe('mp4');
+      expect(pedagogy?.videoUrl).toBe(url);
+    }
   });
 
   it('defines French dubbed audio for module 1 intro videos only', () => {

@@ -8,82 +8,21 @@ import {
   type VideoDubFrSyncSegment,
 } from '@ama/shared/video-dub-fr';
 import { Badge } from '@/components/ui/Badge';
-
-type YtPlayer = {
-  playVideo: () => void;
-  pauseVideo: () => void;
-  stopVideo: () => void;
-  seekTo: (seconds: number, allowSeekAhead: boolean) => void;
-  getCurrentTime: () => number;
-  getPlayerState: () => number;
-  destroy: () => void;
-};
-
-type YtApi = {
-  Player: new (
-    element: HTMLElement,
-    options: {
-      videoId: string;
-      playerVars?: Record<string, string | number>;
-      events?: {
-        onReady?: () => void;
-        onStateChange?: (event: { data: number }) => void;
-      };
-    }
-  ) => YtPlayer;
-  PlayerState: {
-    PLAYING: number;
-    PAUSED: number;
-    ENDED: number;
-    BUFFERING: number;
-  };
-};
-
-declare global {
-  interface Window {
-    YT?: YtApi;
-    onYouTubeIframeAPIReady?: () => void;
-  }
-}
-
-function loadYouTubeIframeApi(): Promise<void> {
-  if (window.YT?.Player) {
-    return Promise.resolve();
-  }
-
-  return new Promise((resolve) => {
-    const previous = window.onYouTubeIframeAPIReady;
-    window.onYouTubeIframeAPIReady = () => {
-      previous?.();
-      resolve();
-    };
-
-    if (!document.querySelector('script[data-youtube-iframe-api]')) {
-      const script = document.createElement('script');
-      script.src = 'https://www.youtube.com/iframe_api';
-      script.async = true;
-      script.dataset.youtubeIframeApi = 'true';
-      document.head.appendChild(script);
-    }
-  });
-}
+import { ModuleAnimatedExplainer } from '@/components/courses/ModuleAnimatedExplainer';
 
 type ModuleVideoFrenchDubPlayerProps = {
-  youtubeVideoId: string;
+  videoSrc: string;
   syncUrl: string;
   title: string;
-  originalWatchUrl?: string | null;
 };
 
 export function ModuleVideoFrenchDubPlayer({
-  youtubeVideoId,
+  videoSrc,
   syncUrl,
   title,
-  originalWatchUrl,
 }: ModuleVideoFrenchDubPlayerProps) {
-  const mountRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
-  const playerRef = useRef<YtPlayer | null>(null);
   const segmentsRef = useRef<VideoDubFrSyncSegment[]>([]);
   const activeSegmentRef = useRef<number | null>(null);
   const syncingRef = useRef(false);
@@ -91,6 +30,7 @@ export function ModuleVideoFrenchDubPlayer({
   const [ready, setReady] = useState(false);
   const [manifestReady, setManifestReady] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [videoMissing, setVideoMissing] = useState(false);
 
   const syncAudioToVideo = useCallback((videoTime: number, shouldPlay: boolean) => {
     const audio = audioRef.current;
@@ -131,7 +71,7 @@ export function ModuleVideoFrenchDubPlayer({
 
     if (shouldPlay && !pastWindow && targetAudioTime < segment.durationSec) {
       if (audio.paused) {
-        void audio.play().catch(() => playerRef.current?.pauseVideo());
+        void audio.play().catch(() => videoRef.current?.pause());
       }
     } else if (!audio.paused) {
       audio.pause();
@@ -139,16 +79,11 @@ export function ModuleVideoFrenchDubPlayer({
   }, []);
 
   const tick = useCallback(() => {
-    const player = playerRef.current;
-    if (!player || !window.YT) return;
+    const video = videoRef.current;
+    if (!video || video.paused) return;
 
-    const state = player.getPlayerState();
-    const isPlaying = state === window.YT.PlayerState.PLAYING;
-    syncAudioToVideo(player.getCurrentTime(), isPlaying);
-
-    if (isPlaying) {
-      rafRef.current = window.requestAnimationFrame(tick);
-    }
+    syncAudioToVideo(video.currentTime, true);
+    rafRef.current = window.requestAnimationFrame(tick);
   }, [syncAudioToVideo]);
 
   const pauseBoth = useCallback(() => {
@@ -157,21 +92,21 @@ export function ModuleVideoFrenchDubPlayer({
       window.cancelAnimationFrame(rafRef.current);
       rafRef.current = null;
     }
-    playerRef.current?.pauseVideo();
+    videoRef.current?.pause();
     audioRef.current?.pause();
     syncingRef.current = false;
   }, []);
 
   const playBoth = useCallback(async () => {
-    const player = playerRef.current;
-    if (!player || !ready || !manifestReady) return;
+    const video = videoRef.current;
+    if (!video || !ready || !manifestReady || videoMissing) return;
 
     syncingRef.current = true;
     try {
       activeSegmentRef.current = null;
-      player.seekTo(0, true);
+      video.currentTime = 0;
       audioRef.current?.pause();
-      player.playVideo();
+      await video.play();
       syncAudioToVideo(0, true);
       rafRef.current = window.requestAnimationFrame(tick);
     } catch {
@@ -179,7 +114,7 @@ export function ModuleVideoFrenchDubPlayer({
     } finally {
       syncingRef.current = false;
     }
-  }, [manifestReady, pauseBoth, ready, syncAudioToVideo, tick]);
+  }, [manifestReady, pauseBoth, ready, tick, videoMissing, syncAudioToVideo]);
 
   useEffect(() => {
     let cancelled = false;
@@ -206,99 +141,88 @@ export function ModuleVideoFrenchDubPlayer({
   }, [syncUrl]);
 
   useEffect(() => {
-    let cancelled = false;
+    const video = videoRef.current;
+    if (!video) return;
 
-    void loadYouTubeIframeApi().then(() => {
-      if (cancelled || !mountRef.current || playerRef.current || !window.YT) return;
+    const onLoaded = () => setReady(true);
+    const onError = () => setVideoMissing(true);
+    const onPlay = () => {
+      if (syncingRef.current) return;
+      syncAudioToVideo(video.currentTime, true);
+      if (rafRef.current !== null) window.cancelAnimationFrame(rafRef.current);
+      rafRef.current = window.requestAnimationFrame(tick);
+    };
+    const onPause = () => {
+      if (syncingRef.current) return;
+      if (rafRef.current !== null) {
+        window.cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
+      }
+      syncAudioToVideo(video.currentTime, false);
+    };
 
-      playerRef.current = new window.YT.Player(mountRef.current, {
-        videoId: youtubeVideoId,
-        playerVars: {
-          mute: 1,
-          rel: 0,
-          modestbranding: 1,
-          hl: 'fr',
-          playsinline: 1,
-          origin: window.location.origin,
-        },
-        events: {
-          onReady: () => {
-            if (!cancelled) setReady(true);
-          },
-          onStateChange: (event) => {
-            if (syncingRef.current || !window.YT) return;
-            const player = playerRef.current;
-            if (!player) return;
-
-            if (event.data === window.YT.PlayerState.PLAYING) {
-              syncAudioToVideo(player.getCurrentTime(), true);
-              if (rafRef.current !== null) window.cancelAnimationFrame(rafRef.current);
-              rafRef.current = window.requestAnimationFrame(tick);
-              return;
-            }
-
-            if (
-              event.data === window.YT.PlayerState.PAUSED ||
-              event.data === window.YT.PlayerState.ENDED
-            ) {
-              if (rafRef.current !== null) {
-                window.cancelAnimationFrame(rafRef.current);
-                rafRef.current = null;
-              }
-              syncAudioToVideo(player.getCurrentTime(), false);
-            }
-          },
-        },
-      });
-    });
+    video.addEventListener('loadedmetadata', onLoaded);
+    video.addEventListener('error', onError);
+    video.addEventListener('play', onPlay);
+    video.addEventListener('pause', onPause);
 
     return () => {
-      cancelled = true;
       if (rafRef.current !== null) window.cancelAnimationFrame(rafRef.current);
-      playerRef.current?.destroy();
-      playerRef.current = null;
+      video.removeEventListener('loadedmetadata', onLoaded);
+      video.removeEventListener('error', onError);
+      video.removeEventListener('play', onPlay);
+      video.removeEventListener('pause', onPause);
     };
-  }, [syncAudioToVideo, tick, youtubeVideoId]);
+  }, [syncAudioToVideo, tick, videoSrc]);
 
   return (
     <div className="module-video-dub-sync">
       <div className="module-video-frame">
-        <div ref={mountRef} className="module-video-frame-yt-mount" title={title} aria-label={title} />
+        {videoMissing ? (
+          <ModuleAnimatedExplainer title={title} />
+        ) : (
+          <video
+            ref={videoRef}
+            src={videoSrc}
+            muted
+            controls
+            playsInline
+            preload="metadata"
+            title={title}
+            aria-label={title}
+          />
+        )}
       </div>
 
       <audio ref={audioRef} preload="auto" className="module-video-dub-audio-hidden" />
 
       <div className="module-video-dub-controls">
         <Badge tone="accent" icon={'\u{1F399}\uFE0F'}>
-          Doublage français synchronisé — son original coupé
+          Doublage français synchronisé — voix Lifa
         </Badge>
+        {videoMissing ? (
+          <p className="muted module-video-dub-hint">
+            La vidéo locale n&apos;est pas encore disponible. Le doublage audio reste jouable via les
+            contrôles ci-dessous une fois le MP4 publié.
+          </p>
+        ) : null}
         {loadError ? <p className="muted module-video-dub-hint">{loadError}</p> : null}
         <div className="module-video-dub-actions">
           <button
             type="button"
             className="btn btn-sm"
-            disabled={!ready || !manifestReady || Boolean(loadError)}
+            disabled={(!ready && !videoMissing) || !manifestReady || Boolean(loadError)}
             onClick={() => void playBoth()}
           >
             Lire depuis le début
           </button>
-          <button type="button" className="btn btn-sm btn-secondary" disabled={!ready} onClick={pauseBoth}>
+          <button type="button" className="btn btn-sm btn-secondary" disabled={!ready && !videoMissing} onClick={pauseBoth}>
             Pause
           </button>
-          {originalWatchUrl ? (
-            <a
-              href={originalWatchUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="module-video-dub-original-link"
-            >
-              Version anglaise sur YouTube
-            </a>
-          ) : null}
         </div>
         <p className="muted module-video-dub-hint">
-          La voix française est calée sur chaque passage de la vidéo. Utilisez les contrôles YouTube :
-          l&apos;image et le doublage avancent ensemble.
+          La voix française est calée sur chaque passage de la vidéo locale. L&apos;image est muette :
+          seul le doublage est audible.
         </p>
       </div>
     </div>

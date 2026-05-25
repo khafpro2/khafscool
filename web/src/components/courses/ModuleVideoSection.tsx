@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
+  canEmbedExternalVideo,
   formatVideoDurationLabel,
   moduleHasVideo,
   parseVideoEmbed,
@@ -35,6 +36,7 @@ export function ModuleVideoSection({
   videoTitle,
   videoDurationMinutes,
   videoProvider,
+  videoSourceLanguage,
   videoTranscriptFr,
   videoHeyGenFrUrl,
   videoDubFrSyncUrl,
@@ -78,24 +80,37 @@ export function ModuleVideoSection({
   const hasHeyGenFrenchVideo = Boolean(videoHeyGenFrUrl?.trim());
   const hasSyncedFrenchDub =
     !hasHeyGenFrenchVideo && Boolean(syncUrl?.trim()) && Boolean(localVideoSrc);
+  const allowExternalEmbed = canEmbedExternalVideo(videoSourceLanguage);
+  const showFrenchPending =
+    parsed?.provider === 'placeholder' ||
+    !parsed?.embedUrl ||
+    localVideoMissing ||
+    ((parsed.provider === 'youtube' || parsed.provider === 'vimeo') && !allowExternalEmbed);
 
   return (
     <section className="module-video-section" aria-label={ariaLabel}>
       <div className="module-video-section-header">
         <h3 className="module-video-section-title">{title}</h3>
-        {durationLabel ? (
-          <Badge tone="neutral" icon={'\u{23F1}\uFE0F'}>
-            {durationLabel}
+        <div className="module-video-section-badges">
+          <Badge tone="accent" icon={'\u{1F1EB}\u{1F1F7}'}>
+            Français
           </Badge>
-        ) : null}
+          {durationLabel ? (
+            <Badge tone="neutral" icon={'\u{23F1}\uFE0F'}>
+              {durationLabel}
+            </Badge>
+          ) : null}
+        </div>
       </div>
 
       <p className="muted module-video-section-lead">
-        {hasHeyGenFrenchVideo
-          ? 'Vidéo en français (voix Lifa) — hébergée sur Apple MDM Academy.'
-          : hasSyncedFrenchDub
-            ? 'Regardez la vidéo locale : le doublage français est calé sur chaque passage.'
-            : 'Regardez la vidéo, puis lisez la leçon et passez le quiz.'}
+        {showFrenchPending
+          ? 'Vidéo française bientôt disponible — schéma animé et leçon ci-dessous en attendant.'
+          : hasHeyGenFrenchVideo
+            ? 'Vidéo explicative en français — hébergée sur Apple MDM Academy.'
+            : hasSyncedFrenchDub
+              ? 'Regardez la vidéo locale : le doublage français est calé sur chaque passage.'
+              : 'Regardez la vidéo, puis lisez la leçon et passez le quiz.'}
       </p>
 
       {hasHeyGenFrenchVideo ? (
@@ -114,13 +129,13 @@ export function ModuleVideoSection({
           </div>
           <div className="module-video-dub-controls">
             <Badge tone="accent" icon={'\u{1F399}\uFE0F'}>
-              Voix Lifa
+              Vidéo FR
             </Badge>
           </div>
         </div>
       ) : hasSyncedFrenchDub ? (
         <ModuleVideoFrenchDubPlayer videoSrc={localVideoSrc!} syncUrl={syncUrl!} title={title} />
-      ) : parsed?.provider === 'placeholder' || !parsed?.embedUrl ? (
+      ) : showFrenchPending ? (
         <div className="module-video-frame module-video-frame--plain">
           <ModuleAnimatedExplainer title={title} onReady={scheduleVideoWatched} />
         </div>
@@ -137,7 +152,7 @@ export function ModuleVideoSection({
               onError={() => setLocalVideoMissing(true)}
               onLoadedData={scheduleVideoWatched}
             >
-              <source src={parsed.embedUrl} type="video/mp4" />
+              <source src={parsed.embedUrl!} type="video/mp4" />
               Votre navigateur ne prend pas en charge la lecture vidéo.
             </video>
           )}
@@ -149,7 +164,7 @@ export function ModuleVideoSection({
             title={ariaLabel}
             loading="lazy"
             referrerPolicy="strict-origin-when-cross-origin"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             allowFullScreen
             onLoad={scheduleVideoWatched}
           />
