@@ -39,9 +39,6 @@ Vous apprendrez à identifier les symptômes matériels et logiciels les plus fr
 Prérequis : familiarité de base avec macOS et iOS/iPadOS, accès à un Mac de diagnostic et à quelques appareils de test. Aucune expérience MDM préalable n'est exigée, mais une connaissance des profils de configuration et de l'enrôlement automatisé (ADE) sera un atout pour la dernière partie du parcours.`,
     modules: {
       'device-support-basics': {
-        ...getPilotModuleVideoConfig('apple-cert-prep', 'device-support-basics'),
-        videoTitle: 'Vidéo : ABM, supervision et enrôlement automatisé (ADE)',
-        videoDurationMinutes: 15,
         summary:
           'Maîtriser le triage matériel/logiciel sur Mac et iOS, sécuriser sauvegardes et restaurations, et relier support terrain et gestion MDM.',
         learningObjectives: [
@@ -1246,7 +1243,6 @@ export function getModulePedagogy(
 
 /** Modules avec vidéo explicative (trois ou quatre par parcours). */
 export const PILOT_VIDEO_MODULES = [
-  { courseSlug: 'apple-cert-prep', moduleSlug: 'device-support-basics' },
   { courseSlug: 'apple-cert-prep', moduleSlug: 'ios-troubleshooting' },
   { courseSlug: 'apple-cert-prep', moduleSlug: 'acmt-exam-prep' },
   { courseSlug: 'apple-cert-prep', moduleSlug: 'apps-vpp-management' },

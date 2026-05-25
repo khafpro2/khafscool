@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.4] — 2026-05-25
+
+### Retrait vidéo ADE (module 1 Apple)
+- **Contenu** — module `device-support-basics` (`apple-cert-prep`) : retrait de la vidéo « ABM, supervision et enrôlement automatisé (ADE) » (MP4/doublage) ; leçon et quiz inchangés
+- **Pilote** — retrait de `device-support-basics` dans `PILOT_VIDEO_MODULES` (11 vidéos ; catalogue Apple **3 avec vidéo**)
+- Tests : `seed-video`, e2e `module-video`, `learning-path`
+
 ## [0.3.3] — 2026-05-25
 
 ### Accueil sans header

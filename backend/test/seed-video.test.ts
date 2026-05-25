@@ -9,10 +9,9 @@ import { getPilotModuleVideoConfig, isModuleVideoHeyGenFrReady } from '@ama/shar
 import { getModuleVideoDubFr, getModuleVideoDubFrSyncUrl } from '@ama/shared/video-dub-fr';
 
 describe('seed pilot module videos', () => {
-  it('defines twelve pilot videos (four per track)', () => {
-    expect(PILOT_VIDEO_MODULES).toHaveLength(12);
+  it('defines eleven pilot videos (Apple module 1 sans vidéo ADE)', () => {
+    expect(PILOT_VIDEO_MODULES).toHaveLength(11);
     expect(listPilotVideoModules().map((entry) => entry.moduleSlug)).toEqual([
-      'device-support-basics',
       'ios-troubleshooting',
       'acmt-exam-prep',
       'apps-vpp-management',
@@ -39,25 +38,43 @@ describe('seed pilot module videos', () => {
       if (pedagogy?.videoProvider === 'placeholder') {
         expect(pedagogy.videoUrl).toBe('placeholder');
       } else {
-        expect(pedagogy?.videoUrl, `${courseSlug}/${moduleSlug}`).toMatch(/^\/media\/videos\/fr\//);
+        expect(pedagogy?.videoUrl, `${courseSlug}/${moduleSlug}`).toMatch(/^\/media\/videos\/(fr|sources)\//);
         expect(pedagogy?.videoProvider).toBe('mp4');
       }
     }
   });
 
   it('counts video modules per course track', () => {
-    expect(countCourseVideoModules('apple-cert-prep')).toBe(4);
+    expect(countCourseVideoModules('apple-cert-prep')).toBe(3);
     expect(countCourseVideoModules('jamf-pro-foundations')).toBe(4);
     expect(countCourseVideoModules('intune-ios-enrollment')).toBe(4);
   });
 
-  it('uses placeholder until HeyGen French MP4 is ready', () => {
+  it('omits video metadata on Apple module 1 (no ADE intro video)', () => {
     const pedagogy = getModulePedagogy('apple-cert-prep', 'device-support-basics');
-    expect(pedagogy?.videoSourceLanguage).toBe('fr');
-    expect(isModuleVideoHeyGenFrReady('apple-cert-prep', 'device-support-basics')).toBe(false);
-    expect(pedagogy?.videoProvider).toBe('placeholder');
-    expect(pedagogy?.videoUrl).toBe('placeholder');
-    expect(pedagogy?.videoTitle).toMatch(/ABM|ADE|supervision/i);
+    expect(pedagogy?.videoUrl).toBeUndefined();
+    expect(pedagogy?.videoTitle).toBeUndefined();
+    expect(pedagogy?.videoProvider).toBeUndefined();
+  });
+
+  it('uses dub-sync for Jamf module 1 when HeyGen is pending', () => {
+    const pedagogy = getModulePedagogy('jamf-pro-foundations', 'smart-groups-policies');
+    expect(isModuleVideoHeyGenFrReady('jamf-pro-foundations', 'smart-groups-policies')).toBe(false);
+    expect(pedagogy?.videoProvider).toBe('mp4');
+    expect(pedagogy?.videoUrl).toBe('/media/videos/sources/jamf-smart-groups-policies-en.mp4');
+    expect(getModuleVideoDubFr('jamf-pro-foundations', 'smart-groups-policies')?.basename).toBe(
+      'jamf-smart-groups-policies-fr'
+    );
+  });
+
+  it('uses dub-sync for Jamf ABM module when HeyGen is pending', () => {
+    const pedagogy = getModulePedagogy('jamf-pro-foundations', 'enrollment-apple-integration');
+    expect(isModuleVideoHeyGenFrReady('jamf-pro-foundations', 'enrollment-apple-integration')).toBe(
+      false
+    );
+    expect(pedagogy?.videoProvider).toBe('mp4');
+    expect(pedagogy?.videoUrl).toBe('/media/videos/sources/device-support-basics-ade-en.mp4');
+    expect(getModuleVideoDubFr('jamf-pro-foundations', 'enrollment-apple-integration')).toBeDefined();
   });
 
   it('serves ready HeyGen modules as local French MP4', () => {
@@ -88,9 +105,10 @@ describe('seed pilot module videos', () => {
     const introModules = PILOT_VIDEO_MODULES.filter(
       (entry) =>
         entry.moduleSlug === 'smart-groups-policies' ||
+        entry.moduleSlug === 'enrollment-apple-integration' ||
         entry.moduleSlug === 'ade-enrollment-basics'
     );
-    expect(introModules).toHaveLength(2);
+    expect(introModules).toHaveLength(3);
 
     for (const { courseSlug, moduleSlug } of introModules) {
       const dub = getModuleVideoDubFr(courseSlug, moduleSlug);
