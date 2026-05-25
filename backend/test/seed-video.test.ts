@@ -80,7 +80,7 @@ describe('seed pilot module videos', () => {
       false
     );
     expect(pedagogy?.videoProvider).toBe('mp4');
-    expect(pedagogy?.videoUrl).toBe('/media/videos/sources/device-support-basics-ade-en.mp4');
+    expect(pedagogy?.videoUrl).toBe('/media/videos/sources/device-support-basics-ade-en.heygen.mp4');
     expect(getModuleVideoDubFr('jamf-pro-foundations', 'enrollment-apple-integration')).toBeDefined();
   });
 
