@@ -15,7 +15,7 @@ test.describe('Bannière analytics opt-in', () => {
   });
 
   test('s’affiche après acceptation des cookies puis enregistre le choix', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/courses');
     const cookieBanner = page.getByRole('dialog', { name: /Cookies et stockage local/i });
     await expect(cookieBanner).toBeVisible({ timeout: 15_000 });
     await cookieBanner.getByRole('button', { name: /J'ai compris/i }).click();
@@ -47,7 +47,7 @@ test.describe('Bannière analytics opt-in', () => {
       },
       { consentKey: CONSENT_KEY, analyticsKey: ANALYTICS_KEY }
     );
-    await page.goto('/');
+    await page.goto('/courses');
     await expect(page.getByRole('dialog', { name: /Mesure d'audience/i })).toBeHidden();
   });
 });
