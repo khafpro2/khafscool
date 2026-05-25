@@ -12,21 +12,22 @@ test.describe('Module — section vidéo pilote', () => {
       page.getByRole('region', { name: /Vidéo : ABM, supervision et enrôlement automatisé/i })
     ).toHaveCount(0);
     await expect(page.locator('.module-video-section')).toHaveCount(0);
-    await expect(page.getByRole('heading', { name: /Fondamentaux du support Apple/i })).toBeVisible({
+    await expect(
+      page.getByRole('heading', { name: 'Fondamentaux du support Apple', exact: true })
+    ).toBeVisible({
       timeout: 15_000,
     });
   });
 
-  test('n’affiche pas de section vidéo Smart Groups sur le module 1 Jamf', async ({ page }) => {
+  test('affiche intro Jamf Pro sans vidéo Smart Groups sur le module 1 Jamf', async ({ page }) => {
     await page.goto('/courses/jamf-pro-foundations#module-smart-groups-policies');
     await expect(
       page.getByRole('region', { name: /Vidéo : Smart Groups et politiques Jamf Pro/i })
     ).toHaveCount(0);
-    await expect(
-      page.getByRole('region', { name: /Vidéo : introduction Jamf Pro/i })
-    ).toHaveCount(0);
-    await expect(page.locator('.module-video-section')).toHaveCount(0);
-    await expect(page.getByRole('heading', { name: /Smart Groups et politiques/i })).toBeVisible({
+    const introSection = page.getByRole('region', { name: /Vidéo : introduction Jamf Pro/i });
+    await expect(introSection).toBeVisible({ timeout: 15_000 });
+    await expect(introSection.locator('iframe[src*="t3j9TkFfUJw"]')).toHaveCount(1);
+    await expect(page.getByRole('heading', { name: 'Smart Groups et politiques', exact: true })).toBeVisible({
       timeout: 15_000,
     });
   });

@@ -39,7 +39,7 @@ export const VIDEO_HEYGEN_FR_BY_MODULE: Record<string, Record<string, VideoHeyGe
     'enrollment-apple-integration': {
       basename: 'jamf-enrollment-apple-integration-fr',
       sourceYouTubeUrl: 'https://www.youtube.com/watch?v=_g-0V2AFCW0',
-      sourceLocalFilename: 'device-support-basics-ade-en.mp4',
+      sourceLocalFilename: 'device-support-basics-ade-en.heygen.mp4',
       heygenTitle: 'Apple MDM Academy — Enrôlement ABM et Jamf Pro (FR)',
     },
     'api-automation-advanced-policies': {

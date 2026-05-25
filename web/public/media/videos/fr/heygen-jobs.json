@@ -8,7 +8,7 @@
       "sourceVideoUrl": "asset:68240cda8b7549b4bd3d8b26fa958583",
       "videoTranslationId": "110cb0fc8f9d48328736e2b863dd91cc-fr_fr-FR",
       "status": "failed",
-      "updatedAt": "2026-05-25T00:12:38.014Z",
+      "updatedAt": "2026-05-25T11:49:58.416Z",
       "error": "Échec HeyGen"
     },
     {
@@ -27,10 +27,10 @@
       "moduleSlug": "device-support-basics",
       "basename": "apple-device-support-basics-fr",
       "title": "Apple MDM Academy — ABM, supervision et ADE (FR)",
-      "sourceVideoUrl": "asset:a099a337ab3043b2a741e40a2bcca3b8",
-      "videoTranslationId": "bbaacf5d9feb43409558eaad05e041a8-fr_fr-FR",
+      "sourceVideoUrl": "asset:ef64ca1dc73f493faed54ca9762f42c0",
+      "videoTranslationId": "d379ee76881b4f19a8f7a0c70756536c-fr_fr-FR",
       "status": "failed",
-      "updatedAt": "2026-05-25T00:12:38.169Z",
+      "updatedAt": "2026-05-25T11:49:58.571Z",
       "error": "Échec HeyGen"
     }
   ]

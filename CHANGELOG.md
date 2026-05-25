@@ -1,10 +1,18 @@
 # Changelog
 
+## [0.3.6] — 2026-05-25
+
+### Accueil sans footer
+- **Web accueil** — retrait du footer global (`SiteFooter`) sur `/` uniquement, comme le header ; autres pages inchangées
+- Tests e2e : `learning-path` (absence footer accueil), `legal-pages` et `soutenir` (footer vérifié sur `/courses`)
+
 ## [0.3.5] — 2026-05-25
 
-### Retrait vidéo Smart Groups (module 1 Jamf)
-- **Contenu** — module `smart-groups-policies` (`jamf-pro-foundations`) : retrait de la vidéo « Smart Groups et politiques Jamf Pro » et de l’intro YouTube `t3j9TkFfUJw` (MP4/doublage) ; leçon et quiz inchangés
-- **Pilote** — retrait de `smart-groups-policies` dans `PILOT_VIDEO_MODULES` (10 vidéos ; catalogue Jamf **3 avec vidéo**)
+### Intro Jamf module 1 (YouTube whitelist)
+- **Contenu** — module `smart-groups-policies` : intro YouTube `t3j9TkFfUJw` avec titre **Vidéo : introduction Jamf Pro** (pas de titre vidéo « Smart Groups… ») ; `videoSourceLanguage: 'fr'` pour embed
+- **Pilote** — `smart-groups-policies` réintégré dans `PILOT_VIDEO_MODULES` (11 vidéos ; Jamf **4 avec vidéo**)
+- **E2E** — `module-video.spec.ts` : intro visible + titre module en `exact: true` (évite collision avec le h2 leçon)
+- **Handoff** — `docs/HANDOFF.md`, `CLAUDE.md` pour reprise Claude Code / Cursor après push
 - Tests : `seed-video`, `video-dub-sync`, e2e `module-video`
 
 ## [0.3.4] — 2026-05-25

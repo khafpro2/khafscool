@@ -9,12 +9,13 @@ import { getPilotModuleVideoConfig, isModuleVideoHeyGenFrReady } from '@ama/shar
 import { getModuleVideoDubFr, getModuleVideoDubFrSyncUrl } from '@ama/shared/video-dub-fr';
 
 describe('seed pilot module videos', () => {
-  it('defines ten pilot videos (modules 1 Apple et Jamf sans vidéo)', () => {
-    expect(PILOT_VIDEO_MODULES).toHaveLength(10);
+  it('defines eleven pilot videos (module 1 Apple sans vidéo ADE)', () => {
+    expect(PILOT_VIDEO_MODULES).toHaveLength(11);
     expect(listPilotVideoModules().map((entry) => entry.moduleSlug)).toEqual([
       'ios-troubleshooting',
       'acmt-exam-prep',
       'apps-vpp-management',
+      'smart-groups-policies',
       'inventory-basics',
       'enrollment-apple-integration',
       'api-automation-advanced-policies',
@@ -28,10 +29,18 @@ describe('seed pilot module videos', () => {
   it('seeds video metadata from course-content for pilot modules', () => {
     for (const { courseSlug, moduleSlug } of PILOT_VIDEO_MODULES) {
       const pedagogy = getModulePedagogy(courseSlug, moduleSlug);
-      const expected = getPilotModuleVideoConfig(courseSlug, moduleSlug);
       expect(pedagogy?.videoTitle, `${courseSlug}/${moduleSlug}`).toMatch(/^Vidéo :/);
       expect(pedagogy?.videoDurationMinutes, `${courseSlug}/${moduleSlug}`).toBeGreaterThan(0);
       expect(pedagogy?.videoSourceLanguage, `${courseSlug}/${moduleSlug}`).toBe('fr');
+
+      if (pedagogy?.videoProvider === 'youtube') {
+        expect(pedagogy.videoUrl, `${courseSlug}/${moduleSlug}`).toMatch(
+          /^https:\/\/www\.youtube\.com\/watch\?v=/
+        );
+        continue;
+      }
+
+      const expected = getPilotModuleVideoConfig(courseSlug, moduleSlug);
       expect(pedagogy?.videoProvider, `${courseSlug}/${moduleSlug}`).toBe(expected.videoProvider);
       expect(pedagogy?.videoUrl, `${courseSlug}/${moduleSlug}`).toBe(expected.videoUrl);
       if (pedagogy?.videoProvider === 'placeholder') {
@@ -45,7 +54,7 @@ describe('seed pilot module videos', () => {
 
   it('counts video modules per course track', () => {
     expect(countCourseVideoModules('apple-cert-prep')).toBe(3);
-    expect(countCourseVideoModules('jamf-pro-foundations')).toBe(3);
+    expect(countCourseVideoModules('jamf-pro-foundations')).toBe(4);
     expect(countCourseVideoModules('intune-ios-enrollment')).toBe(4);
   });
 
@@ -56,11 +65,12 @@ describe('seed pilot module videos', () => {
     expect(pedagogy?.videoProvider).toBeUndefined();
   });
 
-  it('omits video metadata on Jamf module 1 (no Smart Groups intro video)', () => {
+  it('uses YouTube intro on Jamf module 1 (not Smart Groups titled video)', () => {
     const pedagogy = getModulePedagogy('jamf-pro-foundations', 'smart-groups-policies');
-    expect(pedagogy?.videoUrl).toBeUndefined();
-    expect(pedagogy?.videoTitle).toBeUndefined();
-    expect(pedagogy?.videoProvider).toBeUndefined();
+    expect(pedagogy?.videoUrl).toBe('https://www.youtube.com/watch?v=t3j9TkFfUJw');
+    expect(pedagogy?.videoTitle).toBe('Vidéo : introduction Jamf Pro');
+    expect(pedagogy?.videoProvider).toBe('youtube');
+    expect(pedagogy?.videoSourceLanguage).toBe('fr');
     expect(getModuleVideoDubFr('jamf-pro-foundations', 'smart-groups-policies')).toBeUndefined();
   });
 
