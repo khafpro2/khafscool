@@ -23,6 +23,7 @@ export const VIDEO_HEYGEN_FR_BY_MODULE: Record<string, Record<string, VideoHeyGe
     },
     'apps-vpp-management': {
       basename: 'apple-apps-vpp-management-fr',
+      sourceYouTubeUrl: 'https://www.youtube.com/watch?v=k0cchC6mE88',
       heygenTitle: 'Apple MDM Academy — Apps VPP et apps gérées (FR)',
     },
   },
@@ -39,6 +40,7 @@ export const VIDEO_HEYGEN_FR_BY_MODULE: Record<string, Record<string, VideoHeyGe
     },
     'api-automation-advanced-policies': {
       basename: 'jamf-api-automation-fr',
+      sourceYouTubeUrl: 'https://www.youtube.com/watch?v=t3j9TkFfUJw',
       heygenTitle: 'Apple MDM Academy — Automatisation API Jamf Pro (FR)',
     },
   },
@@ -60,6 +62,7 @@ export const VIDEO_HEYGEN_FR_BY_MODULE: Record<string, Record<string, VideoHeyGe
     },
     'vpp-abm-business-apps': {
       basename: 'intune-vpp-abm-business-apps-fr',
+      sourceYouTubeUrl: 'https://www.youtube.com/watch?v=k0cchC6mE88',
       heygenTitle: 'Apple MDM Academy — VPP ABM et apps métier Intune (FR)',
     },
   },

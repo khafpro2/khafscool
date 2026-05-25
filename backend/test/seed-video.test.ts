@@ -93,23 +93,23 @@ describe('seed pilot module videos', () => {
     expect(getModuleVideoDubFr('jamf-pro-foundations', 'enrollment-apple-integration')).toBeDefined();
   });
 
-  it('serves module 4 pilot videos as French placeholders', () => {
+  it('serves module 4 pilot videos as French YouTube when HeyGen is pending', () => {
     const appleVpp = getModulePedagogy('apple-cert-prep', 'apps-vpp-management');
-    expect(appleVpp?.videoProvider).toBe('placeholder');
-    expect(appleVpp?.videoUrl).toBe('placeholder');
+    expect(appleVpp?.videoProvider).toBe('youtube');
+    expect(appleVpp?.videoUrl).toBe('https://www.youtube.com/watch?v=k0cchC6mE88');
     expect(appleVpp?.videoTitle).toBe('Vidéo : apps VPP et apps gérées en entreprise');
     expect(appleVpp?.videoTitle).not.toMatch(/ADE|ABM/i);
 
     const jamfApi = getModulePedagogy('jamf-pro-foundations', 'api-automation-advanced-policies');
-    expect(jamfApi?.videoProvider).toBe('placeholder');
-    expect(jamfApi?.videoUrl).toBe('placeholder');
+    expect(jamfApi?.videoProvider).toBe('youtube');
+    expect(jamfApi?.videoUrl).toBe('https://www.youtube.com/watch?v=t3j9TkFfUJw');
 
     const intuneVpp = getModulePedagogy('intune-ios-enrollment', 'vpp-abm-business-apps');
-    expect(intuneVpp?.videoProvider).toBe('placeholder');
-    expect(intuneVpp?.videoUrl).toBe('placeholder');
+    expect(intuneVpp?.videoProvider).toBe('youtube');
+    expect(intuneVpp?.videoUrl).toBe('https://www.youtube.com/watch?v=k0cchC6mE88');
   });
 
-  it('serves module 3 pilot videos (FR MP4 or placeholder)', () => {
+  it('serves module 3 pilot videos (FR MP4 or YouTube)', () => {
     const acmt = getModulePedagogy('apple-cert-prep', 'acmt-exam-prep');
     expect(acmt?.videoProvider).toBe('mp4');
     expect(acmt?.videoUrl).toBe('/media/videos/fr/apple-acmt-exam-prep-fr.mp4');
@@ -117,14 +117,17 @@ describe('seed pilot module videos', () => {
     expect(acmt?.videoTitle).not.toMatch(/ADE|ABM/i);
 
     const jamfApi = getModulePedagogy('jamf-pro-foundations', 'api-automation-advanced-policies');
-    expect(jamfApi?.videoProvider).toBe('placeholder');
-    expect(jamfApi?.videoUrl).toBe('placeholder');
+    expect(jamfApi?.videoProvider).toBe('youtube');
+    expect(jamfApi?.videoUrl).toBe('https://www.youtube.com/watch?v=t3j9TkFfUJw');
     expect(jamfApi?.videoTitle).toBe('Vidéo : automatisation API Jamf Pro');
 
-    const intuneVpp = getModulePedagogy('intune-ios-enrollment', 'vpp-abm-business-apps');
-    expect(intuneVpp?.videoProvider).toBe('placeholder');
-    expect(intuneVpp?.videoUrl).toBe('placeholder');
-    expect(intuneVpp?.videoTitle).toBe('Vidéo : VPP, ABM et apps métier dans Intune');
+    const intuneAppProtection = getModulePedagogy(
+      'intune-ios-enrollment',
+      'app-protection-conditional-access'
+    );
+    expect(intuneAppProtection?.videoProvider).toBe('youtube');
+    expect(intuneAppProtection?.videoUrl).toBe('https://www.youtube.com/watch?v=F4PESZiEQhU');
+    expect(intuneAppProtection?.videoTitle).toBe('Vidéo : App Protection et Conditional Access Intune');
   });
 
   it('serves ready HeyGen modules as local French MP4', () => {

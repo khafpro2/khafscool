@@ -16,6 +16,8 @@ test.describe('Parcours d’apprentissage — smoke', () => {
     await expect(page.locator('.demo-mode-banner')).toHaveCount(0);
     await expect(page.locator('.cookie-consent-banner')).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'Préférences' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Parcours', exact: true })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Connexion', exact: true })).toBeVisible();
   });
 
   test('lien Préférences ouvre la modale cookies sur l’accueil', async ({ page }) => {

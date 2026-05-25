@@ -4696,8 +4696,41 @@ main:has(.home-page-minimal) {
   }
 }
 
-.home-welcome-prefs {
+.home-welcome-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem 0.5rem;
   margin: clamp(1.5rem, 4vw, 2rem) 0 0;
+  padding: 0;
+}
+
+.home-welcome-nav-link {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  opacity: 0.72;
+  transition: opacity 0.15s ease, color 0.15s ease;
+}
+
+.home-welcome-nav-link:hover,
+.home-welcome-nav-link:focus-visible {
+  opacity: 1;
+  color: var(--fg);
+}
+
+.home-welcome-nav-sep {
+  font-size: 0.78rem;
+  color: var(--muted);
+  opacity: 0.45;
+  user-select: none;
+}
+
+.home-welcome-prefs {
+  margin: 0.65rem 0 0;
   padding: 0;
 }
 

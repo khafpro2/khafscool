@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.13] — 2026-05-25
+
+### Vidéos YouTube FR et accueil
+- **Placeholders pilotes** — `getPilotModuleVideoConfig` : repli YouTube (`sourceYouTubeUrl`) avant placeholder ; modules 3–4 Apple/Jamf/Intune et App Protection Intune en iframe `youtube-nocookie` (whitelist `videoSourceLanguage: 'fr'`)
+- **Accueil web** — liens discrets **Parcours** (`/courses`) et **Connexion** (`/auth`) sous les pistes Hello (sans header/footer)
+- **Mobile** — mêmes liens sur `WelcomeScreen` (catalogue et auth web)
+- Tests : `seed-video`, e2e `module-video`, `learning-path`
+
 ## [0.3.12] — 2026-05-25
 
 ### Catalogue, garde-fou ADE et seed

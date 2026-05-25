@@ -4,9 +4,9 @@ Checklist à valider avant de fusionner la branche `cursor/progress-dashboard-au
 
 **Pull request :** [PR #6 — Progress dashboard auth v2](https://github.com/khafpro2/khafscool/pull/6)
 
-**Version cible :** `0.2.1` (monorepo `@ama/shared`, backend, web, mobile)
+**Version cible :** `0.3.13` (monorepo `@ama/shared`, backend, web, mobile)
 
-**HEAD de référence :** vérifier avec `git rev-parse --short HEAD` sur la branche avant merge.
+**HEAD de référence :** `3c79694` (avant v0.3.13) — vérifier avec `git rev-parse --short HEAD` sur la branche avant merge.
 
 ---
 

@@ -40,6 +40,18 @@ export function HomeWelcomeScreen() {
         ))}
       </ul>
 
+      <nav className="home-welcome-nav" aria-label="Accès rapide">
+        <Link href="/courses" className="home-welcome-nav-link">
+          Parcours
+        </Link>
+        <span className="home-welcome-nav-sep" aria-hidden>
+          ·
+        </span>
+        <Link href="/auth" className="home-welcome-nav-link">
+          Connexion
+        </Link>
+      </nav>
+
       <p className="home-welcome-prefs">
         <button
           type="button"

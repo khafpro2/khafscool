@@ -245,6 +245,30 @@ export function WelcomeScreen({ onAuthSuccess }: WelcomeScreenProps) {
           </Pressable>
         ))}
 
+        <View style={styles.footerLinks}>
+          <Pressable
+            style={styles.footerLink}
+            onPress={() => void Linking.openURL(`${WEB_URL}/courses`)}
+            disabled={isBusy}
+            accessibilityRole="link"
+            accessibilityLabel="Parcours — catalogue web"
+          >
+            <Text style={styles.footerLinkText}>Parcours</Text>
+          </Pressable>
+          <Text style={styles.footerLinkSep} accessibilityElementsHidden>
+            ·
+          </Text>
+          <Pressable
+            style={styles.footerLink}
+            onPress={() => void Linking.openURL(`${WEB_URL}/auth`)}
+            disabled={isBusy}
+            accessibilityRole="link"
+            accessibilityLabel="Connexion — page web"
+          >
+            <Text style={styles.footerLinkText}>Connexion</Text>
+          </Pressable>
+        </View>
+
         <Pressable
           style={styles.cookiePrefsLink}
           onPress={() => void Linking.openURL(`${WEB_URL}/legal/confidentialite`)}
@@ -358,8 +382,29 @@ function createStyles(colors: AppThemeColors) {
       borderWidth: 1.5,
     },
     ssoButtonText: { textAlign: 'center', fontWeight: '700', fontSize: 15 },
-    cookiePrefsLink: {
+    footerLinks: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 8,
       marginTop: 16,
+    },
+    footerLink: {
+      paddingVertical: 6,
+    },
+    footerLinkText: {
+      color: colors.muted,
+      fontSize: 13,
+      fontWeight: '600',
+      textDecorationLine: 'underline',
+    },
+    footerLinkSep: {
+      color: colors.muted,
+      fontSize: 13,
+      opacity: 0.45,
+    },
+    cookiePrefsLink: {
+      marginTop: 8,
       paddingVertical: 8,
       alignSelf: 'center',
     },
