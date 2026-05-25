@@ -12,6 +12,12 @@ export type VideoHeyGenFrEntry = {
 
 export const VIDEO_HEYGEN_FR_BY_MODULE: Record<string, Record<string, VideoHeyGenFrEntry>> = {
   'apple-cert-prep': {
+    'device-support-basics': {
+      basename: 'apple-device-support-basics-fr',
+      sourceYouTubeUrl: 'https://www.youtube.com/watch?v=_g-0V2AFCW0',
+      sourceLocalFilename: 'device-support-basics-ade-en.heygen.mp4',
+      heygenTitle: 'Apple MDM Academy — ABM, supervision et ADE (FR)',
+    },
     'ios-troubleshooting': {
       basename: 'apple-ios-troubleshooting-fr',
       heygenTitle: 'Apple MDM Academy — Dépannage iOS en environnement géré (FR)',
@@ -26,12 +32,6 @@ export const VIDEO_HEYGEN_FR_BY_MODULE: Record<string, Record<string, VideoHeyGe
     },
   },
   'jamf-pro-foundations': {
-    'smart-groups-policies': {
-      basename: 'jamf-smart-groups-policies-fr',
-      sourceYouTubeUrl: 'https://www.youtube.com/watch?v=t3j9TkFfUJw',
-      sourceLocalFilename: 'jamf-smart-groups-policies-en.mp4',
-      heygenTitle: 'Apple MDM Academy — Jamf Pro et ABM (FR)',
-    },
     'inventory-basics': {
       basename: 'jamf-inventory-basics-fr',
       heygenTitle: 'Apple MDM Academy — Inventaire Jamf Pro (FR)',
@@ -39,7 +39,7 @@ export const VIDEO_HEYGEN_FR_BY_MODULE: Record<string, Record<string, VideoHeyGe
     'enrollment-apple-integration': {
       basename: 'jamf-enrollment-apple-integration-fr',
       sourceYouTubeUrl: 'https://www.youtube.com/watch?v=_g-0V2AFCW0',
-      sourceLocalFilename: 'jamf-smart-groups-policies-en.mp4',
+      sourceLocalFilename: 'device-support-basics-ade-en.mp4',
       heygenTitle: 'Apple MDM Academy — Enrôlement ABM et Jamf Pro (FR)',
     },
     'api-automation-advanced-policies': {
