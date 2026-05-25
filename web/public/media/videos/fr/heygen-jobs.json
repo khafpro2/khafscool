@@ -21,17 +21,6 @@
       "status": "completed",
       "updatedAt": "2026-05-24T22:44:34.269Z",
       "outputVideoUrl": "https://resource2.heygen.ai/video_translate/05a22503f62e4fc8b15faa2223198a46-fr_fr-FR/original.mp4?response-content-disposition=attachment%3B+filename%2A%3DUTF-8%27%27Apple%2520MDM%2520Academy%2520%25E2%2580%2594%2520Intune%2520ADE%2520et%2520ABM%2520%2528FR%2529-French%2520%2528France%2529.mp4%3B"
-    },
-    {
-      "courseSlug": "apple-cert-prep",
-      "moduleSlug": "device-support-basics",
-      "basename": "apple-device-support-basics-fr",
-      "title": "Apple MDM Academy — ABM, supervision et ADE (FR)",
-      "sourceVideoUrl": "asset:ef64ca1dc73f493faed54ca9762f42c0",
-      "videoTranslationId": "d379ee76881b4f19a8f7a0c70756536c-fr_fr-FR",
-      "status": "failed",
-      "updatedAt": "2026-05-25T11:49:58.571Z",
-      "error": "Échec HeyGen"
     }
   ]
 }

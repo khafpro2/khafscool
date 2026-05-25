@@ -27,9 +27,9 @@ describe('parseVideoEmbed', () => {
   });
 
   it('accepts local MP4 paths served from public/', () => {
-    const parsed = parseVideoEmbed('/media/videos/fr/apple-device-support-basics-fr.mp4', 'mp4');
+    const parsed = parseVideoEmbed('/media/videos/fr/apple-acmt-exam-prep-fr.mp4', 'mp4');
     expect(parsed?.provider).toBe('mp4');
-    expect(parsed?.embedUrl).toBe('/media/videos/fr/apple-device-support-basics-fr.mp4');
+    expect(parsed?.embedUrl).toBe('/media/videos/fr/apple-acmt-exam-prep-fr.mp4');
   });
 
   it('returns placeholder mode without external URL', () => {

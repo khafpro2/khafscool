@@ -12,12 +12,6 @@ export type VideoHeyGenFrEntry = {
 
 export const VIDEO_HEYGEN_FR_BY_MODULE: Record<string, Record<string, VideoHeyGenFrEntry>> = {
   'apple-cert-prep': {
-    'device-support-basics': {
-      basename: 'apple-device-support-basics-fr',
-      sourceYouTubeUrl: 'https://www.youtube.com/watch?v=_g-0V2AFCW0',
-      sourceLocalFilename: 'device-support-basics-ade-en.heygen.mp4',
-      heygenTitle: 'Apple MDM Academy — ABM, supervision et ADE (FR)',
-    },
     'ios-troubleshooting': {
       basename: 'apple-ios-troubleshooting-fr',
       heygenTitle: 'Apple MDM Academy — Dépannage iOS en environnement géré (FR)',
