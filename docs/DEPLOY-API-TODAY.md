@@ -118,8 +118,15 @@ Configurer le service avec **racine = repo** (pas `backend/` seul). Railway util
 
 ```bash
 export API_URL=https://apple-mdm-academy-api.onrender.com   # votre URL réelle
-curl -sf "${API_URL}/health"
+curl -sf --max-time 120 "${API_URL}/health"   # cold start free : jusqu’à ~90 s
 bash scripts/deploy-api.sh
+```
+
+Checklist interactive (variables à coller sur Render, poll après deploy) :
+
+```bash
+bash scripts/render-env-checklist.sh
+API_URL=https://apple-mdm-academy-api.onrender.com bash scripts/render-env-checklist.sh --poll
 ```
 
 Réponse attendue : JSON avec `"ok": true`.

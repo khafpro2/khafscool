@@ -18,6 +18,10 @@ services:
       pnpm --filter @ama/shared build &&
       pnpm --filter backend exec prisma generate &&
       pnpm --filter backend build
+    preDeployCommand: >-
+      corepack enable &&
+      corepack prepare pnpm@9.15.0 --activate &&
+      pnpm --filter backend exec prisma migrate deploy
     startCommand: NODE_ENV=production pnpm --filter backend start:prod
     healthCheckPath: /health
     envVars:
@@ -30,8 +34,8 @@ services:
       - key: JWT_REFRESH_SECRET
         sync: false
       - key: CORS_ORIGIN
-        sync: false
+        value: https://apple-mdm-academy.vercel.app
       - key: WEB_URL
-        sync: false
+        value: https://apple-mdm-academy.vercel.app
       - key: API_URL
-        sync: false
+        value: https://apple-mdm-academy-api.onrender.com
