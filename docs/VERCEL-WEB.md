@@ -44,6 +44,18 @@ Avec **Root Directory** = `web`, Vercel exécute l’install et le build depuis 
 
 Redéployer après toute modification de `NEXT_PUBLIC_*` (valeurs figées au build).
 
+## Checklist post-merge (v0.3.13)
+
+Après fusion de `cursor/progress-dashboard-auth-v2` sur `main` :
+
+1. **Vercel** — le push sur `main` déclenche un déploiement Production automatique (Root Directory = `web`).
+2. **Variables Vercel** (Production + Preview) :
+   - `NEXT_PUBLIC_API_URL` = URL HTTPS de l’API Render (ex. `https://apple-mdm-academy-api.onrender.com`)
+   - `WEB_URL` = URL Vercel de prod (ex. `https://apple-mdm-academy.vercel.app`)
+3. **Render** — voir [`docs/DEPLOY-API-TODAY.md`](./DEPLOY-API-TODAY.md) et [`DEPLOYMENT.md`](../DEPLOYMENT.md) pour la liste complète des variables API.
+4. **Redéployer Vercel** après avoir défini ou modifié `NEXT_PUBLIC_API_URL` (rebuild obligatoire).
+5. **Vérifier** : `curl https://<api>/health` puis ouvrir le dashboard web sans mode démo.
+
 ## Fichiers du dépôt
 
 - `web/vercel.json` — install à la racine du monorepo, build **web uniquement** (`pnpm --filter web`)
