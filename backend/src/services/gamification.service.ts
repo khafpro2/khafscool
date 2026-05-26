@@ -27,6 +27,82 @@ const WEEKLY_QUESTS = [
   },
 ];
 
+type RecentModuleProgressRow = {
+  module: {
+    id: string;
+    slug: string;
+    title: string;
+    course: { slug: string; title: string; track: CourseTrack };
+  };
+  completedAt: Date | null;
+  quizScore: number | null;
+  gameScore: number | null;
+};
+
+type CourseRowForProgress = {
+  id: string;
+  slug: string;
+  title: string;
+  track: CourseTrack;
+  modules: {
+    id: string;
+    slug: string;
+    title: string;
+    courseId: string;
+    progresses: { completedAt: Date | null; quizScore: number | null; gameScore: number | null }[];
+  }[];
+};
+
+type CourseWithProgressSummary = {
+  id: string;
+  slug: string;
+  title: string;
+  track: CourseTrack;
+  totalModules: number;
+  completedModules: number;
+  progressPercent: number;
+  nextModule: { id: string; slug: string; title: string } | null;
+};
+
+function mapRecentCompletedModules(rows: RecentModuleProgressRow[]) {
+  return rows.map((progress) => ({
+    id: progress.module.id,
+    slug: progress.module.slug,
+    title: progress.module.title,
+    courseSlug: progress.module.course.slug,
+    courseTitle: progress.module.course.title,
+    track: progress.module.course.track,
+    completedAt: progress.completedAt,
+    quizScore: progress.quizScore,
+    gameScore: progress.gameScore,
+  }));
+}
+
+function mapCoursesWithProgress(courses: CourseRowForProgress[]): CourseWithProgressSummary[] {
+  return courses.map((course) => {
+    const total = course.modules.length;
+    const done = course.modules.filter((module) =>
+      module.progresses.some((progress) => progress.completedAt)
+    ).length;
+    const nextModule = course.modules.find(
+      (module) => !module.progresses.some((progress) => progress.completedAt)
+    );
+
+    return {
+      id: course.id,
+      slug: course.slug,
+      title: course.title,
+      track: course.track,
+      totalModules: total,
+      completedModules: done,
+      progressPercent: total ? Math.round((done / total) * 100) : 0,
+      nextModule: nextModule
+        ? { id: nextModule.id, slug: nextModule.slug, title: nextModule.title }
+        : null,
+    };
+  });
+}
+
 function computeLevel(points: number): UserLevel {
   for (const t of LEVEL_THRESHOLDS) {
     if (points >= t.min) return t.level;
@@ -241,12 +317,16 @@ export async function getUserProgress(userId: string) {
   ]);
   if (!user) throw new Error('USER_NOT_FOUND');
 
-  const totalModules = courses.reduce((sum, course) => sum + course.modules.length, 0);
-  const completedModules = courses.reduce(
-    (sum, course) => sum + course.modules.filter((module) => module.progresses.some((p) => p.completedAt)).length,
+  const progressCourses: CourseRowForProgress[] = courses;
+  const recentRows: RecentModuleProgressRow[] = recentProgress;
+
+  const totalModules = progressCourses.reduce((sum, course) => sum + course.modules.length, 0);
+  const completedModules = progressCourses.reduce(
+    (sum, course) =>
+      sum + course.modules.filter((module) => module.progresses.some((p) => p.completedAt)).length,
     0
   );
-  const scoredModules = courses.flatMap((course) =>
+  const scoredModules = progressCourses.flatMap((course) =>
     course.modules.flatMap((module) =>
       module.progresses.map((progress) => ({
         quizScore: progress.quizScore,
@@ -254,27 +334,10 @@ export async function getUserProgress(userId: string) {
       }))
     )
   );
-  const coursesWithProgress = courses.map((course) => {
-    const total = course.modules.length;
-    const done = course.modules.filter((module) => module.progresses.some((progress) => progress.completedAt)).length;
-    const nextModule = course.modules.find((module) => !module.progresses.some((progress) => progress.completedAt));
-
-    return {
-      id: course.id,
-      slug: course.slug,
-      title: course.title,
-      track: course.track,
-      totalModules: total,
-      completedModules: done,
-      progressPercent: total ? Math.round((done / total) * 100) : 0,
-      nextModule: nextModule
-        ? { id: nextModule.id, slug: nextModule.slug, title: nextModule.title }
-        : null,
-    };
-  });
+  const coursesWithProgress = mapCoursesWithProgress(progressCourses);
 
   const tracks = Object.values(CourseTrack).map((track) => {
-    const trackCourses = courses.filter((course) => course.track === track);
+    const trackCourses = progressCourses.filter((course) => course.track === track);
     const trackModules = trackCourses.flatMap((course) => course.modules);
     const trackCompletedModules = trackModules.filter((module) =>
       module.progresses.some((progress) => progress.completedAt)
@@ -324,17 +387,7 @@ export async function getUserProgress(userId: string) {
     quests: user.quests,
     courses: coursesWithProgress,
     tracks,
-    recentCompletedModules: recentProgress.map((progress) => ({
-      id: progress.module.id,
-      slug: progress.module.slug,
-      title: progress.module.title,
-      courseSlug: progress.module.course.slug,
-      courseTitle: progress.module.course.title,
-      track: progress.module.course.track,
-      completedAt: progress.completedAt,
-      quizScore: progress.quizScore,
-      gameScore: progress.gameScore,
-    })),
+    recentCompletedModules: mapRecentCompletedModules(recentRows),
   };
 }
 
@@ -404,23 +457,8 @@ export async function getDashboard(userId: string) {
     orderBy: { sortOrder: 'asc' },
   });
 
-  const coursesWithProgress = courses.map((c) => {
-    const total = c.modules.length;
-    const done = c.modules.filter((m) => m.progresses.some((p) => p.completedAt)).length;
-    const nextModule = c.modules.find((m) => !m.progresses.some((p) => p.completedAt));
-    return {
-      id: c.id,
-      slug: c.slug,
-      title: c.title,
-      track: c.track,
-      totalModules: total,
-      completedModules: done,
-      progressPercent: total ? Math.round((done / total) * 100) : 0,
-      nextModule: nextModule
-        ? { id: nextModule.id, slug: nextModule.slug, title: nextModule.title }
-        : null,
-    };
-  });
+  const progressCourses: CourseRowForProgress[] = courses;
+  const coursesWithProgress = mapCoursesWithProgress(progressCourses);
 
   const preparationByTrack = Object.values(CourseTrack).map((track) => {
     const trackCourses = coursesWithProgress.filter((course) => course.track === track);
@@ -434,11 +472,14 @@ export async function getDashboard(userId: string) {
     };
   });
 
-  const completed = user.moduleProgress.filter((p) => p.completedAt).length;
+  const moduleProgressRows: { completedAt: Date | null; quizScore: number | null }[] =
+    user.moduleProgress;
+  const completed = moduleProgressRows.filter((progress) => progress.completedAt).length;
   const avgQuiz =
-    user.moduleProgress.length > 0
+    moduleProgressRows.length > 0
       ? Math.round(
-          user.moduleProgress.reduce((s, p) => s + (p.quizScore ?? 0), 0) / user.moduleProgress.length
+          moduleProgressRows.reduce((sum, progress) => sum + (progress.quizScore ?? 0), 0) /
+            moduleProgressRows.length
         )
       : 0;
 
