@@ -1,4 +1,12 @@
 {
   "extends": "expo/tsconfig.base",
-  "compilerOptions": { "strict": true, "paths": { "@/*": ["./src/*"] } }
+  "compilerOptions": {
+    "strict": true,
+    "resolveJsonModule": true,
+    "paths": {
+      "@/*": ["./src/*"],
+      "@ama/shared": ["../shared/src/index.ts"],
+      "@ama/shared/*": ["../shared/src/*"]
+    }
+  }
 }

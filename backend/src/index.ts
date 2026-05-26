@@ -1,20 +1,80 @@
+import { Readable } from 'node:stream';
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
-import { env } from './config/env.js';
+import helmet from '@fastify/helmet';
+import { assertProductionSecrets, env } from './config/env.js';
+import type { BillingWebhookRequest } from './controllers/billing.controller.js';
 import { authRoutes } from './routes/auth.routes.js';
 import { coursesRoutes } from './routes/courses.routes.js';
 import { billingRoutes } from './routes/billing.routes.js';
-import { servicenowRoutes } from './routes/servicenow.routes.js';
+import { donationsRoutes } from './routes/donations.routes.js';
+import { healthRoutes } from './routes/health.routes.js';
+
+function logStartupFailure(err: unknown) {
+  const message = err instanceof Error ? err.message : String(err);
+  console.error(`[startup] ${message}`);
+  if (!env.isDev) {
+    console.error(
+      '[startup] Requis : DATABASE_URL, JWT_SECRET, JWT_REFRESH_SECRET, CORS_ORIGIN (+ PORT injecté par Render)',
+    );
+  }
+}
+
+try {
+  assertProductionSecrets();
+} catch (err) {
+  logStartupFailure(err);
+  process.exit(1);
+}
 
 const app = Fastify({ logger: true });
 
-await app.register(cors, { origin: true, credentials: true });
+app.addHook('preParsing', async (request, _reply, payload) => {
+  if (request.url !== '/billing/webhook' && request.url !== '/donations/webhook') {
+    return payload;
+  }
+
+  const chunks: Buffer[] = [];
+  for await (const chunk of payload) {
+    chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);
+  }
+
+  const rawBody = Buffer.concat(chunks);
+  (request as BillingWebhookRequest).rawBody = rawBody;
+  return Readable.from(rawBody);
+});
+
+await app.register(cors, {
+  origin: env.corsOrigin ?? true,
+  credentials: true,
+});
+
+await app.register(helmet, {
+  contentSecurityPolicy: false,
+  crossOriginEmbedderPolicy: false,
+});
+
+app.setErrorHandler((error, _request, reply) => {
+  const err = error as Error & { statusCode?: number };
+  const statusCode = err.statusCode && err.statusCode >= 400 ? err.statusCode : 500;
+  if (statusCode >= 500) {
+    app.log.error(err);
+  }
+
+  const message =
+    statusCode >= 500 && !env.isDev ? 'Erreur interne du serveur' : err.message || 'Erreur interne du serveur';
+
+  return reply.status(statusCode).send({
+    error: statusCode >= 500 ? 'INTERNAL_ERROR' : 'REQUEST_ERROR',
+    message,
+  });
+});
+
+await app.register(healthRoutes);
 await app.register(authRoutes);
 await app.register(coursesRoutes);
 await app.register(billingRoutes);
-await app.register(servicenowRoutes);
-
-app.get('/health', async () => ({ ok: true, service: 'apple-mdm-academy-api' }));
+await app.register(donationsRoutes);
 
 try {
   await app.listen({ port: env.port, host: '0.0.0.0' });

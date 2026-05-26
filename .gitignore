@@ -1,8 +1,15 @@
 node_modules
+.venv-dub
 dist
 .next
 .expo
 .env
 *.db
 .turbo
+.pnpm-store
 .DS_Store
+*.tsbuildinfo
+web/test-results
+web/playwright-report
+logs/*.log
+logs/autopilot.pid

@@ -1,17 +1,48 @@
 {
   "name": "apple-mdm-academy",
+  "version": "0.3.13",
   "private": true,
   "scripts": {
     "dev": "turbo run dev",
+    "dev:stack": "bash scripts/dev-stack.sh",
+    "setup": "bash scripts/setup.sh",
     "build": "turbo run build",
     "vercel-build": "pnpm --filter web build",
+    "test": "turbo run test",
+    "typecheck": "pnpm --filter @ama/shared typecheck && pnpm --filter backend exec tsc --noEmit && pnpm --filter web exec tsc --noEmit && pnpm --filter mobile exec tsc --noEmit",
+    "lint": "eslint .",
+    "audit:ci": "pnpm audit --audit-level high || true",
+    "check": "pnpm lint && pnpm test && pnpm typecheck && pnpm build",
+    "db:up": "docker compose up -d postgres",
+    "db:down": "docker compose down",
     "db:generate": "pnpm --filter backend exec prisma generate",
-    "db:migrate": "pnpm --filter backend exec prisma migrate dev",
-    "db:seed": "pnpm --filter backend exec tsx prisma/seed.ts"
+    "db:migrate": "pnpm --filter backend exec prisma migrate deploy",
+    "db:migrate:dev": "pnpm --filter backend exec prisma migrate dev",
+    "db:seed": "pnpm --filter backend exec tsx prisma/seed.ts",
+    "smoke:api": "node scripts/smoke-api.mjs",
+    "smoke:web": "node scripts/smoke-web.mjs",
+    "smoke:all": "pnpm smoke:api && pnpm smoke:web",
+    "dub:generate": "pnpm --filter backend exec tsx ../scripts/generate-video-dubs-fr.ts",
+    "dub:generate:jamf-m1": "PYTHON_BIN=\"${PYTHON_BIN:-.venv-dub/bin/python3}\" DUB_ONLY_MODULE=jamf-pro-foundations/smart-groups-policies pnpm dub:generate",
+    "heygen:translate": "pnpm --filter backend exec tsx ../scripts/heygen-translate-pilot-videos.ts",
+    "heygen:generate": "pnpm --filter backend exec tsx ../scripts/heygen-generate-course-videos.ts",
+    "heygen:status": "pnpm --filter backend exec tsx ../scripts/heygen-translate-pilot-videos.ts -- --status",
+    "heygen:generate:status": "pnpm --filter backend exec tsx ../scripts/heygen-generate-course-videos.ts -- --status",
+    "heygen:register": "pnpm --filter backend exec tsx ../scripts/heygen-translate-pilot-videos.ts --",
+    "heygen:sync": "pnpm --filter backend exec tsx ../scripts/heygen-manifest-sync.ts",
+    "heygen:download": "pnpm --filter backend exec tsx ../scripts/heygen-generate-course-videos.ts -- --download",
+    "heygen:recover": "pnpm --filter backend exec tsx ../scripts/heygen-generate-course-videos.ts -- --recover",
+    "heygen:submit": "pnpm --filter backend exec tsx ../scripts/heygen-generate-course-videos.ts -- --submit --force",
+    "videos:audit": "pnpm --filter backend exec tsx ../scripts/videos-audit.ts",
+    "heygen:retry-failed": "pnpm --filter backend exec tsx ../scripts/heygen-translate-pilot-videos.ts -- --retry-failed"
   },
   "devDependencies": {
+    "@eslint/js": "^9.17.0",
+    "eslint": "^9.17.0",
+    "globals": "^15.14.0",
     "turbo": "^2.3.3",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.18.2"
   },
   "packageManager": "pnpm@9.15.0"
 }

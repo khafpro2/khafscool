@@ -1,10 +1,143 @@
 import type { FastifyReply, FastifyRequest } from 'fastify';
+import { CourseTrack } from '@prisma/client';
+import { z } from 'zod';
 import { prisma } from '../lib/prisma.js';
 import * as gamification from '../services/gamification.service.js';
+import * as practiceExam from '../services/practice-exam.service.js';
+import { sanitizeCourse } from '../utils/course-sanitize.js';
+
+const checkAnswerBodySchema = z.object({
+  questionId: z.string().min(1, 'questionId requis'),
+  selectedOption: z.string().min(1, 'selectedOption requis'),
+});
+
+const practiceExamScoreBodySchema = z.object({
+  attemptToken: z.string().min(1, 'attemptToken requis'),
+  answers: z
+    .array(
+      z.object({
+        questionId: z.string().min(1, 'questionId requis'),
+        selectedOption: z.string().min(1, 'selectedOption requis'),
+      })
+    )
+    .min(1, 'answers requis'),
+});
+
+const completeModuleBodySchema = z.object({
+  quizAnswers: z.record(z.string().min(1), z.string().min(1)).optional(),
+  gameOrder: z.array(z.number().int()).optional(),
+  reviewMode: z.boolean().optional(),
+});
+
+export type CompleteModuleRequestBody = z.infer<typeof completeModuleBodySchema>;
+
+export function parseCompleteModuleRequest(body: unknown) {
+  return completeModuleBodySchema.safeParse(body ?? {});
+}
+
+const certificationSprintRequestSchema = z.object({
+  track: z.nativeEnum(CourseTrack, {
+    required_error: 'track is required',
+    invalid_type_error: 'track must be a valid course track',
+  }),
+  days: z.union([z.literal(7), z.literal(14)], {
+    invalid_type_error: 'days must be 7 or 14',
+  }).optional(),
+});
+
+export type CertificationSprintRequestBody = z.infer<typeof certificationSprintRequestSchema>;
+
+export function parseCertificationSprintRequest(body: unknown) {
+  return certificationSprintRequestSchema.safeParse(body ?? {});
+}
 
 export async function listCourses(_req: FastifyRequest, reply: FastifyReply) {
   const courses = await prisma.course.findMany({ orderBy: { sortOrder: 'asc' } });
   return reply.send({ courses });
+}
+
+export async function listPublicCatalog(_req: FastifyRequest, reply: FastifyReply) {
+  const courses = await prisma.course.findMany({
+    orderBy: { sortOrder: 'asc' },
+    select: {
+      slug: true,
+      track: true,
+      title: true,
+      description: true,
+      _count: { select: { modules: true } },
+    },
+  });
+
+  return reply.send({
+    courses: courses.map(({ _count, ...course }) => ({
+      ...course,
+      moduleCount: _count.modules,
+    })),
+  });
+}
+
+export async function getPracticeExam(
+  req: FastifyRequest<{ Params: { slug: string } }>,
+  reply: FastifyReply
+) {
+  try {
+    const data = await practiceExam.getPracticeExam(req.params.slug, req.user.sub);
+    return reply.send(data);
+  } catch (e) {
+    if ((e as Error).message === 'COURSE_NOT_FOUND') {
+      return reply.status(404).send({ error: 'COURSE_NOT_FOUND' });
+    }
+    throw e;
+  }
+}
+
+export async function recordPracticeExamScore(
+  req: FastifyRequest<{
+    Params: { slug: string };
+    Body: { attemptToken?: string; answers?: { questionId: string; selectedOption: string }[] };
+  }>,
+  reply: FastifyReply
+) {
+  const parsedBody = practiceExamScoreBodySchema.safeParse(req.body ?? {});
+  if (!parsedBody.success) {
+    return reply.status(400).send({
+      error: 'INVALID_PRACTICE_EXAM_SCORE',
+      details: parsedBody.error.issues.map((issue) => ({
+        field: issue.path.join('.') || 'body',
+        message: issue.message,
+      })),
+    });
+  }
+
+  try {
+    const attempt = practiceExam.verifyPracticeExamAttempt(parsedBody.data.attemptToken);
+    if (attempt.sub !== req.user.sub || attempt.slug !== req.params.slug) {
+      return reply.status(400).send({ error: 'INVALID_PRACTICE_EXAM_ATTEMPT' });
+    }
+
+    const grade = await practiceExam.gradePracticeExamAnswers(attempt.questionIds, parsedBody.data.answers);
+    const result = await gamification.recordPracticeExamResult(
+      req.user.sub,
+      req.params.slug,
+      grade.scorePercent
+    );
+    return reply.send({ ...result, correctCount: grade.correct, totalQuestions: grade.total });
+  } catch (e) {
+    const message = (e as Error).message;
+    if (message === 'COURSE_NOT_FOUND' || message === 'COURSE_NOT_COMPLETE') {
+      return reply.status(404).send({ error: message });
+    }
+    if (
+      message === 'INVALID_PRACTICE_EXAM_ATTEMPT' ||
+      message === 'INCOMPLETE_PRACTICE_EXAM_ANSWERS' ||
+      message === 'UNKNOWN_PRACTICE_EXAM_QUESTION' ||
+      message === 'DUPLICATE_PRACTICE_EXAM_ANSWER' ||
+      message === 'INVALID_PRACTICE_EXAM_QUESTIONS'
+    ) {
+      return reply.status(400).send({ error: message });
+    }
+    throw e;
+  }
 }
 
 export async function getCourse(
@@ -21,7 +154,42 @@ export async function getCourse(
     },
   });
   if (!course) return reply.status(404).send({ error: 'NOT_FOUND' });
-  return reply.send({ course });
+  return reply.send({ course: sanitizeCourse(course) });
+}
+
+export async function checkAnswer(
+  req: FastifyRequest<{
+    Params: { id: string };
+    Body: { questionId: string; selectedOption: string };
+  }>,
+  reply: FastifyReply
+) {
+  const parsedBody = checkAnswerBodySchema.safeParse(req.body ?? {});
+  if (!parsedBody.success) {
+    return reply.status(400).send({
+      error: 'INVALID_CHECK_ANSWER_REQUEST',
+      details: parsedBody.error.issues.map((issue) => ({
+        field: issue.path.join('.') || 'body',
+        message: issue.message,
+      })),
+    });
+  }
+
+  try {
+    const result = await gamification.checkQuestionAnswer(
+      req.user.sub,
+      req.params.id,
+      parsedBody.data.questionId,
+      parsedBody.data.selectedOption
+    );
+    return reply.send(result);
+  } catch (e) {
+    const message = (e as Error).message;
+    if (message === 'MODULE_NOT_FOUND' || message === 'QUESTION_NOT_FOUND') {
+      return reply.status(404).send({ error: message });
+    }
+    throw e;
+  }
 }
 
 export async function getCourseProgress(
@@ -42,12 +210,23 @@ export async function getCourseProgress(
 export async function completeModule(
   req: FastifyRequest<{
     Params: { id: string };
-    Body: { quizAnswers?: Record<string, string>; gameOrder?: number[] };
+    Body: CompleteModuleRequestBody;
   }>,
   reply: FastifyReply
 ) {
+  const parsedBody = parseCompleteModuleRequest(req.body);
+  if (!parsedBody.success) {
+    return reply.status(400).send({
+      error: 'INVALID_COMPLETE_MODULE_REQUEST',
+      details: parsedBody.error.issues.map((issue) => ({
+        field: issue.path.join('.') || 'body',
+        message: issue.message,
+      })),
+    });
+  }
+
   try {
-    const result = await gamification.completeModule(req.user.sub, req.params.id, req.body ?? {});
+    const result = await gamification.completeModule(req.user.sub, req.params.id, parsedBody.data);
     return reply.send(result);
   } catch (e) {
     if ((e as Error).message === 'MODULE_NOT_FOUND') {
@@ -68,8 +247,42 @@ export async function getUserProgress(req: FastifyRequest, reply: FastifyReply) 
 }
 
 export async function getWeeklyQuests(req: FastifyRequest, reply: FastifyReply) {
-  const quests = await gamification.ensureWeeklyQuests(req.user.sub);
-  return reply.send({ quests });
+  const data = await gamification.getWeeklyQuestsResponse(req.user.sub);
+  return reply.send(data);
+}
+
+export async function startCertificationSprint(
+  req: FastifyRequest<{ Body: unknown }>,
+  reply: FastifyReply
+) {
+  const parsedBody = parseCertificationSprintRequest(req.body);
+  if (!parsedBody.success) {
+    return reply.status(400).send({
+      error: 'INVALID_CERTIFICATION_SPRINT_REQUEST',
+      details: parsedBody.error.issues.map((issue) => ({
+        field: issue.path.join('.') || 'body',
+        message: issue.message,
+      })),
+    });
+  }
+
+  try {
+    const certificationSprint = await gamification.startCertificationSprint(req.user.sub, {
+      track: parsedBody.data.track,
+      days: parsedBody.data.days,
+    });
+    return reply.status(201).send({ certificationSprint });
+  } catch (e) {
+    if ((e as Error).message === 'INVALID_SPRINT_TRACK' || (e as Error).message === 'INVALID_SPRINT_DAYS') {
+      return reply.status(400).send({ error: (e as Error).message });
+    }
+    throw e;
+  }
+}
+
+export async function getCurrentCertificationSprint(req: FastifyRequest, reply: FastifyReply) {
+  const certificationSprint = await gamification.getCurrentCertificationSprint(req.user.sub);
+  return reply.send({ certificationSprint });
 }
 
 export async function getLeaderboard(req: FastifyRequest, reply: FastifyReply) {

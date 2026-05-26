@@ -1,11 +1,12 @@
 {
   "name": "web",
-  "version": "0.0.1",
+  "version": "0.3.13",
   "private": true,
   "scripts": {
     "dev": "WATCHPACK_POLLING=true next dev . -p 3000 -H 127.0.0.1",
     "build": "next build",
-    "start": "next start -p 3000"
+    "start": "next start -p 3000",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@ama/shared": "workspace:*",
@@ -14,6 +15,7 @@
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.49.1",
     "@types/node": "^22.10.2",
     "@types/react": "^19.0.1",
     "@types/react-dom": "^19.0.2",

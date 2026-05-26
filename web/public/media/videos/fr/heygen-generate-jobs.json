@@ -1,0 +1,63 @@
+{
+  "jobs": [
+    {
+      "courseSlug": "apple-cert-prep",
+      "moduleSlug": "ios-troubleshooting",
+      "basename": "apple-ios-troubleshooting-fr",
+      "title": "Apple MDM Academy — Dépannage iOS en environnement géré (FR)",
+      "status": "failed",
+      "error": "{\"error\":{\"code\":\"invalid_parameter\",\"hint\":\"Use --request-schema on the command to see expected fields\",\"message\":\"Invalid avatar_id: 'f35747e92a224e7daad1319a2b629b0b'. Avatar not found or you don't have access to it.\"}}"
+    },
+    {
+      "courseSlug": "jamf-pro-foundations",
+      "moduleSlug": "smart-groups-policies",
+      "basename": "jamf-smart-groups-policies-fr",
+      "title": "Apple MDM Academy — Jamf Pro et ABM (FR)",
+      "status": "failed",
+      "error": "{\"error\":{\"code\":\"invalid_parameter\",\"hint\":\"Use --request-schema on the command to see expected fields\",\"message\":\"Invalid avatar_id: 'f35747e92a224e7daad1319a2b629b0b'. Avatar not found or you don't have access to it.\"}}"
+    },
+    {
+      "courseSlug": "jamf-pro-foundations",
+      "moduleSlug": "inventory-basics",
+      "basename": "jamf-inventory-basics-fr",
+      "title": "Apple MDM Academy — Inventaire Jamf Pro (FR)",
+      "status": "completed",
+      "sessionId": "c13cc910dcab414e958b08d3152edc76",
+      "videoId": "e51a6299d7574f3fbe8eff3f0198d7f9",
+      "updatedAt": "2026-05-24T22:39:48.778Z",
+      "outputVideoUrl": "https://files2.heygen.ai/aws_pacific/avatar_tmp/ba4e9c657fa74093a450f806e067c237/vf54fe202149c4be8ab4c41486d96b2bd/e51a6299d7574f3fbe8eff3f0198d7f9.mp4?Expires=1780267186&Signature=ZmKOGu5-eWdWd8j2kqJ7HdhgcaqcfshP3BrgPACi-aX3Qkg2H23xVgAz29w~DMHqeD-z8w3c8SkBwrXVjcICkSpOrtcE-IvkAkfrdqm7Cvm9II6qG-XM3dc6~XcJZz2ze0U-~1PPFm07eN1fDOzqJe96hhBLqgKWXLe4maUNOQzkuLkEXiQV55P6JLBciJWKRTwymdY2XbLOV9lz22hveWU2EmsDonPqkbVB5XCfIOWeC2pDvii3viQP22rNKD7AyaEGulvUQJIKbqCMBqU040etrJWQXQIs9HJUyFCZqqDDJ2ZLm7xE0Asj0wJTQfK9~sAToULleFWTq-0EotUi~w__&Key-Pair-Id=K38HBHX5LX3X2H"
+    },
+    {
+      "courseSlug": "intune-ios-enrollment",
+      "moduleSlug": "ade-enrollment-basics",
+      "basename": "intune-ade-enrollment-basics-fr",
+      "title": "Apple MDM Academy — Intune ADE et ABM (FR)",
+      "status": "failed",
+      "sessionId": "a9df80500e3a46d5b81e3079ad2428d4",
+      "videoId": "fc8b7e86b0664df3a7892926256b0ef1",
+      "updatedAt": "2026-05-24T22:28:58.694Z",
+      "error": "Génération HeyGen échouée"
+    },
+    {
+      "courseSlug": "intune-ios-enrollment",
+      "moduleSlug": "compliance-policies",
+      "basename": "intune-compliance-policies-fr",
+      "title": "Apple MDM Academy — Conformité Intune iOS (FR)",
+      "status": "completed",
+      "sessionId": "dff7e1b56f8e443e8a9a3913e69c884f",
+      "videoId": "c9de2a228fc8476295a7ce98972076f5",
+      "updatedAt": "2026-05-24T22:40:54.750Z",
+      "outputVideoUrl": "https://files2.heygen.ai/aws_pacific/avatar_tmp/ba4e9c657fa74093a450f806e067c237/v8fe343cf4ba2421fac1d933ba5567f8b/c9de2a228fc8476295a7ce98972076f5.mp4?Expires=1780266777&Signature=oYaVeBlJsOFwzzXH-rxGpgkaejkaSWWZjH-lYuwIvFdBxUK3FEIqjthg0A02Rg8BcGJTZdKIx5CivOyVM-Bzo-EbDfBAqzGAySdCAFuN7t4k2bgZATGuxfC3~-75f1RNrsRyomMmVqi7aPV6DFgp74-psQ0RN1h-kyyQEs5J9tcp6ePQFwAEQ7nj4okpIICY8POOpSmda6BY9Wz-T~RsRJS4ctV3iXJ6Gzq5p-EFx04Nhu-dkEhAXTNq-hvoS0E2rC9KalQggxDF3h~rOcZal30uyuMG6U09Bo5umgo3CEm9NJCRzYohiOvaeN9vzOLa-ksoqgZPcU9icogNS5kEJA__&Key-Pair-Id=K38HBHX5LX3X2H"
+    },
+    {
+      "courseSlug": "apple-cert-prep",
+      "moduleSlug": "acmt-exam-prep",
+      "basename": "apple-acmt-exam-prep-fr",
+      "title": "Formation Apple Device Support Professional",
+      "videoId": "84416e744d0048889ff465197e28a17c",
+      "status": "completed",
+      "outputVideoUrl": "https://files2.heygen.ai/aws_pacific/avatar_tmp/ba4e9c657fa74093a450f806e067c237/v0b25a757b3c647868009ff5949ffa57d/84416e744d0048889ff465197e28a17c.mp4?Expires=1780269105&Signature=k3ZEsdHaOczVQ9kj-rEVzM4TS1AuuHb3Vcnad6ELjR6PHeQDxj-z66PYHh7k6cct4FysW4RoKuT62l8rYumqeoYDDASVj3KgJty8kj1Wd3-vUCDPOqoNXQT2B~Voph5PDu3VGDNAqqN9wEQhknqNVYWRweR4Ym-brjYyJvLm-2iN4IgTzlyzZ2kSW95CVLUJzLNrkw58IVgwwzEKdyHvnXgBt1N-mUtk2rt3XAEWrVr-BHxYTdCt1zMWCxPS2goph4xKrrARnIhQVdL8KLoxMrrJznWWZxW2Ke1C6BZ-fQY5AaFfgw~Ck0lWN0TKlwrATObfxJnVs4rFvNVDLP9Qow__&Key-Pair-Id=K38HBHX5LX3X2H",
+      "updatedAt": "2026-05-24T23:44:59.095Z"
+    }
+  ]
+}

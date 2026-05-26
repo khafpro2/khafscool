@@ -1,0 +1,45 @@
+{
+  "basename": "jamf-smart-groups-policies-fr",
+  "segments": [
+    {
+      "atSec": 0,
+      "url": "/media/dubs/jamf-smart-groups-policies-fr-01.mp3",
+      "durationSec": 8.66
+    },
+    {
+      "atSec": 45,
+      "url": "/media/dubs/jamf-smart-groups-policies-fr-02.mp3",
+      "durationSec": 9.41
+    },
+    {
+      "atSec": 120,
+      "url": "/media/dubs/jamf-smart-groups-policies-fr-03.mp3",
+      "durationSec": 7.85
+    },
+    {
+      "atSec": 210,
+      "url": "/media/dubs/jamf-smart-groups-policies-fr-04.mp3",
+      "durationSec": 10.9
+    },
+    {
+      "atSec": 330,
+      "url": "/media/dubs/jamf-smart-groups-policies-fr-05.mp3",
+      "durationSec": 7.61
+    },
+    {
+      "atSec": 480,
+      "url": "/media/dubs/jamf-smart-groups-policies-fr-06.mp3",
+      "durationSec": 8.14
+    },
+    {
+      "atSec": 620,
+      "url": "/media/dubs/jamf-smart-groups-policies-fr-07.mp3",
+      "durationSec": 8.02
+    },
+    {
+      "atSec": 760,
+      "url": "/media/dubs/jamf-smart-groups-policies-fr-08.mp3",
+      "durationSec": 9.74
+    }
+  ]
+}

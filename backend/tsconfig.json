@@ -8,7 +8,11 @@
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "declaration": true
+    "declaration": true,
+    "paths": {
+      "@ama/shared": ["../shared/src/index.ts"],
+      "@ama/shared/*": ["../shared/src/*"]
+    }
   },
   "include": ["src/**/*"]
 }

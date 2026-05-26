@@ -18,7 +18,6 @@ enum CourseTrack {
   APPLE
   JAMF
   INTUNE
-  SERVICENOW
 }
 
 enum UserLevel {
@@ -67,13 +66,19 @@ model Course {
 }
 
 model Module {
-  id         String           @id @default(uuid())
-  courseId   String
-  slug       String
-  title      String
-  summary    String
-  imageUrl   String?
-  sortOrder  Int              @default(0)
+  id                 String           @id @default(uuid())
+  courseId           String
+  slug               String
+  title              String
+  summary            String
+  learningObjectives String[]         @default([])
+  keyTakeaways       String[]         @default([])
+  lessonContent      String           @default("") @db.Text
+  imageUrl           String?
+  videoUrl           String?
+  videoTitle           String?
+  videoDurationMinutes Int?
+  sortOrder          Int              @default(0)
   course     Course           @relation(fields: [courseId], references: [id])
   questions  Question[]
   game       Game?
@@ -83,14 +88,15 @@ model Module {
 }
 
 model Question {
-  id            String @id @default(uuid())
+  id            String  @id @default(uuid())
   moduleId      String
   type          String
   prompt        String
   options       Json
   correctOption String
   explanation   String
-  module        Module @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  examOnly      Boolean @default(false)
+  module        Module  @relation(fields: [moduleId], references: [id], onDelete: Cascade)
 }
 
 model Game {
@@ -125,15 +131,16 @@ model ModuleProgress {
 }
 
 model UserQuest {
-  id        String   @id @default(uuid())
-  userId    String
-  questKey  String
-  label     String
-  target    Int
-  progress  Int      @default(0)
-  completed Boolean  @default(false)
-  weekStart DateTime
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id            String   @id @default(uuid())
+  userId        String
+  questKey      String
+  label         String
+  target        Int
+  progress      Int      @default(0)
+  completed     Boolean  @default(false)
+  rewardClaimed Boolean  @default(false)
+  weekStart     DateTime
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, questKey, weekStart])
 }
@@ -148,4 +155,14 @@ model Subscription {
   trialEndsAt          DateTime?
   currentPeriodEnd     DateTime?
   user                 User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Donation {
+  id              String   @id @default(uuid())
+  amountCents     Int
+  currency        String   @default("eur")
+  email           String?
+  userId          String?
+  stripeSessionId String   @unique
+  createdAt       DateTime @default(now())
 }

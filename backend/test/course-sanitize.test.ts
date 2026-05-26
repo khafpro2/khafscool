@@ -1,0 +1,96 @@
+import { describe, expect, it } from 'vitest';
+
+import { sanitizeCourse, sanitizeGame, sanitizeQuestion } from '../src/utils/course-sanitize.js';
+
+describe('course sanitize', () => {
+  it('removes quiz answers and game solutions from client payloads', () => {
+    const sanitized = sanitizeCourse({
+      id: 'course-1',
+      slug: 'apple-cert-prep',
+      track: 'APPLE',
+      title: 'Parcours Apple',
+      description: 'Description',
+      sortOrder: 1,
+      modules: [
+        {
+          id: 'module-1',
+          courseId: 'course-1',
+          slug: 'module-1',
+          title: 'Unité 1',
+          summary: 'Résumé',
+          learningObjectives: ['Objectif A'],
+          keyTakeaways: ['Point clé A'],
+          lessonContent: '## Leçon\n\nContenu pédagogique.',
+          imageUrl: null,
+          videoUrl: 'https://www.youtube.com/watch?v=qrQyL5-SWFg',
+          videoTitle: "Vidéo : test",
+          videoDurationMinutes: 5,
+          sortOrder: 1,
+          questions: [
+            {
+              id: 'q1',
+              moduleId: 'module-1',
+              type: 'MULTIPLE_CHOICE',
+              prompt: 'Question ?',
+              options: [
+                { id: 'a', label: 'A' },
+                { id: 'b', label: 'B' },
+              ],
+              correctOption: 'b',
+              explanation: 'Parce que B',
+              examOnly: false,
+            },
+            {
+              id: 'q-bonus',
+              moduleId: 'module-1',
+              type: 'MULTIPLE_CHOICE',
+              prompt: 'Bonus examen ?',
+              options: [
+                { id: 'a', label: 'A' },
+                { id: 'b', label: 'B' },
+              ],
+              correctOption: 'a',
+              explanation: 'Parce que A',
+              examOnly: true,
+            },
+          ],
+          game: {
+            id: 'game-1',
+            moduleId: 'module-1',
+            type: 'SCENARIO_FIX',
+            scenario: 'Scénario',
+            steps: [{ id: 1, label: 'Étape 1' }],
+            solution: { correctOrder: [1] },
+          },
+        },
+      ],
+    });
+
+    expect(sanitized.modules[0]?.summary).toBe('Résumé');
+    expect(sanitized.modules[0]?.learningObjectives).toEqual(['Objectif A']);
+    expect(sanitized.modules[0]?.keyTakeaways).toEqual(['Point clé A']);
+    expect(sanitized.modules[0]?.lessonContent).toContain('Leçon');
+    expect(sanitized.modules[0]?.videoUrl).toContain('youtube.com');
+    expect(sanitized.modules[0]?.videoTitle).toBe('Vidéo : test');
+    expect(sanitized.modules[0]?.videoDurationMinutes).toBe(5);
+    expect(sanitized.modules[0]?.questions[0]).toEqual({
+      id: 'q1',
+      type: 'MULTIPLE_CHOICE',
+      prompt: 'Question ?',
+      options: [
+        { id: 'a', label: 'A' },
+        { id: 'b', label: 'B' },
+      ],
+    });
+    expect(sanitized.modules[0]?.game).toEqual({
+      id: 'game-1',
+      type: 'SCENARIO_FIX',
+      scenario: 'Scénario',
+      steps: [{ id: 1, label: 'Étape 1' }],
+    });
+    expect(sanitized.modules[0]?.questions).toHaveLength(1);
+    expect(sanitized.modules[0]?.questions.map((question) => question.id)).toEqual(['q1']);
+    expect(sanitizeQuestion).toBeDefined();
+    expect(sanitizeGame(null)).toBeNull();
+  });
+});

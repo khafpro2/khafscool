@@ -1,15 +1,30 @@
 import bcrypt from 'bcrypt';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { AuthProvider } from '@prisma/client';
-import { oauthProviders, type OAuthProviderName } from '../config/oauth.js';
+import { getOAuthStatusSnapshot, getOAuthProviderStatus, oauthProviders, type OAuthProviderName } from '../config/oauth.js';
 import { prisma } from '../lib/prisma.js';
+import {
+  changePasswordSchema,
+  deleteAccountSchema,
+  formatZodErrors,
+  loginSchema,
+  oauthSessionExchangeSchema,
+  refreshSchema,
+  registerSchema,
+  updateProfileSchema,
+} from '../schemas/auth.schemas.js';
 import {
   buildAuthorizeUrl,
   consumePkce,
   exchangeCodeAndGetProfile,
 } from '../services/oauth.service.js';
 import {
+  consumeOAuthSessionCode,
+  createOAuthSessionCode,
+} from '../services/oauth-session.service.js';
+import {
   createRefreshToken,
+  revokeAllUserRefreshTokens,
   revokeRefreshToken,
   rotateRefreshToken,
   signAccessToken,
@@ -66,9 +81,9 @@ async function findOrCreateOAuthUser(provider: OAuthProviderName, profile: { sub
     await prisma.userQuest.create({
       data: {
         userId: user.id,
-        questKey: 'weekly-apple-3',
-        label: 'Termine 3 modules Apple cette semaine',
-        target: 3,
+        questKey: 'weekly-apple-2',
+        label: 'Valide 2 modules Apple',
+        target: 2,
         weekStart,
       },
     });
@@ -77,17 +92,40 @@ async function findOrCreateOAuthUser(provider: OAuthProviderName, profile: { sub
   return user;
 }
 
-function tokenResponse(user: { id: string; email: string | null; displayName: string | null; provider: AuthProvider }, refresh: { plainToken: string }) {
+function tokenResponse(
+  user: { id: string; email: string | null; displayName: string | null; provider: AuthProvider },
+  refresh: { plainToken: string },
+  rememberMe?: boolean
+) {
   const accessToken = signAccessToken({ sub: user.id, email: user.email });
-  return { accessToken, refreshToken: refresh.plainToken, user: sanitizeUser(user) };
+  return {
+    accessToken,
+    refreshToken: refresh.plainToken,
+    user: sanitizeUser(user),
+    rememberMe: rememberMe ?? true,
+    accessTokenTtlMinutes: 15,
+  };
+}
+
+export async function getOAuthStatus(_req: FastifyRequest, reply: FastifyReply) {
+  return reply.send(getOAuthStatusSnapshot());
 }
 
 export async function startOAuth(
   req: FastifyRequest<{ Params: { provider: OAuthProviderName }; Querystring: { redirect?: string } }>,
   reply: FastifyReply
 ) {
-  const config = oauthProviders[req.params.provider];
+  const provider = req.params.provider;
+  const config = oauthProviders[provider];
   if (!config) return reply.status(400).send({ error: 'UNKNOWN_PROVIDER' });
+
+  const status = getOAuthProviderStatus(provider);
+  if (status === 'disabled') {
+    return reply.status(503).send({ error: 'OAUTH_DISABLED' });
+  }
+  if (status === 'stub' && process.env.NODE_ENV === 'production') {
+    return reply.status(503).send({ error: 'OAUTH_UNAVAILABLE' });
+  }
 
   const { url } = buildAuthorizeUrl(config, req.query.redirect);
   return reply.redirect(url);
@@ -102,29 +140,112 @@ export async function oauthCallback(
 ) {
   const provider = req.params.provider;
   const config = oauthProviders[provider];
-  const code = req.query.code ?? 'dev-code';
-  const pkce = req.query.state ? consumePkce(req.query.state) : undefined;
+  if (!config) return reply.status(400).send({ error: 'UNKNOWN_PROVIDER' });
 
-  const profile = await exchangeCodeAndGetProfile(provider, code, config);
-  const user = await findOrCreateOAuthUser(provider, profile);
-  const refresh = await createRefreshToken(user.id);
-  const tokens = tokenResponse(user, refresh);
-
-  if (pkce?.redirect) {
-    const redirect = new URL(pkce.redirect);
-    redirect.searchParams.set('accessToken', tokens.accessToken);
-    redirect.searchParams.set('refreshToken', tokens.refreshToken);
-    return reply.redirect(redirect.toString());
+  const code = req.query.code;
+  if (!code) {
+    return reply.status(400).send({ error: 'OAUTH_CODE_MISSING' });
   }
 
-  return reply.send(tokens);
+  if (!req.query.state) {
+    return reply.status(400).send({ error: 'OAUTH_STATE_MISSING' });
+  }
+
+  const pkce = consumePkce(req.query.state);
+  if (!pkce) {
+    return reply.status(400).send({ error: 'OAUTH_STATE_INVALID' });
+  }
+
+  try {
+    const profile = await exchangeCodeAndGetProfile(provider, code, config, pkce.verifier);
+    const user = await findOrCreateOAuthUser(provider, profile);
+    const refresh = await createRefreshToken(user.id);
+    const tokens = tokenResponse(user, refresh);
+
+    if (pkce.redirect) {
+      const redirectTarget = pkce.redirect;
+      const sessionCode = createOAuthSessionCode({
+        accessToken: tokens.accessToken,
+        refreshToken: tokens.refreshToken,
+        user: tokens.user,
+      });
+
+      if (redirectTarget.startsWith('applemdmacademy://') || redirectTarget.startsWith('exp://')) {
+        const redirect = new URL(redirectTarget);
+        redirect.searchParams.set('sessionCode', sessionCode);
+        return reply.redirect(redirect.toString());
+      }
+
+      const webBase = process.env.WEB_URL ?? 'http://127.0.0.1:3000';
+      const redirect = redirectTarget.startsWith('http://') || redirectTarget.startsWith('https://')
+        ? new URL(redirectTarget)
+        : new URL('/auth/oauth-complete', webBase);
+
+      if (!redirectTarget.startsWith('http://') && !redirectTarget.startsWith('https://')) {
+        redirect.searchParams.set('next', redirectTarget);
+      }
+
+      redirect.searchParams.set('sessionCode', sessionCode);
+      return reply.redirect(redirect.toString());
+    }
+
+    return reply.send(tokens);
+  } catch (e) {
+    const message = (e as Error).message;
+    if (
+      message === 'OAUTH_DISABLED' ||
+      message === 'OAUTH_UNAVAILABLE' ||
+      message === 'OAUTH_NOT_IMPLEMENTED' ||
+      message === 'OAUTH_TOKEN_EXCHANGE_FAILED' ||
+      message === 'OAUTH_PROFILE_FETCH_FAILED' ||
+      message === 'OAUTH_PROFILE_INVALID' ||
+      message === 'OAUTH_PKCE_REQUIRED' ||
+      message === 'OAUTH_STATE_INVALID' ||
+      message === 'OAUTH_STATE_MISSING' ||
+      message === 'OAUTH_SESSION_CODE_INVALID'
+    ) {
+      return reply.status(503).send({ error: message });
+    }
+    throw e;
+  }
 }
 
-export async function registerLocal(
-  req: FastifyRequest<{ Body: { email: string; password: string; displayName: string } }>,
-  reply: FastifyReply
-) {
-  const { email, password, displayName } = req.body;
+export async function exchangeOAuthSession(req: FastifyRequest<{ Body: unknown }>, reply: FastifyReply) {
+  const parsedBody = oauthSessionExchangeSchema.safeParse(req.body ?? {});
+  if (!parsedBody.success) {
+    return reply.status(400).send({
+      error: 'INVALID_OAUTH_SESSION_REQUEST',
+      details: formatZodErrors(parsedBody.error),
+    });
+  }
+
+  try {
+    const session = consumeOAuthSessionCode(parsedBody.data.sessionCode);
+    return reply.send({
+      accessToken: session.accessToken,
+      refreshToken: session.refreshToken,
+      user: session.user,
+      rememberMe: true,
+      accessTokenTtlMinutes: 15,
+    });
+  } catch (e) {
+    if ((e as Error).message === 'OAUTH_SESSION_CODE_INVALID') {
+      return reply.status(400).send({ error: 'OAUTH_SESSION_CODE_INVALID' });
+    }
+    throw e;
+  }
+}
+
+export async function registerLocal(req: FastifyRequest<{ Body: unknown }>, reply: FastifyReply) {
+  const parsedBody = registerSchema.safeParse(req.body ?? {});
+  if (!parsedBody.success) {
+    return reply.status(400).send({
+      error: 'INVALID_REGISTER_REQUEST',
+      details: formatZodErrors(parsedBody.error),
+    });
+  }
+
+  const { email, password, displayName } = parsedBody.data;
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) return reply.status(409).send({ error: 'EMAIL_EXISTS' });
 
@@ -140,31 +261,42 @@ export async function registerLocal(
     },
   });
 
-  const refresh = await createRefreshToken(user.id);
-  return reply.status(201).send(tokenResponse(user, refresh));
+  const refresh = await createRefreshToken(user.id, { rememberMe: true });
+  return reply.status(201).send(tokenResponse(user, refresh, true));
 }
 
-export async function loginLocal(
-  req: FastifyRequest<{ Body: { email: string; password: string } }>,
-  reply: FastifyReply
-) {
-  const { email, password } = req.body;
+export async function loginLocal(req: FastifyRequest<{ Body: unknown }>, reply: FastifyReply) {
+  const parsedBody = loginSchema.safeParse(req.body ?? {});
+  if (!parsedBody.success) {
+    return reply.status(400).send({
+      error: 'INVALID_LOGIN_REQUEST',
+      details: formatZodErrors(parsedBody.error),
+    });
+  }
+
+  const { email, password, rememberMe } = parsedBody.data;
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user?.passwordHash) return reply.status(401).send({ error: 'INVALID_CREDENTIALS' });
 
   const ok = await bcrypt.compare(password, user.passwordHash);
   if (!ok) return reply.status(401).send({ error: 'INVALID_CREDENTIALS' });
 
-  const refresh = await createRefreshToken(user.id);
-  return reply.send(tokenResponse(user, refresh));
+  const persistSession = rememberMe !== false;
+  const refresh = await createRefreshToken(user.id, { rememberMe: persistSession });
+  return reply.send(tokenResponse(user, refresh, persistSession));
 }
 
-export async function refreshTokens(
-  req: FastifyRequest<{ Body: { refreshToken: string } }>,
-  reply: FastifyReply
-) {
+export async function refreshTokens(req: FastifyRequest<{ Body: unknown }>, reply: FastifyReply) {
+  const parsedBody = refreshSchema.safeParse(req.body ?? {});
+  if (!parsedBody.success) {
+    return reply.status(400).send({
+      error: 'INVALID_REFRESH_REQUEST',
+      details: formatZodErrors(parsedBody.error),
+    });
+  }
+
   try {
-    const rotated = await rotateRefreshToken(req.body.refreshToken);
+    const rotated = await rotateRefreshToken(parsedBody.data.refreshToken);
     const user = await prisma.user.findUniqueOrThrow({ where: { id: rotated.userId } });
     const accessToken = signAccessToken({ sub: user.id, email: user.email });
     return reply.send({ accessToken, refreshToken: rotated.plainToken });
@@ -181,6 +313,48 @@ export async function logout(
   return reply.send({ ok: true });
 }
 
+export async function logoutAllSessions(req: FastifyRequest, reply: FastifyReply) {
+  const revokedCount = await revokeAllUserRefreshTokens(req.user.sub);
+  return reply.send({ ok: true, revokedCount });
+}
+
+export async function changeCurrentUserPassword(req: FastifyRequest<{ Body: unknown }>, reply: FastifyReply) {
+  const parsedBody = changePasswordSchema.safeParse(req.body ?? {});
+  if (!parsedBody.success) {
+    return reply.status(400).send({
+      error: 'INVALID_PASSWORD_REQUEST',
+      details: formatZodErrors(parsedBody.error),
+    });
+  }
+
+  const user = await prisma.user.findUnique({ where: { id: req.user.sub } });
+  if (!user) return reply.status(404).send({ error: 'NOT_FOUND' });
+
+  if (user.provider !== AuthProvider.LOCAL || !user.passwordHash) {
+    return reply.status(400).send({
+      error: 'PASSWORD_NOT_AVAILABLE',
+      message: 'Le changement de mot de passe n’est disponible que pour les comptes e-mail.',
+    });
+  }
+
+  const { currentPassword, newPassword } = parsedBody.data;
+  const matches = await bcrypt.compare(currentPassword, user.passwordHash);
+  if (!matches) {
+    return reply.status(401).send({
+      error: 'WRONG_CURRENT_PASSWORD',
+      message: 'Mot de passe actuel incorrect.',
+    });
+  }
+
+  const passwordHash = await bcrypt.hash(newPassword, 12);
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { passwordHash },
+  });
+
+  return reply.send({ ok: true });
+}
+
 export async function getCurrentUser(req: FastifyRequest, reply: FastifyReply) {
   const user = await prisma.user.findUnique({
     where: { id: req.user.sub },
@@ -188,4 +362,116 @@ export async function getCurrentUser(req: FastifyRequest, reply: FastifyReply) {
   });
   if (!user) return reply.status(404).send({ error: 'NOT_FOUND' });
   return reply.send({ user: sanitizeUser(user), progress: user.progress, subscription: user.subscription });
+}
+
+export async function updateCurrentUserProfile(req: FastifyRequest<{ Body: unknown }>, reply: FastifyReply) {
+  const parsedBody = updateProfileSchema.safeParse(req.body ?? {});
+  if (!parsedBody.success) {
+    return reply.status(400).send({
+      error: 'INVALID_PROFILE_REQUEST',
+      details: formatZodErrors(parsedBody.error),
+    });
+  }
+
+  const user = await prisma.user.update({
+    where: { id: req.user.sub },
+    data: { displayName: parsedBody.data.displayName },
+  });
+
+  return reply.send({ user: sanitizeUser(user) });
+}
+
+export async function exportCurrentUserData(req: FastifyRequest, reply: FastifyReply) {
+  const user = await prisma.user.findUnique({
+    where: { id: req.user.sub },
+    include: {
+      progress: true,
+      moduleProgress: {
+        include: {
+          module: {
+            select: {
+              slug: true,
+              title: true,
+              course: { select: { slug: true, title: true, track: true } },
+            },
+          },
+        },
+        orderBy: { completedAt: 'asc' },
+      },
+      quests: { orderBy: { weekStart: 'desc' } },
+      subscription: true,
+    },
+  });
+
+  if (!user) return reply.status(404).send({ error: 'NOT_FOUND' });
+
+  return reply.send({
+    exportedAt: new Date().toISOString(),
+    profile: {
+      id: user.id,
+      email: user.email,
+      displayName: user.displayName,
+      avatarUrl: user.avatarUrl,
+      provider: user.provider,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    },
+    progress: user.progress
+      ? {
+          points: user.progress.points,
+          level: user.progress.level,
+          badges: user.progress.badges,
+        }
+      : null,
+    moduleProgress: user.moduleProgress.map((row) => ({
+      moduleSlug: row.module.slug,
+      moduleTitle: row.module.title,
+      courseSlug: row.module.course.slug,
+      courseTitle: row.module.course.title,
+      track: row.module.course.track,
+      quizScore: row.quizScore,
+      gameScore: row.gameScore,
+      completedAt: row.completedAt,
+    })),
+    quests: user.quests.map((quest) => ({
+      questKey: quest.questKey,
+      label: quest.label,
+      target: quest.target,
+      progress: quest.progress,
+      completed: quest.completed,
+      rewardClaimed: quest.rewardClaimed,
+      weekStart: quest.weekStart,
+    })),
+    subscription: user.subscription,
+  });
+}
+
+export async function deleteCurrentUser(req: FastifyRequest<{ Body: unknown }>, reply: FastifyReply) {
+  const parsedBody = deleteAccountSchema.safeParse(req.body ?? {});
+  if (!parsedBody.success) {
+    return reply.status(400).send({
+      error: 'INVALID_DELETE_REQUEST',
+      details: formatZodErrors(parsedBody.error),
+    });
+  }
+
+  const user = await prisma.user.findUnique({ where: { id: req.user.sub } });
+  if (!user) return reply.status(404).send({ error: 'NOT_FOUND' });
+
+  if (user.provider === AuthProvider.LOCAL) {
+    const currentPassword = parsedBody.data.currentPassword?.trim();
+    if (!currentPassword) {
+      return reply.status(400).send({
+        error: 'PASSWORD_REQUIRED_FOR_DELETE',
+        message: 'Mot de passe actuel requis pour supprimer un compte email.',
+      });
+    }
+    if (!user.passwordHash || !(await bcrypt.compare(currentPassword, user.passwordHash))) {
+      return reply.status(401).send({ error: 'INVALID_PASSWORD' });
+    }
+  }
+
+  await prisma.user.delete({ where: { id: user.id } });
+
+  return reply.send({ ok: true });
 }

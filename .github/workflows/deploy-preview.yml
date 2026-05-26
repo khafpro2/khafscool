@@ -1,0 +1,56 @@
+# Déploiement preview (stub) — déclenchement manuel uniquement.
+# Voir DEPLOYMENT.md pour la liste des secrets GitHub à configurer avant d’activer les vraies étapes.
+
+name: Deploy Preview (stub)
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'Environnement cible (preview ou staging)'
+        required: true
+        default: preview
+        type: choice
+        options:
+          - preview
+          - staging
+
+jobs:
+  deploy-preview-stub:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deployment stub
+        run: |
+          echo "Workflow stub — cible: ${{ inputs.target }}"
+          echo "Configurez les secrets GitHub avant d’activer le déploiement réel."
+          echo "Voir DEPLOYMENT.md section « Secrets GitHub (deploy preview) »."
+
+      # --- Étapes commentées — décommenter après configuration des secrets ---
+      #
+      # - name: Setup Node
+      #   uses: actions/setup-node@v4
+      #   with:
+      #     node-version: 22
+      #
+      # - name: Enable pnpm
+      #   run: |
+      #     corepack enable
+      #     corepack prepare pnpm@9.15.0 --activate
+      #
+      # - name: Install dependencies
+      #   run: pnpm install --frozen-lockfile
+      #
+      # - name: Deploy API (Railway)
+      #   env:
+      #     RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+      #   run: echo "railway up --service api"
+      #
+      # - name: Deploy Web (Vercel)
+      #   env:
+      #     VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      #     VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      #     VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      #   run: echo "vercel deploy --prebuilt"

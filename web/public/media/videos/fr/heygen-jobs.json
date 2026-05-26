@@ -1,0 +1,26 @@
+{
+  "jobs": [
+    {
+      "courseSlug": "jamf-pro-foundations",
+      "moduleSlug": "smart-groups-policies",
+      "basename": "jamf-smart-groups-policies-fr",
+      "title": "Apple MDM Academy — Jamf Pro et ABM (FR)",
+      "sourceVideoUrl": "asset:68240cda8b7549b4bd3d8b26fa958583",
+      "videoTranslationId": "110cb0fc8f9d48328736e2b863dd91cc-fr_fr-FR",
+      "status": "failed",
+      "updatedAt": "2026-05-25T11:49:58.416Z",
+      "error": "Échec HeyGen"
+    },
+    {
+      "courseSlug": "intune-ios-enrollment",
+      "moduleSlug": "ade-enrollment-basics",
+      "basename": "intune-ade-enrollment-basics-fr",
+      "title": "Apple MDM Academy — Intune ADE et ABM (FR)",
+      "sourceVideoUrl": "asset:ed54ecd4c74e4d9fbf163b2df948b4d0",
+      "videoTranslationId": "05a22503f62e4fc8b15faa2223198a46-fr_fr-FR",
+      "status": "completed",
+      "updatedAt": "2026-05-24T22:44:34.269Z",
+      "outputVideoUrl": "https://resource2.heygen.ai/video_translate/05a22503f62e4fc8b15faa2223198a46-fr_fr-FR/original.mp4?response-content-disposition=attachment%3B+filename%2A%3DUTF-8%27%27Apple%2520MDM%2520Academy%2520%25E2%2580%2594%2520Intune%2520ADE%2520et%2520ABM%2520%2528FR%2529-French%2520%2528France%2529.mp4%3B"
+    }
+  ]
+}
