@@ -1,0 +1,15 @@
+# Railway — service API (racine du monorepo, pas backend/ seul : dépendance @ama/shared)
+# https://docs.railway.com/guides/config-as-code
+#
+# Variables sensibles : dashboard Railway ou `railway variables set` (ne pas committer).
+
+[build]
+builder = "NIXPACKS"
+buildCommand = "pnpm install --frozen-lockfile && pnpm --filter @ama/shared build && pnpm --filter backend exec prisma generate && pnpm --filter backend build"
+watchPatterns = ["backend/**", "shared/**", "pnpm-lock.yaml"]
+
+[deploy]
+startCommand = "NODE_ENV=production pnpm --filter backend start:prod"
+healthcheckPath = "/health"
+healthcheckTimeout = 120
+restartPolicyType = "ON_FAILURE"

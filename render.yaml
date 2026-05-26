@@ -15,9 +15,10 @@ services:
       corepack enable &&
       corepack prepare pnpm@9.15.0 --activate &&
       pnpm install --frozen-lockfile --prod=false &&
+      pnpm --filter @ama/shared build &&
       pnpm --filter backend exec prisma generate &&
       pnpm --filter backend build
-    startCommand: pnpm --filter backend start:prod
+    startCommand: NODE_ENV=production pnpm --filter backend start:prod
     healthCheckPath: /health
     envVars:
       - key: NODE_ENV

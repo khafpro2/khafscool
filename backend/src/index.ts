@@ -10,7 +10,22 @@ import { billingRoutes } from './routes/billing.routes.js';
 import { donationsRoutes } from './routes/donations.routes.js';
 import { healthRoutes } from './routes/health.routes.js';
 
-assertProductionSecrets();
+function logStartupFailure(err: unknown) {
+  const message = err instanceof Error ? err.message : String(err);
+  console.error(`[startup] ${message}`);
+  if (!env.isDev) {
+    console.error(
+      '[startup] Requis : DATABASE_URL, JWT_SECRET, JWT_REFRESH_SECRET, CORS_ORIGIN (+ PORT injecté par Render)',
+    );
+  }
+}
+
+try {
+  assertProductionSecrets();
+} catch (err) {
+  logStartupFailure(err);
+  process.exit(1);
+}
 
 const app = Fastify({ logger: true });
 
