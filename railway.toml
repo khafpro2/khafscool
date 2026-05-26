@@ -4,6 +4,8 @@
 # Monorepo : racine du dépôt (.), pas backend/ seul — @ama/shared doit être buildé avant backend.
 # Dashboard → Settings → Source → Root Directory = . (ou laisser vide = racine repo)
 # Variables sensibles : dashboard Railway ou `railway variables set` (ne pas committer).
+# DATABASE_URL : Neon (docs/NEON-DATABASE.md) — pas le plugin Postgres Railway par défaut.
+# Migrations : railway run pnpm --filter backend exec prisma migrate deploy
 # PORT : injecté par Railway — ne pas le définir manuellement.
 
 [build]

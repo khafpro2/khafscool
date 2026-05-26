@@ -4,7 +4,7 @@ Objectif : obtenir une URL publique `https://xxxx.up.railway.app`, l’exposer �
 
 > **Plateforme préférée** depuis v0.3.14 — Render reste documenté dans [`render.yaml`](../render.yaml) (legacy / secours).
 
-Fichiers liés : [`railway.toml`](../railway.toml), [`scripts/deploy-api.sh`](../scripts/deploy-api.sh), guide Vercel [`VERCEL-WEB.md`](./VERCEL-WEB.md).
+Fichiers liés : [`railway.toml`](../railway.toml), [`NEON-DATABASE.md`](./NEON-DATABASE.md), [`scripts/railway-env-checklist.sh`](../scripts/railway-env-checklist.sh), [`scripts/deploy-api.sh`](../scripts/deploy-api.sh), guide Vercel [`VERCEL-WEB.md`](./VERCEL-WEB.md).
 
 ---
 
@@ -15,7 +15,7 @@ Fichiers liés : [`railway.toml`](../railway.toml), [`scripts/deploy-api.sh`](..
 | Node.js | 22 (voir [`.nvmrc`](../.nvmrc)) |
 | pnpm | 9.15 (voir `packageManager` racine) |
 | Compte [Railway](https://railway.app) | CLI ou déploiement GitHub |
-| Postgres | Plugin Railway **ou** Neon / Supabase |
+| Postgres | **[Neon](https://neon.tech)** (recommandé) — voir [`NEON-DATABASE.md`](./NEON-DATABASE.md) |
 
 ---
 
@@ -34,24 +34,31 @@ Si le dépôt est déjà connecté à GitHub dans Railway : **New Project → De
 
 ---
 
-## Étape 2 — Base PostgreSQL
+## Étape 2 — Base PostgreSQL (Neon)
 
-### Option A — Postgres Railway (plugin)
+L’API sur Railway **ne** s’appuie pas sur le plugin Postgres Railway par défaut : la base est hébergée sur **Neon**.
 
-```bash
-railway add --plugin postgresql
+Guide détaillé : [`NEON-DATABASE.md`](./NEON-DATABASE.md).
+
+1. [neon.tech](https://neon.tech) → **New Project** → région proche (ex. `eu-central-1`).
+2. **Connect** → copier la connection string.
+3. Vérifier `?sslmode=require` à la fin.
+
+Format attendu :
+
+```text
+postgresql://USER:PASSWORD@ep-XXXXXXXX.region.aws.neon.tech/neondb?sslmode=require
 ```
 
-Railway injecte automatiquement `DATABASE_URL` (ou `DATABASE_URL` via variable de référence selon la version du plugin).
-
-### Option B — Neon (recommandé si vous avez déjà un projet Neon)
-
-1. [Neon](https://neon.tech) → copier la connection string.
-2. Vérifier `?sslmode=require` à la fin.
+4. Sur Railway (service API) :
 
 ```bash
-railway variables set DATABASE_URL='postgresql://user:pass@ep-xxx.neon.tech/neondb?sslmode=require'
+railway variables set DATABASE_URL='postgresql://USER:PASSWORD@ep-xxx.neon.tech/neondb?sslmode=require'
 ```
+
+Checklist interactive : `bash scripts/railway-env-checklist.sh`
+
+> **Legacy** : le plugin `railway add --plugin postgresql` reste possible mais n’est plus documenté comme choix par défaut — préférer Neon pour staging/prod alignés avec Render et les secrets GitHub Actions.
 
 ---
 
@@ -69,7 +76,7 @@ openssl rand -base64 32
 | Variable | Obligatoire | Valeur / exemple |
 | -------- | ----------- | ---------------- |
 | `NODE_ENV` | Oui | `production` |
-| `DATABASE_URL` | Oui | Postgres (Railway plugin ou Neon) |
+| `DATABASE_URL` | Oui | Connection string **Neon** (`?sslmode=require`) |
 | `JWT_SECRET` | Oui | `openssl rand -base64 32` |
 | `JWT_REFRESH_SECRET` | Oui | autre secret, min. 32 caractères |
 | `CORS_ORIGIN` | Oui | `https://apple-mdm-academy.vercel.app` |

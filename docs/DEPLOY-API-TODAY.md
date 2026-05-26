@@ -8,10 +8,10 @@ Objectif : obtenir une URL du type `https://xxxx.up.railway.app` (recommandé) o
 
 | Plateforme | Pourquoi |
 | ---------- | -------- |
-| **Railway (recommandé)** | DX monorepo, health check `/health`, [`railway.toml`](../railway.toml), domaine `*.up.railway.app`, Postgres plugin. Guide : [`DEPLOY-RAILWAY.md`](./DEPLOY-RAILWAY.md). |
+| **Railway (recommandé)** | DX monorepo, health check `/health`, [`railway.toml`](../railway.toml), domaine `*.up.railway.app`, base **Neon**. Guides : [`DEPLOY-RAILWAY.md`](./DEPLOY-RAILWAY.md), [`NEON-DATABASE.md`](./NEON-DATABASE.md). |
 | **Render (legacy / secours)** | Plan gratuit Web Service, blueprint `render.yaml`. Cold start free plus long ; URL `onrender.com` non maintenue en prod actuelle. |
 
-**Postgres** : Neon ou Supabase (gratuit) — ou plugin Postgres Railway.
+**Postgres** : **[Neon](https://neon.tech)** (par défaut) — voir [`NEON-DATABASE.md`](./NEON-DATABASE.md). Supabase possible en alternative.
 
 ---
 
@@ -67,8 +67,11 @@ openssl rand -base64 32
 
 ### 1. PostgreSQL managé (Neon)
 
+Suivre [`NEON-DATABASE.md`](./NEON-DATABASE.md) :
+
 1. [Neon](https://neon.tech) → New Project → copier la connection string.
 2. Vérifier `?sslmode=require` à la fin de `DATABASE_URL`.
+3. Coller `DATABASE_URL` sur Railway (étape 2 ci-dessous) — pas dans le dépôt Git.
 
 ### 2. Déployer l’API
 
@@ -81,9 +84,9 @@ npm i -g @railway/cli
 railway login
 cd /chemin/vers/apple-mdm-academy
 railway init
-railway add              # optionnel : PostgreSQL Railway
+# DATABASE_URL : projet Neon (voir NEON-DATABASE.md)
 railway variables set NODE_ENV=production
-railway variables set DATABASE_URL='postgresql://...'
+railway variables set DATABASE_URL='postgresql://USER:PASSWORD@ep-xxx.region.aws.neon.tech/neondb?sslmode=require'
 railway variables set JWT_SECRET='...'
 railway variables set JWT_REFRESH_SECRET='...'
 railway variables set CORS_ORIGIN='https://apple-mdm-academy.vercel.app'
@@ -95,12 +98,15 @@ railway run pnpm --filter backend exec prisma migrate deploy
 
 Racine du service = **repo** (`.`), pas `backend/` seul. Railway utilise [`railway.toml`](../railway.toml).
 
+Checklist : `bash scripts/railway-env-checklist.sh`
+
 #### Option B — Render (blueprint legacy)
 
 1. [render.com](https://render.com) → **New** → **Blueprint** → repo GitHub `apple-mdm-academy`.
 2. Render lit [`render.yaml`](../render.yaml).
 3. Renseigner les variables `sync: false` dans le dashboard :
-   - `DATABASE_URL`, `JWT_SECRET`, `JWT_REFRESH_SECRET`
+   - `DATABASE_URL` (même format Neon que Railway — [`NEON-DATABASE.md`](./NEON-DATABASE.md))
+   - `JWT_SECRET`, `JWT_REFRESH_SECRET`
    - `CORS_ORIGIN` = URL Vercel prévue (étape 4) ou domaine prod connu
    - `WEB_URL` = même URL que le front Vercel
    - `API_URL` = URL Render du service (après 1er deploy, ou domaine custom)

@@ -8,7 +8,7 @@ Ce document décrit une architecture de production recommandée pour le monorepo
 | --------- | ---------- | -------------- |
 | **Web** | Vercel | `NEXT_PUBLIC_API_URL` |
 | **API** | Railway / Render / Fly.io | `DATABASE_URL`, `JWT_SECRET`, `JWT_REFRESH_SECRET`, `CORS_ORIGIN` |
-| **Base** | Neon / Supabase / Postgres managé | URL dans `DATABASE_URL` |
+| **Base** | **[Neon](https://neon.tech)** (recommandé) — [`docs/NEON-DATABASE.md`](./docs/NEON-DATABASE.md) | `DATABASE_URL` avec `?sslmode=require` |
 | **Mobile** | EAS Build | `EXPO_PUBLIC_API_URL`, `EXPO_PUBLIC_WEB_URL` |
 
 Voir le détail par service ci-dessous. Aligner les trois URLs publiques (web, mobile, API) sur le même backend avant la mise en prod.
@@ -19,7 +19,7 @@ Voir le détail par service ci-dessous. Aligner les trois URLs publiques (web, m
 | --------- | --------------------- | ---- |
 | **Web** (Next.js) | [Vercel](https://vercel.com) | Interface apprenant MDM Academy, auth côté client, appels API |
 | **API** (Fastify) | [Railway](https://railway.app), [Render](https://render.com) ou [Fly.io](https://fly.io) | REST, JWT, gamification, billing |
-| **Base** (PostgreSQL) | [Neon](https://neon.tech), [Supabase](https://supabase.com) ou Postgres managé | Données utilisateurs, parcours, progression |
+| **Base** (PostgreSQL) | **[Neon](https://neon.tech)** ([guide](./docs/NEON-DATABASE.md)), Supabase en alternative | Données utilisateurs, parcours, progression — **pas** le plugin Postgres Railway par défaut |
 | **Mobile** (Expo) | [EAS Build](https://docs.expo.dev/build/introduction/) | Builds iOS/Android, OTA via EAS Update (optionnel) |
 
 ```text
@@ -30,7 +30,7 @@ Voir le détail par service ci-dessous. Aligner les trois URLs publiques (web, m
     └─► Expo (mobile) ──EXPO_PUBLIC_API_URL───────┘
                                                    │
                                                    ▼
-                                            PostgreSQL (Neon/Supabase)
+                                            PostgreSQL (Neon)
 ```
 
 ## Variables d'environnement
@@ -47,7 +47,7 @@ Configurer dans **Project Settings → Environment Variables** (Production, Prev
 
 | Variable | Obligatoire | Description |
 | -------- | ----------- | ----------- |
-| `DATABASE_URL` | Oui | Chaîne PostgreSQL (`postgresql://...`) |
+| `DATABASE_URL` | Oui | Chaîne Neon : `postgresql://...@ep-xxx.neon.tech/neondb?sslmode=require` |
 | `JWT_SECRET` | Oui | Secret JWT accès (long, aléatoire) |
 | `JWT_REFRESH_SECRET` | Oui | Secret JWT refresh |
 | `PORT` | Non | Port d’écoute (souvent imposé par la plateforme, ex. `4000`) |
@@ -86,10 +86,12 @@ DATABASE_URL=postgresql://postgres:postgres@localhost:5433/apple_mdm_academy
 
 Utilisateur / mot de passe / base : `postgres` / `postgres` / `apple_mdm_academy` (voir `compose.yaml`).
 
-### Postgres managé (production / staging)
+### Postgres managé (production / staging) — Neon
 
-1. Créer une instance Postgres (Neon, Supabase, etc.).
-2. Copier `DATABASE_URL` dans l’API.
+Voir le guide pas à pas : [`docs/NEON-DATABASE.md`](./docs/NEON-DATABASE.md).
+
+1. Créer un projet sur [Neon](https://neon.tech).
+2. Copier la connection string (`?sslmode=require`) dans `DATABASE_URL` sur **Railway** (ou Render legacy).
 3. Appliquer les migrations **avant** le premier trafic :
 
 ```bash
@@ -139,7 +141,7 @@ Contrôles minimum avant d’ouvrir le trafic réel :
 
 | Contrôle | Variable / action | Attendu |
 | -------- | ----------------- | ------- |
-| Base de données | `DATABASE_URL` | Postgres managé (Neon, Supabase…), SSL activé |
+| Base de données | `DATABASE_URL` | Neon (`?sslmode=require`) — voir [`NEON-DATABASE.md`](./docs/NEON-DATABASE.md) |
 | Secrets JWT | `JWT_SECRET`, `JWT_REFRESH_SECRET` | Valeurs uniques, ≥ 32 caractères, **jamais** les défauts dev |
 | Schéma BDD | `pnpm --filter backend exec prisma migrate deploy` | Migrations appliquées sur l’environnement cible |
 | URL API (web) | `NEXT_PUBLIC_API_URL` | URL HTTPS publique de l’API, sans slash final |
@@ -152,7 +154,7 @@ Contrôles minimum avant d’ouvrir le trafic réel :
 
 Checklist détaillée :
 
-- [ ] `DATABASE_URL` pointe vers Postgres managé (SSL activé)
+- [ ] `DATABASE_URL` pointe vers Neon (`?sslmode=require`)
 - [ ] `JWT_SECRET` et `JWT_REFRESH_SECRET` uniques et robustes (prod ≠ dev)
 - [ ] `prisma migrate deploy` exécuté sur l’environnement cible
 - [ ] `NEXT_PUBLIC_API_URL` et `EXPO_PUBLIC_API_URL` alignés sur la même API HTTPS
@@ -200,7 +202,7 @@ Workflow manuel : [`.github/workflows/deploy-preview.yml`](./.github/workflows/d
 | `VERCEL_ORG_ID` | ID organisation Vercel |
 | `VERCEL_PROJECT_ID` | ID projet Vercel (répertoire `web/`) |
 | `RAILWAY_TOKEN` | Déploiement API staging (`railway up`) |
-| `DATABASE_URL` | Postgres staging (Neon/Supabase) — aussi sur Railway |
+| `DATABASE_URL` | Postgres staging Neon — même format sur Railway et Render |
 | `JWT_SECRET` / `JWT_REFRESH_SECRET` | Secrets JWT API staging |
 | `CORS_ORIGIN` | URL preview Vercel (`https://*.vercel.app` ou domaine fixe) |
 | `WEB_URL` | URL publique web (redirects Stripe dons : `/soutenir/merci`, `/soutenir/annule`) |

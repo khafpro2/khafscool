@@ -9,7 +9,7 @@ Guide express (~30 min) pour mettre en ligne **MDM Academy Pro** : front Next.js
 - Compte [GitHub](https://github.com) avec accès au dépôt
 - Compte [Vercel](https://vercel.com) (gratuit)
 - Compte [Railway](https://railway.app) (gratuit / crédit)
-- Compte [Neon](https://neon.tech) ou [Supabase](https://supabase.com) pour Postgres
+- Compte [Neon](https://neon.tech) pour Postgres ([`NEON-DATABASE.md`](./NEON-DATABASE.md))
 - (Optionnel prod dons) Compte [Stripe](https://dashboard.stripe.com) + lien PayPal
 
 ---
@@ -18,7 +18,7 @@ Guide express (~30 min) pour mettre en ligne **MDM Academy Pro** : front Next.js
 
 ### 1. Créer la base PostgreSQL
 
-1. Créer un projet Postgres sur Neon ou Supabase.
+1. Créer un projet Postgres sur [Neon](https://neon.tech) (voir [`NEON-DATABASE.md`](./NEON-DATABASE.md)).
 2. Copier la **connection string** (`postgresql://…?sslmode=require`).
 3. Conserver-la pour l’étape 5 — c’est `DATABASE_URL`.
 
