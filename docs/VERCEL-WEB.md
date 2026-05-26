@@ -14,6 +14,8 @@ L’API tourne sur Render (ou Railway) — **ne pas** builder `backend` ni `mobi
 
 Ne pas surcharger Install / Build dans le dashboard : les commandes ci-dessous viennent de `web/vercel.json`.
 
+**Important :** une commande définie dans le dashboard Vercel (**Settings → General → Build & Development Settings**) **écrase** `web/vercel.json`. Si le build affiche encore `cd .. && pnpm install`, vider les champs **Install Command** et **Build Command** (laisser vides) puis redéployer.
+
 ### Commandes effectives (depuis `web/vercel.json`)
 
 Avec **Root Directory** = `web`, Vercel exécute l’install et le build depuis la **racine du dépôt** (`/vercel/path0`), pas depuis `web/`. Il ne faut donc **pas** de `cd ..` : un `cd ..` depuis la racine remonte vers `/vercel` et provoque `ERR_PNPM_NO_PKG_MANIFEST`.
