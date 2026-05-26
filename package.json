@@ -4,6 +4,7 @@
   "scripts": {
     "dev": "turbo run dev",
     "build": "turbo run build",
+    "vercel-build": "pnpm --filter web build",
     "db:generate": "pnpm --filter backend exec prisma generate",
     "db:migrate": "pnpm --filter backend exec prisma migrate dev",
     "db:seed": "pnpm --filter backend exec tsx prisma/seed.ts"
