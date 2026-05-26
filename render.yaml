@@ -1,0 +1,36 @@
+# Blueprint Render — API Fastify (monorepo pnpm)
+# https://render.com/docs/blueprint-spec
+#
+# Déploiement : Dashboard Render → New → Blueprint → ce dépôt.
+# Renseigner les variables marquées sync: false (jamais de secrets dans Git).
+
+services:
+  - type: web
+    name: apple-mdm-academy-api
+    runtime: node
+    plan: free
+    region: frankfurt
+    rootDir: .
+    buildCommand: >-
+      corepack enable &&
+      corepack prepare pnpm@9.15.0 --activate &&
+      pnpm install --frozen-lockfile &&
+      pnpm --filter backend exec prisma generate &&
+      pnpm --filter backend build
+    startCommand: pnpm --filter backend start:prod
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_REFRESH_SECRET
+        sync: false
+      - key: CORS_ORIGIN
+        sync: false
+      - key: WEB_URL
+        sync: false
+      - key: API_URL
+        sync: false
