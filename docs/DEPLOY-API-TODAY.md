@@ -1,17 +1,17 @@
-# Déployer l’API HTTPS aujourd’hui (Vercel + Render ou Railway)
+# Déployer l’API HTTPS aujourd’hui (Vercel + Railway ou Render)
 
-Objectif : obtenir une URL du type `https://xxxx.onrender.com` ou `https://xxxx.up.railway.app`, la brancher sur Vercel via `NEXT_PUBLIC_API_URL`, et sortir du mode démo.
+Objectif : obtenir une URL du type `https://xxxx.up.railway.app` (recommandé) ou `https://xxxx.onrender.com` (legacy), la brancher sur Vercel via `NEXT_PUBLIC_API_URL`, et sortir du mode démo.
 
-> Fichiers d’infra dans le dépôt : [`render.yaml`](../render.yaml), [`railway.toml`](../railway.toml), script [`scripts/deploy-api.sh`](../scripts/deploy-api.sh).
+> Fichiers d’infra dans le dépôt : [`railway.toml`](../railway.toml), [`docs/DEPLOY-RAILWAY.md`](./DEPLOY-RAILWAY.md), [`render.yaml`](../render.yaml) (secours), script [`scripts/deploy-api.sh`](../scripts/deploy-api.sh).
 
 ## Plateforme recommandée
 
 | Plateforme | Pourquoi |
 | ---------- | -------- |
-| **Render (recommandé pour commencer)** | Plan gratuit Web Service, health check `/health`, blueprint `render.yaml` en un clic, pas de plugin obligatoire. |
-| **Railway (alternative)** | Très bon DX monorepo + Postgres intégré ; crédit gratuit limité, carte parfois requise. Voir [`railway.toml`](../railway.toml). |
+| **Railway (recommandé)** | DX monorepo, health check `/health`, [`railway.toml`](../railway.toml), domaine `*.up.railway.app`, Postgres plugin. Guide : [`DEPLOY-RAILWAY.md`](./DEPLOY-RAILWAY.md). |
+| **Render (legacy / secours)** | Plan gratuit Web Service, blueprint `render.yaml`. Cold start free plus long ; URL `onrender.com` non maintenue en prod actuelle. |
 
-**Postgres** : Neon ou Supabase (gratuit) — plus simple qu’un Postgres Render/Railway pour un premier déploiement.
+**Postgres** : Neon ou Supabase (gratuit) — ou plugin Postgres Railway.
 
 ---
 
@@ -32,7 +32,7 @@ Objectif : obtenir une URL du type `https://xxxx.onrender.com` ou `https://xxxx.
 
 | Variable | Exemple |
 | -------- | ------- |
-| `API_URL` | `https://apple-mdm-academy-api.onrender.com` |
+| `API_URL` | `https://VOTRE-SERVICE.up.railway.app` |
 | `WEB_URL` | `https://apple-mdm-academy.vercel.app` |
 
 ### Optionnelles (plus tard)
@@ -72,7 +72,30 @@ openssl rand -base64 32
 
 ### 2. Déployer l’API
 
-#### Option A — Render (blueprint)
+#### Option A — Railway (recommandé)
+
+Voir le guide complet [`docs/DEPLOY-RAILWAY.md`](./DEPLOY-RAILWAY.md). Résumé :
+
+```bash
+npm i -g @railway/cli
+railway login
+cd /chemin/vers/apple-mdm-academy
+railway init
+railway add              # optionnel : PostgreSQL Railway
+railway variables set NODE_ENV=production
+railway variables set DATABASE_URL='postgresql://...'
+railway variables set JWT_SECRET='...'
+railway variables set JWT_REFRESH_SECRET='...'
+railway variables set CORS_ORIGIN='https://apple-mdm-academy.vercel.app'
+railway variables set WEB_URL='https://apple-mdm-academy.vercel.app'
+railway variables set API_URL='https://votre-service.up.railway.app'
+railway up
+railway run pnpm --filter backend exec prisma migrate deploy
+```
+
+Racine du service = **repo** (`.`), pas `backend/` seul. Railway utilise [`railway.toml`](../railway.toml).
+
+#### Option B — Render (blueprint legacy)
 
 1. [render.com](https://render.com) → **New** → **Blueprint** → repo GitHub `apple-mdm-academy`.
 2. Render lit [`render.yaml`](../render.yaml).
@@ -91,38 +114,15 @@ openssl rand -base64 32
 
 6. (Optionnel démo) : `pnpm --filter backend exec prisma db seed` — compte `demo@mdmacademy.local` / `DemoTest2026!`
 
-#### Option B — Railway (CLI)
-
-```bash
-# Prérequis : Node 22+, pnpm, compte Railway
-npm i -g @railway/cli
-railway login
-cd /chemin/vers/apple-mdm-academy
-railway init          # lier le projet
-railway add           # optionnel : PostgreSQL Railway au lieu de Neon
-railway variables set NODE_ENV=production
-railway variables set DATABASE_URL='postgresql://...'
-railway variables set JWT_SECRET='...'
-railway variables set JWT_REFRESH_SECRET='...'
-railway variables set CORS_ORIGIN='https://votre-app.vercel.app'
-railway variables set WEB_URL='https://votre-app.vercel.app'
-railway variables set API_URL='https://votre-service.up.railway.app'
-railway up
-# Migrations (one-off) :
-railway run pnpm --filter backend exec prisma migrate deploy
-```
-
-Configurer le service avec **racine = repo** (pas `backend/` seul). Railway utilise [`railway.toml`](../railway.toml) si présent.
-
 ### 3. Vérifier l’API
 
 ```bash
-export API_URL=https://apple-mdm-academy-api.onrender.com   # votre URL réelle
-curl -sf --max-time 120 "${API_URL}/health"   # cold start free : jusqu’à ~90 s
+export API_URL=https://VOTRE-SERVICE.up.railway.app   # votre URL Railway réelle
+curl -sf --max-time 120 "${API_URL}/health"
 bash scripts/deploy-api.sh
 ```
 
-Checklist interactive (variables à coller sur Render, poll après deploy) :
+Checklist interactive Render (legacy uniquement) :
 
 ```bash
 bash scripts/render-env-checklist.sh
@@ -138,7 +138,7 @@ Réponse attendue : JSON avec `"ok": true`.
 
    | Variable | Valeur |
    | -------- | ------ |
-   | `NEXT_PUBLIC_API_URL` | `https://apple-mdm-academy-api.onrender.com` (URL API étape 3, **sans** `/` final) |
+   | `NEXT_PUBLIC_API_URL` | `https://VOTRE-SERVICE.up.railway.app` (URL API étape 3, **sans** `/` final) |
    | `WEB_URL` | `https://apple-mdm-academy.vercel.app` (URL réelle de **ce** déploiement Vercel) |
 
 3. **Deployments → … → Redeploy** (obligatoire : `NEXT_PUBLIC_*` est figé au build).
@@ -146,7 +146,7 @@ Réponse attendue : JSON avec `"ok": true`.
 ### 5. Finaliser CORS
 
 1. Noter l’URL preview exacte après redeploy, ex. `https://apple-mdm-academy-abc123.vercel.app`.
-2. Sur Render/Railway, mettre à jour `CORS_ORIGIN` :
+2. Sur Railway (ou Render legacy), mettre à jour `CORS_ORIGIN` :
    - une origine : `https://apple-mdm-academy-abc123.vercel.app`
    - plusieurs : `https://prod.vercel.app,https://preview-abc.vercel.app` (séparées par des virgules)
 3. Redéployer l’API si besoin.
@@ -154,7 +154,7 @@ Réponse attendue : JSON avec `"ok": true`.
 
    ```bash
    CORS_ORIGIN=https://apple-mdm-academy-abc123.vercel.app \
-     API_URL=https://apple-mdm-academy-api.onrender.com \
+     API_URL=https://VOTRE-SERVICE.up.railway.app \
      bash scripts/deploy-api.sh --smoke-cors
    ```
 
@@ -168,8 +168,8 @@ Réponse attendue : JSON avec `"ok": true`.
 ## Ce qu’il faut coller sur Vercel
 
 ```
-NEXT_PUBLIC_API_URL=https://VOTRE-API.onrender.com
-WEB_URL=https://VOTRE-APP.vercel.app
+NEXT_PUBLIC_API_URL=https://VOTRE-SERVICE.up.railway.app
+WEB_URL=https://apple-mdm-academy.vercel.app
 ```
 
 Puis **Redeploy**.
@@ -183,7 +183,7 @@ cd web
 pnpm dlx vercel login
 vercel link
 vercel env add NEXT_PUBLIC_API_URL preview
-# coller https://VOTRE-API.onrender.com
+# coller https://VOTRE-SERVICE.up.railway.app
 vercel env add NEXT_PUBLIC_API_URL production
 vercel env add WEB_URL preview
 vercel env add WEB_URL production
@@ -196,7 +196,7 @@ vercel deploy
 
 | Symptôme | Cause probable | Action |
 | -------- | -------------- | ------ |
-| Build Render échoue | Racine = `backend/` au lieu de la racine monorepo | Racine `.`, commandes du `render.yaml` |
+| Build Railway/Render échoue | Racine = `backend/` au lieu de la racine monorepo | Racine `.`, commandes du `railway.toml` / `render.yaml` |
 | Crash au boot `Missing env: JWT_SECRET` | `NODE_ENV=production` sans secrets | Définir JWT_* et `CORS_ORIGIN` |
 | `/health` OK mais web en démo | `NEXT_PUBLIC_API_URL` absent ou pas redeploy | Variable + Redeploy |
 | Erreur CORS navigateur | `CORS_ORIGIN` ≠ origine Vercel exacte | Copier l’URL depuis la barre d’adresse |
@@ -208,8 +208,8 @@ vercel deploy
 ## Commit suggéré (à faire vous-même)
 
 ```bash
-git add render.yaml railway.toml scripts/deploy-api.sh docs/DEPLOY-API-TODAY.md backend/package.json
-git commit -m "docs(deploy): blueprint Render/Railway et guide API HTTPS"
+git add railway.toml render.yaml scripts/deploy-api.sh docs/DEPLOY-RAILWAY.md docs/DEPLOY-API-TODAY.md docs/VERCEL-WEB.md backend/package.json
+git commit -m "docs(deploy): Railway comme plateforme API principale"
 ```
 
 Ne jamais committer `.env`, `.env.local`, ni les valeurs réelles de `JWT_*` / `DATABASE_URL`.

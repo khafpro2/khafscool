@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Checklist Render — apple-mdm-academy-api (sans lire ni afficher de secrets locaux).
+# Checklist Render — LEGACY (plateforme préférée : Railway — docs/DEPLOY-RAILWAY.md)
 # Usage :
 #   bash scripts/render-env-checklist.sh
 #   API_URL=https://apple-mdm-academy-api.onrender.com bash scripts/render-env-checklist.sh --poll

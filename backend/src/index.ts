@@ -15,7 +15,7 @@ function logStartupFailure(err: unknown) {
   console.error(`[startup] ${message}`);
   if (!env.isDev) {
     console.error(
-      '[startup] Requis : DATABASE_URL, JWT_SECRET, JWT_REFRESH_SECRET, CORS_ORIGIN (+ PORT injecté par Render)',
+      '[startup] Requis : DATABASE_URL, JWT_SECRET, JWT_REFRESH_SECRET, CORS_ORIGIN (+ PORT injecté par Railway/Render)',
     );
   }
 }

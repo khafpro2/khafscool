@@ -1,6 +1,8 @@
 # Déploiement web sur Vercel
 
-L’API tourne sur Render (ou Railway) — **ne pas** builder `backend` ni `mobile` sur Vercel.
+L’API tourne sur **Railway** (recommandé) ou Render (legacy) — **ne pas** builder `backend` ni `mobile` sur Vercel.
+
+Guide API : [`docs/DEPLOY-RAILWAY.md`](./DEPLOY-RAILWAY.md).
 
 ## Réglages obligatoires (dashboard Vercel)
 
@@ -41,7 +43,7 @@ Avec **Root Directory** = `web`, Vercel exécute l’install et le build depuis 
 
 | Variable | Environnements | Exemple |
 | -------- | -------------- | ------- |
-| `NEXT_PUBLIC_API_URL` | Production, Preview | `https://votre-api.onrender.com` |
+| `NEXT_PUBLIC_API_URL` | Production, Preview | `https://votre-api.up.railway.app` |
 | `WEB_URL` | Production, Preview (recommandé) | `https://votre-app.vercel.app` |
 
 Redéployer après toute modification de `NEXT_PUBLIC_*` (valeurs figées au build).
@@ -52,9 +54,9 @@ Après fusion de `cursor/progress-dashboard-auth-v2` sur `main` :
 
 1. **Vercel** — le push sur `main` déclenche un déploiement Production automatique (Root Directory = `web`).
 2. **Variables Vercel** (Production + Preview) :
-   - `NEXT_PUBLIC_API_URL` = URL HTTPS de l’API Render (ex. `https://apple-mdm-academy-api.onrender.com`)
+   - `NEXT_PUBLIC_API_URL` = URL HTTPS de l’API Railway (ex. `https://apple-mdm-academy-api-production.up.railway.app`)
    - `WEB_URL` = URL Vercel de prod (ex. `https://apple-mdm-academy.vercel.app`)
-3. **Render** — voir [`docs/DEPLOY-API-TODAY.md`](./DEPLOY-API-TODAY.md) et [`DEPLOYMENT.md`](../DEPLOYMENT.md) pour la liste complète des variables API.
+3. **Railway** — voir [`docs/DEPLOY-RAILWAY.md`](./DEPLOY-RAILWAY.md) et [`DEPLOYMENT.md`](../DEPLOYMENT.md) pour la liste complète des variables API.
 4. **Redéployer Vercel** après avoir défini ou modifié `NEXT_PUBLIC_API_URL` (rebuild obligatoire).
 5. **Vérifier** : `curl https://<api>/health` puis ouvrir le dashboard web sans mode démo.
 

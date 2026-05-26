@@ -1,5 +1,8 @@
-# Blueprint Render — API Fastify (monorepo pnpm)
+# Blueprint Render — API Fastify (monorepo pnpm) — LEGACY / SECOURS
 # https://render.com/docs/blueprint-spec
+#
+# Plateforme préférée : Railway — voir docs/DEPLOY-RAILWAY.md et railway.toml
+# Ce fichier reste pour migration inverse ou fallback Render (plan free, cold start).
 #
 # Déploiement : Dashboard Render → New → Blueprint → ce dépôt.
 # Renseigner les variables marquées sync: false (jamais de secrets dans Git).
