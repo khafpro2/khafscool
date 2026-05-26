@@ -47,11 +47,10 @@ import type {
   WeeklyQuestsResponse,
 } from './types';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://127.0.0.1:4000';
+import { API_URL, resolveClientApiPath } from '../api-url';
 
 function resolveApiUrl(path: string) {
-  if (typeof window !== 'undefined') return `/api/proxy${path}`;
-  return `${API_URL}${path}`;
+  return resolveClientApiPath(path);
 }
 
 function useBrowserProxy() {
@@ -554,5 +553,3 @@ export async function startCertificationSprint(
     return mockCertificationSprint(payload.track, payload.days);
   }
 }
-
-export { API_URL };

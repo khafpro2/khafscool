@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { API_URL } from '@/lib/api';
+import { API_URL_DISPLAY, IS_API_URL_CONFIGURED, resolveClientApiPath } from '@/lib/api';
 import { getAuthTokenPresence } from '@/lib/auth';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -82,7 +82,7 @@ export default function DiagnosticsPage() {
   const sessionStatus: CheckStatus =
     hasAccessToken && hasRefreshToken ? 'ok' : hasAnyToken ? 'warning' : 'error';
 
-  const apiUrlConfigured = Boolean(API_URL?.trim());
+  const apiUrlConfigured = IS_API_URL_CONFIGURED;
   const authClientStatus: CheckStatus = hasAccessToken && hasRefreshToken ? 'ok' : hasAnyToken ? 'warning' : 'error';
 
   const checklist = useMemo<Array<{ id: string; label: string; status: CheckStatus; detail: string }>>(
@@ -124,8 +124,8 @@ export default function DiagnosticsPage() {
         label: 'URL API configurée (web)',
         status: apiUrlConfigured ? 'ok' : 'error',
         detail: apiUrlConfigured
-          ? `NEXT_PUBLIC_API_URL → ${API_URL}`
-          : 'Variable NEXT_PUBLIC_API_URL absente — le front bascule en mode démo.',
+          ? `NEXT_PUBLIC_API_URL → ${API_URL_DISPLAY}`
+          : 'Variable NEXT_PUBLIC_API_URL absente ou vide — le front bascule en mode démo.',
       },
       {
         id: 'auth-session',
@@ -371,7 +371,7 @@ export default function DiagnosticsPage() {
       </Card>
 
       <p className="muted" style={{ fontSize: '0.85rem', marginTop: '1rem' }}>
-        API ciblée : <code>{API_URL}</code>. Page interne — aucun token ni secret n’est affiché.
+        API ciblée : <code>{API_URL_DISPLAY}</code>. Page interne — aucun token ni secret n’est affiché.
       </p>
     </section>
   );
@@ -379,7 +379,7 @@ export default function DiagnosticsPage() {
 
 async function checkOAuthStatus(): Promise<{ check: EndpointCheck; snapshot: OAuthStatusSnapshot | null }> {
   try {
-    const res = await fetch(`${API_URL}/auth/oauth/status`, { cache: 'no-store' });
+    const res = await fetch(resolveClientApiPath('/auth/oauth/status'), { cache: 'no-store' });
     if (!res.ok) {
       return {
         check: { detail: `Erreur HTTP ${res.status} sur /auth/oauth/status.`, status: 'error' },
@@ -415,7 +415,7 @@ async function checkOAuthStatus(): Promise<{ check: EndpointCheck; snapshot: OAu
 
 async function checkHealth(): Promise<{ check: EndpointCheck; version: string | null }> {
   try {
-    const res = await fetch(`${API_URL}/health`, { cache: 'no-store' });
+    const res = await fetch(resolveClientApiPath('/health'), { cache: 'no-store' });
     if (!res.ok) {
       return {
         check: { detail: `Erreur HTTP ${res.status} sur /health.`, status: 'error' },
@@ -453,7 +453,7 @@ async function checkHealth(): Promise<{ check: EndpointCheck; version: string | 
 
 async function checkDatabase(): Promise<EndpointCheck> {
   try {
-    const res = await fetch(`${API_URL}/health/db`, { cache: 'no-store' });
+    const res = await fetch(resolveClientApiPath('/health/db'), { cache: 'no-store' });
     if (res.status === 404) {
       return {
         detail: 'Endpoint /health/db absent sur ce backend. Les autres diagnostics restent disponibles.',
@@ -492,7 +492,7 @@ async function checkDatabase(): Promise<EndpointCheck> {
 
 async function checkCatalog(): Promise<EndpointCheck> {
   try {
-    const res = await fetch(`${API_URL}/catalog`, { cache: 'no-store' });
+    const res = await fetch(resolveClientApiPath('/catalog'), { cache: 'no-store' });
     if (!res.ok) {
       return { detail: `Erreur HTTP ${res.status} sur /catalog.`, status: 'error' };
     }

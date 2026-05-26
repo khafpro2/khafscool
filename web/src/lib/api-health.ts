@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useSyncExternalStore } from 'react';
-import { API_URL } from '@/lib/api';
+import { resolveClientApiPath } from './api-url';
 import {
   isApiUnavailable,
   recordApiSuccess,
@@ -12,8 +12,7 @@ import {
 const HEALTH_POLL_MS = 45_000;
 
 function healthCheckUrl(): string {
-  if (typeof window !== 'undefined') return '/api/proxy/health';
-  return `${API_URL}/health`;
+  return resolveClientApiPath('/health');
 }
 
 export async function checkApiHealth(): Promise<boolean> {
