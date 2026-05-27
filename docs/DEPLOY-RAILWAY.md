@@ -75,7 +75,7 @@ openssl rand -base64 32
 
 | Variable | Obligatoire | Valeur / exemple |
 | -------- | ----------- | ---------------- |
-| `NODE_ENV` | Oui | `production` |
+| `NODE_ENV` | Oui | `production` — défini dans [`railway.toml`](../railway.toml) `[env]` **et** `scripts/railway-start.sh` ; sans cela `/auth/oauth/status` peut omettre `environment` ou indiquer `development` |
 | `DATABASE_URL` | Oui | Connection string **Neon** (`?sslmode=require`) |
 | `JWT_SECRET` | Oui | `openssl rand -base64 32` |
 | `JWT_REFRESH_SECRET` | Oui | autre secret, min. 32 caractères |

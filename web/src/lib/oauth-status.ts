@@ -1,4 +1,4 @@
-import { resolveClientApiPath } from './api-url';
+import { API_URL_DISPLAY, resolveClientApiPath } from './api-url';
 
 export type OAuthProviderName = 'apple' | 'google' | 'microsoft';
 export type OAuthProviderStatus = 'configured' | 'stub' | 'disabled';
@@ -9,11 +9,51 @@ export type OAuthStatusSnapshot = Record<OAuthProviderName, OAuthProviderStatus>
 
 export const OAUTH_PROVIDER_ORDER: OAuthProviderName[] = ['google', 'apple', 'microsoft'];
 
+const LOCAL_API_HOSTS = new Set(['localhost', '127.0.0.1']);
+
+/** Heuristique quand l’API legacy ne renvoie pas encore `environment`. */
+export function isProductionApiUrl(url: string): boolean {
+  const trimmed = url.trim();
+  if (!trimmed) return false;
+  try {
+    const parsed = new URL(trimmed.startsWith('http') ? trimmed : `https://${trimmed}`);
+    if (LOCAL_API_HOSTS.has(parsed.hostname)) return false;
+    return parsed.protocol === 'https:';
+  } catch {
+    return /railway\.app|render\.com/i.test(trimmed);
+  }
+}
+
+export function resolveOAuthEnvironment(
+  snapshot: Partial<OAuthStatusSnapshot> & Record<OAuthProviderName, OAuthProviderStatus>,
+  apiUrlHint = API_URL_DISPLAY
+): OAuthStatusSnapshot['environment'] {
+  if (snapshot.environment === 'production' || snapshot.environment === 'development') {
+    return snapshot.environment;
+  }
+  if (apiUrlHint && isProductionApiUrl(apiUrlHint)) return 'production';
+  return 'development';
+}
+
+export function normalizeOAuthStatus(
+  raw: Partial<OAuthStatusSnapshot> & Record<OAuthProviderName, OAuthProviderStatus>,
+  apiUrlHint = API_URL_DISPLAY
+): OAuthStatusSnapshot {
+  return {
+    apple: raw.apple ?? 'stub',
+    google: raw.google ?? 'stub',
+    microsoft: raw.microsoft ?? 'stub',
+    environment: resolveOAuthEnvironment(raw, apiUrlHint),
+  };
+}
+
 export async function fetchOAuthStatus(): Promise<OAuthStatusSnapshot | null> {
   try {
     const res = await fetch(resolveClientApiPath('/auth/oauth/status'), { cache: 'no-store' });
     if (!res.ok) return null;
-    return (await res.json()) as OAuthStatusSnapshot;
+    const raw = (await res.json()) as Partial<OAuthStatusSnapshot> &
+      Record<OAuthProviderName, OAuthProviderStatus>;
+    return normalizeOAuthStatus(raw);
   } catch {
     return null;
   }
@@ -49,14 +89,18 @@ export function oauthProviderHelpText(
   return 'Mode dev : un profil fictif est créé sans appeler Google / Apple / Microsoft.';
 }
 
-export function summarizeOAuthStatus(snapshot: OAuthStatusSnapshot): string {
+export function summarizeOAuthStatus(
+  snapshot: OAuthStatusSnapshot,
+  apiUrlHint = API_URL_DISPLAY
+): string {
+  const environment = resolveOAuthEnvironment(snapshot, apiUrlHint);
   const providers = OAUTH_PROVIDER_ORDER;
   const configured = providers.filter((p) => snapshot[p] === 'configured').length;
   const stub = providers.filter((p) => snapshot[p] === 'stub').length;
   const disabled = providers.filter((p) => snapshot[p] === 'disabled').length;
 
-  if (snapshot.environment === 'production' && configured === 0) {
-    return 'API en production sans SSO configuré — utilise l’email/mot de passe ou ajoute les variables OAuth sur Railway.';
+  if (environment === 'production' && configured === 0) {
+    return 'SSO non configuré en production — connexion email/mot de passe OK. Voir docs/OAUTH-PRODUCTION.md pour Google, Apple et Microsoft.';
   }
 
   if (configured > 0) {

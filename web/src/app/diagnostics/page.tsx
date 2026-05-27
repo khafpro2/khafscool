@@ -8,6 +8,7 @@ import {
   OAUTH_PROVIDER_ORDER,
   oauthStatusLabel,
   oauthStatusTone,
+  resolveOAuthEnvironment,
   summarizeOAuthStatus,
   type OAuthStatusSnapshot,
 } from '@/lib/oauth-status';
@@ -295,7 +296,9 @@ export default function DiagnosticsPage() {
           <>
             <p className="muted" style={{ marginTop: '0.65rem', fontSize: '0.88rem' }}>
               Environnement API :{' '}
-              <strong>{oauthStatus.environment === 'production' ? 'production' : 'développement'}</strong>
+              <strong>
+                {resolveOAuthEnvironment(oauthStatus) === 'production' ? 'production' : 'développement'}
+              </strong>
               {' · '}
               {summarizeOAuthStatus(oauthStatus)}
             </p>
@@ -481,7 +484,7 @@ async function checkOAuthStatus(): Promise<{ check: EndpointCheck; snapshot: OAu
   const configured = OAUTH_PROVIDER_ORDER.filter((p) => data[p] === 'configured').length;
   const detail = summarizeOAuthStatus(data);
   const status =
-    configured > 0 ? 'ok' : data.environment === 'production' ? 'warning' : ('warning' as const);
+    configured > 0 ? 'ok' : resolveOAuthEnvironment(data) === 'production' ? 'warning' : ('warning' as const);
 
   return {
     check: { detail, status },

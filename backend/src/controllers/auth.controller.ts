@@ -1,7 +1,13 @@
 import bcrypt from 'bcrypt';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { AuthProvider } from '@prisma/client';
-import { getOAuthStatusSnapshot, getOAuthProviderStatus, oauthProviders, type OAuthProviderName } from '../config/oauth.js';
+import {
+  getOAuthStatusSnapshot,
+  getOAuthProviderStatus,
+  isProductionRuntime,
+  oauthProviders,
+  type OAuthProviderName,
+} from '../config/oauth.js';
 import { prisma } from '../lib/prisma.js';
 import {
   changePasswordSchema,
@@ -123,7 +129,7 @@ export async function startOAuth(
   if (status === 'disabled') {
     return reply.status(503).send({ error: 'OAUTH_DISABLED' });
   }
-  if (status === 'stub' && process.env.NODE_ENV === 'production') {
+  if (status === 'stub' && isProductionRuntime()) {
     return reply.status(503).send({ error: 'OAUTH_UNAVAILABLE' });
   }
 
