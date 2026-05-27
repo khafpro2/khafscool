@@ -311,10 +311,10 @@ export const appleCertPrepQuestions: Record<string, SeedQuestion[]> = {
       prompt:
         'Après renouvellement certificat Push APNs dans Jamf, 50 iPhone perdent le check-in simultanément. Cause la plus probable ?',
       options: opt(
-        'Nouveau certificat avec topic APNs différent ou import incomplet — les appareils ne reconnaissent plus le serveur Push',
-        'Les utilisateurs ont tous désactivé Bluetooth',
-        'iOS 17 interdit désormais le MDM',
-        'Le mode Focus « Ne pas déranger » bloque le MDM'
+        'Topic APNs différent ou import incomplet : les appareils ne reconnaissent plus le Push',
+        'Bluetooth désactivé en masse sur les 50 iPhone concernés',
+        'iOS 17 interdit désormais toute gestion MDM entreprise',
+        'Mode Focus « Ne pas déranger » bloque les commandes MDM'
       ),
       correctOption: 'a',
       explanation:
@@ -725,10 +725,10 @@ export const jamfProFoundationsQuestions: Record<string, SeedQuestion[]> = {
       prompt:
         'Un paquet .pkg échoue sur 3 Mac du Smart Group pilote. Quelle action d’admin Jamf est la plus pertinente ?',
       options: opt(
-        'Consulter les logs de politique sur un Mac concerné, vérifier droits et dépendances, ajuster le script avant élargir le scope',
-        'Passer immédiatement le scope à « Tous les ordinateurs »',
-        'Révoquer le certificat Push',
-        'Désinscrire les 3 Mac d’ABM'
+        'Logs politique sur Mac pilote, vérifier droits/dépendances, corriger avant d’élargir le scope',
+        'Élargir immédiatement le scope à tous les ordinateurs Jamf',
+        'Révoquer le certificat Push Apple sur le serveur',
+        'Retirer les trois Mac pilotes d’Apple Business Manager'
       ),
       correctOption: 'a',
       explanation:
@@ -1355,10 +1355,10 @@ export const intuneIosEnrollmentQuestions: Record<string, SeedQuestion[]> = {
       prompt:
         'Piège : un collègue affirme que l’ADE « enrôle automatiquement sans Wi-Fi au premier démarrage ». Quelle nuance est correcte ?',
       options: opt(
-        'L’ADE rattache au MDM au Setup Assistant, mais une connexion réseau est requise pour télécharger profils et apps',
-        'Aucun réseau n’est jamais nécessaire sur iOS',
-        'L’ADE fonctionne uniquement sur macOS',
-        'Il faut une carte SIM Android'
+        'ADE rattache au MDM au Setup Assistant ; le réseau reste requis pour profils et apps',
+        'Aucune connexion réseau n’est jamais nécessaire sur iOS supervisé',
+        'L’ADE ne fonctionne que sur macOS, pas sur iPhone ni iPad',
+        'Une carte SIM Android est obligatoire pour l’inscription'
       ),
       correctOption: 'a',
       explanation:
@@ -1369,10 +1369,10 @@ export const intuneIosEnrollmentQuestions: Record<string, SeedQuestion[]> = {
       prompt:
         'Après assignation ABM → Intune, que se passe-t-il au premier allumage d’un iPad ?',
       options: opt(
-        'Le Setup Assistant applique le profil ADE et inscrit l’appareil dans Intune',
-        'L’iPad reste non géré jusqu’à une inscription manuelle Company Portal obligatoire',
-        'Seul le compte Apple ID personnel est créé',
-        'Intune désinstalle automatiquement toutes les apps'
+        'Setup Assistant applique le profil ADE et inscrit l’iPad dans Intune',
+        'L’iPad reste non géré jusqu’à inscription manuelle Company Portal',
+        'Seule la création d’un Apple ID personnel est proposée',
+        'Intune désinstalle automatiquement toutes les applications'
       ),
       correctOption: 'a',
       explanation:
@@ -1524,9 +1524,9 @@ export const intuneIosEnrollmentQuestions: Record<string, SeedQuestion[]> = {
       prompt:
         'Une politique de conformité Intune exige iOS 17 minimum. Un iPhone 16 est bloqué par Conditional Access. Comment prioriser la remédiation ?',
       options: opt(
-        'Identifier la règle OS en échec dans le rapport conformité, notifier l’utilisateur, planifier mise à jour iOS avant expiration du délai de grâce',
-        'Supprimer immédiatement le compte Entra ID de l’utilisateur',
-        'Désactiver toutes les politiques de conformité du tenant',
+        'Rapport conformité : règle OS en échec, notifier, planifier MAJ iOS avant fin du délai de grâce',
+        'Supprimer le compte Entra ID de l’utilisateur sans diagnostic préalable',
+        'Désactiver toutes les politiques de conformité du tenant Intune',
         'Révoquer le certificat APNs Jamf (hors périmètre Intune)'
       ),
       correctOption: 'a',
@@ -1666,10 +1666,10 @@ export const intuneIosEnrollmentQuestions: Record<string, SeedQuestion[]> = {
       prompt:
         'Un utilisateur BYOD accède à Outlook sans PIN applicatif malgré une politique App Protection assignée. Où investiguer ?',
       options: opt(
-        'Assignation de la politique MAM au bon groupe utilisateur, état d’enregistrement Intune MAM dans Company Portal, version Outlook supportée',
-        'Réinstallation de BitLocker sur le PC de l’admin',
-        'Changement du certificat Push Apple dans Jamf',
-        'Désactivation du MFA Entra ID globalement'
+        'Politique MAM, groupe utilisateur, Company Portal, version Outlook supportée',
+        'Réinstallation de BitLocker sur le poste de l’administrateur Intune',
+        'Renouvellement du certificat Push Apple dans la console Jamf',
+        'Désactivation du MFA Entra ID pour tout le tenant'
       ),
       correctOption: 'a',
       explanation:
@@ -1695,10 +1695,10 @@ export const intuneIosEnrollmentQuestions: Record<string, SeedQuestion[]> = {
       prompt:
         'BYOD : Outlook accède au mail malgré politique App Protection PIN requise. Investigation Intune ?',
       options: opt(
-        'Assignation politique MAM au bon groupe utilisateur, app cible Outlook, version app supportée, état enrollment MAM',
-        'Réinstaller BitLocker sur PC admin',
-        'Renouveler certificat Push Jamf',
-        'Désactiver MFA globalement'
+        'Politique MAM, groupe utilisateur, app Outlook, version supportée, état MAM',
+        'Réinstaller BitLocker sur le poste de l’administrateur Intune',
+        'Renouveler le certificat Push Apple dans la console Jamf',
+        'Désactiver le MFA Entra ID pour tout le tenant'
       ),
       correctOption: 'a',
       explanation:

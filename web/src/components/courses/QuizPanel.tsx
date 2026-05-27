@@ -5,9 +5,11 @@ import Link from 'next/link';
 import type { CourseModule } from '@/lib/api';
 import { findGlossaryTermInText, glossaryWebHref } from '@ama/shared/glossary';
 import {
+  getQuizOptionDisplayLetter,
   getQuizQuestionTypeMeta,
   listIncorrectQuestionIds,
   truncateQuizPrompt,
+  withShuffledQuizOptions,
   type QuizQuestionTypeMeta,
 } from '@ama/shared/quiz-learning';
 import { resolveApiErrorMessage } from '@/lib/auth-errors';
@@ -91,7 +93,10 @@ export function QuizPanel({
   estimatedGameScore = 0,
   keyTakeaways = [],
 }: QuizPanelProps) {
-  const questions = module.questions;
+  const questions = useMemo(
+    () => withShuffledQuizOptions(module.questions),
+    [module.id, module.questions]
+  );
   const totalQuestions = questions.length;
   const questionIds = useMemo(() => questions.map((question) => question.id), [questions]);
   const trackVisual = getTrackVisual(track);
@@ -717,7 +722,11 @@ function QuizQuestionStep({
         {revealed && isIncorrect && revealedCorrectOptionId && (
           <p className="quiz-correct-answer-hint" role="status">
             La bonne réponse est l’option{' '}
-            <strong>{revealedCorrectOptionId.toUpperCase()}</strong> — relis l’explication ci-dessous.
+            <strong>
+              {getQuizOptionDisplayLetter(question.options, revealedCorrectOptionId) ??
+                revealedCorrectOptionId.toUpperCase()}
+            </strong>{' '}
+            — relis l’explication ci-dessous.
           </p>
         )}
 

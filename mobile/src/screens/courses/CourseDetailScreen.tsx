@@ -24,9 +24,11 @@ import { QUESTIONS_PER_MODULE } from '@ama/shared/constants';
 import { countLessonWords, formatCourseHeroBanner, formatReadingTimeLabel, sumLessonReadingMinutes } from '@ama/shared/reading-time';
 import { findGlossaryTermInText, glossaryMobilePath } from '@ama/shared/glossary';
 import {
+  getQuizOptionDisplayLetter,
   getQuizQuestionTypeMeta,
   listIncorrectQuestionIds,
   truncateQuizPrompt,
+  withShuffledQuizOptions,
 } from '@ama/shared/quiz-learning';
 import {
   CheckAnswerResult,
@@ -115,8 +117,15 @@ export function CourseDetailScreen() {
     if (!course) return null;
     const nextId = progress?.progress.nextModule?.id;
     const targetId = expandedModuleId ?? nextId;
-    if (!targetId) return course.modules[0] ?? null;
-    return course.modules.find((item) => item.id === targetId) ?? course.modules[0] ?? null;
+    const module =
+      (targetId ? course.modules.find((item) => item.id === targetId) : null) ??
+      course.modules[0] ??
+      null;
+    if (!module) return null;
+    return {
+      ...module,
+      questions: withShuffledQuizOptions(module.questions),
+    };
   }, [course, expandedModuleId, progress?.progress.nextModule?.id]);
 
   useEffect(() => {
@@ -695,7 +704,11 @@ export function CourseDetailScreen() {
                               <Text style={styles.quizCorrectAnswerHint}>
                                 La bonne réponse est l’option{' '}
                                 <Text style={styles.quizCorrectAnswerHintStrong}>
-                                  {(checkResult.correctOptionId ?? question.correctOption ?? '').toUpperCase()}
+                                  {getQuizOptionDisplayLetter(
+                                    question.options,
+                                    checkResult.correctOptionId ?? question.correctOption ?? ''
+                                  ) ??
+                                    (checkResult.correctOptionId ?? question.correctOption ?? '').toUpperCase()}
                                 </Text>{' '}
                                 — relis l’explication ci-dessous.
                               </Text>
