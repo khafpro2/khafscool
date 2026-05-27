@@ -2,7 +2,15 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { API_URL_DISPLAY, IS_API_URL_CONFIGURED, resolveClientApiPath } from '@/lib/api';
-import { getAuthTokenPresence } from '@/lib/auth';
+import { getAuthTokenPresence, type AuthTokenPresence } from '@/lib/auth';
+import {
+  fetchOAuthStatus,
+  OAUTH_PROVIDER_ORDER,
+  oauthStatusLabel,
+  oauthStatusTone,
+  summarizeOAuthStatus,
+  type OAuthStatusSnapshot,
+} from '@/lib/oauth-status';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -29,14 +37,6 @@ const quickLinks = [
   { href: '/mvp', label: 'MVP' },
 ];
 
-type OAuthProviderStatus = 'configured' | 'stub' | 'disabled';
-
-type OAuthStatusSnapshot = {
-  apple: OAuthProviderStatus;
-  google: OAuthProviderStatus;
-  microsoft: OAuthProviderStatus;
-};
-
 const initialEndpointCheck: EndpointCheck = {
   detail: 'Vérification en cours…',
   status: 'pending',
@@ -50,15 +50,19 @@ export default function DiagnosticsPage() {
   const [catalogCheck, setCatalogCheck] = useState<EndpointCheck>(initialEndpointCheck);
   const [oauthStatus, setOauthStatus] = useState<OAuthStatusSnapshot | null>(null);
   const [oauthCheck, setOauthCheck] = useState<EndpointCheck>(initialEndpointCheck);
-  const [tokenPresence, setTokenPresence] = useState(() => ({
-    accessTokenCookie: false,
-    accessTokenLocal: false,
-    refreshTokenCookie: false,
-    refreshTokenLocal: false,
-  }));
+  const [tokenPresence, setTokenPresence] = useState<AuthTokenPresence>(() => getAuthTokenPresence());
+  const [cookieSessionChecked, setCookieSessionChecked] = useState(false);
 
   useEffect(() => {
     setTokenPresence(getAuthTokenPresence());
+    void checkBrowserSession().then((session) => {
+      setTokenPresence((prev) => ({
+        ...prev,
+        accessTokenCookie: session.hasAccessToken,
+        refreshTokenCookie: session.hasRefreshToken,
+      }));
+      setCookieSessionChecked(true);
+    });
     void runEndpointChecks();
   }, []);
 
@@ -78,14 +82,33 @@ export default function DiagnosticsPage() {
     setOauthCheck(oauth.check);
   }
 
-  const hasAnyToken = Object.values(tokenPresence).some(Boolean);
-  const hasAccessToken = tokenPresence.accessTokenCookie || tokenPresence.accessTokenLocal;
-  const hasRefreshToken = tokenPresence.refreshTokenCookie || tokenPresence.refreshTokenLocal;
-  const sessionStatus: CheckStatus =
-    hasAccessToken && hasRefreshToken ? 'ok' : hasAnyToken ? 'warning' : 'error';
+  const hasCookieSession = tokenPresence.accessTokenCookie && tokenPresence.refreshTokenCookie;
+  const hasUserProfile = tokenPresence.userProfileLocal;
+  const hasJwtInLocalStorage = tokenPresence.accessTokenLocal || tokenPresence.refreshTokenLocal;
+  const sessionStatus: CheckStatus = !cookieSessionChecked
+    ? 'pending'
+    : hasCookieSession
+      ? hasUserProfile
+        ? 'ok'
+        : 'warning'
+      : hasUserProfile || hasJwtInLocalStorage
+        ? 'warning'
+        : 'error';
+
+  const sessionDetail = !cookieSessionChecked
+    ? 'Vérification des cookies HttpOnly en cours…'
+    : hasCookieSession
+      ? hasUserProfile
+        ? 'Session active — cookies HttpOnly valides et profil local présent (valeurs masquées).'
+        : 'Cookies de session détectés sans profil local — ouvre /auth ou recharge la page.'
+      : hasUserProfile
+        ? 'Profil local présent mais session cookie expirée ou absente — reconnecte-toi via /auth.'
+        : hasJwtInLocalStorage
+          ? 'Anciens jetons en localStorage sans session cookie — déconnecte-toi puis reconnecte-toi.'
+          : 'Aucune session — connecte-toi via /auth pour tester le tableau de bord.';
 
   const apiUrlConfigured = IS_API_URL_CONFIGURED;
-  const authClientStatus: CheckStatus = hasAccessToken && hasRefreshToken ? 'ok' : hasAnyToken ? 'warning' : 'error';
+  const authClientStatus = sessionStatus;
 
   const checklist = useMemo<Array<{ id: string; label: string; status: CheckStatus; detail: string }>>(
     () => [
@@ -145,11 +168,9 @@ export default function DiagnosticsPage() {
       },
       {
         id: 'auth-session',
-        label: 'Session navigateur (tokens locaux)',
+        label: 'Session navigateur (cookies + profil)',
         status: authClientStatus,
-        detail: hasAnyToken
-          ? 'Jetons détectés en localStorage ou cookie (valeurs masquées).'
-          : 'Aucun jeton — connecte-toi via /auth pour tester le dashboard.',
+        detail: sessionDetail,
       },
       {
         id: 'auth-server',
@@ -170,7 +191,7 @@ export default function DiagnosticsPage() {
       databaseCheck.detail,
       databaseCheck.status,
       schemaReady,
-      hasAnyToken,
+      sessionDetail,
       healthCheck.detail,
       healthCheck.status,
     ]
@@ -259,45 +280,47 @@ export default function DiagnosticsPage() {
           status={catalogCheck.status}
           title="Catalogue public"
         />
-        <StatusCard
-          detail={
-            hasAnyToken
-              ? 'Présence détectée en stockage local ou cookie. Les valeurs restent masquées.'
-              : 'Aucun token local ou cookie détecté dans ce navigateur.'
-          }
-          label="Session locale"
-          status={sessionStatus}
-          title="Tokens navigateur"
-        />
+        <StatusCard detail={sessionDetail} label="Session locale" status={sessionStatus} title="Tokens navigateur" />
       </section>
 
       <Card style={{ marginTop: '1rem' }}>
         <p className="section-eyebrow">OAuth</p>
         <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginTop: '0.35rem' }}>État des fournisseurs SSO</h2>
         <p className="muted" style={{ marginTop: '0.35rem' }}>
-          Lecture seule depuis <code>/auth/oauth/status</code>. En dev sans credentials, le mode <strong>stub</strong>{' '}
-          simule un profil utilisateur. Voir <code>docs/OAUTH-PRODUCTION.md</code> pour la mise en prod.
+          Lecture seule depuis <code>/auth/oauth/status</code>. <strong>Configuré</strong> = credentials sur Railway ;
+          <strong> Stub</strong> = simulation en dev uniquement ; en production sans variables, les boutons SSO échouent.
+          Guide : <code>docs/OAUTH-PRODUCTION.md</code>.
         </p>
         {oauthStatus ? (
-          <ul style={{ display: 'grid', gap: '0.65rem', marginTop: '1rem', padding: 0, listStyle: 'none' }}>
-            {(['google', 'apple', 'microsoft'] as const).map((provider) => (
-              <li
-                key={provider}
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  gap: '0.75rem',
-                  alignItems: 'center',
-                  padding: '0.65rem 0.85rem',
-                  borderRadius: 12,
-                  background: 'var(--accent-soft)',
-                }}
-              >
-                <strong style={{ fontSize: '0.92rem', textTransform: 'capitalize' }}>{provider}</strong>
-                <Badge tone={oauthStatusTone(oauthStatus[provider])}>{oauthStatusLabel(oauthStatus[provider])}</Badge>
-              </li>
-            ))}
-          </ul>
+          <>
+            <p className="muted" style={{ marginTop: '0.65rem', fontSize: '0.88rem' }}>
+              Environnement API :{' '}
+              <strong>{oauthStatus.environment === 'production' ? 'production' : 'développement'}</strong>
+              {' · '}
+              {summarizeOAuthStatus(oauthStatus)}
+            </p>
+            <ul style={{ display: 'grid', gap: '0.65rem', marginTop: '1rem', padding: 0, listStyle: 'none' }}>
+              {OAUTH_PROVIDER_ORDER.map((provider) => (
+                <li
+                  key={provider}
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    gap: '0.75rem',
+                    alignItems: 'center',
+                    padding: '0.65rem 0.85rem',
+                    borderRadius: 12,
+                    background: 'var(--accent-soft)',
+                  }}
+                >
+                  <strong style={{ fontSize: '0.92rem', textTransform: 'capitalize' }}>{provider}</strong>
+                  <Badge tone={oauthStatusTone(oauthStatus[provider])}>
+                    {oauthStatusLabel(oauthStatus[provider])}
+                  </Badge>
+                </li>
+              ))}
+            </ul>
+          </>
         ) : (
           <p className="muted" style={{ marginTop: '0.85rem' }}>
             {oauthCheck.detail}
@@ -409,10 +432,18 @@ export default function DiagnosticsPage() {
             marginTop: '1rem',
           }}
         >
-          <TokenPresence label="Jeton d’accès (localStorage)" present={tokenPresence.accessTokenLocal} />
-          <TokenPresence label="Jeton d’accès (cookie)" present={tokenPresence.accessTokenCookie} />
-          <TokenPresence label="Jeton de rafraîchissement (localStorage)" present={tokenPresence.refreshTokenLocal} />
-          <TokenPresence label="Jeton de rafraîchissement (cookie)" present={tokenPresence.refreshTokenCookie} />
+          <TokenPresence label="Profil utilisateur (localStorage)" present={tokenPresence.userProfileLocal} />
+          <TokenPresence
+            label="Jeton d’accès (cookie HttpOnly)"
+            present={cookieSessionChecked ? tokenPresence.accessTokenCookie : false}
+            pending={!cookieSessionChecked}
+          />
+          <TokenPresence
+            label="Jeton de rafraîchissement (cookie HttpOnly)"
+            present={cookieSessionChecked ? tokenPresence.refreshTokenCookie : false}
+            pending={!cookieSessionChecked}
+          />
+          <TokenPresence label="JWT en localStorage (legacy)" present={hasJwtInLocalStorage} />
         </div>
       </Card>
 
@@ -436,31 +467,8 @@ export default function DiagnosticsPage() {
 }
 
 async function checkOAuthStatus(): Promise<{ check: EndpointCheck; snapshot: OAuthStatusSnapshot | null }> {
-  try {
-    const res = await fetch(resolveClientApiPath('/auth/oauth/status'), { cache: 'no-store' });
-    if (!res.ok) {
-      return {
-        check: { detail: `Erreur HTTP ${res.status} sur /auth/oauth/status.`, status: 'error' },
-        snapshot: null,
-      };
-    }
-
-    const data = (await res.json()) as OAuthStatusSnapshot;
-    const providers = ['google', 'apple', 'microsoft'] as const;
-    const configured = providers.filter((p) => data[p] === 'configured').length;
-    const stub = providers.filter((p) => data[p] === 'stub').length;
-    const disabled = providers.filter((p) => data[p] === 'disabled').length;
-
-    const detail =
-      configured > 0
-        ? `${configured} fournisseur(s) configuré(s), ${stub} en stub, ${disabled} désactivé(s).`
-        : `Mode dev : ${stub} stub, ${disabled} désactivé(s) — credentials OAuth non requis.`;
-
-    return {
-      check: { detail, status: configured > 0 ? 'ok' : 'warning' },
-      snapshot: data,
-    };
-  } catch {
+  const data = await fetchOAuthStatus();
+  if (!data) {
     return {
       check: {
         detail: 'Statut OAuth indisponible. Vérifie que le backend répond sur /auth/oauth/status.',
@@ -469,6 +477,16 @@ async function checkOAuthStatus(): Promise<{ check: EndpointCheck; snapshot: OAu
       snapshot: null,
     };
   }
+
+  const configured = OAUTH_PROVIDER_ORDER.filter((p) => data[p] === 'configured').length;
+  const detail = summarizeOAuthStatus(data);
+  const status =
+    configured > 0 ? 'ok' : data.environment === 'production' ? 'warning' : ('warning' as const);
+
+  return {
+    check: { detail, status },
+    snapshot: data,
+  };
 }
 
 async function checkHealth(): Promise<{ check: EndpointCheck; version: string | null }> {
@@ -637,29 +655,45 @@ function StatusCard({
   );
 }
 
-function TokenPresence({ label, present }: { label: string; present: boolean }) {
+async function checkBrowserSession(): Promise<{ hasAccessToken: boolean; hasRefreshToken: boolean }> {
+  try {
+    const res = await fetch('/api/auth/session', { credentials: 'include', cache: 'no-store' });
+    if (!res.ok) return { hasAccessToken: false, hasRefreshToken: false };
+    const data = (await res.json()) as { hasAccessToken?: boolean; hasRefreshToken?: boolean };
+    return {
+      hasAccessToken: Boolean(data.hasAccessToken),
+      hasRefreshToken: Boolean(data.hasRefreshToken),
+    };
+  } catch {
+    return { hasAccessToken: false, hasRefreshToken: false };
+  }
+}
+
+function TokenPresence({
+  label,
+  present,
+  pending = false,
+}: {
+  label: string;
+  present: boolean;
+  pending?: boolean;
+}) {
   return (
     <div style={{ background: 'var(--accent-soft)', borderRadius: 12, padding: '0.85rem' }}>
       <p className="muted" style={{ fontSize: '0.85rem', fontWeight: 700 }}>
         {label}
       </p>
-      <strong style={{ color: present ? 'var(--success)' : 'var(--danger)', display: 'block', marginTop: '0.2rem' }}>
-        {present ? 'Présent' : 'Absent'}
+      <strong
+        style={{
+          color: pending ? 'var(--muted)' : present ? 'var(--success)' : 'var(--danger)',
+          display: 'block',
+          marginTop: '0.2rem',
+        }}
+      >
+        {pending ? '…' : present ? 'Présent' : 'Absent'}
       </strong>
     </div>
   );
-}
-
-function oauthStatusLabel(status: OAuthProviderStatus) {
-  if (status === 'configured') return 'Configuré';
-  if (status === 'stub') return 'Stub (dev)';
-  return 'Désactivé';
-}
-
-function oauthStatusTone(status: OAuthProviderStatus): 'success' | 'warning' | 'neutral' {
-  if (status === 'configured') return 'success';
-  if (status === 'stub') return 'warning';
-  return 'neutral';
 }
 
 function statusLabel(status: CheckStatus) {

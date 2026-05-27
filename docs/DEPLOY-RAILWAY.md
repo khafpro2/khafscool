@@ -82,6 +82,7 @@ openssl rand -base64 32
 | `CORS_ORIGIN` | Oui | `https://apple-mdm-academy.vercel.app` |
 | `WEB_URL` | Recommandé | `https://apple-mdm-academy.vercel.app` |
 | `API_URL` | Recommandé | `https://VOTRE-SERVICE.up.railway.app` (après 1er deploy) |
+| `GOOGLE_*` / `APPLE_*` / `MICROSOFT_*` | Optionnel (SSO) | Voir [OAUTH-PRODUCTION.md](./OAUTH-PRODUCTION.md) — **Railway uniquement** |
 | `PORT` | Non | **Ne pas définir** — Railway injecte `$PORT` |
 
 ### CLI (exemple)

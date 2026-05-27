@@ -27,10 +27,11 @@ describe('OAuth provider status', () => {
 
   it('returns stub when credentials are absent', async () => {
     const { getOAuthStatusSnapshot } = await import('../src/config/oauth.js');
-    expect(getOAuthStatusSnapshot()).toEqual({
+    expect(getOAuthStatusSnapshot()).toMatchObject({
       apple: 'stub',
       google: 'stub',
       microsoft: 'stub',
+      environment: 'development',
     });
   });
 
@@ -63,10 +64,11 @@ describe('OAuth provider status', () => {
     const response = await app.inject({ method: 'GET', url: '/auth/oauth/status' });
 
     expect(response.statusCode).toBe(200);
-    expect(response.json()).toEqual({
+    expect(response.json()).toMatchObject({
       apple: 'stub',
       google: 'stub',
       microsoft: 'stub',
+      environment: 'development',
     });
 
     await app.close();

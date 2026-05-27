@@ -61,11 +61,18 @@ export function getOAuthProviderStatus(name: OAuthProviderName): OAuthProviderSt
   return 'stub';
 }
 
-export function getOAuthStatusSnapshot(): Record<OAuthProviderName, OAuthProviderStatus> {
+export type OAuthStatusSnapshot = Record<OAuthProviderName, OAuthProviderStatus> & {
+  /** Indique si l’API tourne en NODE_ENV=production (stub SSO refusé côté /start). */
+  environment: 'development' | 'production';
+};
+
+export function getOAuthStatusSnapshot(): OAuthStatusSnapshot {
+  const environment = process.env.NODE_ENV === 'production' ? 'production' : 'development';
   return {
     apple: getOAuthProviderStatus('apple'),
     google: getOAuthProviderStatus('google'),
     microsoft: getOAuthProviderStatus('microsoft'),
+    environment,
   };
 }
 
