@@ -46,6 +46,7 @@ export default function DiagnosticsPage() {
   const [healthCheck, setHealthCheck] = useState<EndpointCheck>(initialEndpointCheck);
   const [apiVersion, setApiVersion] = useState<string | null>(null);
   const [databaseCheck, setDatabaseCheck] = useState<EndpointCheck>(initialEndpointCheck);
+  const [schemaReady, setSchemaReady] = useState<boolean | null>(null);
   const [catalogCheck, setCatalogCheck] = useState<EndpointCheck>(initialEndpointCheck);
   const [oauthStatus, setOauthStatus] = useState<OAuthStatusSnapshot | null>(null);
   const [oauthCheck, setOauthCheck] = useState<EndpointCheck>(initialEndpointCheck);
@@ -70,7 +71,8 @@ export default function DiagnosticsPage() {
     ]);
     setHealthCheck(health.check);
     setApiVersion(health.version);
-    setDatabaseCheck(database);
+    setDatabaseCheck(database.check);
+    setSchemaReady(database.schemaReady);
     setCatalogCheck(catalog);
     setOauthStatus(oauth.snapshot);
     setOauthCheck(oauth.check);
@@ -106,6 +108,20 @@ export default function DiagnosticsPage() {
         label: 'Base de données (via /health/db)',
         status: databaseCheck.status,
         detail: databaseCheck.detail,
+      },
+      {
+        id: 'schema-ready',
+        label: 'Schéma Prisma (schemaReady)',
+        status:
+          schemaReady === true ? 'ok' : schemaReady === false ? 'error' : databaseCheck.status === 'ok' ? 'ok' : 'warning',
+        detail:
+          schemaReady === true
+            ? 'Tables Prisma présentes — migrations appliquées.'
+            : schemaReady === false
+              ? 'Schéma absent ou incomplet — exécuter pnpm db:migrate puis pnpm db:seed (voir carte ci-dessous).'
+              : schemaReady === undefined && databaseCheck.status === 'error'
+                ? 'Connexion DB en échec — schemaReady non déterminé.'
+                : 'Champ schemaReady non exposé par l’API (mettre à jour le backend).',
       },
       {
         id: 'catalog',
@@ -153,6 +169,7 @@ export default function DiagnosticsPage() {
       catalogCheck.status,
       databaseCheck.detail,
       databaseCheck.status,
+      schemaReady,
       hasAnyToken,
       healthCheck.detail,
       healthCheck.status,
@@ -316,6 +333,47 @@ export default function DiagnosticsPage() {
         </div>
       </Card>
 
+      {schemaReady === false ? (
+        <Card style={{ marginTop: '1rem', borderColor: 'var(--danger)' }}>
+          <p className="section-eyebrow">Schéma Postgres</p>
+          <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginTop: '0.35rem' }}>Migrations requises</h2>
+          <p className="muted" style={{ marginTop: '0.35rem' }}>
+            L’API répond mais les tables Prisma sont absentes (<code>schemaReady: false</code>). Le catalogue renverra
+            une erreur <strong>503</strong> tant que le schéma n’est pas à jour.
+          </p>
+          <ol
+            style={{
+              color: 'var(--muted)',
+              display: 'grid',
+              gap: '0.45rem',
+              marginTop: '0.85rem',
+              paddingLeft: '1.25rem',
+            }}
+          >
+            <li>
+              Local : <code>pnpm db:up</code> puis <code>pnpm db:migrate</code> et <code>pnpm db:seed</code>.
+            </li>
+            <li>
+              Railway / Neon : vérifier <code>DATABASE_URL</code>, puis redéployer (script{' '}
+              <code>scripts/railway-start.sh</code> applique migrate + seed si la base est vide).
+            </li>
+            <li>Relance ce diagnostic après migration.</li>
+          </ol>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '1rem' }}>
+            <Button type="button" onClick={runEndpointChecks} size="sm">
+              Revérifier le schéma
+            </Button>
+            <Button
+              href="https://github.com/khafpro2/khafscool/blob/main/docs/NEON-DATABASE.md"
+              variant="secondary"
+              size="sm"
+            >
+              Guide Neon (prod)
+            </Button>
+          </div>
+        </Card>
+      ) : null}
+
       <Card style={{ marginTop: '1rem' }}>
         <p className="section-eyebrow">Dépannage local</p>
         <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginTop: '0.35rem' }}>Conseils Docker, migrate et seed</h2>
@@ -451,41 +509,69 @@ async function checkHealth(): Promise<{ check: EndpointCheck; version: string | 
   }
 }
 
-async function checkDatabase(): Promise<EndpointCheck> {
+async function checkDatabase(): Promise<{ check: EndpointCheck; schemaReady: boolean | null }> {
   try {
     const res = await fetch(resolveClientApiPath('/health/db'), { cache: 'no-store' });
     if (res.status === 404) {
       return {
-        detail: 'Endpoint /health/db absent sur ce backend. Les autres diagnostics restent disponibles.',
-        status: 'warning',
+        check: {
+          detail: 'Endpoint /health/db absent sur ce backend. Les autres diagnostics restent disponibles.',
+          status: 'warning',
+        },
+        schemaReady: null,
       };
     }
 
-    const data = (await res.json().catch(() => null)) as { message?: string; status?: 'ok' | 'error' } | null;
+    const data = (await res.json().catch(() => null)) as {
+      message?: string;
+      status?: 'ok' | 'error';
+      schemaReady?: boolean;
+    } | null;
     const message = data?.message ?? `Réponse HTTP ${res.status} sans message exploitable.`;
+    const ready =
+      typeof data?.schemaReady === 'boolean' ? data.schemaReady : data?.status === 'ok' ? true : null;
 
     if (!res.ok || data?.status === 'error') {
+      const schemaHint =
+        data?.schemaReady === false
+          ? ' Schéma Prisma absent — voir la carte « Migrations requises ».'
+          : ' Vérifie Docker, DATABASE_URL, puis migrate/seed.';
       return {
-        detail: `${message} Vérifie Docker, DATABASE_URL, puis migrate/seed.`,
-        status: 'error',
+        check: {
+          detail: `${message}${schemaHint}`,
+          status: 'error',
+        },
+        schemaReady: ready,
       };
     }
 
     if (data?.status !== 'ok') {
       return {
-        detail: 'Réponse reçue, mais le champ status est absent ou inattendu.',
-        status: 'warning',
+        check: {
+          detail: 'Réponse reçue, mais le champ status est absent ou inattendu.',
+          status: 'warning',
+        },
+        schemaReady: ready,
       };
     }
 
+    const schemaSuffix =
+      ready === true ? ' · schemaReady: true' : ready === false ? ' · schemaReady: false' : '';
+
     return {
-      detail: `OK — ${message}`,
-      status: 'ok',
+      check: {
+        detail: `OK — ${message}${schemaSuffix}`,
+        status: 'ok',
+      },
+      schemaReady: ready,
     };
   } catch {
     return {
-      detail: 'Diagnostic DB inaccessible. Vérifie d’abord que le backend répond sur /health.',
-      status: 'error',
+      check: {
+        detail: 'Diagnostic DB inaccessible. Vérifie d’abord que le backend répond sur /health.',
+        status: 'error',
+      },
+      schemaReady: null,
     };
   }
 }

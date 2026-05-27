@@ -12,5 +12,6 @@ test.describe('Diagnostics — page enrichie', () => {
     await expect(page.getByText('État des fournisseurs SSO')).toBeVisible();
     await expect(page.getByRole('link', { name: /Docs stack locale/i })).toBeVisible();
     await expect(page.getByText('Démarrage dev-stack')).toBeVisible();
+    await expect(page.getByText('Schéma Prisma (schemaReady)')).toBeVisible();
   });
 });

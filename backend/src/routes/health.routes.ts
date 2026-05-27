@@ -4,7 +4,7 @@ import { getDatabaseHealth, type DatabaseHealthResponse } from '../lib/database-
 export type { DatabaseHealthResponse };
 export { getDatabaseHealth, isSchemaMissing, schemaMissingMessage } from '../lib/database-health.js';
 
-const API_VERSION = '0.3.13';
+const API_VERSION = '0.3.15';
 
 export async function healthRoutes(app: FastifyInstance) {
   app.get('/health', async () => ({

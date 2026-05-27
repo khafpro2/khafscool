@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.15] — 2026-05-27
+
+### Diagnostics, quiz et gamification
+- **Web** — page `/diagnostics` : affichage de `schemaReady` depuis `/health/db`, carte « Migrations requises » et lien guide Neon
+- **Quiz** — dernier rééquilibrage des libellés (gap ≤ 8) ; test backend sur le seuil modéré
+- **E2E** — `quiz-shuffle.spec.ts` : vérifie l’ordre mélangé des options sur une question pilote
+- **Classement** — état vide enrichi (CTA parcours et quêtes)
+
 ## [0.3.14] — 2026-05-27
 
 ### Quiz, API et catalogue

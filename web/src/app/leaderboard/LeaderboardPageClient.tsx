@@ -188,11 +188,19 @@ export function LeaderboardPageClient({ initialTrack }: LeaderboardPageClientPro
           ))}
         </ul>
         {filteredLeaderboard.length === 0 && (
-          <p className="muted" style={{ padding: '1.25rem' }}>
-            {selectedTrack === 'TOUS'
-              ? 'Aucun apprenant classé pour le moment. Sois le premier à valider une unité.'
-              : `Aucun apprenant classé sur la piste ${formatLeaderboardTrackFilter(selectedTrack)} pour le moment.`}
-          </p>
+          <div style={{ padding: '1.25rem', textAlign: 'center' }}>
+            <p className="muted">
+              {selectedTrack === 'TOUS'
+                ? 'Aucun apprenant classé pour le moment. Sois le premier à valider une unité et cumuler des points.'
+                : `Aucun apprenant classé sur la piste ${formatLeaderboardTrackFilter(selectedTrack)} pour le moment. Termine une unité de ce parcours pour apparaître ici.`}
+            </p>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '0.6rem', flexWrap: 'wrap', marginTop: '1rem' }}>
+              <Button href="/courses">Parcourir les formations</Button>
+              <Button href="/quests" variant="secondary">
+                Quêtes de la semaine
+              </Button>
+            </div>
+          </div>
         )}
       </Card>
 

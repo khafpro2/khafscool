@@ -42,7 +42,7 @@ export const appleCertPrepQuestions: Record<string, SeedQuestion[]> = {
         "Un iPhone 14 ne s'allume plus après une chute. L'écran reste noir, aucune vibration au branchement. Quelle est la première étape conforme aux bonnes pratiques Device Support ?",
       options: opt(
         "Remplacer immédiatement la batterie en atelier sans diagnostic préalable",
-        "Vérifier câble/chargeur certifié, laisser charger 15 min",
+        "Vérifier câble/chargeur certifié, charger 15 min",
         "Restaurer en DFU sans demander de sauvegarde sans diagnostic préalable",
         "Désactiver Find My depuis le Mac du technicien sans diagnostic préalable"
       ),
@@ -168,10 +168,10 @@ export const appleCertPrepQuestions: Record<string, SeedQuestion[]> = {
       prompt:
         '200 iPhones supervisés : les apps VPP déployées par MDM restent « En attente » alors que Safari fonctionne. Première piste réseau ?',
       options: opt(
-        "Filtrage proxy/pare-feu bloquant les domaines CDN Apple (gsp.apple.c…",
-        "FileVault désactivé sur les iPhone sans diagnostic préalable",
-        "Expiration du certificat BitLocker sans diagnostic préalable",
-        "Absence de compte Google Workspace sans diagnostic préalable"
+        "Proxy ou pare-feu bloquant les domaines CDN Apple (apps VPP)",
+        "FileVault désactivé sur les iPhone — hors périmètre réseau VPP",
+        "Expiration du certificat BitLocker — hors périmètre iOS/VPP",
+        "Absence de compte Google Workspace — hors périmètre Apple MDM"
       ),
       correctOption: 'a',
       explanation:
@@ -456,7 +456,7 @@ export const appleCertPrepQuestions: Record<string, SeedQuestion[]> = {
       options: opt(
         "Refuser : seules voies Apple documentées (identifiants propriétaire, ABM, comman…",
         "Accepter si le client signe une décharge — piste peu adaptée au scénario",
-        "Remplacer la carte mère sans trace (option incorrecte pour ce cas)",
+        "Remplacer la carte mère sans trace (option incorrecte pour ce cas) sans diagnostic préalable",
         "Utiliser un profil MDM personnel du technicien sans diagnostic préalable"
       ),
       correctOption: 'a',
@@ -940,7 +940,7 @@ export const jamfProFoundationsQuestions: Record<string, SeedQuestion[]> = {
         'Inventaire Jamf : 15 Mac présents ABM mais absents de Jamf après 7 jours. Première hypothèse ?',
       options: opt(
         "Échec ADE au Setup Assistant, mauvaise assignation serveur MDM dans ABM,…",
-        "Les Mac sont forcément volés — piste peu adaptée au scénario",
+        "Les Mac sont forcément volés — piste peu adaptée au scénario sans diagnostic préalable",
         "FileVault empêche l’inventaire Jamf sans diagnostic préalable",
         "Jamf ne gère pas les Mac Apple Silicon sans diagnostic préalable"
       ),
@@ -1071,7 +1071,7 @@ export const jamfProFoundationsQuestions: Record<string, SeedQuestion[]> = {
         "30 à 45 jours — tester import avant date d’expiration effective",
         "La veille à minuit sans test sans diagnostic préalable",
         "Uniquement après coupure constatée sur 200 appareils",
-        "Tous les 10 ans (option incorrecte pour ce cas)"
+        "Tous les 10 ans (option incorrecte pour ce cas) sans diagnostic préalable"
       ),
       correctOption: 'a',
       explanation:
@@ -1861,10 +1861,10 @@ export const intuneIosEnrollmentQuestions: Record<string, SeedQuestion[]> = {
       prompt:
         'Examen MD-102 / Intune mobile : avant J-Day, 200 iPhone COPE doivent recevoir Teams Required + CA « appareil conforme ». Quel enchaînement valide le runbook Zero Trust ?',
       options: opt(
-        "Tokens Push + ADE + VPP valides, conformité device testée sur pilote, app Required assignée, CA appliquée, insta…",
+        "Tokens Push + ADE + VPP valides, conformité device testée sur pilote, app Required assignée, CA appliquée, inst…",
         "Assigner Teams Available uniquement et désactiver CA pour accélérer — piste peu adaptée au scénario",
-        "Apple ID partagé pour télécharger Teams manuellement (option incorrecte pour ce cas)",
-        "Retirer profil SCEP pour simplifier le réseau (option incorrecte pour ce cas)"
+        "Apple ID partagé pour télécharger Teams manuellement (option incorrecte pour ce cas) sans diagnostic préalable",
+        "Retirer profil SCEP pour simplifier le réseau (option incorrecte pour ce cas) sans diagnostic préalable"
       ),
       correctOption: 'a',
       explanation:
@@ -1876,10 +1876,10 @@ export const intuneIosEnrollmentQuestions: Record<string, SeedQuestion[]> = {
       prompt:
         'Piège examen Intune : 40 iPhone affichent « Pending install » Teams alors que le token VPP vient d’être renouvelé hier. Première action conforme ?',
       options: opt(
-        "Confirmer sync token VPP dans Intune + ABM, licences disponibles, connectivité CDN Apple sur si…",
-        "Wipe immédiat des 40 appareils (option incorrecte pour ce cas)",
-        "Désinstaller Company Portal sur toute la flotte (option incorrecte pour ce cas)",
-        "Basculer tous les iPhone en mode BYOD sans MAM (option incorrecte pour ce cas)"
+        "Confirmer sync token VPP dans Intune + ABM, licences disponibles, connectivité CDN Apple sur…",
+        "Wipe immédiat des 40 appareils (option incorrecte pour ce cas) sans diagnostic préalable",
+        "Désinstaller Company Portal sur toute la flotte (option incorrecte pour ce cas) sans diagnostic préalable",
+        "Basculer tous les iPhone en mode BYOD sans MAM (option incorrecte pour ce cas) sans diagnostic préalable"
       ),
       correctOption: 'a',
       explanation:
