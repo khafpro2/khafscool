@@ -4,6 +4,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 vi.mock('../src/lib/prisma.js', () => ({
   prisma: {
     $queryRaw: vi.fn(),
+    course: {
+      findFirst: vi.fn(),
+    },
   },
 }));
 
@@ -13,14 +16,29 @@ import { getDatabaseHealth, healthRoutes } from '../src/routes/health.routes.js'
 describe('health routes', () => {
   beforeEach(() => {
     vi.mocked(prisma.$queryRaw).mockReset();
+    vi.mocked(prisma.course.findFirst).mockReset();
   });
 
   it('reports ok when Prisma can query the database', async () => {
     vi.mocked(prisma.$queryRaw).mockResolvedValue([{ '?column?': 1 }] as never);
+    vi.mocked(prisma.course.findFirst).mockResolvedValue({ id: 'course-1' } as never);
 
     await expect(getDatabaseHealth()).resolves.toEqual({
       status: 'ok',
       message: 'Database reachable.',
+    });
+  });
+
+  it('reports schema error when core tables are missing', async () => {
+    vi.mocked(prisma.$queryRaw).mockResolvedValue([{ '?column?': 1 }] as never);
+    vi.mocked(prisma.course.findFirst).mockRejectedValue(
+      new Error('The table `public.Course` does not exist in the current database.')
+    );
+
+    await expect(getDatabaseHealth()).resolves.toEqual({
+      status: 'error',
+      message:
+        'Schéma absent ou incomplet. Exécuter prisma migrate deploy puis db seed (ou redéployer avec scripts/railway-start.sh).',
     });
   });
 
