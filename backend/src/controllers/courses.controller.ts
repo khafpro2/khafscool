@@ -57,6 +57,8 @@ export async function listCourses(_req: FastifyRequest, reply: FastifyReply) {
   return reply.send({ courses });
 }
 
+const PUBLIC_CATALOG_CACHE_CONTROL = 'public, max-age=300, stale-while-revalidate=60';
+
 export async function listPublicCatalog(_req: FastifyRequest, reply: FastifyReply) {
   try {
     const courses = await prisma.course.findMany({
@@ -70,6 +72,7 @@ export async function listPublicCatalog(_req: FastifyRequest, reply: FastifyRepl
       },
     });
 
+    reply.header('Cache-Control', PUBLIC_CATALOG_CACHE_CONTROL);
     return reply.send({
       courses: courses.map(({ _count, ...course }) => ({
         ...course,
@@ -78,6 +81,7 @@ export async function listPublicCatalog(_req: FastifyRequest, reply: FastifyRepl
     });
   } catch (error) {
     if (isSchemaMissing(error)) {
+      reply.header('Cache-Control', 'no-store');
       return reply.status(503).send({
         error: 'SCHEMA_NOT_READY',
         message: schemaMissingMessage('fr'),

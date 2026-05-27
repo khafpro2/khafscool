@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.3.16] — 2026-05-27
+
+### Examen blanc, vidéos, mobile et API
+- **Web** — examen blanc : minuteur indicatif (~15 min) avec alerte douce au dépassement
+- **Web** — vidéos module : chargement différé au scroll (IntersectionObserver) pour limiter le poids initial
+- **API** — `/catalog` : en-têtes `Cache-Control` (5 min + stale-while-revalidate) ; `no-store` si schéma absent
+- **Mobile** — quiz : raccourcis **A–D** sur web Expo ; libellés accessibilité sur les options
+- **Mobile** — diagnostics : contrôles `/health/db` (schemaReady) et `/catalog` alignés sur le web
+
 ## [0.3.15] — 2026-05-27
 
 ### Diagnostics, quiz et gamification

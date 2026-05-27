@@ -1,7 +1,14 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { computePracticeExamScorePercent, PRACTICE_EXAM_PASS_PERCENT, PRACTICE_EXAM_QUESTION_COUNT } from '@ama/shared/practice-exam';
+import {
+  computePracticeExamScorePercent,
+  formatPracticeExamElapsed,
+  isPracticeExamOverRecommendedTime,
+  PRACTICE_EXAM_PASS_PERCENT,
+  PRACTICE_EXAM_QUESTION_COUNT,
+  PRACTICE_EXAM_RECOMMENDED_MINUTES,
+} from '@ama/shared/practice-exam';
 import {
   checkModuleAnswer,
   fetchCourseProgress,
@@ -40,6 +47,7 @@ export function CoursePracticeExamClient({ slug }: { slug: string }) {
   const [revealedQuestions, setRevealedQuestions] = useState<Set<string>>(new Set());
   const [examFinished, setExamFinished] = useState(false);
   const [scoreRecorded, setScoreRecorded] = useState(false);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
   useEffect(() => {
     const token = getAccessToken();
@@ -97,6 +105,17 @@ export function CoursePracticeExamClient({ slug }: { slug: string }) {
   useEffect(() => {
     if (allRevealed) setExamFinished(true);
   }, [allRevealed]);
+
+  useEffect(() => {
+    if (!state || examFinished) return;
+
+    setElapsedSeconds(0);
+    const timer = window.setInterval(() => {
+      setElapsedSeconds((current) => current + 1);
+    }, 1000);
+
+    return () => window.clearInterval(timer);
+  }, [examFinished, slug, state?.exam.attemptToken]);
 
   useEffect(() => {
     if (!examFinished || scoreRecorded || !state || state.usesDemo) return;
@@ -218,6 +237,7 @@ export function CoursePracticeExamClient({ slug }: { slug: string }) {
 
   const { exam, usesDemo } = state;
   const visual = getTrackVisual(exam.course.track);
+  const timerOverRecommended = isPracticeExamOverRecommendedTime(elapsedSeconds);
 
   return (
     <section className="practice-exam-page" style={{ padding: '1rem 0 3rem' }}>
@@ -243,6 +263,25 @@ export function CoursePracticeExamClient({ slug }: { slug: string }) {
         <p style={{ marginTop: '0.45rem', maxWidth: 640, color: 'rgba(255,255,255,0.88)', fontSize: '0.9rem' }}>
           Objectif certification : ≥ {PRACTICE_EXAM_PASS_PERCENT} % pour débloquer le badge « Examen blanc réussi ».
         </p>
+        {!examFinished ? (
+          <p
+            className={`practice-exam-timer${timerOverRecommended ? ' practice-exam-timer--over' : ''}`}
+            role="status"
+            aria-live="polite"
+            style={{
+              marginTop: '0.65rem',
+              padding: '0.45rem 0.7rem',
+              borderRadius: 10,
+              background: 'rgba(0,0,0,0.2)',
+              fontSize: '0.9rem',
+              fontWeight: 700,
+            }}
+          >
+            Temps écoulé : {formatPracticeExamElapsed(elapsedSeconds)} · objectif ~{PRACTICE_EXAM_RECOMMENDED_MINUTES}{' '}
+            min
+            {timerOverRecommended ? ' — prends le temps de relire les explications.' : ''}
+          </p>
+        ) : null}
         {usesDemo ? (
           <p
             style={{

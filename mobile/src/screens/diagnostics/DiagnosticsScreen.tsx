@@ -8,6 +8,7 @@ import {
   View,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { COURSE_SLUGS } from '@ama/shared/constants';
 import { API_URL, WEB_URL } from '../../config';
 import { useAppTheme } from '../../context/ThemeContext';
 import type { AppThemeColors } from '../../lib/design';
@@ -46,13 +47,20 @@ export function DiagnosticsScreen() {
   const [checks, setChecks] = useState<DiagnosticCheck[]>([
     initialCheck('Santé API (/health)'),
     initialCheck('Version backend'),
+    initialCheck('Base de données (/health/db)'),
+    initialCheck('Catalogue public (/catalog)'),
     initialCheck('URL API configurée'),
     initialCheck('Session mobile (jetons)'),
   ]);
 
   const runChecks = useCallback(async () => {
     setLoading(true);
-    const [health, tokens] = await Promise.all([checkHealth(), checkTokens()]);
+    const [health, database, catalog, tokens] = await Promise.all([
+      checkHealth(),
+      checkDatabase(),
+      checkCatalog(),
+      checkTokens(),
+    ]);
     setApiVersion(health.version);
     setChecks([
       health.check,
@@ -64,6 +72,8 @@ export function DiagnosticsScreen() {
           ? `Version ${health.version} exposée par l’API.`
           : 'Champ version absent — redémarre le backend sur la branche courante.',
       },
+      database,
+      catalog,
       checkApiUrl(),
       tokens,
     ]);
@@ -124,7 +134,8 @@ export function DiagnosticsScreen() {
       </View>
 
       <Text style={styles.footerNote}>
-        Aucun jeton ni secret n’est affiché. Pour les contrôles DB et catalogue, ouvre la page web Diagnostics.
+        Aucun jeton ni secret n’est affiché. Pour OAuth et la stack locale complète, ouvre la page web{' '}
+        <Text style={styles.inlineCode}>/diagnostics</Text>.
       </Text>
     </ScrollView>
   );
@@ -181,6 +192,119 @@ async function checkHealth(): Promise<{ check: DiagnosticCheck; version: string 
         detail: 'API indisponible. Vérifie que le backend écoute sur l’URL configurée.',
       },
       version: null,
+    };
+  }
+}
+
+async function checkDatabase(): Promise<DiagnosticCheck> {
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 5_000);
+    const res = await fetch(`${API_URL}/health/db`, { cache: 'no-store', signal: controller.signal });
+    clearTimeout(timer);
+
+    if (res.status === 404) {
+      return {
+        id: 'db-health',
+        label: 'Base de données (/health/db)',
+        status: 'warning',
+        detail: 'Endpoint /health/db absent sur ce backend.',
+      };
+    }
+
+    const data = (await res.json().catch(() => null)) as {
+      status?: 'ok' | 'error';
+      schemaReady?: boolean;
+      message?: string;
+    } | null;
+
+    if (!res.ok || data?.status === 'error') {
+      const schemaHint =
+        data?.schemaReady === false
+          ? ' Schéma Prisma absent — lance pnpm db:migrate && pnpm db:seed.'
+          : '';
+      return {
+        id: 'db-health',
+        label: 'Base de données (/health/db)',
+        status: 'error',
+        detail: `${data?.message ?? `Erreur HTTP ${res.status}.`}${schemaHint}`,
+      };
+    }
+
+    const readyLabel =
+      data?.schemaReady === true
+        ? 'Schéma Prisma prêt (schemaReady).'
+        : data?.schemaReady === false
+          ? 'Connexion OK mais schéma incomplet.'
+          : 'Connexion Postgres OK.';
+
+    return {
+      id: 'db-health',
+      label: 'Base de données (/health/db)',
+      status: data?.schemaReady === false ? 'warning' : 'ok',
+      detail: readyLabel,
+    };
+  } catch {
+    return {
+      id: 'db-health',
+      label: 'Base de données (/health/db)',
+      status: 'error',
+      detail: 'Impossible de joindre /health/db.',
+    };
+  }
+}
+
+async function checkCatalog(): Promise<DiagnosticCheck> {
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 5_000);
+    const res = await fetch(`${API_URL}/catalog`, { cache: 'no-store', signal: controller.signal });
+    clearTimeout(timer);
+
+    if (res.status === 503) {
+      const body = (await res.json().catch(() => null)) as { message?: string } | null;
+      return {
+        id: 'catalog',
+        label: 'Catalogue public (/catalog)',
+        status: 'error',
+        detail: body?.message ?? 'Schéma non prêt (503) — migrations ou seed requis.',
+      };
+    }
+
+    if (!res.ok) {
+      return {
+        id: 'catalog',
+        label: 'Catalogue public (/catalog)',
+        status: 'error',
+        detail: `Erreur HTTP ${res.status} sur /catalog.`,
+      };
+    }
+
+    const data = (await res.json()) as { courses?: { slug?: string }[] };
+    const slugs = (data.courses ?? []).map((course) => course.slug).filter(Boolean) as string[];
+    const missing = COURSE_SLUGS.filter((slug) => !slugs.includes(slug));
+
+    if (missing.length > 0) {
+      return {
+        id: 'catalog',
+        label: 'Catalogue public (/catalog)',
+        status: 'warning',
+        detail: `${slugs.length} parcours — slugs manquants : ${missing.join(', ')}.`,
+      };
+    }
+
+    return {
+      id: 'catalog',
+      label: 'Catalogue public (/catalog)',
+      status: 'ok',
+      detail: `OK — ${slugs.length} parcours (Apple, Jamf, Intune).`,
+    };
+  } catch {
+    return {
+      id: 'catalog',
+      label: 'Catalogue public (/catalog)',
+      status: 'error',
+      detail: 'Catalogue injoignable.',
     };
   }
 }

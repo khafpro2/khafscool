@@ -122,3 +122,10 @@ export function getQuizOptionDisplayLetter(
   if (index < 0) return undefined;
   return String.fromCharCode(65 + index);
 }
+
+/** Index 0–3 pour les touches A–D (insensible à la casse), ou null si hors plage. */
+export function resolveQuizOptionIndexFromKey(key: string, optionCount: number): number | null {
+  const index = 'abcd'.indexOf(key.toLowerCase());
+  if (index < 0 || index >= optionCount) return null;
+  return index;
+}

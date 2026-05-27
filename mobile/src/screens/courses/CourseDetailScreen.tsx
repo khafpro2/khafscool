@@ -18,6 +18,7 @@ import { useThemedStyles } from '../../hooks/useThemedStyles';
 import { toastBadgeUnlocked, toastModuleCompleted } from '../../lib/gamification-toasts';
 import { LessonContent } from '../../components/LessonContent';
 import { ModuleVideoSection } from '../../components/ModuleVideoSection';
+import { useQuizLetterKeys } from '../../hooks/useQuizLetterKeys';
 import { moduleHasVideo } from '@ama/shared/video-embed';
 import { ModuleObjectives } from '../../components/ModuleObjectives';
 import { QUESTIONS_PER_MODULE } from '@ama/shared/constants';
@@ -141,6 +142,27 @@ export function CourseDetailScreen() {
     setQuizFeedback(null);
   }, [activeModule?.id]);
 
+  const currentQuizQuestion = useMemo(() => {
+    if (!activeModule?.questions.length) return null;
+    const safeIndex = Math.min(quizQuestionIndex, activeModule.questions.length - 1);
+    return activeModule.questions[safeIndex] ?? null;
+  }, [activeModule, quizQuestionIndex]);
+
+  const currentQuizRevealed = currentQuizQuestion
+    ? revealedQuestions.has(currentQuizQuestion.id)
+    : true;
+
+  const activeModuleUnlocked = useMemo(() => {
+    if (!activeModule || !progress) return false;
+    const moduleProgress = moduleProgressById.get(activeModule.id);
+    const status = getModuleStatus(
+      activeModule.id,
+      moduleProgress,
+      progress.progress.nextModule?.id
+    );
+    return status !== 'locked';
+  }, [activeModule, moduleProgressById, progress]);
+
   const canSubmit = useMemo(() => {
     if (!activeModule?.questions.length) return false;
     return activeModule.questions.every(
@@ -212,6 +234,24 @@ export function CourseDetailScreen() {
       setCheckingQuestionId(null);
     }
   }
+
+  useQuizLetterKeys({
+    enabled: Boolean(activeModuleUnlocked && currentQuizQuestion && !currentQuizRevealed),
+    revealed: currentQuizRevealed,
+    disabled: checkingQuestionId === currentQuizQuestion?.id,
+    options: currentQuizQuestion?.options ?? [],
+    selectedOptionId: currentQuizQuestion ? answers[currentQuizQuestion.id] : undefined,
+    onSelect: (optionId) => {
+      if (!currentQuizQuestion) return;
+      setAnswers((current) => ({ ...current, [currentQuizQuestion.id]: optionId }));
+      setLocalResult(null);
+      setQuizFeedback(null);
+    },
+    onCheck: () => {
+      if (!activeModule || !currentQuizQuestion) return;
+      void handleCheckAnswer(activeModule, currentQuizQuestion.id);
+    },
+  });
 
   async function handleSubmit(module: CourseModule, review = false) {
     if (!module.questions.length) return;
@@ -636,10 +676,15 @@ export function CourseDetailScreen() {
                                 option.id === revealedCorrectId &&
                                 !isCorrectSelection;
 
+                              const optionLetter = String.fromCharCode(65 + optionIndex);
+
                               return (
                                 <Pressable
                                   key={option.id}
                                   disabled={revealed}
+                                  accessibilityRole="radio"
+                                  accessibilityState={{ selected, disabled: revealed }}
+                                  accessibilityLabel={`Option ${optionLetter} : ${option.label}`}
                                   onPress={() => {
                                     if (revealed) return;
                                     setAnswers((current) => ({ ...current, [question.id]: option.id }));
@@ -659,8 +704,8 @@ export function CourseDetailScreen() {
                                             : null,
                                   ]}
                                 >
-                                  <Text style={styles.optionLetter}>
-                                    {String.fromCharCode(65 + optionIndex)}
+                                  <Text style={styles.optionLetter} accessibilityElementsHidden importantForAccessibility="no">
+                                    {optionLetter}
                                   </Text>
                                   <Text
                                     style={[

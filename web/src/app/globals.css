@@ -4396,6 +4396,24 @@ html[data-theme='dark'] .analytics-opt-in-banner {
   border: 0;
 }
 
+.module-video-frame--lazy {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-soft);
+  border-style: dashed;
+}
+
+.module-video-lazy-hint {
+  text-align: center;
+  font-size: 0.9rem;
+  padding: 1rem;
+}
+
+.practice-exam-timer--over {
+  color: #fde68a;
+}
+
 .module-video-frame-media,
 .module-video-frame-yt-mount {
   width: 100%;
