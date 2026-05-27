@@ -1,6 +1,6 @@
 import { AuthRequestError, throwAuthRequestError } from '../auth-errors';
 import { COOKIE_SESSION, ACCESS_TOKEN_TTL_MINUTES, refreshSession } from '../auth';
-import { recordApiFailure, recordApiSuccess } from '../api-status-store';
+import { recordApiFailure, recordApiSuccess, shouldMarkApiUnavailable } from '../api-status-store';
 import { clearDemoMode, markDemoFallback } from '../demo-mode-store';
 import {
   courseToProgress,
@@ -88,7 +88,9 @@ async function apiRequest<T>(path: string, init: RequestInit = {}) {
     }
 
     if (!res.ok) {
-      recordApiFailure();
+      if (shouldMarkApiUnavailable(res.status)) {
+        recordApiFailure();
+      }
       const contentType = res.headers.get('content-type') ?? '';
       if (contentType.includes('application/json')) {
         await throwAuthRequestError(res);
@@ -127,7 +129,9 @@ async function browserAuthRequest<T extends AuthResponse>(
   });
 
   if (!res.ok) {
-    recordApiFailure();
+    if (shouldMarkApiUnavailable(res.status)) {
+      recordApiFailure();
+    }
     await throwAuthRequestError(res);
   }
 
@@ -152,7 +156,9 @@ async function authRequest<T>(path: string, body: unknown): Promise<T> {
     });
 
     if (!res.ok) {
-      recordApiFailure();
+      if (shouldMarkApiUnavailable(res.status)) {
+        recordApiFailure();
+      }
       await throwAuthRequestError(res);
     }
 
