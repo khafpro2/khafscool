@@ -48,17 +48,32 @@ Avec **Root Directory** = `web`, Vercel exécute l’install et le build depuis 
 
 Redéployer après toute modification de `NEXT_PUBLIC_*` (valeurs figées au build).
 
-## Checklist post-merge (v0.3.13)
+## Checklist post-merge (v0.3.13 — main)
 
-Après fusion de `cursor/progress-dashboard-auth-v2` sur `main` :
+PR #6 fusionnée sur `main`. État au 2026-05-27 :
 
-1. **Vercel** — le push sur `main` déclenche un déploiement Production automatique (Root Directory = `web`).
-2. **Variables Vercel** (Production + Preview) :
-   - `NEXT_PUBLIC_API_URL` = URL HTTPS de l’API Railway (ex. `https://apple-mdm-academy-api-production.up.railway.app`)
-   - `WEB_URL` = URL Vercel de prod (ex. `https://apple-mdm-academy.vercel.app`)
-3. **Railway** — voir [`docs/DEPLOY-RAILWAY.md`](./DEPLOY-RAILWAY.md) et [`DEPLOYMENT.md`](../DEPLOYMENT.md) pour la liste complète des variables API.
-4. **Redéployer Vercel** après avoir défini ou modifié `NEXT_PUBLIC_API_URL` (rebuild obligatoire).
-5. **Vérifier** : `curl https://<api>/health` puis ouvrir le dashboard web sans mode démo.
+| Étape | Statut |
+| ----- | ------ |
+| Vercel prod auto-deploy sur `main` | OK |
+| Railway API `/health` | OK — `https://apple-mdm-academy-api-production.up.railway.app` |
+| Neon `/health/db` | OK |
+| `NEXT_PUBLIC_API_URL` (Production) | OK — redeploy effectué |
+| `WEB_URL` (Production) | OK — `https://apple-mdm-academy.vercel.app` |
+| `NEXT_PUBLIC_API_URL` (Preview) | **À faire** — ajouter pour toutes les branches preview |
+
+Variables Production :
+
+- `NEXT_PUBLIC_API_URL` = `https://apple-mdm-academy-api-production.up.railway.app`
+- `WEB_URL` = `https://apple-mdm-academy.vercel.app`
+
+Railway / Neon : [`DEPLOY-RAILWAY.md`](./DEPLOY-RAILWAY.md), [`NEON-DATABASE.md`](./NEON-DATABASE.md).
+
+Vérification :
+
+```bash
+curl -sf https://apple-mdm-academy-api-production.up.railway.app/health
+open https://apple-mdm-academy.vercel.app/diagnostics
+```
 
 ## Fichiers du dépôt
 

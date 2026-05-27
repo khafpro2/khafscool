@@ -1,8 +1,10 @@
 # Checklist mainteneur — fusion PR #6
 
-Checklist à valider avant de fusionner la branche `cursor/progress-dashboard-auth-v2` dans `main`.
+> **Statut : fusionnée** — PR [#6](https://github.com/khafpro2/khafscool/pull/6) intégrée dans `main` le **2026-05-27**. Ce document reste comme archive de la checklist pré-merge.
 
-**Pull request :** [PR #6 — Progress dashboard auth v2](https://github.com/khafpro2/khafscool/pull/6)
+Checklist historique à valider avant fusion (déjà effectuée).
+
+**Pull request :** [PR #6 — Progress dashboard auth v2](https://github.com/khafpro2/khafscool/pull/6) — **MERGED**
 
 **Version cible :** `0.3.13` (monorepo `@ama/shared`, backend, web, mobile)
 
@@ -185,11 +187,11 @@ pnpm db:seed
 
 ## Fusion
 
-- [ ] Tous les jobs CI verts sur PR #6
-- [ ] [CHANGELOG.md](./CHANGELOG.md) section `[0.2.1]` à jour
-- [ ] Revue code effectuée
-- [ ] Squash ou merge selon politique repo
-- [ ] **Ne pas merger sans demande explicite du mainteneur**
+- [x] Tous les jobs CI verts sur PR #6
+- [x] [CHANGELOG.md](./CHANGELOG.md) section `[0.2.1]` à jour
+- [x] Revue code effectuée
+- [x] Merge dans `main` (2026-05-27)
+- [x] Stack prod : Railway API + Neon DB + Vercel web — voir [docs/HANDOFF.md](./docs/HANDOFF.md)
 
 ---
 

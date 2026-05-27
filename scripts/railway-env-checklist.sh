@@ -7,7 +7,7 @@
 
 set -euo pipefail
 
-API_URL="${API_URL:-https://VOTRE-SERVICE.up.railway.app}"
+API_URL="${API_URL:-https://apple-mdm-academy-api-production.up.railway.app}"
 API_URL="${API_URL%/}"
 CORS_ORIGIN="${CORS_ORIGIN:-https://apple-mdm-academy.vercel.app}"
 WEB_URL="${WEB_URL:-https://apple-mdm-academy.vercel.app}"

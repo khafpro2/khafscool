@@ -5,10 +5,14 @@
 - Répondre et rédiger commits/PR en **français**.
 - Messages utilisateur, quiz, leçons et erreurs auth : **français** uniquement.
 
-## Branche et PR
+## Branche et déploiement
 
-- Branche active : `cursor/progress-dashboard-auth-v2`
-- PR [#6](https://github.com/khafpro2/khafscool/pull/6) — **ne pas merger** sans valider [MERGE.md](./MERGE.md)
+- Branche active : **`main`** (PR [#6](https://github.com/khafpro2/khafscool/pull/6) **fusionnée** le 2026-05-27).
+- Stack production :
+  - **Web** — Vercel : `https://apple-mdm-academy.vercel.app`
+  - **API** — Railway : `https://apple-mdm-academy-api-production.up.railway.app`
+  - **Base** — Neon Postgres (`DATABASE_URL` sur Railway, voir [docs/NEON-DATABASE.md](./docs/NEON-DATABASE.md))
+- Guides déploiement : [docs/DEPLOY-RAILWAY.md](./docs/DEPLOY-RAILWAY.md), [docs/VERCEL-WEB.md](./docs/VERCEL-WEB.md), handoff [docs/HANDOFF.md](./docs/HANDOFF.md)
 - Commits logiques ; ne pas committer `.env`, `.env.local`, clés API
 
 ## Compte démo
@@ -43,7 +47,12 @@ Liste pilote : `PILOT_VIDEO_MODULES` dans `shared/src/course-content.ts` (11 ent
 pnpm --filter backend test
 pnpm --filter web build
 CI=true NEXT_PUBLIC_API_URL=http://localhost:4000 pnpm --filter web test:e2e
-gh pr checks 6
+```
+
+Smoke prod (API Railway + Neon) :
+
+```bash
+API_URL=https://apple-mdm-academy-api-production.up.railway.app bash scripts/deploy-api.sh
 ```
 
 E2E clés : `web/e2e/learning-path.spec.ts` (accueil sans header ni footer), `module-video.spec.ts`, `soutenir.spec.ts`.
@@ -54,7 +63,7 @@ Voir [docs/HANDOFF.md](./docs/HANDOFF.md) pour le workflow `git push` → repris
 
 ## Stack (rappel)
 
-- `backend/` Fastify + Prisma + Postgres
-- `web/` Next.js 15 (port 3000)
+- `backend/` Fastify + Prisma + Postgres (Neon en prod)
+- `web/` Next.js 15 (port 3000, Vercel en prod)
 - `shared/` contenu et constantes partagées
 - `mobile/` Expo (hors scope CI web sauf typecheck)
