@@ -40,7 +40,11 @@ export async function mockAuthenticatedSession(page: Page) {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify({ authenticated: true, hasRefreshToken: true }),
+        body: JSON.stringify({
+          authenticated: true,
+          hasAccessToken: true,
+          hasRefreshToken: true,
+        }),
       });
       return;
     }

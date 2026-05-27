@@ -2,6 +2,7 @@ node_modules
 .venv-dub
 dist
 .next
+.vercel
 .expo
 .env
 *.db
