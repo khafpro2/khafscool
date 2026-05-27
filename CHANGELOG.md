@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.14] — 2026-05-27
+
+### Quiz, API et catalogue
+- **Quiz** — mélange des options à l’affichage ; rééquilibrage des libellés pour réduire le biais « réponse la plus longue » ; raccourcis clavier **A–D** sur le web
+- **API** — `/catalog` renvoie **503** avec message en français si le schéma Postgres est absent ; `/health/db` expose `schemaReady`
+- **Railway** — migrations et seed automatiques au démarrage si la base est vide
+
 ## [0.3.13] — 2026-05-25
 
 ### Vidéos YouTube FR et accueil

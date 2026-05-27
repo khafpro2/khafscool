@@ -98,6 +98,11 @@
       "types": "./src/quiz-learning.ts",
       "development": "./src/quiz-learning.ts",
       "default": "./dist/quiz-learning.js"
+    },
+    "./quiz-option-balance": {
+      "types": "./src/quiz-option-balance.ts",
+      "development": "./src/quiz-option-balance.ts",
+      "default": "./dist/quiz-option-balance.js"
     }
   },
   "scripts": {

@@ -543,6 +543,45 @@ function QuizQuestionStep({
     optionRefs.current = [];
   }, [question.id]);
 
+  useEffect(() => {
+    function onLetterKeyDown(event: globalThis.KeyboardEvent) {
+      if (revealed || disabled || isChecking) return;
+
+      const target = event.target as HTMLElement | null;
+      const tag = target?.tagName?.toLowerCase();
+      if (tag === 'input' || tag === 'textarea' || tag === 'select' || target?.isContentEditable) {
+        return;
+      }
+
+      const letterIndex = 'abcd'.indexOf(event.key.toLowerCase());
+      if (letterIndex < 0 || letterIndex >= question.options.length) return;
+
+      event.preventDefault();
+      const option = question.options[letterIndex];
+      if (!option) return;
+
+      focusOption(letterIndex);
+      if (selectedOptionId === option.id && canValidate) {
+        onCheck();
+        return;
+      }
+      onSelect(option.id);
+    }
+
+    window.addEventListener('keydown', onLetterKeyDown);
+    return () => window.removeEventListener('keydown', onLetterKeyDown);
+  }, [
+    canValidate,
+    disabled,
+    isChecking,
+    onCheck,
+    onSelect,
+    question.id,
+    question.options,
+    revealed,
+    selectedOptionId,
+  ]);
+
   function focusOption(index: number) {
     const safeIndex = Math.max(0, Math.min(index, question.options.length - 1));
     optionRefs.current[safeIndex]?.focus();
