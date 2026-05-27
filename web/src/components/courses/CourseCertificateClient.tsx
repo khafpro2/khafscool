@@ -23,6 +23,7 @@ import {
   getTrackVisual,
   inferLevelFromModules,
 } from '@/lib/design';
+import { requestCertificatePdfPrint } from '@/lib/certificate-print';
 
 type CertificateState = {
   course: CourseDetail;
@@ -74,6 +75,9 @@ function buildDemoCertificate(course: CourseDetail): CertificateState {
 export function CourseCertificateClient({ slug }: { slug: string }) {
   const [state, setState] = useState<CertificateState | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isPrinting, setIsPrinting] = useState(false);
+  const [printError, setPrintError] = useState<string | null>(null);
+  const [printHint, setPrintHint] = useState<string | null>(null);
 
   useEffect(() => {
     const token = getAccessToken();
@@ -158,6 +162,28 @@ export function CourseCertificateClient({ slug }: { slug: string }) {
     [slug, state?.completedAt]
   );
 
+  async function handleSavePdf() {
+    setPrintError(null);
+    setPrintHint(null);
+    setIsPrinting(true);
+    const result = await requestCertificatePdfPrint();
+    setIsPrinting(false);
+
+    if (!result.ok) {
+      setPrintError(result.message);
+      return;
+    }
+
+    if (result.outcome === 'cancelled') {
+      setPrintHint(
+        'Fenêtre d’impression fermée. Rouvre « Enregistrer en PDF » puis choisis « Enregistrer au format PDF » comme destination.'
+      );
+      return;
+    }
+
+    setPrintHint('Choisis « Enregistrer au format PDF » comme destination dans la fenêtre d’impression.');
+  }
+
   if (isLoading) {
     return (
       <section className="certificate-page" style={{ padding: '2rem 0' }}>
@@ -215,11 +241,13 @@ export function CourseCertificateClient({ slug }: { slug: string }) {
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem' }}>
           <Button
             type="button"
-            onClick={() => window.print()}
+            onClick={() => void handleSavePdf()}
+            disabled={isPrinting}
             icon={'\u{1F5A8}\uFE0F'}
             aria-label="Imprimer le certificat ou l'enregistrer en PDF"
+            aria-busy={isPrinting}
           >
-            Enregistrer en PDF
+            {isPrinting ? 'Ouverture…' : 'Enregistrer en PDF'}
           </Button>
           <ShareContentButton
             shareTitle="Certificat MDM Academy"
@@ -228,9 +256,12 @@ export function CourseCertificateClient({ slug }: { slug: string }) {
             label="Partager le certificat"
             ariaLabel="Partager le certificat"
           />
-          <p className="muted no-print" style={{ fontSize: '0.85rem', margin: 0 }}>
-            Choisis « Enregistrer au format PDF » dans la fenêtre d'impression de ton navigateur.
-          </p>
+          {(printError || printHint) && (
+            <div className="certificate-print-feedback no-print" role={printError ? 'alert' : 'status'}>
+              {printError ? <p className="certificate-print-feedback__error">{printError}</p> : null}
+              {printHint ? <p className="certificate-print-feedback__hint muted">{printHint}</p> : null}
+            </div>
+          )}
           {usesDemo && (
             <Button href={buildAuthUrl(`/courses/${slug}/certificate`)} variant="dark">
               Se connecter

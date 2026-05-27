@@ -28,6 +28,14 @@ postgresql://USER:PASSWORD@ep-XXXXXXXX.eu-central-1.aws.neon.tech/neondb?sslmode
 
 **Obligatoire** : le paramètre `sslmode=require` doit être présent (Neon l’ajoute souvent par défaut — vérifier).
 
+Après avoir défini `DATABASE_URL` en local ou sur Railway :
+
+```bash
+pnpm neon:bootstrap
+```
+
+(applique `pnpm db:migrate` puis `pnpm db:seed`).
+
 | Segment | Exemple (placeholders) |
 | ------- | ---------------------- |
 | Schéma | `postgresql://` |

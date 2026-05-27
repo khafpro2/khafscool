@@ -1,6 +1,6 @@
 {
   "name": "apple-mdm-academy",
-  "version": "0.3.16",
+  "version": "0.3.17",
   "private": true,
   "scripts": {
     "dev": "turbo run dev",
@@ -19,6 +19,7 @@
     "db:migrate": "pnpm --filter backend exec prisma migrate deploy",
     "db:migrate:dev": "pnpm --filter backend exec prisma migrate dev",
     "db:seed": "pnpm --filter backend exec tsx prisma/seed.ts",
+    "neon:bootstrap": "pnpm db:migrate && pnpm db:seed",
     "smoke:api": "node scripts/smoke-api.mjs",
     "smoke:web": "node scripts/smoke-web.mjs",
     "smoke:all": "pnpm smoke:api && pnpm smoke:web",

@@ -3,6 +3,7 @@ export * from './constants';
 export * from './quiz-content';
 export * from './quiz-learning';
 export * from './quiz-option-balance';
+export * from './quiz-stats';
 export * from './course-content';
 export * from './glossary';
 export * from './lesson-markdown';

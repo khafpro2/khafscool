@@ -1,6 +1,6 @@
 {
   "name": "@ama/shared",
-  "version": "0.3.16",
+  "version": "0.3.17",
   "private": true,
   "type": "module",
   "exports": {
@@ -103,6 +103,11 @@
       "types": "./src/quiz-option-balance.ts",
       "development": "./src/quiz-option-balance.ts",
       "default": "./dist/quiz-option-balance.js"
+    },
+    "./quiz-stats": {
+      "types": "./src/quiz-stats.ts",
+      "development": "./src/quiz-stats.ts",
+      "default": "./dist/quiz-stats.js"
     }
   },
   "scripts": {

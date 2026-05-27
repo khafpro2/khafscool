@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.3.17] — 2026-05-27
+
+### Auth, certificats, progression locale et dons
+- **API** — rate limit dédié login/register/refresh (5/min) avec message 429 en français
+- **Web** — certificat : gestion d’erreur FR à l’impression / export PDF (pop-ups, annulation)
+- **Web** — parcours : validation d’unité hors ligne (localStorage) si l’API est indisponible ou sans session
+- **Shared** — helper `quiz-stats` (`computeQuizScorePercent`, `summarizeQuizStats`) pour analytics
+- **Dons** — cartes mode de paiement avec badge Disponible / Indisponible
+- **Dashboard** — barre de progression des quêtes hebdo dans l’encart
+- **DX** — script `pnpm neon:bootstrap` (migrate + seed)
+
 ## [0.3.16] — 2026-05-27
 
 ### Examen blanc, vidéos, mobile et API

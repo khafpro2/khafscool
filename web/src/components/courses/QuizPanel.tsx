@@ -19,6 +19,10 @@ import { Button } from '@/components/ui/Button';
 import { BrandIcon } from '@/components/ui/BrandIcon';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import { modulePointsFromScores } from '@/lib/points';
+import {
+  computeQuizScorePercent,
+  countCorrectAnswers,
+} from '@ama/shared/quiz-stats';
 
 export const QUIZ_PASS_PERCENT = 50;
 
@@ -871,17 +875,9 @@ const CONFETTI_PIECES = Array.from({ length: 12 }, (_, index) => ({
   hue: `${(index * 37) % 360}`,
 }));
 
-export function computeQuizScorePercent(
-  totalQuestions: number,
-  questionResults: Record<string, QuestionCheckResult>
-) {
-  if (!totalQuestions) return 0;
-  const checkedCount = Object.keys(questionResults).length;
-  if (!checkedCount) return 0;
-  const correct = Object.values(questionResults).filter((result) => result.correct).length;
-  return Math.round((correct / totalQuestions) * 100);
-}
-
-export function countCorrectAnswers(questionResults: Record<string, QuestionCheckResult>) {
-  return Object.values(questionResults).filter((result) => result.correct).length;
-}
+export {
+  computeQuizScorePercent,
+  countCorrectAnswers,
+  summarizeQuizStats,
+} from '@ama/shared/quiz-stats';
+export type { QuizStatsSummary } from '@ama/shared/quiz-stats';

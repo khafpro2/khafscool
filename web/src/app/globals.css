@@ -4007,6 +4007,50 @@ html[data-theme='dark'] .analytics-opt-in-banner {
   font-weight: 800;
   font-size: 0.95rem;
 }
+.donation-mode-status {
+  position: absolute;
+  top: 0.55rem;
+  right: 0.55rem;
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.12rem 0.45rem;
+  border-radius: 999px;
+  background: var(--surface-muted);
+  color: var(--muted);
+}
+.donation-mode-status--ok {
+  background: var(--success-soft);
+  color: #166534;
+}
+.donation-mode-card--muted {
+  opacity: 0.92;
+}
+.donation-mode-unavailable {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+.certificate-print-feedback {
+  flex-basis: 100%;
+  margin-top: 0.35rem;
+}
+.certificate-print-feedback__error {
+  margin: 0;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #b91c1c;
+}
+.certificate-print-feedback__hint {
+  margin: 0.25rem 0 0;
+  font-size: 0.85rem;
+}
+.dashboard-quest-callout-progress {
+  min-height: 0.45rem;
+}
+
 .donation-mode-hint {
   font-size: 0.78rem;
   color: var(--muted);

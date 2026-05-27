@@ -40,7 +40,13 @@ import {
   inferLevelFromModules,
 } from '@/lib/design';
 import { toastBadgeUnlocked, toastModuleCompleted } from '@/lib/gamification-toasts';
-import { scoreGameOrder } from '@/lib/points';
+import {
+  applyLocalCompletionsToProgress,
+  clearLocalModuleCompletion,
+  hasLocalCourseProgress,
+  markLocalModuleComplete,
+} from '@/lib/local-course-progress';
+import { modulePointsFromScores, scoreGameOrder } from '@/lib/points';
 import {
   countLessonWords,
   formatCourseHeroBanner,
@@ -57,6 +63,7 @@ export function CourseDetailClient({ slug }: { slug: string }) {
   const [course, setCourse] = useState<CourseDetail | null>(null);
   const [progress, setProgress] = useState<CourseProgressData | null>(null);
   const [usesProgressFallback, setUsesProgressFallback] = useState(false);
+  const [usesLocalProgressPending, setUsesLocalProgressPending] = useState(false);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [questionResults, setQuestionResults] = useState<Record<string, QuestionCheckResult>>({});
   const [revealedQuestions, setRevealedQuestions] = useState<Set<string>>(() => new Set());
@@ -88,16 +95,27 @@ export function CourseDetailClient({ slug }: { slug: string }) {
     const token = getAccessToken();
     setHasToken(Boolean(token));
     setUsesProgressFallback(false);
+    setUsesLocalProgressPending(false);
     fetchCourse(slug, token)
       .then(async (loadedCourse) => {
         setCourse(loadedCourse);
         try {
           const loadedProgress = await fetchCourseProgress(slug, token);
-          setProgress(loadedProgress);
+          const mergedProgress = hasLocalCourseProgress(slug)
+            ? applyLocalCompletionsToProgress(slug, loadedCourse, loadedProgress)
+            : loadedProgress;
+          setProgress(mergedProgress);
           setUsesProgressFallback(!token || loadedProgress.course.id.startsWith('demo-'));
+          setUsesLocalProgressPending(hasLocalCourseProgress(slug));
         } catch {
-          setProgress(buildLocalCourseProgress(loadedCourse));
+          const localBase = buildLocalCourseProgress(loadedCourse);
+          setProgress(
+            hasLocalCourseProgress(slug)
+              ? applyLocalCompletionsToProgress(slug, loadedCourse, localBase)
+              : localBase
+          );
           setUsesProgressFallback(true);
+          setUsesLocalProgressPending(hasLocalCourseProgress(slug));
         }
       })
       .finally(() => setIsLoading(false));
@@ -311,6 +329,56 @@ export function CourseDetailClient({ slug }: { slug: string }) {
     await revealAllActiveQuestions();
   }
 
+  function completeModuleLocally(localScore: number, gameScore: number) {
+    if (!course || !displayModule || localScore < QUIZ_PASS_PERCENT) return false;
+
+    markLocalModuleComplete(slug, displayModule.id, { quizScore: localScore, gameScore });
+    const base = progress ?? buildLocalCourseProgress(course);
+    const updatedProgress = applyLocalCompletionsToProgress(slug, course, base);
+    setProgress(updatedProgress);
+    setUsesLocalProgressPending(true);
+    if (!hasToken) {
+      setUsesProgressFallback(true);
+    }
+
+    const pointsEarned = modulePointsFromScores(localScore, gameScore);
+    const courseJustCompleted = updatedProgress.progress.progressPercent >= 100;
+
+    if (courseJustCompleted) {
+      const reward = getRewardBadgeForTrack(course.track);
+      const completion = {
+        slug,
+        title: course.title,
+        pointsEarned: sumModuleProgressPoints(updatedProgress.modules),
+        ...(reward ? { badgeEarned: reward.badgeSlug } : {}),
+      };
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem(`course-completion:${slug}`, JSON.stringify(completion));
+      }
+      router.push(`/courses/${slug}/complete`);
+      return true;
+    }
+
+    setSuccessNotice({
+      badges: [],
+      gameScore,
+      moduleTitle: displayModule.title,
+      pointsEarned,
+      quizScore: localScore,
+      nextModule: updatedProgress.progress.nextModule,
+    });
+    toastModuleCompleted(displayModule.title, pointsEarned, localScore, gameScore);
+    setResult(null);
+    resetActiveQuizState();
+    if (updatedProgress.progress.nextModule) {
+      navigateToModule(
+        updatedProgress.progress.nextModule.id,
+        updatedProgress.progress.nextModule.slug
+      );
+    }
+    return true;
+  }
+
   function navigateToModule(moduleId: string, moduleSlug: string) {
     if (moduleId !== viewModuleId) {
       resetActiveQuizState();
@@ -344,6 +412,8 @@ export function CourseDetailClient({ slug }: { slug: string }) {
         }
 
         const backendResult = await completeModule(displayModule.id, token, payload);
+        clearLocalModuleCompletion(slug, displayModule.id);
+        setUsesLocalProgressPending(hasLocalCourseProgress(slug));
         const updatedProgress = await fetchCourseProgress(slug, token);
         const courseJustCompleted =
           backendResult.courseCompleted ||
@@ -399,15 +469,30 @@ export function CourseDetailClient({ slug }: { slug: string }) {
           setResult(resolveApiErrorMessage(error, 'module'));
           return;
         }
+        if (completeModuleLocally(localScore, estimatedActiveGameScore)) {
+          setResult(
+            'Progression enregistrée sur cet appareil. Reconnecte-toi plus tard pour synchroniser avec le serveur.'
+          );
+          return;
+        }
         setResult(
-          `Score local : ${correctCount}/${displayModule.questions.length} (${localScore}%). L’enregistrement backend a échoué, mais l’unité reste testable.`
+          `Score local : ${correctCount}/${displayModule.questions.length} (${localScore}%). L’enregistrement a échoué — il faut au moins ${QUIZ_PASS_PERCENT} % pour valider l’unité hors ligne.`
         );
         return;
       }
     }
 
+    if (completeModuleLocally(localScore, estimatedActiveGameScore)) {
+      if (!hasToken) {
+        setResult(
+          'Unité validée en mode local. Connecte-toi pour synchroniser ta progression sur tous tes appareils.'
+        );
+      }
+      return;
+    }
+
     setResult(
-      `Score local : ${correctCount}/${displayModule.questions.length} (${localScore}%). Connectez-vous pour enregistrer la progression via l’API.`
+      `Score local : ${correctCount}/${displayModule.questions.length} (${localScore}%). Connecte-toi et atteins ${QUIZ_PASS_PERCENT} % pour valider l’unité.`
     );
   }
 
@@ -602,9 +687,16 @@ export function CourseDetailClient({ slug }: { slug: string }) {
                 )}
               </div>
               <ProgressBar value={percent} tone={percent >= 100 ? 'success' : 'accent'} style={{ marginTop: '0.85rem' }} />
-              {usesProgressFallback && (
+              {usesLocalProgressPending && (
                 <p className="muted" style={{ marginTop: '0.5rem', fontSize: '0.85rem' }}>
-                  Progression affichée en mode démo. Connectez-vous pour la synchroniser via le backend.
+                  {hasToken
+                    ? 'Certaines unités sont enregistrées localement en attente de synchronisation serveur.'
+                    : 'Progression enregistrée sur cet appareil. Connecte-toi pour la synchroniser.'}
+                </p>
+              )}
+              {usesProgressFallback && !usesLocalProgressPending && (
+                <p className="muted" style={{ marginTop: '0.5rem', fontSize: '0.85rem' }}>
+                  Progression affichée en mode démo. Connecte-toi pour la synchroniser via le backend.
                 </p>
               )}
             </Card>

@@ -1,16 +1,22 @@
 import type { FastifyInstance } from 'fastify';
 import rateLimit from '@fastify/rate-limit';
 import * as auth from '../controllers/auth.controller.js';
-import { buildFrenchRateLimitBody } from '../lib/rate-limit.js';
+import {
+  authLoginRateLimit,
+  buildAuthRateLimitBody,
+} from '../lib/rate-limit.js';
 import { requireAuth } from '../middleware/auth.middleware.js';
 import type { OAuthProviderName } from '../config/oauth.js';
 
+const authSensitiveRateLimitRouteConfig = {
+  rateLimit: authLoginRateLimit,
+};
+
 export async function authRoutes(app: FastifyInstance) {
   await app.register(rateLimit, {
-    max: 10,
-    timeWindow: '1 minute',
+    global: false,
     hook: 'preHandler',
-    errorResponseBuilder: buildFrenchRateLimitBody,
+    errorResponseBuilder: buildAuthRateLimitBody,
   });
 
   app.get('/auth/oauth/status', auth.getOAuthStatus);
@@ -22,11 +28,31 @@ export async function authRoutes(app: FastifyInstance) {
     '/auth/:provider/callback',
     auth.oauthCallback
   );
-  app.post<{ Body: unknown }>('/auth/oauth/exchange', auth.exchangeOAuthSession);
-  app.post<{ Body: unknown }>('/auth/register', auth.registerLocal);
-  app.post<{ Body: unknown }>('/auth/login', auth.loginLocal);
-  app.post<{ Body: unknown }>('/auth/refresh', auth.refreshTokens);
-  app.post<{ Body: { refreshToken?: string } }>('/auth/logout', { preHandler: requireAuth }, auth.logout);
+  app.post<{ Body: unknown }>(
+    '/auth/oauth/exchange',
+    { config: authSensitiveRateLimitRouteConfig },
+    auth.exchangeOAuthSession
+  );
+  app.post<{ Body: unknown }>(
+    '/auth/register',
+    { config: authSensitiveRateLimitRouteConfig },
+    auth.registerLocal
+  );
+  app.post<{ Body: unknown }>(
+    '/auth/login',
+    { config: authSensitiveRateLimitRouteConfig },
+    auth.loginLocal
+  );
+  app.post<{ Body: unknown }>(
+    '/auth/refresh',
+    { config: authSensitiveRateLimitRouteConfig },
+    auth.refreshTokens
+  );
+  app.post<{ Body: { refreshToken?: string } }>(
+    '/auth/logout',
+    { preHandler: requireAuth },
+    auth.logout
+  );
   app.post('/auth/logout-all', { preHandler: requireAuth }, auth.logoutAllSessions);
   app.get('/auth/me', { preHandler: requireAuth }, auth.getCurrentUser);
 }

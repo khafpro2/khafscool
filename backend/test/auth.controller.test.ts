@@ -20,12 +20,12 @@ describe('auth controller error contracts', () => {
   it('documents French rate-limit response shape', () => {
     const rateLimitBody = {
       error: 'RATE_LIMIT_EXCEEDED',
-      message: 'Trop de tentatives. Réessayez dans une minute.',
+      message: 'Trop de tentatives de connexion. Réessayez dans une minute.',
       retryAfter: 60,
     };
 
     expect(rateLimitBody.error).toBe('RATE_LIMIT_EXCEEDED');
-    expect(rateLimitBody.message).toContain('Trop de tentatives');
+    expect(rateLimitBody.message).toContain('connexion');
   });
 
   it('uses generic INVALID_CREDENTIALS without leaking account existence', () => {
