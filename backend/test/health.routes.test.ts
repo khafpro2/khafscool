@@ -26,6 +26,7 @@ describe('health routes', () => {
     await expect(getDatabaseHealth()).resolves.toEqual({
       status: 'ok',
       message: 'Database reachable.',
+      schemaReady: true,
     });
   });
 
@@ -39,6 +40,7 @@ describe('health routes', () => {
       status: 'error',
       message:
         'Schéma absent ou incomplet. Exécuter prisma migrate deploy puis db seed (ou redéployer avec scripts/railway-start.sh).',
+      schemaReady: false,
     });
   });
 

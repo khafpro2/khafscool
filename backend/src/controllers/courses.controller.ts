@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { prisma } from '../lib/prisma.js';
 import * as gamification from '../services/gamification.service.js';
 import * as practiceExam from '../services/practice-exam.service.js';
+import { isSchemaMissing, schemaMissingMessage } from '../lib/database-health.js';
 import { sanitizeCourse } from '../utils/course-sanitize.js';
 
 const checkAnswerBodySchema = z.object({
@@ -57,23 +58,35 @@ export async function listCourses(_req: FastifyRequest, reply: FastifyReply) {
 }
 
 export async function listPublicCatalog(_req: FastifyRequest, reply: FastifyReply) {
-  const courses = await prisma.course.findMany({
-    orderBy: { sortOrder: 'asc' },
-    select: {
-      slug: true,
-      track: true,
-      title: true,
-      description: true,
-      _count: { select: { modules: true } },
-    },
-  });
+  try {
+    const courses = await prisma.course.findMany({
+      orderBy: { sortOrder: 'asc' },
+      select: {
+        slug: true,
+        track: true,
+        title: true,
+        description: true,
+        _count: { select: { modules: true } },
+      },
+    });
 
-  return reply.send({
-    courses: courses.map(({ _count, ...course }) => ({
-      ...course,
-      moduleCount: _count.modules,
-    })),
-  });
+    return reply.send({
+      courses: courses.map(({ _count, ...course }) => ({
+        ...course,
+        moduleCount: _count.modules,
+      })),
+    });
+  } catch (error) {
+    if (isSchemaMissing(error)) {
+      return reply.status(503).send({
+        error: 'SCHEMA_NOT_READY',
+        message: schemaMissingMessage('fr'),
+        courses: [],
+        hint: 'pnpm db:migrate && pnpm db:seed (local) ou scripts/railway-start.sh (Railway)',
+      });
+    }
+    throw error;
+  }
 }
 
 export async function getPracticeExam(
