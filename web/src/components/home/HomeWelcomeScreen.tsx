@@ -3,7 +3,6 @@
 import type { CSSProperties } from 'react';
 import Link from 'next/link';
 import { BrandIcon } from '@/components/ui/BrandIcon';
-import { HeroMacbookVisual } from '@/components/home/HeroMacbookVisual';
 import { getTrackVisual } from '@/lib/design';
 import { LEARNING_PATHS, type LearningPathMeta } from '@/lib/learningPaths';
 
@@ -18,7 +17,6 @@ const TRACK_LABELS: Record<LearningPathMeta['track'], string> = {
 export function HomeWelcomeScreen() {
   return (
     <section className="home-welcome" aria-labelledby="home-hello-title">
-      <HeroMacbookVisual />
       <h1 id="home-hello-title" className="home-hello-title">
         {HELLO.split('').map((char, index) => (
           <span
