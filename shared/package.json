@@ -21,7 +21,8 @@
     "./video-local": "./src/video-local.ts",
     "./video-dub-fr": "./src/video-dub-fr.ts",
     "./video-heygen-fr": "./src/video-heygen-fr.ts",
-    "./quiz-learning": "./src/quiz-learning.ts"
+    "./quiz-learning": "./src/quiz-learning.ts",
+    "./locale": "./src/locale.ts"
   },
   "scripts": {
     "build": "tsc",

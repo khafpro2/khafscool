@@ -14,3 +14,4 @@ export * from './donation-payment-modes';
 export * from './video-embed';
 export * from './video-dub-fr';
 export * from './video-local';
+export * from './locale';

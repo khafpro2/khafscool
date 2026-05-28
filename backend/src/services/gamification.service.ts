@@ -1,4 +1,13 @@
 import { PRACTICE_EXAM_PASS_BADGE, PRACTICE_EXAM_PASS_PERCENT } from '@ama/shared/practice-exam';
+import {
+  addCalendarDaysKey,
+  endOfWeekParis,
+  getParisDateKey,
+  parisDateKeyDiff,
+  parisLocalToUtc,
+  startOfDayParis,
+  startOfWeekParis,
+} from '@ama/shared/locale';
 import { moduleQuizQuestions } from '@ama/shared/quiz-content';
 import { CourseTrack, UserLevel, type UserQuest } from '@prisma/client';
 import { prisma } from '../lib/prisma.js';
@@ -181,23 +190,10 @@ const TRACK_LABELS: Record<CourseTrack, string> = {
   [CourseTrack.INTUNE]: 'Intune',
 };
 
-function startOfDay(d: Date) {
-  const copy = new Date(d);
-  copy.setHours(0, 0, 0, 0);
-  return copy;
-}
-
 function addDays(d: Date, days: number) {
   const copy = new Date(d);
   copy.setDate(copy.getDate() + days);
   return copy;
-}
-
-function dateKey(d: Date) {
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
 }
 
 export type LearningStreak = {
@@ -213,7 +209,7 @@ export function buildLearningStreak(completedAts: Date[], now = new Date()): Lea
 
   const activityDays = new Set<string>();
   for (const completedAt of completedAts) {
-    activityDays.add(dateKey(startOfDay(completedAt)));
+    activityDays.add(getParisDateKey(completedAt));
   }
 
   const sortedDays = [...activityDays].sort();
@@ -222,9 +218,7 @@ export function buildLearningStreak(completedAts: Date[], now = new Date()): Lea
   let longestDays = 1;
   let run = 1;
   for (let index = 1; index < sortedDays.length; index += 1) {
-    const previous = new Date(`${sortedDays[index - 1]}T00:00:00`);
-    const current = new Date(`${sortedDays[index]}T00:00:00`);
-    const dayGap = Math.round((current.getTime() - previous.getTime()) / 86_400_000);
+    const dayGap = parisDateKeyDiff(sortedDays[index], sortedDays[index - 1]);
     if (dayGap === 1) {
       run += 1;
       longestDays = Math.max(longestDays, run);
@@ -233,8 +227,8 @@ export function buildLearningStreak(completedAts: Date[], now = new Date()): Lea
     }
   }
 
-  const todayKey = dateKey(startOfDay(now));
-  const yesterdayKey = dateKey(addDays(startOfDay(now), -1));
+  const todayKey = getParisDateKey(now);
+  const yesterdayKey = addCalendarDaysKey(todayKey, -1);
   const anchorKey = activityDays.has(todayKey)
     ? todayKey
     : activityDays.has(yesterdayKey)
@@ -243,10 +237,10 @@ export function buildLearningStreak(completedAts: Date[], now = new Date()): Lea
 
   let currentDays = 0;
   if (anchorKey) {
-    let cursor = new Date(`${anchorKey}T00:00:00`);
-    while (activityDays.has(dateKey(cursor))) {
+    let cursorKey = anchorKey;
+    while (activityDays.has(cursorKey)) {
       currentDays += 1;
-      cursor = addDays(cursor, -1);
+      cursorKey = addCalendarDaysKey(cursorKey, -1);
     }
   }
 
@@ -282,7 +276,7 @@ export function weeklyQuestTrack(questKey: string): CourseTrack | null {
 }
 
 function endOfWeek(weekStart: Date) {
-  return addDays(weekStart, 7);
+  return endOfWeekParis(weekStart);
 }
 
 export function buildCertificationSprintQuestKey(
@@ -290,7 +284,7 @@ export function buildCertificationSprintQuestKey(
   startDate: Date,
   days: CertificationSprintDays
 ) {
-  return `${CERTIFICATION_SPRINT_PREFIX}${track}:${dateKey(startDate)}:${days}`;
+  return `${CERTIFICATION_SPRINT_PREFIX}${track}:${getParisDateKey(startDate)}:${days}`;
 }
 
 export function parseCertificationSprintQuestKey(questKey: string) {
@@ -299,7 +293,11 @@ export function parseCertificationSprintQuestKey(questKey: string) {
 
   return {
     track: match[1] as CourseTrack,
-    startDate: startOfDay(new Date(Number(match[2].slice(0, 4)), Number(match[2].slice(5, 7)) - 1, Number(match[2].slice(8, 10)))),
+    startDate: parisLocalToUtc(
+      Number(match[2].slice(0, 4)),
+      Number(match[2].slice(5, 7)),
+      Number(match[2].slice(8, 10))
+    ),
     days: Number(match[3]) as CertificationSprintDays,
   };
 }
@@ -695,13 +693,18 @@ async function countCompletedModulesForSprint(userId: string, track: CourseTrack
   });
 }
 
+function parisDateKeyToUtc(dateKey: string): Date {
+  const [year, month, day] = dateKey.split('-').map(Number);
+  return parisLocalToUtc(year, month, day);
+}
+
 async function refreshCertificationSprintProgress(userId: string, track: CourseTrack) {
   const quests = await prisma.userQuest.findMany({
     where: {
       userId,
       completed: false,
       questKey: { startsWith: `${CERTIFICATION_SPRINT_PREFIX}${track}:` },
-      weekStart: { gte: addDays(startOfDay(new Date()), -14) },
+      weekStart: { gte: parisDateKeyToUtc(addCalendarDaysKey(getParisDateKey(new Date()), -14)) },
     },
     orderBy: { weekStart: 'desc' },
   });
@@ -730,7 +733,7 @@ export async function startCertificationSprint(
   }
 
   const days = normalizeCertificationSprintDays(payload.days);
-  const startedAt = startOfDay(new Date());
+  const startedAt = startOfDayParis(new Date());
   const questKey = buildCertificationSprintQuestKey(track, startedAt, days);
   const totalModules = await prisma.module.count({ where: { course: { track } } });
   const target = Math.max(totalModules, 1);
@@ -765,7 +768,7 @@ export async function getCurrentCertificationSprint(userId: string) {
       userId,
       completed: false,
       questKey: { startsWith: CERTIFICATION_SPRINT_PREFIX },
-      weekStart: { gte: addDays(startOfDay(now), -14) },
+      weekStart: { gte: parisDateKeyToUtc(addCalendarDaysKey(getParisDateKey(now), -14)) },
     },
     orderBy: [{ weekStart: 'desc' }, { questKey: 'asc' }],
   });
@@ -1004,12 +1007,7 @@ function averageProgressScore(rows: { quizScore: number | null; gameScore: numbe
 }
 
 function startOfWeek(d: Date) {
-  const copy = new Date(d);
-  const day = copy.getDay();
-  const diff = copy.getDate() - day + (day === 0 ? -6 : 1);
-  copy.setDate(diff);
-  copy.setHours(0, 0, 0, 0);
-  return copy;
+  return startOfWeekParis(d);
 }
 
 export async function ensureWeeklyQuests(userId: string) {

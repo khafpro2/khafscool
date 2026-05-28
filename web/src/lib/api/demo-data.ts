@@ -9,6 +9,7 @@ import {
   jamfProFoundationsQuestions,
   toDemoQuestions,
 } from '@ama/shared/quiz-content';
+import { formatDateParis, startOfWeekParis, endOfWeekParis } from '@ama/shared/locale';
 import { formatTrack } from '../tracks';
 import type {
   CertificationSprintDays,
@@ -25,20 +26,13 @@ import type {
   WeeklyQuestsResponse,
 } from './types';
 
+
 export function startOfIsoWeek(date: Date): Date {
-  const copy = new Date(date);
-  copy.setHours(0, 0, 0, 0);
-  const day = copy.getDay();
-  const diff = copy.getDate() - day + (day === 0 ? -6 : 1);
-  copy.setDate(diff);
-  return copy;
+  return startOfWeekParis(date);
 }
 
 export function endOfIsoWeek(date: Date): Date {
-  const start = startOfIsoWeek(date);
-  const end = new Date(start);
-  end.setDate(start.getDate() + 7);
-  return end;
+  return endOfWeekParis(date);
 }
 
 export function normalizeWeeklyQuests(data: WeeklyQuestsResponse): WeeklyQuestsResponse {

@@ -1,9 +1,10 @@
 import { Card } from '@/components/ui/Card';
+import { formatDateParis } from '@ama/shared/locale';
 import type { LearningStreak } from '@/lib/api';
 
 export function LearningStreakCard({ streak }: { streak: LearningStreak }) {
   const lastActivityLabel = streak.lastActivityDate
-    ? new Date(`${streak.lastActivityDate}T12:00:00`).toLocaleDateString('fr-FR', {
+    ? formatDateParis(`${streak.lastActivityDate}T12:00:00`, {
         weekday: 'long',
         day: '2-digit',
         month: 'long',

@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/Button';
 import { ShareContentButton } from '@/components/courses/ShareContentButton';
 import { BrandIcon } from '@/components/ui/BrandIcon';
 import { TrackIcon } from '@/components/ui/TrackIcon';
+import { formatDateParis } from '@ama/shared/locale';
 import {
   estimatePoints,
   getBadgeVisual,
@@ -34,11 +35,11 @@ type CertificateState = {
 };
 
 function formatFrenchDate(date: Date) {
-  return new Intl.DateTimeFormat('fr-FR', {
+  return formatDateParis(date, {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
-  }).format(date);
+  });
 }
 
 function sumProgressPoints(

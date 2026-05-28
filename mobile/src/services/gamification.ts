@@ -1,5 +1,10 @@
 import { getAccessToken } from './auth';
 import { apiFetch } from './api';
+import {
+  endOfWeekParis,
+  formatDateParis,
+  startOfWeekParis,
+} from '@ama/shared/locale';
 
 export interface WeeklyQuest {
   id: string;
@@ -102,19 +107,11 @@ export async function fetchLeaderboard(): Promise<GamificationResult<Leaderboard
 }
 
 function startOfIsoWeek(date: Date): Date {
-  const copy = new Date(date);
-  copy.setHours(0, 0, 0, 0);
-  const day = copy.getDay();
-  const diff = copy.getDate() - day + (day === 0 ? -6 : 1);
-  copy.setDate(diff);
-  return copy;
+  return startOfWeekParis(date);
 }
 
 function endOfIsoWeek(date: Date): Date {
-  const start = startOfIsoWeek(date);
-  const end = new Date(start);
-  end.setDate(start.getDate() + 7);
-  return end;
+  return endOfWeekParis(date);
 }
 
 function normalizeWeeklyQuests(data: WeeklyQuestsResponse): WeeklyQuestsResponse {
@@ -242,8 +239,8 @@ export function formatWeekRange(weekStart?: string | null, weekEnd?: string | nu
   const end = weekEnd ? new Date(weekEnd) : endOfIsoWeek(start);
   if (Number.isNaN(start.getTime())) return 'Semaine en cours';
 
-  const startLabel = start.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
-  const endLabel = end.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
+  const startLabel = formatDateParis(start, { day: '2-digit', month: 'short' });
+  const endLabel = formatDateParis(end, { day: '2-digit', month: 'short' });
   return `${startLabel} → ${endLabel}`;
 }
 
@@ -251,5 +248,5 @@ export function formatResetLabel(weekEnd?: string | null) {
   if (!weekEnd) return 'Renouvellement lundi prochain';
   const end = new Date(weekEnd);
   if (Number.isNaN(end.getTime())) return 'Renouvellement lundi prochain';
-  return `Renouvellement le ${end.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}`;
+  return `Renouvellement le ${formatDateParis(end, { weekday: 'long', day: 'numeric', month: 'long' })}`;
 }

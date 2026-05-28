@@ -15,6 +15,7 @@ import {
   getTrackVisual,
 } from '@/lib/design';
 import { formatTrack } from '@/lib/tracks';
+import { formatDateParis } from '@ama/shared/locale';
 import {
   formatLeaderboardTrackFilter,
   LEADERBOARD_TRACK_FILTERS,
@@ -425,11 +426,11 @@ function buildSummary(data: UserBadgesResult | null, track: LeaderboardTrackFilt
 
 function formatEarnedDate(iso: string) {
   try {
-    return new Intl.DateTimeFormat('fr-FR', {
+    return formatDateParis(iso, {
       day: 'numeric',
       month: 'long',
       year: 'numeric',
-    }).format(new Date(iso));
+    });
   } catch {
     return '';
   }

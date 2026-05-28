@@ -11,6 +11,7 @@ import {
 import { BrandIcon } from '../../components/BrandIcon';
 import { TrackFilterChips } from '../../components/TrackFilterChips';
 import { TrackIcon } from '../../components/TrackIcon';
+import { formatDateParis } from '@ama/shared/locale';
 import {
   ALL_BADGE_SLUGS,
   getBadgeCriteria,
@@ -232,7 +233,7 @@ function SummaryStat({
 function formatEarnedDate(value: string) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return 'date à confirmer';
-  return date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
+  return formatDateParis(date, { day: '2-digit', month: 'long', year: 'numeric' });
 }
 
 function filterBadgesByTrack(slugs: readonly string[], track: TrackFilter) {

@@ -11,6 +11,7 @@ import { KeyboardShortcutsHelp } from '@/components/courses/KeyboardShortcutsHel
 import { LessonContent, ModuleObjectives } from '@/components/courses/LessonContent';
 import { ModuleVideoSection } from '@/components/courses/ModuleVideoSection';
 import { formatTrack } from '@/lib/tracks';
+import { formatDateParis } from '@ama/shared/locale';
 import {
   InteractiveMiniGame,
   shuffleGameOrder,
@@ -705,7 +706,7 @@ export function CourseDetailClient({ slug }: { slug: string }) {
                   />
                   {moduleProgress?.completedAt && (
                     <p className="muted" style={{ marginTop: '0.35rem', fontSize: '0.85rem' }}>
-                      Terminée le {new Date(moduleProgress.completedAt).toLocaleDateString('fr-FR')}
+                      Terminée le {formatDateParis(moduleProgress.completedAt)}
                     </p>
                   )}
 

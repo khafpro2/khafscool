@@ -15,6 +15,7 @@ import { HomeEngagementSection } from '../../components/home/HomeEngagementSecti
 import { MdmTracksSection } from '../../components/MdmTracksSection';
 import { useAppTheme } from '../../context/ThemeContext';
 import type { AppThemeColors } from '../../lib/design';
+import { formatDateParis } from '@ama/shared/locale';
 import { formatLevel, formatTrack, getBadgeVisual, getRankInfo } from '../../lib/design';
 import { useThemedStyles } from '../../hooks/useThemedStyles';
 import { toastQuestsCompleted } from '../../lib/gamification-toasts';
@@ -606,7 +607,7 @@ function formatSprintStatus(sprint: CertificationSprintSummary) {
 function formatSprintDate(value: string) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return 'à confirmer';
-  return date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
+  return formatDateParis(date, { day: '2-digit', month: 'short' });
 }
 
 function createStyles(colors: AppThemeColors) {
