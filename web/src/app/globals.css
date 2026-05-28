@@ -4541,6 +4541,11 @@ html[data-theme='dark'] .analytics-opt-in-banner {
   margin-bottom: 0;
 }
 
+.home-track-choices--dock {
+  padding-top: 0.65rem;
+  align-items: end;
+}
+
 .home-track-choice {
   display: flex;
   flex-direction: column;
@@ -4558,11 +4563,13 @@ html[data-theme='dark'] .analytics-opt-in-banner {
   letter-spacing: -0.01em;
   border: 1px solid rgba(255, 255, 255, 0.14);
   box-shadow: 0 6px 18px rgba(15, 23, 42, 0.1);
+  transform-origin: center bottom;
   transition:
-    transform 0.25s ease,
+    transform 0.32s cubic-bezier(0.34, 1.45, 0.64, 1),
     box-shadow 0.25s ease,
     border-color 0.25s ease;
   animation: home-track-in 0.55s ease both;
+  will-change: transform;
 }
 
 .home-track-choice[data-track='apple'] {
@@ -4579,19 +4586,33 @@ html[data-theme='dark'] .analytics-opt-in-banner {
 
 @media (hover: hover) {
   .home-track-choice:hover,
-  .home-track-choice:focus-visible {
-    transform: translateY(-6px) scale(1.02);
+  .home-track-choice:focus-visible,
+  .home-track-choice[data-dock-active] {
     border-color: rgba(255, 255, 255, 0.48);
   }
 
-  .home-track-choice:hover {
+  .home-track-choice:focus-visible {
+    transform: translateY(-5px) scale(1.05);
+  }
+
+  .home-track-choices--dock .home-track-choice:hover {
+    transform: translateY(-10px) scale(1.2);
+  }
+
+  .home-track-choices--dock:has(.home-track-choice:hover) .home-track-choice:not(:hover) {
+    transform: translateY(-3px) scale(1.05);
+  }
+
+  .home-track-choice:hover,
+  .home-track-choice[data-dock-active] {
     box-shadow:
       0 14px 28px rgba(15, 23, 42, 0.18),
       0 0 22px rgba(15, 23, 42, 0.12);
   }
 
   .home-track-choice[data-track='apple']:hover,
-  .home-track-choice[data-track='apple']:focus-visible {
+  .home-track-choice[data-track='apple']:focus-visible,
+  .home-track-choice[data-track='apple'][data-dock-active] {
     box-shadow:
       0 14px 32px rgba(29, 29, 31, 0.38),
       0 0 24px rgba(148, 163, 184, 0.45),
@@ -4599,7 +4620,8 @@ html[data-theme='dark'] .analytics-opt-in-banner {
   }
 
   .home-track-choice[data-track='jamf']:hover,
-  .home-track-choice[data-track='jamf']:focus-visible {
+  .home-track-choice[data-track='jamf']:focus-visible,
+  .home-track-choice[data-track='jamf'][data-dock-active] {
     box-shadow:
       0 14px 32px rgba(90, 146, 0, 0.35),
       0 0 26px rgba(118, 185, 0, 0.55),
@@ -4607,16 +4629,19 @@ html[data-theme='dark'] .analytics-opt-in-banner {
   }
 
   .home-track-choice[data-track='intune']:hover,
-  .home-track-choice[data-track='intune']:focus-visible {
+  .home-track-choice[data-track='intune']:focus-visible,
+  .home-track-choice[data-track='intune'][data-dock-active] {
     box-shadow:
       0 14px 32px rgba(37, 99, 235, 0.32),
       0 0 26px rgba(56, 189, 248, 0.5),
       0 0 48px rgba(37, 99, 235, 0.28);
   }
+
 }
 
 @media (prefers-reduced-motion: reduce) {
   .home-track-choice {
+    will-change: auto;
     transition:
       box-shadow 0.25s ease,
       border-color 0.25s ease;
@@ -4624,7 +4649,9 @@ html[data-theme='dark'] .analytics-opt-in-banner {
 
   @media (hover: hover) {
     .home-track-choice:hover,
-    .home-track-choice:focus-visible {
+    .home-track-choice:focus-visible,
+    .home-track-choice[data-dock-active],
+    .home-track-choices:has(.home-track-choice:hover) .home-track-choice:not(:hover) {
       transform: none;
     }
   }
