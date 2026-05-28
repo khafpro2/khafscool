@@ -412,6 +412,26 @@
   }
 }
 
+/* iPhone SE / narrow phones (~375px) — align Hello with AI poster screen bezel */
+@media (max-width: 390px) {
+  .wrap {
+    width: min(100%, 300px);
+    max-height: min(34vh, 200px);
+  }
+
+  .posterFrame,
+  .posterImg {
+    max-height: min(34vh, 200px);
+  }
+
+  .screenHello {
+    top: 25.5%;
+    width: 43%;
+    max-width: 132px;
+    font-size: clamp(0.48rem, 3.6vw, 0.78rem);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .wrap {
     animation: none;

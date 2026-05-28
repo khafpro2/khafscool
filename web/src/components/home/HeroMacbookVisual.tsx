@@ -165,19 +165,24 @@ export function HeroMacbookVisual() {
 
       {showStaticPoster ? (
         <div className={styles.posterFrame} data-testid="hero-macbook-poster">
-          {/* eslint-disable-next-line @next/next/no-img-element -- poster décoratif statique */}
-          <img
-            className={styles.posterImg}
-            src={posterUrl}
-            alt=""
-            aria-hidden
-            width={POSTER_INTRINSIC.width}
-            height={POSTER_INTRINSIC.height}
-            loading="eager"
-            decoding="async"
-            fetchPriority="high"
-            onError={handlePosterError}
-          />
+          <picture>
+            {posterUrl.endsWith('.webp') ? (
+              <source srcSet={posterUrl} type="image/webp" />
+            ) : null}
+            {/* eslint-disable-next-line @next/next/no-img-element -- hero LCP poster only */}
+            <img
+              className={styles.posterImg}
+              src={posterUrl}
+              alt=""
+              aria-hidden
+              width={POSTER_INTRINSIC.width}
+              height={POSTER_INTRINSIC.height}
+              loading="eager"
+              decoding="async"
+              fetchPriority="high"
+              onError={handlePosterError}
+            />
+          </picture>
           <span className={styles.screenHello} aria-hidden>
             Hello
           </span>
