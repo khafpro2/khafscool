@@ -7,6 +7,8 @@ test.describe('Accueil — écran de bienvenue', () => {
 
     await expect(page.getByRole('heading', { name: 'Hello' })).toBeVisible();
     await expect(page.getByText('Je veux apprendre')).toBeVisible();
+    await expect(page.getByTestId('home-track-dock')).toBeVisible();
+    await expect(page.getByRole('list', { name: 'Choix de piste MDM' })).toBeVisible();
     await expect(page.getByRole('link', { name: /Parcours Apple/i })).toBeVisible();
     await expect(page.getByRole('link', { name: /Parcours Jamf/i })).toBeVisible();
     await expect(page.getByRole('link', { name: /Parcours Intune/i })).toBeVisible();
@@ -19,6 +21,9 @@ test.describe('Accueil — écran de bienvenue', () => {
 
     await expect(page.getByRole('heading', { name: 'Hello' })).toBeVisible();
     await expect(page.getByText('Je veux apprendre')).toBeVisible();
+    await expect(page.getByTestId('home-track-dock')).toBeVisible();
     await expect(page.getByRole('link', { name: /Parcours Apple/i })).toBeVisible();
+    await expect(page.getByRole('link', { name: /Parcours Jamf/i })).toBeVisible();
+    await expect(page.getByRole('link', { name: /Parcours Intune/i })).toBeVisible();
   });
 });

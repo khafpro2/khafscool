@@ -35,8 +35,12 @@
 
 @media (hover: none) {
   .dockTouch :global(.home-track-choice:active) {
-    animation: genie-warp-click 0.38s cubic-bezier(0.32, 0.94, 0.42, 1) both;
+    animation: genie-warp-click 0.32s cubic-bezier(0.32, 0.94, 0.42, 1) both;
     transform-origin: center bottom;
+  }
+
+  .dockTouch :global(.home-track-choice[data-genie-press]) {
+    filter: none;
   }
 }
 

@@ -24,6 +24,8 @@ const DOCK_MAX_SCALE = 1.22;
 const DOCK_INFLUENCE_RADIUS = 140;
 /** Extra genie suction on pointer down (0–1), layered on hover proximity. */
 const GENIE_PRESS_BOOST = 0.72;
+/** Softer press on touch — avoids stacking with :active keyframe on narrow viewports. */
+const GENIE_PRESS_BOOST_TOUCH = 0.38;
 
 type DockTransform = { scale: number; lift: number; genie: number };
 
@@ -217,6 +219,7 @@ export function HomeTrackDock() {
       ) : null}
 
       <ul
+        data-testid="home-track-dock"
         className={[
           'home-track-choices',
           'home-track-choices--dock',
@@ -237,6 +240,7 @@ export function HomeTrackDock() {
             index={index}
             dockTransform={dockEnabled ? transforms[index] : null}
             geniePress={genieEnabled && pressedIndex === index}
+            geniePressBoost={dockTouch ? GENIE_PRESS_BOOST_TOUCH : GENIE_PRESS_BOOST}
             onGeniePointerDown={() => handlePointerDown(index)}
             onGeniePointerUp={handlePointerUp}
             linkRef={(el) => {
@@ -254,6 +258,7 @@ function TrackChoiceLink({
   index,
   dockTransform,
   geniePress,
+  geniePressBoost,
   onGeniePointerDown,
   onGeniePointerUp,
   linkRef,
@@ -262,6 +267,7 @@ function TrackChoiceLink({
   index: number;
   dockTransform: DockTransform | null;
   geniePress: boolean;
+  geniePressBoost: number;
   onGeniePointerDown: () => void;
   onGeniePointerUp: () => void;
   linkRef: (el: HTMLAnchorElement | null) => void;
@@ -270,7 +276,7 @@ function TrackChoiceLink({
   const label = TRACK_LABELS[path.track];
 
   const dock = dockTransform ?? { scale: 1, lift: 0, genie: 0 };
-  const pressBoost = geniePress ? GENIE_PRESS_BOOST : 0;
+  const pressBoost = geniePress ? geniePressBoost : 0;
   const genieIntensity = Math.min(1, dock.genie + pressBoost);
   const dockStyle = buildDockTransformStyle(dock, pressBoost);
 

@@ -173,7 +173,7 @@ jobs:
       - name: Install Playwright Chromium
         run: pnpm --filter web exec playwright install --with-deps chromium
 
-      # Suite includes e2e/home-hero.spec.ts (desktop + 375px mobile poster)
+      # Suite: e2e/home-hero.spec.ts — Hello, tagline, dock (3 pistes), sans hero MacBook
       - name: Run Playwright E2E
         env:
           CI: true

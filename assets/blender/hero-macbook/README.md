@@ -70,7 +70,7 @@ Le poster SVG (`macbook-hero-poster.svg`) sert de fallback immédiat ; le rendu 
 
 ## Intégration site
 
-Le composant React `web/src/components/home/HeroMacbookVisual.tsx` charge automatiquement les vidéos si elles existent sous `/media/hero/`. Sinon, un MacBook CSS 3D s’affiche (remplaçable après export Blender).
+L’accueil utilise `HomeWelcomeScreen` + `HomeTrackDock` (dock / effet genie). Les exports sous `/media/hero/` restent disponibles pour une future réintégration visuelle hero.
 
 ## Dépannage
 
