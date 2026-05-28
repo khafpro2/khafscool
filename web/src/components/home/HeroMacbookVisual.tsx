@@ -3,24 +3,26 @@
 /**
  * Hero MacBook — vidéo Blender si exportée, sinon poster photoréal (AI) ou SVG.
  * Pipeline vidéo : /media/hero/macbook-hero.webm (+ .mp4)
- * Poster AI : /media/hero/macbook-hero-ai.webp (+ .png)
+ * Poster AI : /media/hero/macbook-hero-ai.webp (PNG source only, not in cascade)
  */
 
 import { useCallback, useEffect, useState } from 'react';
 import styles from './HeroMacbookVisual.module.css';
 
+/** Intrinsic size of macbook-hero-ai.webp (LCP dimensions). */
+const POSTER_INTRINSIC = { width: 1280, height: 853 } as const;
+
 const HERO_MEDIA = {
   webm: '/media/hero/macbook-hero.webm',
   mp4: '/media/hero/macbook-hero.mp4',
   posterAiWebp: '/media/hero/macbook-hero-ai.webp',
-  posterAiPng: '/media/hero/macbook-hero-ai.png',
   posterWebp: '/media/hero/macbook-hero-poster.webp',
   posterSvg: '/media/hero/macbook-hero-poster.svg',
 } as const;
 
+/** WebP-first cascade — PNG (~1.2MB) kept in repo as source only, not in critical path. */
 const POSTER_CASCADE = [
   HERO_MEDIA.posterAiWebp,
-  HERO_MEDIA.posterAiPng,
   HERO_MEDIA.posterWebp,
   HERO_MEDIA.posterSvg,
 ] as const;
@@ -162,16 +164,24 @@ export function HeroMacbookVisual() {
       ) : null}
 
       {showStaticPoster ? (
-        // eslint-disable-next-line @next/next/no-img-element -- poster décoratif statique
-        <img
-          className={styles.posterImg}
-          src={posterUrl}
-          alt=""
-          aria-hidden
-          loading="eager"
-          decoding="async"
-          onError={handlePosterError}
-        />
+        <div className={styles.posterFrame} data-testid="hero-macbook-poster">
+          {/* eslint-disable-next-line @next/next/no-img-element -- poster décoratif statique */}
+          <img
+            className={styles.posterImg}
+            src={posterUrl}
+            alt=""
+            aria-hidden
+            width={POSTER_INTRINSIC.width}
+            height={POSTER_INTRINSIC.height}
+            loading="eager"
+            decoding="async"
+            fetchPriority="high"
+            onError={handlePosterError}
+          />
+          <span className={styles.screenHello} aria-hidden>
+            Hello
+          </span>
+        </div>
       ) : null}
 
       {showCss3d ? <CssMacbookFallback /> : null}
