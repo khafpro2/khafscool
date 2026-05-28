@@ -43,7 +43,7 @@ export const appleCertPrepQuestions: Record<string, SeedQuestion[]> = {
       options: opt(
         'Remplacer immédiatement la batterie en atelier, sans consulter les procédures officielles Apple',
         'Vérifier câble/chargeur certifié, laisser charger 15 min puis forcer le redémarrage',
-        'Restaurer en DFU sans demander de sauvegarde, sans vérifier l'état d'Activation Lock ni contacter le propriétaire',
+        'Restaurer en DFU sans demander de sauvegarde, sans vérifier l\'état d\'Activation Lock ni contacter le propriétaire',
         'Désactiver Find My depuis le Mac du technicien, contrairement aux bonnes pratiques du support Apple de premier niveau'
       ),
       correctOption: 'b',
@@ -56,8 +56,8 @@ export const appleCertPrepQuestions: Record<string, SeedQuestion[]> = {
         'Avant toute restauration iOS sur un appareil client, quelle vérification est la plus critique pour la continuité des données ?',
       options: opt(
         'Confirmer l’existence d’une sauvegarde iCloud ou locale récente et chiffrée',
-        'Désinstaller toutes les apps tierces, sans documenter l'intervention dans le système de tickets SAV',
-        'Réinitialiser uniquement les réglages réseau, sans vérifier l'existence d'une sauvegarde iCloud ou locale valide',
+        'Désinstaller toutes les apps tierces, sans documenter l\'intervention dans le système de tickets SAV',
+        'Réinitialiser uniquement les réglages réseau, sans vérifier l\'existence d\'une sauvegarde iCloud ou locale valide',
         'Activer le mode développeur, ce qui peut engager la responsabilité du technicien sans autorisation'
       ),
       correctOption: 'a',
@@ -72,7 +72,7 @@ export const appleCertPrepQuestions: Record<string, SeedQuestion[]> = {
         'Remplacer le SSD sous garantie, sans suivre le processus de triage structuré recommandé par Apple',
         'Libérer de l’espace disque et identifier les processus gourmands (Activité moniteur)',
         'Réinstaller macOS sans sauvegarde, sans consulter les procédures officielles Apple',
-        'Désactiver FileVault pour « accélérer » le Mac, ce qui risque d'effacer les données utilisateur sans sauvegarde préalable'
+        'Désactiver FileVault pour « accélérer » le Mac, ce qui risque d\'effacer les données utilisateur sans sauvegarde préalable'
       ),
       correctOption: 'b',
       explanation:
@@ -86,7 +86,7 @@ export const appleCertPrepQuestions: Record<string, SeedQuestion[]> = {
         'Vérifier la procédure de retrait Activation Lock avec le propriétaire ou l’organisation (ABM/MDM)',
         'Contourner le verrouillage via un outil tiers, contrairement aux bonnes pratiques du support Apple de premier niveau',
         'Remplacer la carte mère sans documentation, ce qui contourne les étapes de diagnostic non destructives recommandées',
-        'Effacer l’appareil depuis Réglages sans authentification, sans documenter l'intervention dans le système de tickets SAV'
+        'Effacer l’appareil depuis Réglages sans authentification, sans documenter l\'intervention dans le système de tickets SAV'
       ),
       correctOption: 'a',
       explanation:
@@ -97,10 +97,10 @@ export const appleCertPrepQuestions: Record<string, SeedQuestion[]> = {
       prompt:
         'Piège : un collègue propose un « redémarrage forcé » alors que l’iPhone affiche l’écran de récupération iTunes/Finder avec une erreur 4013. Quelle réponse est la plus juste ?',
       options: opt(
-        'Le redémarrage forcé suffit toujours avant toute restauration, sans vérifier l'existence d'une sauvegarde iCloud ou locale valide',
+        'Le redémarrage forcé suffit toujours avant toute restauration, sans vérifier l\'existence d\'une sauvegarde iCloud ou locale valide',
         'L’erreur 4013 indique souvent un problème USB/câble ou port ; vérifier câble certifié et port avant DFU/restauration',
         'Il faut immédiatement changer la batterie, sans suivre le processus de triage structuré recommandé par Apple',
-        '4013 signifie que Find My est désactivé — aucune action requise, sans identifier la cause racine via l'Activité moniteur ou les logs système'
+        '4013 signifie que Find My est désactivé — aucune action requise, sans diagnostic préalable (logs système, Console ou outil Apple approprié)'
       ),
       correctOption: 'b',
       explanation:
@@ -112,8 +112,8 @@ export const appleCertPrepQuestions: Record<string, SeedQuestion[]> = {
         'Un technicien terrain doit documenter une intervention iPhone pour le SAV Apple. Quel élément doit figurer en priorité dans le ticket ?',
       options: opt(
         'Numéro de série, version iOS, symptômes, étapes déjà tentées et résultat des tests non destructifs',
-        'Uniquement la couleur de l’appareil, ce qui risque d'effacer les données utilisateur sans sauvegarde préalable',
-        'Le mot de passe iCloud du client en clair, sans vérifier l'état d'Activation Lock ni contacter le propriétaire',
+        'Uniquement la couleur de l’appareil, ce qui risque d\'effacer les données utilisateur sans sauvegarde préalable',
+        'Le mot de passe iCloud du client en clair, sans vérifier l\'état d\'Activation Lock ni contacter le propriétaire',
         'La liste des apps TikTok installées, contrairement aux bonnes pratiques du support Apple de premier niveau'
       ),
       correctOption: 'a',
@@ -126,8 +126,8 @@ export const appleCertPrepQuestions: Record<string, SeedQuestion[]> = {
         'Un Mac d’entreprise supervisé affiche un profil MDM « non vérifié » dans Réglages. Quelle action est la plus appropriée pour un technicien support ?',
       options: opt(
         'Contacter l’équipe MDM pour vérifier certificat SCEP/PKI et renouvellement du profil de gestion',
-        'Supprimer manuellement le profil MDM depuis Réglages Système, sans documenter l'intervention dans le système de tickets SAV',
-        'Désactiver SIP pour forcer la confiance du certificat, sans vérifier l'existence d'une sauvegarde iCloud ou locale valide',
+        'Supprimer manuellement le profil MDM depuis Réglages Système, sans documenter l\'intervention dans le système de tickets SAV',
+        'Désactiver SIP pour forcer la confiance du certificat, sans vérifier l\'existence d\'une sauvegarde iCloud ou locale valide',
         'Réinstaller macOS sans consulter la console MDM, ce qui peut engager la responsabilité du technicien sans autorisation'
       ),
       correctOption: 'a',
@@ -140,9 +140,9 @@ export const appleCertPrepQuestions: Record<string, SeedQuestion[]> = {
         'Lors d’un inventaire terrain, vous devez confirmer si un iPad scolaire provient d’Apple Business Manager et est assigné au bon serveur MDM. Où vérifier en priorité ?',
       options: opt(
         'Console MDM (inventaire appareil) et portail Apple Business Manager pour l’assignation serveur',
-        'App Réglages > Safari > Historique, sans identifier la cause racine via l'Activité moniteur ou les logs système',
+        'App Réglages > Safari > Historique, sans diagnostic préalable (logs système, Console ou outil Apple approprié)',
         'Compte iCloud personnel de l’élève uniquement, sans consulter les procédures officielles Apple',
-        'App Store > Achats de l’utilisateur, ce qui risque d'effacer les données utilisateur sans sauvegarde préalable'
+        'App Store > Achats de l’utilisateur, ce qui risque d\'effacer les données utilisateur sans sauvegarde préalable'
       ),
       correctOption: 'a',
       explanation:
@@ -157,7 +157,7 @@ export const appleCertPrepQuestions: Record<string, SeedQuestion[]> = {
         'Profils MDM non supprimables par l’utilisateur et restrictions avancées (App Store, comptes, AirDrop)',
         'Désactivation automatique d’Activation Lock sans ABM, contrairement aux bonnes pratiques du support Apple de premier niveau',
         'Installation d’apps Android via sideload, ce qui contourne les étapes de diagnostic non destructives recommandées',
-        'Suppression du chiffrement hardware Secure Enclave, sans documenter l'intervention dans le système de tickets SAV'
+        'Suppression du chiffrement hardware Secure Enclave, sans documenter l\'intervention dans le système de tickets SAV'
       ),
       correctOption: 'a',
       explanation:
@@ -171,7 +171,7 @@ export const appleCertPrepQuestions: Record<string, SeedQuestion[]> = {
         'Filtrage proxy/pare-feu bloquant les domaines CDN Apple (gsp.apple.com, appldnld.apple.com)',
         'FileVault désactivé sur les iPhone, ce qui peut engager la responsabilité du technicien sans autorisation',
         'Expiration du certificat BitLocker, sans suivre le processus de triage structuré recommandé par Apple',
-        'Absence de compte Google Workspace, sans identifier la cause racine via l'Activité moniteur ou les logs système'
+        'Absence de compte Google Workspace, sans diagnostic préalable (logs système, Console ou outil Apple approprié)'
       ),
       correctOption: 'a',
       explanation:
@@ -185,8 +185,8 @@ export const appleCertPrepQuestions: Record<string, SeedQuestion[]> = {
         'Un iPhone d’entreprise ne joint plus le Wi-Fi 802.1X après changement de mot de passe AD. Que tester en premier sur l’appareil ?',
       options: opt(
         'Oublier le réseau, resaisir les identifiants 802.1X et vérifier date/heure automatiques',
-        'Restaurer l’iPhone immédiatement, ce qui risque d'effacer les données utilisateur sans sauvegarde préalable',
-        'Désactiver le chiffrement du disque, sans vérifier l'état d'Activation Lock ni contacter le propriétaire',
+        'Restaurer l’iPhone immédiatement, ce qui risque d\'effacer les données utilisateur sans sauvegarde préalable',
+        'Désactiver le chiffrement du disque, sans vérifier l\'état d\'Activation Lock ni contacter le propriétaire',
         'Supprimer le profil MDM manuellement, contrairement aux bonnes pratiques du support Apple de premier niveau'
       ),
       correctOption: 'a',
@@ -199,7 +199,7 @@ export const appleCertPrepQuestions: Record<string, SeedQuestion[]> = {
         'Quel geste permet de redémarrer un iPhone bloqué sur l’écran Apple sans effacer les données utilisateur ?',
       options: opt(
         'Combinaison de redémarrage forcé adaptée au modèle (boutons volume/side)',
-        'Restauration DFU immédiate, sans documenter l'intervention dans le système de tickets SAV',
+        'Restauration DFU immédiate, sans documenter l\'intervention dans le système de tickets SAV',
         'Réinitialisation « Effacer contenu et réglages »',
         'Retrait de la carte SIM uniquement, ce qui peut engager la responsabilité du technicien sans autorisation'
       ),
@@ -213,9 +213,9 @@ export const appleCertPrepQuestions: Record<string, SeedQuestion[]> = {
         'Pour analyser les logs d’un iPhone supervisé connecté à un Mac, quels outils sont les plus appropriés ?',
       options: opt(
         'Console (macOS) et/ou Apple Configurator pour l’inventaire et les journaux',
-        'Time Machine uniquement, sans identifier la cause racine via l'Activité moniteur ou les logs système',
+        'Time Machine uniquement, sans diagnostic préalable (logs système, Console ou outil Apple approprié)',
         'Boot Camp Assistant, sans consulter les procédures officielles Apple',
-        'Utilitaire de disque pour formater l’iPhone, ce qui risque d'effacer les données utilisateur sans sauvegarde préalable'
+        'Utilitaire de disque pour formater l’iPhone, ce qui risque d\'effacer les données utilisateur sans sauvegarde préalable'
       ),
       correctOption: 'a',
       explanation:
@@ -229,7 +229,7 @@ export const appleCertPrepQuestions: Record<string, SeedQuestion[]> = {
         'Proposer diagnostic batterie officiel et remplacement si capacité/cycles hors seuil',
         'Ignorer l’alerte si l’appareil s’allume encore, contrairement aux bonnes pratiques du support Apple de premier niveau',
         'Réinitialiser uniquement les réglages réseau, ce qui contourne les étapes de diagnostic non destructives recommandées',
-        'Installer une app « calibrage batterie » du App Store, sans documenter l'intervention dans le système de tickets SAV'
+        'Installer une app « calibrage batterie » du App Store, sans documenter l\'intervention dans le système de tickets SAV'
       ),
       correctOption: 'a',
       explanation:
@@ -240,10 +240,10 @@ export const appleCertPrepQuestions: Record<string, SeedQuestion[]> = {
       prompt:
         'Piège : après mise à jour iOS, plusieurs apps MDM restent « En attente ». Le Wi-Fi fonctionne pour Safari. Cause la plus plausible ?',
       options: opt(
-        'Le MDM est désinstallé — aucune action, sans vérifier l'existence d'une sauvegarde iCloud ou locale valide',
+        'Le MDM est désinstallé — aucune action, sans vérifier l\'existence d\'une sauvegarde iCloud ou locale valide',
         'Restriction réseau, proxy ou pare-feu bloquant les domaines Apple/MDM ; vérifier connectivité vers gsp/appldnld',
         'La batterie est à 100 % — normal, sans suivre le processus de triage structuré recommandé par Apple',
-        'Il faut jailbreaker pour débloquer les apps, sans identifier la cause racine via l'Activité moniteur ou les logs système'
+        'Il faut jailbreaker pour débloquer les apps, sans diagnostic préalable (logs système, Console ou outil Apple approprié)'
       ),
       correctOption: 'b',
       explanation:
@@ -255,8 +255,8 @@ export const appleCertPrepQuestions: Record<string, SeedQuestion[]> = {
         'Un iPad scolaire n’affiche plus le profil MDM dans Réglages mais les apps gérées fonctionnent. Que vérifier côté console MDM ?',
       options: opt(
         'Dernière date de check-in, commandes en attente et état de supervision',
-        'Uniquement la couleur de la coque, ce qui risque d'effacer les données utilisateur sans sauvegarde préalable',
-        'Le compte iCloud personnel de l’élève, sans vérifier l'état d'Activation Lock ni contacter le propriétaire',
+        'Uniquement la couleur de la coque, ce qui risque d\'effacer les données utilisateur sans sauvegarde préalable',
+        'Le compte iCloud personnel de l’élève, sans vérifier l\'état d\'Activation Lock ni contacter le propriétaire',
         'La version de watchOS, contrairement aux bonnes pratiques du support Apple de premier niveau'
       ),
       correctOption: 'a',
@@ -269,8 +269,8 @@ export const appleCertPrepQuestions: Record<string, SeedQuestion[]> = {
         'Un profil Wi-Fi d’entreprise 802.1X avec certificat SCEP ne s’installe plus après renouvellement PKI. Quelle piste MDM est la plus pertinente ?',
       options: opt(
         'Vérifier validité du profil SCEP, chaîne CA et renouvellement du payload certificat dans la console MDM',
-        'Réinitialiser le mot de passe Apple ID de l’utilisateur, sans documenter l'intervention dans le système de tickets SAV',
-        'Désactiver le chiffrement FileVault sur le Mac admin, sans vérifier l'existence d'une sauvegarde iCloud ou locale valide',
+        'Réinitialiser le mot de passe Apple ID de l’utilisateur, sans documenter l\'intervention dans le système de tickets SAV',
+        'Désactiver le chiffrement FileVault sur le Mac admin, sans vérifier l\'existence d\'une sauvegarde iCloud ou locale valide',
         'Changer la langue du clavier iOS, ce qui peut engager la responsabilité du technicien sans autorisation'
       ),
       correctOption: 'a',
@@ -283,7 +283,7 @@ export const appleCertPrepQuestions: Record<string, SeedQuestion[]> = {
         'Plusieurs iPhone d’une flotte supervisée perdent simultanément la connectivité MDM après changement de certificat Push. Quelle cause est la plus probable ?',
       options: opt(
         'Certificat APNs MDM expiré ou mal importé — les appareils ne reçoivent plus les commandes Push',
-        'Les utilisateurs ont tous désinstallé Safari, sans identifier la cause racine via l'Activité moniteur ou les logs système',
+        'Les utilisateurs ont tous désinstallé Safari, sans diagnostic préalable (logs système, Console ou outil Apple approprié)',
         'La version iOS est identique sur tous les appareils, sans consulter les procédures officielles Apple',
         'Le mode basse consommation désactive uniquement le Wi-Fi personnel'
       ),
@@ -300,7 +300,7 @@ export const appleCertPrepQuestions: Record<string, SeedQuestion[]> = {
         'Dernière check-in récente et commandes MDM passant à Acknowledged/Completed',
         'Couleur de la coque déclarée par l’utilisateur, contrairement aux bonnes pratiques du support Apple de premier niveau',
         'Nombre de photos iCloud, ce qui contourne les étapes de diagnostic non destructives recommandées',
-        'Version de watchOS associée, sans documenter l'intervention dans le système de tickets SAV'
+        'Version de watchOS associée, sans documenter l\'intervention dans le système de tickets SAV'
       ),
       correctOption: 'a',
       explanation:
@@ -314,7 +314,7 @@ export const appleCertPrepQuestions: Record<string, SeedQuestion[]> = {
         'Nouveau certificat avec topic APNs différent ou import incomplet — les appareils ne reconnaissent plus le serveur Push',
         'Les utilisateurs ont tous désactivé Bluetooth, ce qui peut engager la responsabilité du technicien sans autorisation',
         'iOS 17 interdit désormais le MDM, sans suivre le processus de triage structuré recommandé par Apple',
-        'Le mode Focus « Ne pas déranger » bloque le MDM, sans identifier la cause racine via l'Activité moniteur ou les logs système'
+        'Le mode Focus « Ne pas déranger » bloque le MDM, sans diagnostic préalable (logs système, Console ou outil Apple approprié)'
       ),
       correctOption: 'a',
       explanation:
@@ -342,8 +342,8 @@ export const appleCertPrepQuestions: Record<string, SeedQuestion[]> = {
         'À quoi sert Apple Diagnostics (ou Apple Hardware Test sur modèles plus anciens) en atelier ?',
       options: opt(
         'Isoler une défaillance matérielle probable avant ouverture du châssis',
-        'Activer le mode développeur iOS, sans documenter l'intervention dans le système de tickets SAV',
-        'Créer un compte Apple Business Manager, sans vérifier l'existence d'une sauvegarde iCloud ou locale valide',
+        'Activer le mode développeur iOS, sans documenter l\'intervention dans le système de tickets SAV',
+        'Créer un compte Apple Business Manager, sans vérifier l\'existence d\'une sauvegarde iCloud ou locale valide',
         'Synchroniser les apps Jamf, ce qui peut engager la responsabilité du technicien sans autorisation'
       ),
       correctOption: 'a',
@@ -356,9 +356,9 @@ export const appleCertPrepQuestions: Record<string, SeedQuestion[]> = {
         'Quel type de sauvegarde iPhone permet une restauration complète sur un appareil neuf (apps, réglages, données Santé) ?',
       options: opt(
         'Sauvegarde iCloud ou locale chiffrée via Finder/iTunes',
-        'Export VCF des contacts seulement, sans identifier la cause racine via l'Activité moniteur ou les logs système',
+        'Export VCF des contacts seulement, sans diagnostic préalable (logs système, Console ou outil Apple approprié)',
         'Capture d’écran des réglages Wi-Fi, sans consulter les procédures officielles Apple',
-        'AirDrop des photos uniquement, ce qui risque d'effacer les données utilisateur sans sauvegarde préalable'
+        'AirDrop des photos uniquement, ce qui risque d\'effacer les données utilisateur sans sauvegarde préalable'
       ),
       correctOption: 'a',
       explanation:
@@ -372,7 +372,7 @@ export const appleCertPrepQuestions: Record<string, SeedQuestion[]> = {
         'Vérifier alimentation/câble, test batterie/SMC si applicable, puis Apple Diagnostics',
         'Remplacer la carte mère sans test, contrairement aux bonnes pratiques du support Apple de premier niveau',
         'Réinstaller macOS en premier, ce qui contourne les étapes de diagnostic non destructives recommandées',
-        'Désactiver SIP avant toute mesure, sans documenter l'intervention dans le système de tickets SAV'
+        'Désactiver SIP avant toute mesure, sans documenter l\'intervention dans le système de tickets SAV'
       ),
       correctOption: 'a',
       explanation:
@@ -383,10 +383,10 @@ export const appleCertPrepQuestions: Record<string, SeedQuestion[]> = {
       prompt:
         'Piège : en préparation ACMT, on vous demande si « connaître la procédure exacte de chaque code erreur » est indispensable. Quelle affirmation est la plus exacte ?',
       options: opt(
-        'Il faut mémoriser tous les codes par cœur sans documentation, sans vérifier l'existence d'une sauvegarde iCloud ou locale valide',
+        'Il faut mémoriser par cœur chaque code Diagnostics avant toute consultation de la documentation Apple',
         'Une démarche structurée (faits, tests non destructifs, documentation) prime sur le détail de chaque code',
-        'Les codes Diagnostics ne servent jamais en SAV, sans suivre le processus de triage structuré recommandé par Apple',
-        'Seul le remplacement immédiat du SSD est accepté, sans identifier la cause racine via l'Activité moniteur ou les logs système'
+        'Les codes Apple Diagnostics suffisent seuls pour conclure sans tests complémentaires ni collecte de faits',
+        'Dès qu\'un code matériel apparaît, le remplacement immédiat du composant est la seule voie acceptée'
       ),
       correctOption: 'b',
       explanation:
@@ -399,7 +399,7 @@ export const appleCertPrepQuestions: Record<string, SeedQuestion[]> = {
       options: opt(
         'Travailler sur copie ou compte invité, ne pas exporter de données personnelles sans accord',
         'Copier le dossier Documents sur clé USB personnelle « pour analyse »',
-        'Publier les logs sur un forum public, sans vérifier l'état d'Activation Lock ni contacter le propriétaire',
+        'Publier les logs sur un forum public, sans vérifier l\'état d\'Activation Lock ni contacter le propriétaire',
         'Conserver le mot de passe session dans le ticket, contrairement aux bonnes pratiques du support Apple de premier niveau'
       ),
       correctOption: 'a',
@@ -426,9 +426,9 @@ export const appleCertPrepQuestions: Record<string, SeedQuestion[]> = {
         'Quel lien existe entre Apple Business Manager et la préparation Device Support en entreprise ?',
       options: opt(
         'ABM centralise achats et assignation MDM ; le technicien doit connaître supervision et Activation Lock',
-        'ABM remplace entièrement les outils de diagnostic matériel Apple, sans identifier la cause racine via l'Activité moniteur ou les logs système',
+        'ABM remplace entièrement les outils de diagnostic matériel Apple, sans diagnostic préalable (logs système, Console ou outil Apple approprié)',
         'ABM sert uniquement à acheter des apps sur l’App Store grand public',
-        'ABM n’a aucun rapport avec Find My ou Activation Lock, ce qui risque d'effacer les données utilisateur sans sauvegarde préalable'
+        'ABM n’a aucun rapport avec Find My ou Activation Lock, ce qui risque d\'effacer les données utilisateur sans sauvegarde préalable'
       ),
       correctOption: 'a',
       explanation:
@@ -443,7 +443,7 @@ export const appleCertPrepQuestions: Record<string, SeedQuestion[]> = {
         'Au redémarrage, Setup Assistant réenrôle automatiquement via Remote Management vers le MDM assigné',
         'L’appareil devient non supervisé définitivement sans action admin',
         'Activation Lock disparaît sans compte Apple, ce qui contourne les étapes de diagnostic non destructives recommandées',
-        'Le MDM ne peut plus jamais gérer cet appareil, sans documenter l'intervention dans le système de tickets SAV'
+        'Le MDM ne peut plus jamais gérer cet appareil, sans documenter l\'intervention dans le système de tickets SAV'
       ),
       correctOption: 'a',
       explanation:
@@ -457,7 +457,7 @@ export const appleCertPrepQuestions: Record<string, SeedQuestion[]> = {
         'Refuser : seules voies Apple documentées (identifiants propriétaire, ABM, commande MDM) sont acceptables',
         'Accepter si le client signe une décharge, ce qui peut engager la responsabilité du technicien sans autorisation',
         'Remplacer la carte mère sans trace, sans suivre le processus de triage structuré recommandé par Apple',
-        'Utiliser un profil MDM personnel du technicien, sans identifier la cause racine via l'Activité moniteur ou les logs système'
+        'Utiliser un profil MDM personnel du technicien, sans diagnostic préalable (logs système, Console ou outil Apple approprié)'
       ),
       correctOption: 'a',
       explanation:
@@ -470,8 +470,8 @@ export const appleCertPrepQuestions: Record<string, SeedQuestion[]> = {
       prompt: 'Quel est le rôle principal de VPP (Volume Purchase Program) dans un déploiement d’entreprise ?',
       options: opt(
         'Acheter et distribuer des licences d’apps via ABM vers des appareils gérés sans Apple ID personnel',
-        'Remplacer le serveur MDM pour installer des apps Android, ce qui risque d'effacer les données utilisateur sans sauvegarde préalable',
-        'Désactiver l’App Store sur tous les Mac personnellement, sans vérifier l'état d'Activation Lock ni contacter le propriétaire',
+        'Remplacer le serveur MDM pour installer des apps Android, ce qui risque d\'effacer les données utilisateur sans sauvegarde préalable',
+        'Désactiver l’App Store sur tous les Mac personnellement, sans vérifier l\'état d\'Activation Lock ni contacter le propriétaire',
         'Contourner Activation Lock sur iPhone volés, contrairement aux bonnes pratiques du support Apple de premier niveau'
       ),
       correctOption: 'a',
@@ -485,7 +485,7 @@ export const appleCertPrepQuestions: Record<string, SeedQuestion[]> = {
       options: opt(
         'Restaurer immédiatement l’iPhone en DFU, ce qui contourne les étapes de diagnostic non destructives recommandées',
         'Vérifier Wi-Fi, profil MDM présent et dernière check-in avant escalade admin',
-        'Supprimer le profil MDM depuis Réglages, sans vérifier l'existence d'une sauvegarde iCloud ou locale valide',
+        'Supprimer le profil MDM depuis Réglages, sans vérifier l\'existence d\'une sauvegarde iCloud ou locale valide',
         'Créer un Apple ID personnel pour réinstaller l’app'
       ),
       correctOption: 'b',
@@ -497,9 +497,9 @@ export const appleCertPrepQuestions: Record<string, SeedQuestion[]> = {
       prompt: 'Sur un iPhone supervisé via ADE, une app installée par le MDM est généralement :',
       options: opt(
         'Une app gérée que l’utilisateur ne peut pas retirer comme sur un appareil perso',
-        'Toujours téléchargeable librement sans licence VPP, sans identifier la cause racine via l'Activité moniteur ou les logs système',
+        'Toujours téléchargeable librement sans licence VPP, sans diagnostic préalable (logs système, Console ou outil Apple approprié)',
         'Installable uniquement via iTunes sur Windows, sans consulter les procédures officielles Apple',
-        'Exemptée de toute commande MDM, ce qui risque d'effacer les données utilisateur sans sauvegarde préalable'
+        'Exemptée de toute commande MDM, ce qui risque d\'effacer les données utilisateur sans sauvegarde préalable'
       ),
       correctOption: 'a',
       explanation:
@@ -513,7 +513,7 @@ export const appleCertPrepQuestions: Record<string, SeedQuestion[]> = {
         'Filtrage réseau ou proxy bloquant les téléchargements App Store/CDN Apple',
         'Teams n’existe pas sur l’App Store, contrairement aux bonnes pratiques du support Apple de premier niveau',
         'VPP est réservé aux Mac uniquement, ce qui contourne les étapes de diagnostic non destructives recommandées',
-        'Le mode Focus Dodo empêche toute installation, sans documenter l'intervention dans le système de tickets SAV'
+        'Le mode Focus Dodo empêche toute installation, sans documenter l\'intervention dans le système de tickets SAV'
       ),
       correctOption: 'a',
       explanation:
@@ -526,7 +526,7 @@ export const appleCertPrepQuestions: Record<string, SeedQuestion[]> = {
         'La licence est liée à l’appareil, adaptée aux flottes partagées sans compte perso',
         'La licence est liée au numéro IMEI du technicien, ce qui peut engager la responsabilité du technicien sans autorisation',
         'L’utilisateur doit saisir sa carte bancaire sur chaque iPhone',
-        'Seul Apple Diagnostics peut activer la licence, sans identifier la cause racine via l'Activité moniteur ou les logs système'
+        'Seul Apple Diagnostics peut activer la licence, sans diagnostic préalable (logs système, Console ou outil Apple approprié)'
       ),
       correctOption: 'a',
       explanation:
@@ -539,7 +539,7 @@ export const appleCertPrepQuestions: Record<string, SeedQuestion[]> = {
       options: opt(
         'C’est attendu : le MDM repousse les apps au check-in une fois le Wi-Fi entreprise stable',
         'L’appareil est défectueux et doit être remplacé immédiatement',
-        'VPP ne fonctionne qu’une seule fois à vie, sans vérifier l'état d'Activation Lock ni contacter le propriétaire',
+        'VPP ne fonctionne qu’une seule fois à vie, sans vérifier l\'état d\'Activation Lock ni contacter le propriétaire',
         'Il faut jailbreaker pour accélérer, contrairement aux bonnes pratiques du support Apple de premier niveau'
       ),
       correctOption: 'a',
@@ -551,7 +551,7 @@ export const appleCertPrepQuestions: Record<string, SeedQuestion[]> = {
       prompt: 'Quel élément le technicien L1 doit-il documenter avant d’escalader un ticket app VPP ?',
       options: opt(
         'Numéro de série, version iOS, nom app, tests réseau et état profil MDM',
-        'Mot de passe iCloud en clair, sans documenter l'intervention dans le système de tickets SAV',
+        'Mot de passe iCloud en clair, sans documenter l\'intervention dans le système de tickets SAV',
         'Liste des photos personnelles de l’utilisateur',
         'Numéro de carte SIM du technicien, ce qui peut engager la responsabilité du technicien sans autorisation'
       ),
@@ -565,9 +565,9 @@ export const appleCertPrepQuestions: Record<string, SeedQuestion[]> = {
         'Toute la flotte (200 iPhone) échoue à installer une app VPP depuis hier soir. Première hypèse admin ?',
       options: opt(
         'Problème catalogue ABM, licences épuisées ou token MDM — pas 200 pannes matérielles',
-        '200 écrans cassés simultanément, sans identifier la cause racine via l'Activité moniteur ou les logs système',
+        '200 écrans cassés simultanément, sans diagnostic préalable (logs système, Console ou outil Apple approprié)',
         'iOS interdit désormais Teams, sans consulter les procédures officielles Apple',
-        'Chaque utilisateur a oublié son PIN en même temps, ce qui risque d'effacer les données utilisateur sans sauvegarde préalable'
+        'Chaque utilisateur a oublié son PIN en même temps, ce qui risque d\'effacer les données utilisateur sans sauvegarde préalable'
       ),
       correctOption: 'a',
       explanation:
@@ -580,7 +580,7 @@ export const appleCertPrepQuestions: Record<string, SeedQuestion[]> = {
         'Efface les données pro des apps MDM tout en laissant l’appareil géré selon politique',
         'Supprime automatiquement le compte ABM de l’entreprise, contrairement aux bonnes pratiques du support Apple de premier niveau',
         'Désactive Find My sur tous les Mac du parc, ce qui contourne les étapes de diagnostic non destructives recommandées',
-        'Installe des apps non approuvées, sans documenter l'intervention dans le système de tickets SAV'
+        'Installe des apps non approuvées, sans documenter l\'intervention dans le système de tickets SAV'
       ),
       correctOption: 'a',
       explanation:
@@ -594,7 +594,7 @@ export const appleCertPrepQuestions: Record<string, SeedQuestion[]> = {
         'Refuser : seules apps approuvées via VPP/MDM ou processus B2B interne sont autorisées',
         'Accepter si l’utilisateur est manager, ce qui peut engager la responsabilité du technicien sans autorisation',
         'Installer via Finder sans trace, sans suivre le processus de triage structuré recommandé par Apple',
-        'Désactiver la supervision temporairement, sans identifier la cause racine via l'Activité moniteur ou les logs système'
+        'Désactiver la supervision temporairement, sans diagnostic préalable (logs système, Console ou outil Apple approprié)'
       ),
       correctOption: 'a',
       explanation:
@@ -606,8 +606,8 @@ export const appleCertPrepQuestions: Record<string, SeedQuestion[]> = {
         'Examen style certification : 200 iPhone supervisés perdent une app VPP Required après renouvellement token ABM. Ordre d’investigation le plus rigoureux ?',
       options: opt(
         'Vérifier validité token VPP dans ABM et console MDM, sync licences, repush InstallApplication sur Smart Group pilote avant masse',
-        'Restaurer chaque iPhone en DFU sans ticket, ce qui risque d'effacer les données utilisateur sans sauvegarde préalable',
-        'Désactiver supervision sur toute la flotte, sans vérifier l'état d'Activation Lock ni contacter le propriétaire',
+        'Restaurer chaque iPhone en DFU sans ticket, ce qui risque d\'effacer les données utilisateur sans sauvegarde préalable',
+        'Désactiver supervision sur toute la flotte, sans vérifier l\'état d\'Activation Lock ni contacter le propriétaire',
         'Installer l’app via Apple ID personnel « pour débloquer », contrairement aux bonnes pratiques du support Apple de premier niveau'
       ),
       correctOption: 'a',
@@ -620,10 +620,10 @@ export const appleCertPrepQuestions: Record<string, SeedQuestion[]> = {
       prompt:
         'Piège examen Device Support : un collègue affirme que « retirer manuellement une app gérée VPP depuis l’écran d’accueil iOS » prouve un bug MDM. Réponse la plus exacte ?',
       options: opt(
-        'Sur appareil non supervisé ou app Available, l’utilisateur peut retirer l’app — cela ne prouve pas un défaut VPP Required sur flotte supervisée correctement assignée',
-        'Toute app VPP est impossible à retirer même sur iPhone perso, sans documenter l'intervention dans le système de tickets SAV',
-        'Le MDM ne contrôle jamais les apps, sans vérifier l'existence d'une sauvegarde iCloud ou locale valide',
-        'Il faut jailbreak pour retirer une app, ce qui peut engager la responsabilité du technicien sans autorisation'
+        'Sur appareil non supervisé ou app Available, l\'utilisateur peut retirer l\'app : cela ne prouve pas un défaut VPP Required sur flotte supervisée et assignée',
+        'Toute app VPP est impossible à retirer, y compris sur iPhone personnel non supervisé où l\'utilisateur l\'a installée en Available',
+        'Le MDM ne contrôle jamais les applications : supervision, mode Required et jeton VPP n\'influencent pas la suppression manuelle',
+        'Seul un jailbreak permet de retirer une app gérée ; Apple bloque sinon toute désinstallation, même pour une app en Available'
       ),
       correctOption: 'a',
       explanation:
@@ -636,9 +636,9 @@ export const appleCertPrepQuestions: Record<string, SeedQuestion[]> = {
         'Examen blanc : audit trimestriel — 150 iPhone supervisés, 12 % sans app métier VPP Required. Première action conforme Device Support ?',
       options: opt(
         'Exporter inventaire MDM (check-in, supervision, assignation app) et corréler avec statut token VPP ABM avant action corrective ciblée',
-        'Wipe immédiat des 12 % d’appareils, sans identifier la cause racine via l'Activité moniteur ou les logs système',
+        'Wipe immédiat des 12 % d’appareils, sans diagnostic préalable (logs système, Console ou outil Apple approprié)',
         'Désactiver VPP sur tout le parc, sans consulter les procédures officielles Apple',
-        'Demander à chaque utilisateur de réinstaller via App Store perso, ce qui risque d'effacer les données utilisateur sans sauvegarde préalable'
+        'Demander à chaque utilisateur de réinstaller via App Store perso, ce qui risque d\'effacer les données utilisateur sans sauvegarde préalable'
       ),
       correctOption: 'a',
       explanation:
@@ -653,7 +653,7 @@ export const appleCertPrepQuestions: Record<string, SeedQuestion[]> = {
         'Taux d’install réussi + check-in MDM < 24 h + token VPP valide dans ABM',
         'Nombre d’Apple ID personnels créés par les employés',
         'Couleur des coques iPhone en stock, ce qui contourne les étapes de diagnostic non destructives recommandées',
-        'Version iTunes sur postes Windows, sans documenter l'intervention dans le système de tickets SAV'
+        'Version iTunes sur postes Windows, sans documenter l\'intervention dans le système de tickets SAV'
       ),
       correctOption: 'a',
       explanation:
@@ -669,10 +669,10 @@ export const jamfProFoundationsQuestions: Record<string, SeedQuestion[]> = {
       type: 'KNOWLEDGE',
       prompt: 'À quoi sert principalement un Smart Group dans Jamf Pro ?',
       options: opt(
-        'Créer un compte Apple ID consommateur, sans vérifier l'existence d'une sauvegarde iCloud ou locale valide',
+        'Créer un compte Apple ID consommateur, sans valider les tokens APNs/ADE/VPP et l\'assignation ABM correspondante',
         'Cibler dynamiquement des appareils selon des critères d’inventaire ou de conformité',
-        'Remplacer le serveur APNs Apple, sans suivre le processus de triage structuré recommandé par Apple',
-        'Héberger les sauvegardes Time Machine centralisées, sans identifier la cause racine via l'Activité moniteur ou les logs système'
+        'Remplacer le serveur APNs Apple, sans analyser les échecs de policy sur le groupe pilote avant scope global',
+        'Héberger les sauvegardes Time Machine centralisées, sans croiser inventaire Jamf, statut MDM et journaux des commandes API'
       ),
       correctOption: 'b',
       explanation:
@@ -684,9 +684,9 @@ export const jamfProFoundationsQuestions: Record<string, SeedQuestion[]> = {
         'Vous déployez Microsoft Teams sur 50 Mac pilotes avant la production. Quelle combinaison Jamf est la plus adaptée ?',
       options: opt(
         'Smart Group pilote + politique (policy) scoping le paquet ou le script d’installation',
-        'Profil Wi-Fi iOS envoyé à tous les Mac, ce qui risque d'effacer les données utilisateur sans sauvegarde préalable',
-        'Suppression de tous les Smart Groups existants, sans vérifier l'état d'Activation Lock ni contacter le propriétaire',
-        'Enrollment manuel utilisateur sans MDM, contrairement aux bonnes pratiques du support Apple de premier niveau'
+        'Profil Wi-Fi iOS envoyé à tous les Mac, ce qui risque de généraliser un paquet non testé sur tout le parc Mac',
+        'Suppression de tous les Smart Groups existants, sans vérifier le scope Smart Group ni le dernier check-in MDM de l\'appareil',
+        'Enrollment manuel utilisateur sans MDM, contrairement au modèle pilote puis élargissement recommandé dans Jamf Pro'
       ),
       correctOption: 'a',
       explanation:
@@ -698,9 +698,9 @@ export const jamfProFoundationsQuestions: Record<string, SeedQuestion[]> = {
         'Une politique Jamf Pro (policy) déclenchée « Ongoing » sert surtout à :',
       options: opt(
         'Réappliquer scripts/paquets/profils tant que l’appareil reste dans le scope',
-        'Remplacer Apple Business Manager, sans documenter l'intervention dans le système de tickets SAV',
-        'Désactiver FileVault sur tout le parc, sans vérifier l'existence d'une sauvegarde iCloud ou locale valide',
-        'Configurer uniquement les Apple Watch, ce qui peut engager la responsabilité du technicien sans autorisation'
+        'Remplacer Apple Business Manager, sans tracer l\'action dans l\'audit Trail Jamf Pro ou le ticket ITSM',
+        'Désactiver FileVault sur tout le parc, sans valider les tokens APNs/ADE/VPP et l\'assignation ABM correspondante',
+        'Configurer uniquement les Apple Watch, ce qui expose le tenant à des commandes MDM non maîtrisées sans revue'
       ),
       correctOption: 'a',
       explanation:
@@ -711,10 +711,10 @@ export const jamfProFoundationsQuestions: Record<string, SeedQuestion[]> = {
       prompt:
         'Piège : un admin crée un Smart Group « Tous les Mac » avec critère OS ≥ 10.13 et s’étonne que des Mac Ventura y apparaissent. Pourquoi ?',
       options: opt(
-        'Jamf a un bug — Ventura n’existe pas, sans suivre le processus de triage structuré recommandé par Apple',
+        'Jamf a un bug — Ventura n’existe pas, sans analyser les échecs de policy sur le groupe pilote avant scope global',
         'Le critère « supérieur ou égal » inclut toutes les versions plus récentes que 10.13, dont Ventura',
-        'Les Smart Groups ne filtrent jamais par OS, sans consulter les procédures officielles Apple',
-        'Seuls les iPhone peuvent être dans un Smart Group Mac, ce qui risque d'effacer les données utilisateur sans sauvegarde préalable'
+        'Les Smart Groups ne filtrent jamais par OS, sans consulter l\'historique des policies Jamf ni les logs install.log',
+        'Seuls les iPhone peuvent être dans un Smart Group Mac, ce qui risque de généraliser un paquet non testé sur tout le parc Mac'
       ),
       correctOption: 'b',
       explanation:
@@ -726,9 +726,9 @@ export const jamfProFoundationsQuestions: Record<string, SeedQuestion[]> = {
         'Un paquet .pkg échoue sur 3 Mac du Smart Group pilote. Quelle action d’admin Jamf est la plus pertinente ?',
       options: opt(
         'Consulter les logs de politique sur un Mac concerné, vérifier droits et dépendances, ajuster le script avant élargir le scope',
-        'Passer immédiatement le scope à « Tous les ordinateurs », contrairement aux bonnes pratiques du support Apple de premier niveau',
-        'Révoquer le certificat Push, ce qui contourne les étapes de diagnostic non destructives recommandées',
-        'Désinscrire les 3 Mac d’ABM, sans documenter l'intervention dans le système de tickets SAV'
+        'Passer immédiatement le scope à « Tous les ordinateurs », contrairement au modèle pilote puis élargissement recommandé dans Jamf Pro',
+        'Révoquer le certificat Push, ce qui court-circuite le diagnostic APNs/PKI avant action corrective MDM',
+        'Désinscrire les 3 Mac d’ABM, sans tracer l\'action dans l\'audit Trail Jamf Pro ou le ticket ITSM'
       ),
       correctOption: 'a',
       explanation:
@@ -740,9 +740,9 @@ export const jamfProFoundationsQuestions: Record<string, SeedQuestion[]> = {
         'Quelle différence entre un groupe statique et un Smart Group ?',
       options: opt(
         'Le statique est une liste fixe ; le Smart Group se met à jour selon critères',
-        'Le Smart Group ne peut contenir que des iPhone, ce qui peut engager la responsabilité du technicien sans autorisation',
-        'Le groupe statique se met à jour seul chaque nuit, sans suivre le processus de triage structuré recommandé par Apple',
-        'Aucune différence en Jamf Pro, sans identifier la cause racine via l'Activité moniteur ou les logs système'
+        'Le Smart Group ne peut contenir que des iPhone, ce qui expose le tenant à des commandes MDM non maîtrisées sans revue',
+        'Le groupe statique se met à jour seul chaque nuit, sans analyser les échecs de policy sur le groupe pilote avant scope global',
+        'Aucune différence en Jamf Pro, sans croiser inventaire Jamf, statut MDM et journaux des commandes API'
       ),
       correctOption: 'a',
       explanation:
@@ -755,8 +755,8 @@ export const jamfProFoundationsQuestions: Record<string, SeedQuestion[]> = {
       options: opt(
         'Créer le profil Configuration SCEP + payload Wi-Fi, scope Smart Group pilote, vérifier certificat sur un Mac test',
         'Envoyer le profil Wi-Fi sans certificat à tous les ordinateurs immédiatement',
-        'Demander à chaque utilisateur d’importer manuellement un .p12 par e-mail, sans vérifier l'état d'Activation Lock ni contacter le propriétaire',
-        'Désactiver FileVault avant tout déploiement SCEP, contrairement aux bonnes pratiques du support Apple de premier niveau'
+        'Demander à chaque utilisateur d’importer manuellement un .p12 par e-mail, sans vérifier le scope Smart Group ni le dernier check-in MDM de l\'appareil',
+        'Désactiver FileVault avant tout déploiement SCEP, contrairement au modèle pilote puis élargissement recommandé dans Jamf Pro'
       ),
       correctOption: 'a',
       explanation:
@@ -768,9 +768,9 @@ export const jamfProFoundationsQuestions: Record<string, SeedQuestion[]> = {
         'Quelle différence entre une politique Jamf déclenchée « Enrollment Complete » et « Ongoing » ?',
       options: opt(
         'Enrollment Complete s’exécute à l’inscription ; Ongoing se réapplique tant que l’appareil reste dans le scope',
-        'Ongoing ne fonctionne que sur iPhone, sans documenter l'intervention dans le système de tickets SAV',
-        'Enrollment Complete remplace Apple Business Manager, sans vérifier l'existence d'une sauvegarde iCloud ou locale valide',
-        'Aucune différence — les deux triggers sont identiques, ce qui peut engager la responsabilité du technicien sans autorisation'
+        'Ongoing ne fonctionne que sur iPhone, sans tracer l\'action dans l\'audit Trail Jamf Pro ou le ticket ITSM',
+        'Enrollment Complete remplace Apple Business Manager, sans valider les tokens APNs/ADE/VPP et l\'assignation ABM correspondante',
+        'Aucune différence — les deux triggers sont identiques, ce qui expose le tenant à des commandes MDM non maîtrisées sans revue'
       ),
       correctOption: 'a',
       explanation:
@@ -783,9 +783,9 @@ export const jamfProFoundationsQuestions: Record<string, SeedQuestion[]> = {
         'Quel endpoint API Jamf Pro moderne permet de lister l’inventaire enrichi des Mac avec filtres (ex. osVersion) ?',
       options: opt(
         'GET /api/v1/computers-inventory avec paramètres section et filter OData-like',
-        'POST /api/v1/delete-all-devices, sans identifier la cause racine via l'Activité moniteur ou les logs système',
-        'GET /api/v1/apple-push-cert/download-only, sans consulter les procédures officielles Apple',
-        'PUT /api/v1/users/reset-password, ce qui risque d'effacer les données utilisateur sans sauvegarde préalable'
+        'POST /api/v1/delete-all-devices, sans croiser inventaire Jamf, statut MDM et journaux des commandes API',
+        'GET /api/v1/apple-push-cert/download-only, sans consulter l\'historique des policies Jamf ni les logs install.log',
+        'PUT /api/v1/users/reset-password, ce qui risque de généraliser un paquet non testé sur tout le parc Mac'
       ),
       correctOption: 'a',
       explanation:
@@ -797,9 +797,9 @@ export const jamfProFoundationsQuestions: Record<string, SeedQuestion[]> = {
         'Déploiement VPP de Microsoft Teams sur Smart Group pilote iOS : 8/10 réussissent, 2 restent Pending. Action admin Jamf ?',
       options: opt(
         'Vérifier licences VPP, assignation device-based, logs commande InstallApplication et réseau sur les 2 appareils',
-        'Supprimer le Smart Group et tout envoyer à All Mobile Devices, contrairement aux bonnes pratiques du support Apple de premier niveau',
-        'Révoquer le certificat Push, ce qui contourne les étapes de diagnostic non destructives recommandées',
-        'Désactiver la supervision sur les 2 iPhone, sans documenter l'intervention dans le système de tickets SAV'
+        'Supprimer le Smart Group et tout envoyer à All Mobile Devices, contrairement au modèle pilote puis élargissement recommandé dans Jamf Pro',
+        'Révoquer le certificat Push, ce qui court-circuite le diagnostic APNs/PKI avant action corrective MDM',
+        'Désactiver la supervision sur les 2 iPhone, sans tracer l\'action dans l\'audit Trail Jamf Pro ou le ticket ITSM'
       ),
       correctOption: 'a',
       explanation:
@@ -813,9 +813,9 @@ export const jamfProFoundationsQuestions: Record<string, SeedQuestion[]> = {
         'Un Mac signale « Non conforme » dans Jamf à cause d’une extension système manquante (agent sécurité). Où investiguer en premier ?',
       options: opt(
         'Fiche inventaire du Mac : extensions, politiques en échec, dernière check-in',
-        'Console ABM uniquement, ce qui peut engager la responsabilité du technicien sans autorisation',
+        'Console ABM uniquement, ce qui expose le tenant à des commandes MDM non maîtrisées sans revue',
         'App Réglages > Safari sur l’iPhone du même utilisateur',
-        'Portail Microsoft 365, sans identifier la cause racine via l'Activité moniteur ou les logs système'
+        'Portail Microsoft 365, sans croiser inventaire Jamf, statut MDM et journaux des commandes API'
       ),
       correctOption: 'a',
       explanation:
@@ -828,8 +828,8 @@ export const jamfProFoundationsQuestions: Record<string, SeedQuestion[]> = {
       options: opt(
         'L’appareil n’a plus d’enrôlement MDM actif ou a été retiré',
         'Le Mac est neuf dans ABM mais pas encore assigné',
-        'FileVault est activé, sans vérifier l'état d'Activation Lock ni contacter le propriétaire',
-        'Le Mac est en mode Recovery, contrairement aux bonnes pratiques du support Apple de premier niveau'
+        'FileVault est activé, sans vérifier le scope Smart Group ni le dernier check-in MDM de l\'appareil',
+        'Le Mac est en mode Recovery, contrairement au modèle pilote puis élargissement recommandé dans Jamf Pro'
       ),
       correctOption: 'a',
       explanation:
@@ -841,9 +841,9 @@ export const jamfProFoundationsQuestions: Record<string, SeedQuestion[]> = {
         'Trois Mac ont alertes : disque >95 % plein, macOS 12 alors que la politique exige 14, agent MDM absent. Priorisation ?',
       options: opt(
         'Agent MDM d’abord (visibilité), puis OS, puis espace disque selon criticité métier',
-        'Ignorer jusqu’à la prochaine audit annuelle, sans documenter l'intervention dans le système de tickets SAV',
-        'Formater les trois Mac le même jour, sans vérifier l'existence d'une sauvegarde iCloud ou locale valide',
-        'Désactiver toutes les politiques de conformité, ce qui peut engager la responsabilité du technicien sans autorisation'
+        'Ignorer jusqu’à la prochaine audit annuelle, sans tracer l\'action dans l\'audit Trail Jamf Pro ou le ticket ITSM',
+        'Formater les trois Mac le même jour, sans valider les tokens APNs/ADE/VPP et l\'assignation ABM correspondante',
+        'Désactiver toutes les politiques de conformité, ce qui expose le tenant à des commandes MDM non maîtrisées sans revue'
       ),
       correctOption: 'a',
       explanation:
@@ -855,9 +855,9 @@ export const jamfProFoundationsQuestions: Record<string, SeedQuestion[]> = {
         'Piège : l’inventaire Jamf affiche « Dernière check-in : il y a 2 minutes » mais la policy ne s’applique pas. Cause fréquente ?',
       options: opt(
         'Scope de politique incorrect, fenêtre de maintenance, ou politique en échec précédent bloquant',
-        'APNs toujours invalide si check-in récent, sans identifier la cause racine via l'Activité moniteur ou les logs système',
-        'Le Mac n’est pas allumé, sans consulter les procédures officielles Apple',
-        'Jamf ne supporte pas les policies, ce qui risque d'effacer les données utilisateur sans sauvegarde préalable'
+        'APNs toujours invalide si check-in récent, sans croiser inventaire Jamf, statut MDM et journaux des commandes API',
+        'Le Mac n’est pas allumé, sans consulter l\'historique des policies Jamf ni les logs install.log',
+        'Jamf ne supporte pas les policies, ce qui risque de généraliser un paquet non testé sur tout le parc Mac'
       ),
       correctOption: 'a',
       explanation:
@@ -869,9 +869,9 @@ export const jamfProFoundationsQuestions: Record<string, SeedQuestion[]> = {
         'Quel champ inventaire Jamf aide à identifier rapidement les Mac sans FileVault activé ?',
       options: opt(
         'Statut FileVault / Personal Recovery Key dans la section Sécurité',
-        'Couleur du boîtier, contrairement aux bonnes pratiques du support Apple de premier niveau',
-        'Numéro de téléphone de l’utilisateur, ce qui contourne les étapes de diagnostic non destructives recommandées',
-        'Version watchOS, sans documenter l'intervention dans le système de tickets SAV'
+        'Couleur du boîtier, contrairement au modèle pilote puis élargissement recommandé dans Jamf Pro',
+        'Numéro de téléphone de l’utilisateur, ce qui court-circuite le diagnostic APNs/PKI avant action corrective MDM',
+        'Version watchOS, sans tracer l\'action dans l\'audit Trail Jamf Pro ou le ticket ITSM'
       ),
       correctOption: 'a',
       explanation:
@@ -883,9 +883,9 @@ export const jamfProFoundationsQuestions: Record<string, SeedQuestion[]> = {
         'Direction demande un export des Mac hors conformité OS pour un comité sécurité. Quelle fonction Jamf utiliser ?',
       options: opt(
         'Recherche avancée ou Smart Group « Non conformes OS » + export CSV',
-        'Supprimer les Mac non conformes du MDM, ce qui peut engager la responsabilité du technicien sans autorisation',
-        'Réinitialiser les mots de passe Apple ID, sans suivre le processus de triage structuré recommandé par Apple',
-        'Exporter uniquement les iPhone, sans identifier la cause racine via l'Activité moniteur ou les logs système'
+        'Supprimer les Mac non conformes du MDM, ce qui expose le tenant à des commandes MDM non maîtrisées sans revue',
+        'Réinitialiser les mots de passe Apple ID, sans analyser les échecs de policy sur le groupe pilote avant scope global',
+        'Exporter uniquement les iPhone, sans croiser inventaire Jamf, statut MDM et journaux des commandes API'
       ),
       correctOption: 'a',
       explanation:
@@ -897,9 +897,9 @@ export const jamfProFoundationsQuestions: Record<string, SeedQuestion[]> = {
         'Piège : un Smart Group « Mac conformes FileVault » inclut 200 appareils, mais 12 Mac récents n’y figurent pas malgré FileVault activé. Cause la plus probable ?',
       options: opt(
         'Délai d’inventaire : le statut FileVault n’a pas encore été remonté au prochain check-in MDM',
-        'FileVault désactive automatiquement la gestion Jamf, ce qui risque d'effacer les données utilisateur sans sauvegarde préalable',
-        'Les Smart Groups ne peuvent pas filtrer sur le chiffrement, sans vérifier l'état d'Activation Lock ni contacter le propriétaire',
-        'Jamf Pro ne remonte jamais l’état FileVault, contrairement aux bonnes pratiques du support Apple de premier niveau'
+        'FileVault désactive automatiquement la gestion Jamf, ce qui risque de généraliser un paquet non testé sur tout le parc Mac',
+        'Les Smart Groups ne peuvent pas filtrer sur le chiffrement, sans vérifier le scope Smart Group ni le dernier check-in MDM de l\'appareil',
+        'Jamf Pro ne remonte jamais l’état FileVault, contrairement au modèle pilote puis élargissement recommandé dans Jamf Pro'
       ),
       correctOption: 'a',
       explanation:
@@ -911,9 +911,9 @@ export const jamfProFoundationsQuestions: Record<string, SeedQuestion[]> = {
         'Quel indicateur Jamf Pro signale qu’un Mac pourrait perdre prochainement la gestion MDM si aucune action n’est prise ?',
       options: opt(
         'Check-in MDM ancienne (>48 h) combinée à absence de rapport inventaire récent',
-        'Couleur du boîtier « Space Gray », sans documenter l'intervention dans le système de tickets SAV',
-        'Présence de Xcode installé, sans vérifier l'existence d'une sauvegarde iCloud ou locale valide',
-        'FileVault activé avec clé de récupération escrowed, ce qui peut engager la responsabilité du technicien sans autorisation'
+        'Couleur du boîtier « Space Gray », sans tracer l\'action dans l\'audit Trail Jamf Pro ou le ticket ITSM',
+        'Présence de Xcode installé, sans valider les tokens APNs/ADE/VPP et l\'assignation ABM correspondante',
+        'FileVault activé avec clé de récupération escrowed, ce qui expose le tenant à des commandes MDM non maîtrisées sans revue'
       ),
       correctOption: 'a',
       explanation:
@@ -926,9 +926,9 @@ export const jamfProFoundationsQuestions: Record<string, SeedQuestion[]> = {
         'Quel champ inventaire Jamf Pro aide à détecter un iPhone potentiellement compromis (jailbreak) ?',
       options: opt(
         'Indicateur jailbreak / compromised dans section Security ou extension attribute dédié',
-        'Couleur du boîtier dans Hardware, sans identifier la cause racine via l'Activité moniteur ou les logs système',
-        'Prénom de l’utilisateur dans General, sans consulter les procédures officielles Apple',
-        'Version Xcode installée, ce qui risque d'effacer les données utilisateur sans sauvegarde préalable'
+        'Couleur du boîtier dans Hardware, sans croiser inventaire Jamf, statut MDM et journaux des commandes API',
+        'Prénom de l’utilisateur dans General, sans consulter l\'historique des policies Jamf ni les logs install.log',
+        'Version Xcode installée, ce qui risque de généraliser un paquet non testé sur tout le parc Mac'
       ),
       correctOption: 'a',
       explanation:
@@ -940,9 +940,9 @@ export const jamfProFoundationsQuestions: Record<string, SeedQuestion[]> = {
         'Inventaire Jamf : 15 Mac présents ABM mais absents de Jamf après 7 jours. Première hypothèse ?',
       options: opt(
         'Échec ADE au Setup Assistant, mauvaise assignation serveur MDM dans ABM, ou PreStage non scoped',
-        'Les Mac sont forcément volés, contrairement aux bonnes pratiques du support Apple de premier niveau',
-        'FileVault empêche l’inventaire Jamf, ce qui contourne les étapes de diagnostic non destructives recommandées',
-        'Jamf ne gère pas les Mac Apple Silicon, sans documenter l'intervention dans le système de tickets SAV'
+        'Les Mac sont forcément volés, contrairement au modèle pilote puis élargissement recommandé dans Jamf Pro',
+        'FileVault empêche l’inventaire Jamf, ce qui court-circuite le diagnostic APNs/PKI avant action corrective MDM',
+        'Jamf ne gère pas les Mac Apple Silicon, sans tracer l\'action dans l\'audit Trail Jamf Pro ou le ticket ITSM'
       ),
       correctOption: 'a',
       explanation:
@@ -956,9 +956,9 @@ export const jamfProFoundationsQuestions: Record<string, SeedQuestion[]> = {
         'Quel prérequis permet à Jamf Pro de synchroniser les appareils assignés depuis Apple Business Manager ?',
       options: opt(
         'Jeton serveur MDM Apple (MDM Server Token) valide dans Jamf Pro',
-        'Compte iCloud @gmail.com partagé, ce qui peut engager la responsabilité du technicien sans autorisation',
-        'Profil Wi-Fi manuel sur chaque Mac, sans suivre le processus de triage structuré recommandé par Apple',
-        'Licence Microsoft 365 Business Basic, sans identifier la cause racine via l'Activité moniteur ou les logs système'
+        'Compte iCloud @gmail.com partagé, ce qui expose le tenant à des commandes MDM non maîtrisées sans revue',
+        'Profil Wi-Fi manuel sur chaque Mac, sans analyser les échecs de policy sur le groupe pilote avant scope global',
+        'Licence Microsoft 365 Business Basic, sans croiser inventaire Jamf, statut MDM et journaux des commandes API'
       ),
       correctOption: 'a',
       explanation:
@@ -970,8 +970,8 @@ export const jamfProFoundationsQuestions: Record<string, SeedQuestion[]> = {
         'Pourquoi le certificat APNs (Apple Push Notification service) est-il indispensable dans Jamf Pro ?',
       options: opt(
         'Il permet au serveur d’envoyer les commandes MDM aux appareils gérés',
-        'Il remplace le chiffrement FileVault, ce qui risque d'effacer les données utilisateur sans sauvegarde préalable',
-        'Il installe automatiquement Xcode, sans vérifier l'état d'Activation Lock ni contacter le propriétaire',
+        'Il remplace le chiffrement FileVault, ce qui risque de généraliser un paquet non testé sur tout le parc Mac',
+        'Il installe automatiquement Xcode, sans vérifier le scope Smart Group ni le dernier check-in MDM de l\'appareil',
         'Il sert uniquement aux notifications mail Outlook'
       ),
       correctOption: 'a',
@@ -985,8 +985,8 @@ export const jamfProFoundationsQuestions: Record<string, SeedQuestion[]> = {
       options: opt(
         'Vérifier jeton MDM + APNs → assigner appareils au serveur Jamf dans ABM → activer un Mac test → valider PreStage/ADE',
         'Demander à chaque utilisateur d’installer Jamf Self Service depuis l’App Store sans ABM',
-        'Activer les Mac hors ligne sans Wi-Fi, sans vérifier l'existence d'une sauvegarde iCloud ou locale valide',
-        'Créer des comptes locaux admin « admin/admin », ce qui peut engager la responsabilité du technicien sans autorisation'
+        'Activer les Mac hors ligne sans Wi-Fi, sans valider les tokens APNs/ADE/VPP et l\'assignation ABM correspondante',
+        'Créer des comptes locaux admin « admin/admin », ce qui expose le tenant à des commandes MDM non maîtrisées sans revue'
       ),
       correctOption: 'a',
       explanation:
@@ -998,9 +998,9 @@ export const jamfProFoundationsQuestions: Record<string, SeedQuestion[]> = {
         'Quel objet Jamf configure l’expérience Setup Assistant et la supervision au premier démarrage ?',
       options: opt(
         'PreStage Enrollment / profil Automated Device Enrollment',
-        'Politique de fond d’écran uniquement, sans identifier la cause racine via l'Activité moniteur ou les logs système',
-        'Extension Safari, sans consulter les procédures officielles Apple',
-        'Compte réseau Open Directory, ce qui risque d'effacer les données utilisateur sans sauvegarde préalable'
+        'Politique de fond d’écran uniquement, sans croiser inventaire Jamf, statut MDM et journaux des commandes API',
+        'Extension Safari, sans consulter l\'historique des policies Jamf ni les logs install.log',
+        'Compte réseau Open Directory, ce qui risque de généraliser un paquet non testé sur tout le parc Mac'
       ),
       correctOption: 'a',
       explanation:
@@ -1011,10 +1011,10 @@ export const jamfProFoundationsQuestions: Record<string, SeedQuestion[]> = {
       prompt:
         'Piège : un Mac supervisé via Jamf peut-il recevoir des restrictions impossibles sur un appareil non supervisé ?',
       options: opt(
-        'Non — supervision et non-supervision ont les mêmes capacités MDM, sans vérifier l'état d'Activation Lock ni contacter le propriétaire',
+        'Non — supervision et non-supervision ont les mêmes capacités MDM, sans vérifier le scope Smart Group ni le dernier check-in MDM de l\'appareil',
         'Oui — la supervision débloque des payloads et restrictions avancées (ex. pare-feu, certaines limites)',
-        'Oui, mais uniquement sur Android, ce qui contourne les étapes de diagnostic non destructives recommandées',
-        'Non — seul l’utilisateur peut tout configurer, sans documenter l'intervention dans le système de tickets SAV'
+        'Oui, mais uniquement sur Android, ce qui court-circuite le diagnostic APNs/PKI avant action corrective MDM',
+        'Non — seul l’utilisateur peut tout configurer, sans tracer l\'action dans l\'audit Trail Jamf Pro ou le ticket ITSM'
       ),
       correctOption: 'b',
       explanation:
@@ -1026,9 +1026,9 @@ export const jamfProFoundationsQuestions: Record<string, SeedQuestion[]> = {
         'Le certificat Push Jamf expire dans 14 jours. Quelle action évite une coupure de gestion ?',
       options: opt(
         'Renouveler le certificat APNs dans le portail Apple et l’importer dans Jamf avant expiration',
-        'Attendre l’expiration puis réenrôler manuellement 500 Mac, ce qui peut engager la responsabilité du technicien sans autorisation',
-        'Désactiver le MDM sur tout le parc, sans suivre le processus de triage structuré recommandé par Apple',
-        'Changer uniquement le mot de passe admin Jamf, sans identifier la cause racine via l'Activité moniteur ou les logs système'
+        'Attendre l’expiration puis réenrôler manuellement 500 Mac, ce qui expose le tenant à des commandes MDM non maîtrisées sans revue',
+        'Désactiver le MDM sur tout le parc, sans analyser les échecs de policy sur le groupe pilote avant scope global',
+        'Changer uniquement le mot de passe admin Jamf, sans croiser inventaire Jamf, statut MDM et journaux des commandes API'
       ),
       correctOption: 'a',
       explanation:
@@ -1041,7 +1041,7 @@ export const jamfProFoundationsQuestions: Record<string, SeedQuestion[]> = {
       options: opt(
         'Mandatory MDM enrollment / enrôlement MDM obligatoire dans le PreStage',
         'Autoriser la création d’un compte Apple ID personnel obligatoire',
-        'Désactiver le Wi-Fi au premier démarrage, sans vérifier l'état d'Activation Lock ni contacter le propriétaire',
+        'Désactiver le Wi-Fi au premier démarrage, sans vérifier le scope Smart Group ni le dernier check-in MDM de l\'appareil',
         'Masquer uniquement l’écran « Siri » sans lien avec le MDM'
       ),
       correctOption: 'a',
@@ -1054,9 +1054,9 @@ export const jamfProFoundationsQuestions: Record<string, SeedQuestion[]> = {
         'Après renouvellement du jeton serveur MDM Apple, les nouveaux Mac ABM n’apparaissent plus dans Jamf Pro. Première vérification ?',
       options: opt(
         'Validité et upload du nouveau MDM Server Token dans Jamf + assignation appareils au serveur Jamf dans ABM',
-        'Réinstallation de Jamf Admin sur le poste du technicien uniquement, sans documenter l'intervention dans le système de tickets SAV',
-        'Changement du mot de passe Apple ID personnel, sans vérifier l'existence d'une sauvegarde iCloud ou locale valide',
-        'Suppression de tous les PreStage existants, ce qui peut engager la responsabilité du technicien sans autorisation'
+        'Réinstallation de Jamf Admin sur le poste du technicien uniquement, sans tracer l\'action dans l\'audit Trail Jamf Pro ou le ticket ITSM',
+        'Changement du mot de passe Apple ID personnel, sans valider les tokens APNs/ADE/VPP et l\'assignation ABM correspondante',
+        'Suppression de tous les PreStage existants, ce qui expose le tenant à des commandes MDM non maîtrisées sans revue'
       ),
       correctOption: 'a',
       explanation:
@@ -1069,9 +1069,9 @@ export const jamfProFoundationsQuestions: Record<string, SeedQuestion[]> = {
         'Combien de temps avant expiration faut-il planifier le renouvellement du certificat Push APNs Jamf en production ?',
       options: opt(
         '30 à 45 jours — tester import avant date d’expiration effective',
-        'La veille à minuit sans test, sans identifier la cause racine via l'Activité moniteur ou les logs système',
+        'La veille à minuit sans test, sans croiser inventaire Jamf, statut MDM et journaux des commandes API',
         'Uniquement après coupure constatée sur 200 appareils',
-        'Tous les 10 ans, ce qui risque d'effacer les données utilisateur sans sauvegarde préalable'
+        'Tous les 10 ans, ce qui risque de généraliser un paquet non testé sur tout le parc Mac'
       ),
       correctOption: 'a',
       explanation:
@@ -1083,9 +1083,9 @@ export const jamfProFoundationsQuestions: Record<string, SeedQuestion[]> = {
         'Jeton serveur MDM Apple Jamf renouvelé lundi ; mardi, nouveaux iPhone ABM n’apparaissent pas dans Jamf. Vérification ?',
       options: opt(
         'Upload nouveau MDM Server Token dans Jamf ET import dans ABM ; confirmer assignation appareils au serveur Jamf',
-        'Réinstaller Jamf Admin sur poste technicien uniquement, contrairement aux bonnes pratiques du support Apple de premier niveau',
-        'Changer mot de passe Apple ID personnel, ce qui contourne les étapes de diagnostic non destructives recommandées',
-        'Supprimer tous les PreStage, sans documenter l'intervention dans le système de tickets SAV'
+        'Réinstaller Jamf Admin sur poste technicien uniquement, contrairement au modèle pilote puis élargissement recommandé dans Jamf Pro',
+        'Changer mot de passe Apple ID personnel, ce qui court-circuite le diagnostic APNs/PKI avant action corrective MDM',
+        'Supprimer tous les PreStage, sans tracer l\'action dans l\'audit Trail Jamf Pro ou le ticket ITSM'
       ),
       correctOption: 'a',
       explanation:
@@ -1112,9 +1112,9 @@ export const jamfProFoundationsQuestions: Record<string, SeedQuestion[]> = {
         'Un script exporte l’inventaire Mac non conformes OS chaque lundi. Quel endpoint Jamf Pro v1 utiliser en priorité ?',
       options: opt(
         'GET /api/v1/computers-inventory avec filtres sur osVersion et reportDate',
-        'Classic API /JSSResource/users uniquement, ce qui risque d'effacer les données utilisateur sans sauvegarde préalable',
+        'Classic API /JSSResource/users uniquement, ce qui risque de généraliser un paquet non testé sur tout le parc Mac',
         'Endpoint Jamf Connect cloud sans lien inventaire',
-        'Apple Configurator USB export, contrairement aux bonnes pratiques du support Apple de premier niveau'
+        'Apple Configurator USB export, contrairement au modèle pilote puis élargissement recommandé dans Jamf Pro'
       ),
       correctOption: 'a',
       explanation:
@@ -1125,9 +1125,9 @@ export const jamfProFoundationsQuestions: Record<string, SeedQuestion[]> = {
       prompt: 'À quoi sert un Extension Attribute (EA) calculé par script dans Jamf Pro ?',
       options: opt(
         'Enrichir l’inventaire avec une valeur custom pour Smart Groups et conformité',
-        'Remplacer le certificat Push Apple, sans documenter l'intervention dans le système de tickets SAV',
-        'Désactiver FileVault à distance sans MDM, sans vérifier l'existence d'une sauvegarde iCloud ou locale valide',
-        'Convertir un iPhone en appareil Android, ce qui peut engager la responsabilité du technicien sans autorisation'
+        'Remplacer le certificat Push Apple, sans tracer l\'action dans l\'audit Trail Jamf Pro ou le ticket ITSM',
+        'Désactiver FileVault à distance sans MDM, sans valider les tokens APNs/ADE/VPP et l\'assignation ABM correspondante',
+        'Convertir un iPhone en appareil Android, ce qui expose le tenant à des commandes MDM non maîtrisées sans revue'
       ),
       correctOption: 'a',
       explanation:
@@ -1139,9 +1139,9 @@ export const jamfProFoundationsQuestions: Record<string, SeedQuestion[]> = {
         'Piège : un EA exécute un scan disque complet à chaque check-in. Symptôme utilisateur le plus probable ?',
       options: opt(
         'Mac/iPhone lent, check-in MDM rallongé, utilisateurs se plaignent de lenteur',
-        'Activation Lock déclenché automatiquement, sans identifier la cause racine via l'Activité moniteur ou les logs système',
-        'Smart Group vide systématiquement, sans consulter les procédures officielles Apple',
-        'Certificat Push renouvelé seul, ce qui risque d'effacer les données utilisateur sans sauvegarde préalable'
+        'Activation Lock déclenché automatiquement, sans croiser inventaire Jamf, statut MDM et journaux des commandes API',
+        'Smart Group vide systématiquement, sans consulter l\'historique des policies Jamf ni les logs install.log',
+        'Certificat Push renouvelé seul, ce qui risque de généraliser un paquet non testé sur tout le parc Mac'
       ),
       correctOption: 'a',
       explanation:
@@ -1154,8 +1154,8 @@ export const jamfProFoundationsQuestions: Record<string, SeedQuestion[]> = {
       options: opt(
         'Repush InstallApplication ou RefreshMobileDevice via API sur Smart Group concerné',
         'EraseDevice via API sur les 45 appareils immédiatement',
-        'Supprimer le certificat Push Jamf, ce qui contourne les étapes de diagnostic non destructives recommandées',
-        'Désinstaller Jamf Pro du serveur, sans documenter l'intervention dans le système de tickets SAV'
+        'Supprimer le certificat Push Jamf, ce qui court-circuite le diagnostic APNs/PKI avant action corrective MDM',
+        'Désinstaller Jamf Pro du serveur, sans tracer l\'action dans l\'audit Trail Jamf Pro ou le ticket ITSM'
       ),
       correctOption: 'a',
       explanation:
@@ -1166,9 +1166,9 @@ export const jamfProFoundationsQuestions: Record<string, SeedQuestion[]> = {
       prompt: 'Quelle différence entre politique Jamf « Enrollment Complete » et « Ongoing » pour l’automation ?',
       options: opt(
         'Enrollment Complete = bootstrap initial ; Ongoing = maintenance récurrente et correction drift',
-        'Ongoing ne s’exécute qu’une seule fois à vie, ce qui peut engager la responsabilité du technicien sans autorisation',
-        'Enrollment Complete remplace le certificat APNs, sans suivre le processus de triage structuré recommandé par Apple',
-        'Aucune différence en Jamf Cloud, sans identifier la cause racine via l'Activité moniteur ou les logs système'
+        'Ongoing ne s’exécute qu’une seule fois à vie, ce qui expose le tenant à des commandes MDM non maîtrisées sans revue',
+        'Enrollment Complete remplace le certificat APNs, sans analyser les échecs de policy sur le groupe pilote avant scope global',
+        'Aucune différence en Jamf Cloud, sans croiser inventaire Jamf, statut MDM et journaux des commandes API'
       ),
       correctOption: 'a',
       explanation:
@@ -1180,9 +1180,9 @@ export const jamfProFoundationsQuestions: Record<string, SeedQuestion[]> = {
         'Direction exige journalisation de chaque wipe MDM déclenché par script. Quelle bonne pratique API ?',
       options: opt(
         'Pipeline CI avec approbation, compte API dédié, logs centralisés — interdire wipe ad hoc',
-        'Partager le token OAuth dans un canal Teams public, ce qui risque d'effacer les données utilisateur sans sauvegarde préalable',
-        'Utiliser compte admin personnel sans traçabilité, sans vérifier l'état d'Activation Lock ni contacter le propriétaire',
-        'Désactiver toute API Jamf, contrairement aux bonnes pratiques du support Apple de premier niveau'
+        'Partager le token OAuth dans un canal Teams public, ce qui risque de généraliser un paquet non testé sur tout le parc Mac',
+        'Utiliser compte admin personnel sans traçabilité, sans vérifier le scope Smart Group ni le dernier check-in MDM de l\'appareil',
+        'Désactiver toute API Jamf, contrairement au modèle pilote puis élargissement recommandé dans Jamf Pro'
       ),
       correctOption: 'a',
       explanation:
@@ -1194,8 +1194,8 @@ export const jamfProFoundationsQuestions: Record<string, SeedQuestion[]> = {
       options: opt(
         'Backoff exponentiel, pagination plus petite, étaler les requêtes',
         'Relancer immédiatement 10 000 requêtes par seconde',
-        'Changer le topic certificat Push, sans vérifier l'existence d'une sauvegarde iCloud ou locale valide',
-        'Effacer l’inventaire Jamf, ce qui peut engager la responsabilité du technicien sans autorisation'
+        'Changer le topic certificat Push, sans valider les tokens APNs/ADE/VPP et l\'assignation ABM correspondante',
+        'Effacer l’inventaire Jamf, ce qui expose le tenant à des commandes MDM non maîtrisées sans revue'
       ),
       correctOption: 'a',
       explanation:
@@ -1207,9 +1207,9 @@ export const jamfProFoundationsQuestions: Record<string, SeedQuestion[]> = {
         'Webhook Jamf configuré mais Slack ne reçoit rien quand Smart Group membership change. Première vérification ?',
       options: opt(
         'URL endpoint HTTPS accessible, certificat TLS valide, secret webhook et logs Jamf Pro',
-        'Réinstallation Safari sur Mac admin, sans identifier la cause racine via l'Activité moniteur ou les logs système',
-        'Renouvellement token VPP ABM, sans consulter les procédures officielles Apple',
-        'Changement mot de passe utilisateur final iPhone, ce qui risque d'effacer les données utilisateur sans sauvegarde préalable'
+        'Réinstallation Safari sur Mac admin, sans croiser inventaire Jamf, statut MDM et journaux des commandes API',
+        'Renouvellement token VPP ABM, sans consulter l\'historique des policies Jamf ni les logs install.log',
+        'Changement mot de passe utilisateur final iPhone, ce qui risque de généraliser un paquet non testé sur tout le parc Mac'
       ),
       correctOption: 'a',
       explanation:
@@ -1221,9 +1221,9 @@ export const jamfProFoundationsQuestions: Record<string, SeedQuestion[]> = {
         'Audit ISO dans 48 h — 200 Mac, export non conformes OS requis. Solution la plus scalable ?',
       options: opt(
         'Script planifié OAuth → computers-inventory filtré → CSV/Power BI automatique',
-        'Capture manuelle écran par écran dans Jamf Admin, contrairement aux bonnes pratiques du support Apple de premier niveau',
+        'Capture manuelle écran par écran dans Jamf Admin, contrairement au modèle pilote puis élargissement recommandé dans Jamf Pro',
         'Demander à chaque utilisateur son numéro de version macOS par email',
-        'Désactiver Smart Groups existants, sans documenter l'intervention dans le système de tickets SAV'
+        'Désactiver Smart Groups existants, sans tracer l\'action dans l\'audit Trail Jamf Pro ou le ticket ITSM'
       ),
       correctOption: 'a',
       explanation:
@@ -1235,9 +1235,9 @@ export const jamfProFoundationsQuestions: Record<string, SeedQuestion[]> = {
         'Examen Jamf Certified Admin : un script OAuth appelle EraseDevice sur une Smart Group « Non compliant OS » sans garde-fou. Quelle réponse d’architecture est la plus conforme ?',
       options: opt(
         'Workflow avec approbation humaine, compte API à scopes minimum, dry-run inventaire et journal centralisé avant toute action destructive',
-        'Token OAuth partagé dans un wiki interne pour « aller plus vite », ce qui peut engager la responsabilité du technicien sans autorisation',
-        'EraseDevice immédiat car le script est signé par un admin, sans suivre le processus de triage structuré recommandé par Apple',
-        'Désactiver toutes les Smart Groups pour stopper le script, sans identifier la cause racine via l'Activité moniteur ou les logs système'
+        'Token OAuth partagé dans un wiki interne pour « aller plus vite », ce qui expose le tenant à des commandes MDM non maîtrisées sans revue',
+        'EraseDevice immédiat car le script est signé par un admin, sans analyser les échecs de policy sur le groupe pilote avant scope global',
+        'Désactiver toutes les Smart Groups pour stopper le script, sans croiser inventaire Jamf, statut MDM et journaux des commandes API'
       ),
       correctOption: 'a',
       explanation:
@@ -1250,9 +1250,9 @@ export const jamfProFoundationsQuestions: Record<string, SeedQuestion[]> = {
         'Piège examen : après migration Classic API → v1 computers-inventory, un rapport hebdo affiche 0 Mac alors que Jamf Admin en liste 200. Cause la plus probable ?',
       options: opt(
         'Filtres OAuth scopes, pagination ou critères de requête v1 incorrects — pas disparition réelle du parc',
-        'Les 200 Mac ont été effacés simultanément, ce qui risque d'effacer les données utilisateur sans sauvegarde préalable',
-        'Jamf Cloud a perdu la licence Apple Push, sans vérifier l'état d'Activation Lock ni contacter le propriétaire',
-        'Les Mac sont devenus des iPhone, contrairement aux bonnes pratiques du support Apple de premier niveau'
+        'Les 200 Mac ont été effacés simultanément, ce qui risque de généraliser un paquet non testé sur tout le parc Mac',
+        'Jamf Cloud a perdu la licence Apple Push, sans vérifier le scope Smart Group ni le dernier check-in MDM de l\'appareil',
+        'Les Mac sont devenus des iPhone, contrairement au modèle pilote puis élargissement recommandé dans Jamf Pro'
       ),
       correctOption: 'a',
       explanation:
@@ -1265,9 +1265,9 @@ export const jamfProFoundationsQuestions: Record<string, SeedQuestion[]> = {
         'Examen blanc Jamf : reporting conformité ISO — 180 Mac, 15 % OS obsolète. Livrable le plus attendu en audit ?',
       options: opt(
         'Export computers-inventory filtré + Smart Group « Non compliant OS » + plan de remédiation daté',
-        'Capture d’écran Jamf Admin sans métadonnées, sans documenter l'intervention dans le système de tickets SAV',
-        'Liste manuelle des prénoms utilisateurs, sans vérifier l'existence d'une sauvegarde iCloud ou locale valide',
-        'Suppression des Mac non conformes sans ticket, ce qui peut engager la responsabilité du technicien sans autorisation'
+        'Capture d’écran Jamf Admin sans métadonnées, sans tracer l\'action dans l\'audit Trail Jamf Pro ou le ticket ITSM',
+        'Liste manuelle des prénoms utilisateurs, sans valider les tokens APNs/ADE/VPP et l\'assignation ABM correspondante',
+        'Suppression des Mac non conformes sans ticket, ce qui expose le tenant à des commandes MDM non maîtrisées sans revue'
       ),
       correctOption: 'a',
       explanation:
@@ -1280,9 +1280,9 @@ export const jamfProFoundationsQuestions: Record<string, SeedQuestion[]> = {
         'Examen blanc : quel objet Jamf Pro alimente le mieux un tableau de bord « appareils non conformes + dernière check-in » ?',
       options: opt(
         'Smart Group basé sur critères OS/conformité + Extension Attributes si besoin',
-        'Compte utilisateur local macOS uniquement, sans identifier la cause racine via l'Activité moniteur ou les logs système',
-        'Profil Wi-Fi iOS envoyé aux Mac, sans consulter les procédures officielles Apple',
-        'Token VPP Apps and Books seul, ce qui risque d'effacer les données utilisateur sans sauvegarde préalable'
+        'Compte utilisateur local macOS uniquement, sans croiser inventaire Jamf, statut MDM et journaux des commandes API',
+        'Profil Wi-Fi iOS envoyé aux Mac, sans consulter l\'historique des policies Jamf ni les logs install.log',
+        'Token VPP Apps and Books seul, ce qui risque de généraliser un paquet non testé sur tout le parc Mac'
       ),
       correctOption: 'a',
       explanation:
@@ -1300,9 +1300,9 @@ export const intuneIosEnrollmentQuestions: Record<string, SeedQuestion[]> = {
         'Quel prérequis relie Apple Business Manager à Microsoft Intune pour les appareils supervisés ?',
       options: opt(
         'Jeton serveur MDM Apple téléchargé depuis ABM et uploadé dans Intune',
-        'Compte Gmail partagé par l’école, contrairement aux bonnes pratiques du support Apple de premier niveau',
-        'Profil Wi-Fi créé à la main sur chaque iPad, ce qui contourne les étapes de diagnostic non destructives recommandées',
-        'Licence Jamf Pro, sans documenter l'intervention dans le système de tickets SAV'
+        'Compte Gmail partagé par l’école, contrairement au déploiement pilote avant assignation « All Users » Intune',
+        'Profil Wi-Fi créé à la main sur chaque iPad, ce qui ignore les rapports d\'état d\'appareil et le dernier check-in Intune',
+        'Licence Jamf Pro, sans documenter le changement dans le journal ITSM du tenant Microsoft 365'
       ),
       correctOption: 'a',
       explanation:
@@ -1314,9 +1314,9 @@ export const intuneIosEnrollmentQuestions: Record<string, SeedQuestion[]> = {
         'Un profil ADE (Enrollment Program) dans Intune permet notamment de :',
       options: opt(
         'Imposer la supervision et personnaliser les étapes du Setup Assistant',
-        'Installer des apps Android, ce qui peut engager la responsabilité du technicien sans autorisation',
-        'Remplacer Entra ID, sans suivre le processus de triage structuré recommandé par Apple',
-        'Désactiver le chiffrement BitLocker, sans identifier la cause racine via l'Activité moniteur ou les logs système'
+        'Installer des apps Android, ce qui peut bloquer Conditional Access sans revue des policies de conformité',
+        'Remplacer Entra ID, sans passer par un groupe pilote avant assignation à toute la flotte',
+        'Désactiver le chiffrement BitLocker, sans consulter les journaux Company Portal ni le statut de sync Entra ID'
       ),
       correctOption: 'a',
       explanation:
@@ -1328,9 +1328,9 @@ export const intuneIosEnrollmentQuestions: Record<string, SeedQuestion[]> = {
         'Où créer le profil d’inscription des appareils iOS pour l’ADE dans le centre d’administration Intune ?',
       options: opt(
         'Appareils > iOS/iPadOS > Profils d’inscription > Profils d’inscription des appareils',
-        'Applications > VPP uniquement, ce qui risque d'effacer les données utilisateur sans sauvegarde préalable',
-        'Rapports > Audit des connexions Entra, sans vérifier l'état d'Activation Lock ni contacter le propriétaire',
-        'Endpoint security > Antivirus Mac, contrairement aux bonnes pratiques du support Apple de premier niveau'
+        'Applications > VPP uniquement, ce qui contourne App Protection et les prérequis de conformité device',
+        'Rapports > Audit des connexions Entra, sans confirmer la synchro ABM et la validité du jeton serveur MDM Apple',
+        'Endpoint security > Antivirus Mac, contrairement au déploiement pilote avant assignation « All Users » Intune'
       ),
       correctOption: 'a',
       explanation:
@@ -1342,9 +1342,9 @@ export const intuneIosEnrollmentQuestions: Record<string, SeedQuestion[]> = {
         '30 iPad neufs sont dans ABM mais n’apparaissent pas dans Intune. Vérification prioritaire ?',
       options: opt(
         'Assignation des appareils au serveur MDM Intune dans ABM et validité du jeton MDM',
-        'Réinstallation de Teams sur le PC admin, sans documenter l'intervention dans le système de tickets SAV',
-        'Changement du fond d’écran, sans vérifier l'existence d'une sauvegarde iCloud ou locale valide',
-        'Création d’un groupe de sécurité Exchange on-prem, ce qui peut engager la responsabilité du technicien sans autorisation'
+        'Réinstallation de Teams sur le PC admin, sans documenter le changement dans le journal ITSM du tenant Microsoft 365',
+        'Changement du fond d’écran, sans valider Company Portal, groupes d\'assignation et profil ADE lié',
+        'Création d’un groupe de sécurité Exchange on-prem, ce qui peut bloquer Conditional Access sans revue des policies de conformité'
       ),
       correctOption: 'a',
       explanation:
@@ -1356,9 +1356,9 @@ export const intuneIosEnrollmentQuestions: Record<string, SeedQuestion[]> = {
         'Piège : un collègue affirme que l’ADE « enrôle automatiquement sans Wi-Fi au premier démarrage ». Quelle nuance est correcte ?',
       options: opt(
         'L’ADE rattache au MDM au Setup Assistant, mais une connexion réseau est requise pour télécharger profils et apps',
-        'Aucun réseau n’est jamais nécessaire sur iOS, sans identifier la cause racine via l'Activité moniteur ou les logs système',
-        'L’ADE fonctionne uniquement sur macOS, sans consulter les procédures officielles Apple',
-        'Il faut une carte SIM Android, ce qui risque d'effacer les données utilisateur sans sauvegarde préalable'
+        'Aucun réseau n’est jamais nécessaire sur iOS, sans consulter les journaux Company Portal ni le statut de sync Entra ID',
+        'L’ADE fonctionne uniquement sur macOS, sans consulter l\'assignation de stratégie dans le portail Intune admin',
+        'Il faut une carte SIM Android, ce qui contourne App Protection et les prérequis de conformité device'
       ),
       correctOption: 'a',
       explanation:
@@ -1371,7 +1371,7 @@ export const intuneIosEnrollmentQuestions: Record<string, SeedQuestion[]> = {
       options: opt(
         'Le Setup Assistant applique le profil ADE et inscrit l’appareil dans Intune',
         'L’iPad reste non géré jusqu’à une inscription manuelle Company Portal obligatoire',
-        'Seul le compte Apple ID personnel est créé, ce qui contourne les étapes de diagnostic non destructives recommandées',
+        'Seul le compte Apple ID personnel est créé, ce qui ignore les rapports d\'état d\'appareil et le dernier check-in Intune',
         'Intune désinstalle automatiquement toutes les apps'
       ),
       correctOption: 'a',
@@ -1384,9 +1384,9 @@ export const intuneIosEnrollmentQuestions: Record<string, SeedQuestion[]> = {
         'Un profil ADE Intune doit masquer l’écran « Localiser mon iPhone » au Setup Assistant. Où configurer cette option ?',
       options: opt(
         'Dans le profil d’inscription des appareils ADE — paramètres Setup Assistant',
-        'Dans une politique de conformité iOS uniquement, ce qui peut engager la responsabilité du technicien sans autorisation',
+        'Dans une politique de conformité iOS uniquement, ce qui peut bloquer Conditional Access sans revue des policies de conformité',
         'Dans le portail Apple ID personnel de l’utilisateur',
-        'Via une app Jamf Self Service, sans identifier la cause racine via l'Activité moniteur ou les logs système'
+        'Via une app Jamf Self Service, sans consulter les journaux Company Portal ni le statut de sync Entra ID'
       ),
       correctOption: 'a',
       explanation:
@@ -1400,7 +1400,7 @@ export const intuneIosEnrollmentQuestions: Record<string, SeedQuestion[]> = {
         'Perte de synchronisation ABM et blocage des nouveaux enrôlements ADE',
         'Suppression automatique de tous les profils Wi-Fi iOS',
         'Désactivation du chiffrement BitLocker sur les PC',
-        'Réinitialisation des mots de passe Entra ID, contrairement aux bonnes pratiques du support Apple de premier niveau'
+        'Réinitialisation des mots de passe Entra ID, contrairement au déploiement pilote avant assignation « All Users » Intune'
       ),
       correctOption: 'a',
       explanation:
@@ -1413,9 +1413,9 @@ export const intuneIosEnrollmentQuestions: Record<string, SeedQuestion[]> = {
         'Quelle différence entre certificat Apple MDM Push Intune et Enrollment Program Token ABM ?',
       options: opt(
         'Push cert autorise commandes MDM via APNs ; token ABM synchronise inventaire et ADE entre Apple et Intune',
-        'Les deux fichiers sont identiques et interchangeables, sans documenter l'intervention dans le système de tickets SAV',
-        'Token ABM remplace Conditional Access, sans vérifier l'existence d'une sauvegarde iCloud ou locale valide',
-        'Push cert sert uniquement à BitLocker, ce qui peut engager la responsabilité du technicien sans autorisation'
+        'Les deux fichiers sont identiques et interchangeables, sans documenter le changement dans le journal ITSM du tenant Microsoft 365',
+        'Token ABM remplace Conditional Access, sans valider Company Portal, groupes d\'assignation et profil ADE lié',
+        'Push cert sert uniquement à BitLocker, ce qui peut bloquer Conditional Access sans revue des policies de conformité'
       ),
       correctOption: 'a',
       explanation:
@@ -1427,9 +1427,9 @@ export const intuneIosEnrollmentQuestions: Record<string, SeedQuestion[]> = {
         '200 iPhone assignés Intune dans ABM ; Setup Assistant boucle sur « Unable to activate ». Piste prioritaire ?',
       options: opt(
         'Connectivité réseau/DNS vers Apple et Microsoft, date/heure, validité certificat Push et token ABM',
-        'Révoquer toutes licences M365, sans identifier la cause racine via l'Activité moniteur ou les logs système',
-        'Installer Jamf Pro en parallèle sans config, sans consulter les procédures officielles Apple',
-        'Désactiver supervision dans ABM manuellement, ce qui risque d'effacer les données utilisateur sans sauvegarde préalable'
+        'Révoquer toutes licences M365, sans consulter les journaux Company Portal ni le statut de sync Entra ID',
+        'Installer Jamf Pro en parallèle sans config, sans consulter l\'assignation de stratégie dans le portail Intune admin',
+        'Désactiver supervision dans ABM manuellement, ce qui contourne App Protection et les prérequis de conformité device'
       ),
       correctOption: 'a',
       explanation:
@@ -1442,9 +1442,9 @@ export const intuneIosEnrollmentQuestions: Record<string, SeedQuestion[]> = {
       prompt: 'À quoi sert une politique de conformité Intune pour iOS/iPadOS ?',
       options: opt(
         'Évaluer PIN, version OS, jailbreak, etc., avant d’accorder l’accès aux ressources',
-        'Remplacer Apple Business Manager, contrairement aux bonnes pratiques du support Apple de premier niveau',
-        'Publier des apps sur l’App Store public, ce qui contourne les étapes de diagnostic non destructives recommandées',
-        'Configurer un domaine DNS public, sans documenter l'intervention dans le système de tickets SAV'
+        'Remplacer Apple Business Manager, contrairement au déploiement pilote avant assignation « All Users » Intune',
+        'Publier des apps sur l’App Store public, ce qui ignore les rapports d\'état d\'appareil et le dernier check-in Intune',
+        'Configurer un domaine DNS public, sans documenter le changement dans le journal ITSM du tenant Microsoft 365'
       ),
       correctOption: 'a',
       explanation:
@@ -1456,9 +1456,9 @@ export const intuneIosEnrollmentQuestions: Record<string, SeedQuestion[]> = {
         'Un iPhone est « Non conforme » et perd l’accès Outlook. CA exige appareil conforme. Première étape admin ?',
       options: opt(
         'Ouvrir le rapport de conformité Intune pour l’appareil et identifier la règle en échec',
-        'Supprimer le tenant Entra ID, ce qui peut engager la responsabilité du technicien sans autorisation',
-        'Révoquer toutes les licences Microsoft 365, sans suivre le processus de triage structuré recommandé par Apple',
-        'Désactiver le Wi-Fi entreprise globalement, sans identifier la cause racine via l'Activité moniteur ou les logs système'
+        'Supprimer le tenant Entra ID, ce qui peut bloquer Conditional Access sans revue des policies de conformité',
+        'Révoquer toutes les licences Microsoft 365, sans passer par un groupe pilote avant assignation à toute la flotte',
+        'Désactiver le Wi-Fi entreprise globalement, sans consulter les journaux Company Portal ni le statut de sync Entra ID'
       ),
       correctOption: 'a',
       explanation:
@@ -1471,7 +1471,7 @@ export const intuneIosEnrollmentQuestions: Record<string, SeedQuestion[]> = {
         'Compromission de l’appareil (Jailbroken)',
         'Espace de stockage faible uniquement',
         'Version du navigateur Safari',
-        'Langue du clavier, contrairement aux bonnes pratiques du support Apple de premier niveau'
+        'Langue du clavier, contrairement au déploiement pilote avant assignation « All Users » Intune'
       ),
       correctOption: 'a',
       explanation:
@@ -1483,9 +1483,9 @@ export const intuneIosEnrollmentQuestions: Record<string, SeedQuestion[]> = {
         'Un iPad n’a pas de code d’accès alors que la politique exige un PIN à 6 chiffres. Action Intune adaptée ?',
       options: opt(
         'Marquer non conforme, notification utilisateur, délai de grâce puis restriction via CA',
-        'Effacer le tenant, sans documenter l'intervention dans le système de tickets SAV',
-        'Désinscrire tous les appareils Android, sans vérifier l'existence d'une sauvegarde iCloud ou locale valide',
-        'Ignorer car l’iPad est supervisé, ce qui peut engager la responsabilité du technicien sans autorisation'
+        'Effacer le tenant, sans documenter le changement dans le journal ITSM du tenant Microsoft 365',
+        'Désinscrire tous les appareils Android, sans valider Company Portal, groupes d\'assignation et profil ADE lié',
+        'Ignorer car l’iPad est supervisé, ce qui peut bloquer Conditional Access sans revue des policies de conformité'
       ),
       correctOption: 'a',
       explanation:
@@ -1497,9 +1497,9 @@ export const intuneIosEnrollmentQuestions: Record<string, SeedQuestion[]> = {
         'Piège : la conformité affiche « En attente » depuis 48 h sur un iPhone. Cause probable ?',
       options: opt(
         'Appareil hors ligne, pas de check-in Intune, ou stratégie non assignée au bon groupe',
-        'Le PIN est trop long, sans identifier la cause racine via l'Activité moniteur ou les logs système',
-        'L’utilisateur a trop de points sur le leaderboard, sans consulter les procédures officielles Apple',
-        'Le certificat APNs Jamf a expiré, ce qui risque d'effacer les données utilisateur sans sauvegarde préalable'
+        'Le PIN est trop long, sans consulter les journaux Company Portal ni le statut de sync Entra ID',
+        'L’utilisateur a trop de points sur le leaderboard, sans consulter l\'assignation de stratégie dans le portail Intune admin',
+        'Le certificat APNs Jamf a expiré, ce qui contourne App Protection et les prérequis de conformité device'
       ),
       correctOption: 'a',
       explanation:
@@ -1511,9 +1511,9 @@ export const intuneIosEnrollmentQuestions: Record<string, SeedQuestion[]> = {
         'Quelle action destructive Intune peut appliquer après plusieurs jours de non-conformité (si configurée) ?',
       options: opt(
         'Effacement sélectif ou complet (retrait) selon les paramètres de la politique',
-        'Mise à jour automatique de macOS sur PC, contrairement aux bonnes pratiques du support Apple de premier niveau',
-        'Création d’un compte admin local sur le Mac, ce qui contourne les étapes de diagnostic non destructives recommandées',
-        'Installation de Chrome OS, sans documenter l'intervention dans le système de tickets SAV'
+        'Mise à jour automatique de macOS sur PC, contrairement au déploiement pilote avant assignation « All Users » Intune',
+        'Création d’un compte admin local sur le Mac, ce qui ignore les rapports d\'état d\'appareil et le dernier check-in Intune',
+        'Installation de Chrome OS, sans documenter le changement dans le journal ITSM du tenant Microsoft 365'
       ),
       correctOption: 'a',
       explanation:
@@ -1525,9 +1525,9 @@ export const intuneIosEnrollmentQuestions: Record<string, SeedQuestion[]> = {
         'Une politique de conformité Intune exige iOS 17 minimum. Un iPhone 16 est bloqué par Conditional Access. Comment prioriser la remédiation ?',
       options: opt(
         'Identifier la règle OS en échec dans le rapport conformité, notifier l’utilisateur, planifier mise à jour iOS avant expiration du délai de grâce',
-        'Supprimer immédiatement le compte Entra ID de l’utilisateur, ce qui peut engager la responsabilité du technicien sans autorisation',
-        'Désactiver toutes les politiques de conformité du tenant, sans suivre le processus de triage structuré recommandé par Apple',
-        'Révoquer le certificat APNs Jamf (hors périmètre Intune), sans identifier la cause racine via l'Activité moniteur ou les logs système'
+        'Supprimer immédiatement le compte Entra ID de l’utilisateur, ce qui peut bloquer Conditional Access sans revue des policies de conformité',
+        'Désactiver toutes les politiques de conformité du tenant, sans passer par un groupe pilote avant assignation à toute la flotte',
+        'Révoquer le certificat APNs Jamf (hors périmètre Intune), sans consulter les journaux Company Portal ni le statut de sync Entra ID'
       ),
       correctOption: 'a',
       explanation:
@@ -1540,8 +1540,8 @@ export const intuneIosEnrollmentQuestions: Record<string, SeedQuestion[]> = {
       options: opt(
         'La conformité Intune alimente le signal « appareil conforme » utilisé par les stratégies CA',
         'Conditional Access remplace entièrement les politiques de conformité',
-        'Les deux sont indépendants et ne partagent aucun état, sans vérifier l'état d'Activation Lock ni contacter le propriétaire',
-        'Conditional Access ne s’applique qu’aux appareils Android, contrairement aux bonnes pratiques du support Apple de premier niveau'
+        'Les deux sont indépendants et ne partagent aucun état, sans confirmer la synchro ABM et la validité du jeton serveur MDM Apple',
+        'Conditional Access ne s’applique qu’aux appareils Android, contrairement au déploiement pilote avant assignation « All Users » Intune'
       ),
       correctOption: 'a',
       explanation:
@@ -1554,9 +1554,9 @@ export const intuneIosEnrollmentQuestions: Record<string, SeedQuestion[]> = {
         'iPhone jailbreaké détecté par conformité Intune à 09h00. Action alignée Zero Trust ?',
       options: opt(
         'Marquer non conforme immédiatement, bloquer CA M365, ticket sécurité, envisager wipe selon politique',
-        'Attendre 30 jours de grace period standard OS, sans documenter l'intervention dans le système de tickets SAV',
-        'Ignorer car l’utilisateur est direction, sans vérifier l'existence d'une sauvegarde iCloud ou locale valide',
-        'Désactiver toutes politiques conformité du tenant, ce qui peut engager la responsabilité du technicien sans autorisation'
+        'Attendre 30 jours de grace period standard OS, sans documenter le changement dans le journal ITSM du tenant Microsoft 365',
+        'Ignorer car l’utilisateur est direction, sans valider Company Portal, groupes d\'assignation et profil ADE lié',
+        'Désactiver toutes politiques conformité du tenant, ce qui peut bloquer Conditional Access sans revue des policies de conformité'
       ),
       correctOption: 'a',
       explanation:
@@ -1568,9 +1568,9 @@ export const intuneIosEnrollmentQuestions: Record<string, SeedQuestion[]> = {
         'Quelle action Intune « Actions for noncompliance » permet un effacement factory sur iPhone corporate après escalade ?',
       options: opt(
         'Retire / Remote wipe (full wipe) configuré après délais progressifs',
-        'Uniquement changement fond d’écran, sans identifier la cause racine via l'Activité moniteur ou les logs système',
+        'Uniquement changement fond d’écran, sans consulter les journaux Company Portal ni le statut de sync Entra ID',
         'Réinitialisation mot de passe Entra automatique',
-        'Installation Chrome OS Flex, ce qui risque d'effacer les données utilisateur sans sauvegarde préalable'
+        'Installation Chrome OS Flex, ce qui contourne App Protection et les prérequis de conformité device'
       ),
       correctOption: 'a',
       explanation:
@@ -1583,9 +1583,9 @@ export const intuneIosEnrollmentQuestions: Record<string, SeedQuestion[]> = {
       prompt: 'Quelle différence clé entre MAM (App Protection) et MDM complet sur iOS ?',
       options: opt(
         'MAM protège les données dans les apps M365 sans contrôle total de l’appareil',
-        'MAM remplace le certificat Push Apple, contrairement aux bonnes pratiques du support Apple de premier niveau',
-        'MAM ne s’applique qu’aux PC Windows, ce qui contourne les étapes de diagnostic non destructives recommandées',
-        'MAM empêche toute connexion Internet, sans documenter l'intervention dans le système de tickets SAV'
+        'MAM remplace le certificat Push Apple, contrairement au déploiement pilote avant assignation « All Users » Intune',
+        'MAM ne s’applique qu’aux PC Windows, ce qui ignore les rapports d\'état d\'appareil et le dernier check-in Intune',
+        'MAM empêche toute connexion Internet, sans documenter le changement dans le journal ITSM du tenant Microsoft 365'
       ),
       correctOption: 'a',
       explanation:
@@ -1597,9 +1597,9 @@ export const intuneIosEnrollmentQuestions: Record<string, SeedQuestion[]> = {
         'Direction exige que seuls Outlook/Teams « managés » accèdent à Exchange Online. Quel duo configurer ?',
       options: opt(
         'Politique App Protection iOS + Conditional Access « apps approuvées / exiger appareil conforme »',
-        'Profil Wi-Fi guest uniquement, ce qui peut engager la responsabilité du technicien sans autorisation',
-        'Désactiver MFA, sans suivre le processus de triage structuré recommandé par Apple',
-        'Partager le mot de passe service dans Teams, sans identifier la cause racine via l'Activité moniteur ou les logs système'
+        'Profil Wi-Fi guest uniquement, ce qui peut bloquer Conditional Access sans revue des policies de conformité',
+        'Désactiver MFA, sans passer par un groupe pilote avant assignation à toute la flotte',
+        'Partager le mot de passe service dans Teams, sans consulter les journaux Company Portal ni le statut de sync Entra ID'
       ),
       correctOption: 'a',
       explanation:
@@ -1611,9 +1611,9 @@ export const intuneIosEnrollmentQuestions: Record<string, SeedQuestion[]> = {
         'Quel paramètre App Protection limite le copier-coller de données professionnelles vers Notes/WhatsApp personnels ?',
       options: opt(
         'Transfert de données restreint (Restrict cut/copy/paste between apps)',
-        'Mode avion obligatoire, ce qui risque d'effacer les données utilisateur sans sauvegarde préalable',
-        'Rotation d’écran forcée, sans vérifier l'état d'Activation Lock ni contacter le propriétaire',
-        'Désactivation du Bluetooth, contrairement aux bonnes pratiques du support Apple de premier niveau'
+        'Mode avion obligatoire, ce qui contourne App Protection et les prérequis de conformité device',
+        'Rotation d’écran forcée, sans confirmer la synchro ABM et la validité du jeton serveur MDM Apple',
+        'Désactivation du Bluetooth, contrairement au déploiement pilote avant assignation « All Users » Intune'
       ),
       correctOption: 'a',
       explanation:
@@ -1625,9 +1625,9 @@ export const intuneIosEnrollmentQuestions: Record<string, SeedQuestion[]> = {
         'Un consultant BYOD ouvre Outlook après inscription MAM. Quelle exigence renforce l’accès au contenu ?',
       options: opt(
         'PIN ou biométrie au niveau application avant affichage des mails',
-        'Désinstallation de Safari, sans documenter l'intervention dans le système de tickets SAV',
+        'Désinstallation de Safari, sans documenter le changement dans le journal ITSM du tenant Microsoft 365',
         'Compte Apple ID de l’entreprise sur l’App Store familial',
-        'Jailbreak obligatoire, ce qui peut engager la responsabilité du technicien sans autorisation'
+        'Jailbreak obligatoire, ce qui peut bloquer Conditional Access sans revue des policies de conformité'
       ),
       correctOption: 'a',
       explanation:
@@ -1639,9 +1639,9 @@ export const intuneIosEnrollmentQuestions: Record<string, SeedQuestion[]> = {
         'Piège : Conditional Access bloque un iPhone « conforme Intune » mais MAM non appliqué à Outlook. Cause fréquente ?',
       options: opt(
         'Politique App Protection non assignée au utilisateur/app ou client Outlook non supporté',
-        'Le Wi-Fi 6 est trop rapide, sans identifier la cause racine via l'Activité moniteur ou les logs système',
-        'L’iPhone est supervisé, sans consulter les procédures officielles Apple',
-        'Le certificat APNs est renouvelé, ce qui risque d'effacer les données utilisateur sans sauvegarde préalable'
+        'Le Wi-Fi 6 est trop rapide, sans consulter les journaux Company Portal ni le statut de sync Entra ID',
+        'L’iPhone est supervisé, sans consulter l\'assignation de stratégie dans le portail Intune admin',
+        'Le certificat APNs est renouvelé, ce qui contourne App Protection et les prérequis de conformité device'
       ),
       correctOption: 'a',
       explanation:
@@ -1653,9 +1653,9 @@ export const intuneIosEnrollmentQuestions: Record<string, SeedQuestion[]> = {
         'Quel signal Entra ID utilise Conditional Access pour un appareil iOS géré par Intune ?',
       options: opt(
         'État de conformité / inscription Intune remonté dans Entra',
-        'Couleur du boîtier, contrairement aux bonnes pratiques du support Apple de premier niveau',
-        'Nombre de photos iCloud, ce qui contourne les étapes de diagnostic non destructives recommandées',
-        'Version de Jamf Pro, sans documenter l'intervention dans le système de tickets SAV'
+        'Couleur du boîtier, contrairement au déploiement pilote avant assignation « All Users » Intune',
+        'Nombre de photos iCloud, ce qui ignore les rapports d\'état d\'appareil et le dernier check-in Intune',
+        'Version de Jamf Pro, sans documenter le changement dans le journal ITSM du tenant Microsoft 365'
       ),
       correctOption: 'a',
       explanation:
@@ -1667,9 +1667,9 @@ export const intuneIosEnrollmentQuestions: Record<string, SeedQuestion[]> = {
         'Un utilisateur BYOD accède à Outlook sans PIN applicatif malgré une politique App Protection assignée. Où investiguer ?',
       options: opt(
         'Assignation de la politique MAM au bon groupe utilisateur, état d’enregistrement Intune MAM dans Company Portal, version Outlook supportée',
-        'Réinstallation de BitLocker sur le PC de l’admin, ce qui peut engager la responsabilité du technicien sans autorisation',
-        'Changement du certificat Push Apple dans Jamf, sans suivre le processus de triage structuré recommandé par Apple',
-        'Désactivation du MFA Entra ID globalement, sans identifier la cause racine via l'Activité moniteur ou les logs système'
+        'Réinstallation de BitLocker sur le PC de l’admin, ce qui peut bloquer Conditional Access sans revue des policies de conformité',
+        'Changement du certificat Push Apple dans Jamf, sans passer par un groupe pilote avant assignation à toute la flotte',
+        'Désactivation du MFA Entra ID globalement, sans consulter les journaux Company Portal ni le statut de sync Entra ID'
       ),
       correctOption: 'a',
       explanation:
@@ -1681,8 +1681,8 @@ export const intuneIosEnrollmentQuestions: Record<string, SeedQuestion[]> = {
         'Quelle stratégie Conditional Access complète une politique App Protection pour Outlook sur iPhone BYOD ?',
       options: opt(
         'Exiger une app protégée par Intune ou un appareil conforme pour accéder à Exchange Online',
-        'Autoriser toutes les apps mail tierces sans condition, ce qui risque d'effacer les données utilisateur sans sauvegarde préalable',
-        'Bloquer uniquement les connexions depuis la France, sans vérifier l'état d'Activation Lock ni contacter le propriétaire',
+        'Autoriser toutes les apps mail tierces sans condition, ce qui contourne App Protection et les prérequis de conformité device',
+        'Bloquer uniquement les connexions depuis la France, sans confirmer la synchro ABM et la validité du jeton serveur MDM Apple',
         'Exiger un compte Apple ID géré par l’entreprise sur l’App Store'
       ),
       correctOption: 'a',
@@ -1696,9 +1696,9 @@ export const intuneIosEnrollmentQuestions: Record<string, SeedQuestion[]> = {
         'BYOD : Outlook accède au mail malgré politique App Protection PIN requise. Investigation Intune ?',
       options: opt(
         'Assignation politique MAM au bon groupe utilisateur, app cible Outlook, version app supportée, état enrollment MAM',
-        'Réinstaller BitLocker sur PC admin, sans documenter l'intervention dans le système de tickets SAV',
-        'Renouveler certificat Push Jamf, sans vérifier l'existence d'une sauvegarde iCloud ou locale valide',
-        'Désactiver MFA globalement, ce qui peut engager la responsabilité du technicien sans autorisation'
+        'Réinstaller BitLocker sur PC admin, sans documenter le changement dans le journal ITSM du tenant Microsoft 365',
+        'Renouveler certificat Push Jamf, sans valider Company Portal, groupes d\'assignation et profil ADE lié',
+        'Désactiver MFA globalement, ce qui peut bloquer Conditional Access sans revue des policies de conformité'
       ),
       correctOption: 'a',
       explanation:
@@ -1710,9 +1710,9 @@ export const intuneIosEnrollmentQuestions: Record<string, SeedQuestion[]> = {
         'Quelle combinaison sécurise Outlook/Teams sur iPhone COPE supervisé Intune (200 devices) ?',
       options: opt(
         'Conformité device + App Protection + CA exigeant appareil conforme ET/OU app protégée selon modèle',
-        'Wi-Fi guest seul, sans identifier la cause racine via l'Activité moniteur ou les logs système',
-        'Désactivation Conditional Access pour exécutifs, sans consulter les procédures officielles Apple',
-        'Compte Apple ID partagé entre tous les iPhone, ce qui risque d'effacer les données utilisateur sans sauvegarde préalable'
+        'Wi-Fi guest seul, sans consulter les journaux Company Portal ni le statut de sync Entra ID',
+        'Désactivation Conditional Access pour exécutifs, sans consulter l\'assignation de stratégie dans le portail Intune admin',
+        'Compte Apple ID partagé entre tous les iPhone, ce qui contourne App Protection et les prérequis de conformité device'
       ),
       correctOption: 'a',
       explanation:
@@ -1726,8 +1726,8 @@ export const intuneIosEnrollmentQuestions: Record<string, SeedQuestion[]> = {
       options: opt(
         'Token VPP (Apps and Books) — en plus du Push cert et du Enrollment Program Token',
         'Uniquement le certificat Push MDM suffit pour toutes les apps',
-        'Token Exchange Online, ce qui contourne les étapes de diagnostic non destructives recommandées',
-        'Clé BitLocker recovery, sans documenter l'intervention dans le système de tickets SAV'
+        'Token Exchange Online, ce qui ignore les rapports d\'état d\'appareil et le dernier check-in Intune',
+        'Clé BitLocker recovery, sans documenter le changement dans le journal ITSM du tenant Microsoft 365'
       ),
       correctOption: 'a',
       explanation:
@@ -1739,9 +1739,9 @@ export const intuneIosEnrollmentQuestions: Record<string, SeedQuestion[]> = {
         'Où assigner une app iOS store achetée via ABM en mode Required à 200 iPhone corporate ?',
       options: opt(
         'Intune → Apps → iOS app → Assignments → Required sur groupe dynamique iOS corporate',
-        'Apple ID personnel de chaque employé dans App Store, ce qui peut engager la responsabilité du technicien sans autorisation',
-        'Profil Wi-Fi uniquement, sans suivre le processus de triage structuré recommandé par Apple',
-        'Conditional Access sans app assignment, sans identifier la cause racine via l'Activité moniteur ou les logs système'
+        'Apple ID personnel de chaque employé dans App Store, ce qui peut bloquer Conditional Access sans revue des policies de conformité',
+        'Profil Wi-Fi uniquement, sans passer par un groupe pilote avant assignation à toute la flotte',
+        'Conditional Access sans app assignment, sans consulter les journaux Company Portal ni le statut de sync Entra ID'
       ),
       correctOption: 'a',
       explanation:
@@ -1766,9 +1766,9 @@ export const intuneIosEnrollmentQuestions: Record<string, SeedQuestion[]> = {
         '30 iPhone affichent Teams « Pending install » depuis 3 h sur le même site Wi-Fi. Première piste ?',
       options: opt(
         'Filtrage réseau/proxy vers CDN Apple ou check-in MDM stale — avant wipe',
-        'Révoquer toutes licences M365, sans documenter l'intervention dans le système de tickets SAV',
-        'Changer le modèle iPhone, sans vérifier l'existence d'une sauvegarde iCloud ou locale valide',
-        'Désactiver supervision ABM, ce qui peut engager la responsabilité du technicien sans autorisation'
+        'Révoquer toutes licences M365, sans documenter le changement dans le journal ITSM du tenant Microsoft 365',
+        'Changer le modèle iPhone, sans valider Company Portal, groupes d\'assignation et profil ADE lié',
+        'Désactiver supervision ABM, ce qui peut bloquer Conditional Access sans revue des policies de conformité'
       ),
       correctOption: 'a',
       explanation:
@@ -1780,9 +1780,9 @@ export const intuneIosEnrollmentQuestions: Record<string, SeedQuestion[]> = {
         'Une app métier B2B privée doit être déployée sur iPhone supervisés. Flux correct ?',
       options: opt(
         'App accordée dans ABM → sync VPP Intune → assignation Required au groupe cible',
-        'Email IPA non signé aux utilisateurs, sans identifier la cause racine via l'Activité moniteur ou les logs système',
+        'Email IPA non signé aux utilisateurs, sans consulter les journaux Company Portal ni le statut de sync Entra ID',
         'Installation via TestFlight public sans gouvernance',
-        'SideLoad depuis site web inconnu, ce qui risque d'effacer les données utilisateur sans sauvegarde préalable'
+        'SideLoad depuis site web inconnu, ce qui contourne App Protection et les prérequis de conformité device'
       ),
       correctOption: 'a',
       explanation:
@@ -1793,9 +1793,9 @@ export const intuneIosEnrollmentQuestions: Record<string, SeedQuestion[]> = {
       prompt: 'Où consulter le statut d’installation des apps iOS déployées par Intune ?',
       options: opt(
         'Apps → Monitor → App install status (par app et par appareil)',
-        'Entra ID → Sign-in logs uniquement, contrairement aux bonnes pratiques du support Apple de premier niveau',
-        'Apple Configurator sur Windows, ce qui contourne les étapes de diagnostic non destructives recommandées',
-        'Jamf Pro Server Settings, sans documenter l'intervention dans le système de tickets SAV'
+        'Entra ID → Sign-in logs uniquement, contrairement au déploiement pilote avant assignation « All Users » Intune',
+        'Apple Configurator sur Windows, ce qui ignore les rapports d\'état d\'appareil et le dernier check-in Intune',
+        'Jamf Pro Server Settings, sans documenter le changement dans le journal ITSM du tenant Microsoft 365'
       ),
       correctOption: 'a',
       explanation:
@@ -1807,9 +1807,9 @@ export const intuneIosEnrollmentQuestions: Record<string, SeedQuestion[]> = {
         'Piège : toute la flotte échoue à installer une app VPP depuis hier soir. Cause la plus probable ?',
       options: opt(
         'Token VPP expiré, app retirée du catalogue ABM ou certificat Push expiré',
-        'Un seul iPhone a une coque incompatible, ce qui peut engager la responsabilité du technicien sans autorisation',
-        'Mode sombre iOS désactivé, sans suivre le processus de triage structuré recommandé par Apple',
-        'Mot de passe PIN trop long, sans identifier la cause racine via l'Activité moniteur ou les logs système'
+        'Un seul iPhone a une coque incompatible, ce qui peut bloquer Conditional Access sans revue des policies de conformité',
+        'Mode sombre iOS désactivé, sans passer par un groupe pilote avant assignation à toute la flotte',
+        'Mot de passe PIN trop long, sans consulter les journaux Company Portal ni le statut de sync Entra ID'
       ),
       correctOption: 'a',
       explanation:
@@ -1821,9 +1821,9 @@ export const intuneIosEnrollmentQuestions: Record<string, SeedQuestion[]> = {
         'App LOB iOS interne (.ipa) — prérequis avant assignation Required sur pilote ?',
       options: opt(
         'IPA signé entreprise, espace disque suffisant, iOS version compatible, profils réseau/SCEP si app interne',
-        'Jailbreak activé sur iPhone, ce qui risque d'effacer les données utilisateur sans sauvegarde préalable',
-        'Compte Apple ID enfant, sans vérifier l'état d'Activation Lock ni contacter le propriétaire',
-        'Désinstallation Intune Company Portal obligatoire, contrairement aux bonnes pratiques du support Apple de premier niveau'
+        'Jailbreak activé sur iPhone, ce qui contourne App Protection et les prérequis de conformité device',
+        'Compte Apple ID enfant, sans confirmer la synchro ABM et la validité du jeton serveur MDM Apple',
+        'Désinstallation Intune Company Portal obligatoire, contrairement au déploiement pilote avant assignation « All Users » Intune'
       ),
       correctOption: 'a',
       explanation:
@@ -1834,9 +1834,9 @@ export const intuneIosEnrollmentQuestions: Record<string, SeedQuestion[]> = {
       prompt: 'Différence entre app Required et Available dans Intune pour iOS ?',
       options: opt(
         'Required = push auto ; Available = install manuelle via Company Portal / portail apps',
-        'Available force wipe immédiat, sans documenter l'intervention dans le système de tickets SAV',
-        'Required ne fonctionne que sur Mac, sans vérifier l'existence d'une sauvegarde iCloud ou locale valide',
-        'Aucune différence, ce qui peut engager la responsabilité du technicien sans autorisation'
+        'Available force wipe immédiat, sans documenter le changement dans le journal ITSM du tenant Microsoft 365',
+        'Required ne fonctionne que sur Mac, sans valider Company Portal, groupes d\'assignation et profil ADE lié',
+        'Aucune différence, ce qui peut bloquer Conditional Access sans revue des policies de conformité'
       ),
       correctOption: 'a',
       explanation:
@@ -1848,9 +1848,9 @@ export const intuneIosEnrollmentQuestions: Record<string, SeedQuestion[]> = {
         'Réception 200 iPhone ABM — checklist apps avant J-Day. Élément indispensable ?',
       options: opt(
         'Tokens Push + ADE + VPP valides, licences suffisantes, pilote 10 devices Installed, flux réseau Apple OK',
-        'Apple ID personnel partagé pour toute l’entreprise, sans identifier la cause racine via l'Activité moniteur ou les logs système',
-        'Désactiver Conditional Access, sans consulter les procédures officielles Apple',
-        'Retirer profil SCEP pour accélérer, ce qui risque d'effacer les données utilisateur sans sauvegarde préalable'
+        'Apple ID personnel partagé pour toute l’entreprise, sans consulter les journaux Company Portal ni le statut de sync Entra ID',
+        'Désactiver Conditional Access, sans consulter l\'assignation de stratégie dans le portail Intune admin',
+        'Retirer profil SCEP pour accélérer, ce qui contourne App Protection et les prérequis de conformité device'
       ),
       correctOption: 'a',
       explanation:
@@ -1862,9 +1862,9 @@ export const intuneIosEnrollmentQuestions: Record<string, SeedQuestion[]> = {
         'Examen MD-102 / Intune mobile : avant J-Day, 200 iPhone COPE doivent recevoir Teams Required + CA « appareil conforme ». Quel enchaînement valide le runbook Zero Trust ?',
       options: opt(
         'Tokens Push + ADE + VPP valides, conformité device testée sur pilote, app Required assignée, CA appliquée, install status Installed sur échantillon',
-        'Assigner Teams Available uniquement et désactiver CA pour accélérer, contrairement aux bonnes pratiques du support Apple de premier niveau',
-        'Apple ID partagé pour télécharger Teams manuellement, ce qui contourne les étapes de diagnostic non destructives recommandées',
-        'Retirer profil SCEP pour simplifier le réseau, sans documenter l'intervention dans le système de tickets SAV'
+        'Assigner Teams Available uniquement et désactiver CA pour accélérer, contrairement au déploiement pilote avant assignation « All Users » Intune',
+        'Apple ID partagé pour télécharger Teams manuellement, ce qui ignore les rapports d\'état d\'appareil et le dernier check-in Intune',
+        'Retirer profil SCEP pour simplifier le réseau, sans documenter le changement dans le journal ITSM du tenant Microsoft 365'
       ),
       correctOption: 'a',
       explanation:
@@ -1877,9 +1877,9 @@ export const intuneIosEnrollmentQuestions: Record<string, SeedQuestion[]> = {
         'Piège examen Intune : 40 iPhone affichent « Pending install » Teams alors que le token VPP vient d’être renouvelé hier. Première action conforme ?',
       options: opt(
         'Confirmer sync token VPP dans Intune + ABM, licences disponibles, connectivité CDN Apple sur site, puis repush sur Smart Group pilote',
-        'Wipe immédiat des 40 appareils, ce qui peut engager la responsabilité du technicien sans autorisation',
-        'Désinstaller Company Portal sur toute la flotte, sans suivre le processus de triage structuré recommandé par Apple',
-        'Basculer tous les iPhone en mode BYOD sans MAM, sans identifier la cause racine via l'Activité moniteur ou les logs système'
+        'Wipe immédiat des 40 appareils, ce qui peut bloquer Conditional Access sans revue des policies de conformité',
+        'Désinstaller Company Portal sur toute la flotte, sans passer par un groupe pilote avant assignation à toute la flotte',
+        'Basculer tous les iPhone en mode BYOD sans MAM, sans consulter les journaux Company Portal ni le statut de sync Entra ID'
       ),
       correctOption: 'a',
       explanation:
@@ -1892,9 +1892,9 @@ export const intuneIosEnrollmentQuestions: Record<string, SeedQuestion[]> = {
         'Examen blanc Intune : comité audit demande preuve que 95 % des iPhone ont l’app métier Required. Indicateur le plus fiable ?',
       options: opt(
         'Rapport install status Intune (Installed vs Pending/Failed) sur groupe dynamique corporate',
-        'Nombre de tickets helpdesk ouverts, ce qui risque d'effacer les données utilisateur sans sauvegarde préalable',
-        'Taille moyenne des photos iCloud, sans vérifier l'état d'Activation Lock ni contacter le propriétaire',
-        'Version Safari sur Mac admin, contrairement aux bonnes pratiques du support Apple de premier niveau'
+        'Nombre de tickets helpdesk ouverts, ce qui contourne App Protection et les prérequis de conformité device',
+        'Taille moyenne des photos iCloud, sans confirmer la synchro ABM et la validité du jeton serveur MDM Apple',
+        'Version Safari sur Mac admin, contrairement au déploiement pilote avant assignation « All Users » Intune'
       ),
       correctOption: 'a',
       explanation:
@@ -1907,9 +1907,9 @@ export const intuneIosEnrollmentQuestions: Record<string, SeedQuestion[]> = {
         'Examen blanc : quel triplet d’artefacts ABM doit être valide avant un déploiement VPP Required massif Intune ?',
       options: opt(
         'Push MDM + Enrollment Program Token + Token VPP (Apps and Books)',
-        'Uniquement certificat Push, sans documenter l'intervention dans le système de tickets SAV',
-        'Licence Jamf Pro, sans vérifier l'existence d'une sauvegarde iCloud ou locale valide',
-        'Compte Google Workspace seul, ce qui peut engager la responsabilité du technicien sans autorisation'
+        'Uniquement certificat Push, sans documenter le changement dans le journal ITSM du tenant Microsoft 365',
+        'Licence Jamf Pro, sans valider Company Portal, groupes d\'assignation et profil ADE lié',
+        'Compte Google Workspace seul, ce qui peut bloquer Conditional Access sans revue des policies de conformité'
       ),
       correctOption: 'a',
       explanation:
