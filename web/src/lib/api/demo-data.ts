@@ -9,7 +9,7 @@ import {
   jamfProFoundationsQuestions,
   toDemoQuestions,
 } from '@ama/shared/quiz-content';
-import { formatDateParis, startOfWeekParis, endOfWeekParis } from '@ama/shared/locale';
+import { startOfWeekParis, endOfWeekParis } from '@ama/shared/locale';
 import { formatTrack } from '../tracks';
 import type {
   CertificationSprintDays,
