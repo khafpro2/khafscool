@@ -4556,30 +4556,78 @@ html[data-theme='dark'] .analytics-opt-in-banner {
   font-weight: 800;
   font-size: clamp(0.95rem, 2.5vw, 1.1rem);
   letter-spacing: -0.01em;
+  border: 1px solid rgba(255, 255, 255, 0.14);
   box-shadow: 0 6px 18px rgba(15, 23, 42, 0.1);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    border-color 0.25s ease;
   animation: home-track-in 0.55s ease both;
 }
 
-.home-track-choice:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.14);
+.home-track-choice[data-track='apple'] {
+  box-shadow: 0 6px 18px rgba(29, 29, 31, 0.22);
 }
 
 .home-track-choice[data-track='jamf'] {
-  box-shadow: 0 6px 18px rgba(234, 88, 12, 0.18);
-}
-
-.home-track-choice[data-track='jamf']:hover {
-  box-shadow: 0 10px 24px rgba(234, 88, 12, 0.24);
+  box-shadow: 0 6px 18px rgba(118, 185, 0, 0.22);
 }
 
 .home-track-choice[data-track='intune'] {
   box-shadow: 0 6px 18px rgba(37, 99, 235, 0.2);
 }
 
-.home-track-choice[data-track='intune']:hover {
-  box-shadow: 0 10px 24px rgba(37, 99, 235, 0.28);
+@media (hover: hover) {
+  .home-track-choice:hover,
+  .home-track-choice:focus-visible {
+    transform: translateY(-6px) scale(1.02);
+    border-color: rgba(255, 255, 255, 0.48);
+  }
+
+  .home-track-choice:hover {
+    box-shadow:
+      0 14px 28px rgba(15, 23, 42, 0.18),
+      0 0 22px rgba(15, 23, 42, 0.12);
+  }
+
+  .home-track-choice[data-track='apple']:hover,
+  .home-track-choice[data-track='apple']:focus-visible {
+    box-shadow:
+      0 14px 32px rgba(29, 29, 31, 0.38),
+      0 0 24px rgba(148, 163, 184, 0.45),
+      0 0 42px rgba(96, 165, 250, 0.22);
+  }
+
+  .home-track-choice[data-track='jamf']:hover,
+  .home-track-choice[data-track='jamf']:focus-visible {
+    box-shadow:
+      0 14px 32px rgba(90, 146, 0, 0.35),
+      0 0 26px rgba(118, 185, 0, 0.55),
+      0 0 48px rgba(118, 185, 0, 0.28);
+  }
+
+  .home-track-choice[data-track='intune']:hover,
+  .home-track-choice[data-track='intune']:focus-visible {
+    box-shadow:
+      0 14px 32px rgba(37, 99, 235, 0.32),
+      0 0 26px rgba(56, 189, 248, 0.5),
+      0 0 48px rgba(37, 99, 235, 0.28);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-track-choice {
+    transition:
+      box-shadow 0.25s ease,
+      border-color 0.25s ease;
+  }
+
+  @media (hover: hover) {
+    .home-track-choice:hover,
+    .home-track-choice:focus-visible {
+      transform: none;
+    }
+  }
 }
 
 .home-track-choice[data-track='intune'] .home-track-choice-icon {
