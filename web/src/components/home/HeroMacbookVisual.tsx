@@ -46,15 +46,20 @@ function CssMacbookFallback() {
         <div className={styles.laptop}>
           <div className={styles.lid}>
             <div className={styles.shell} />
-            <div className={styles.screen}>
-              <div className={styles.screenContent}>
-                <span className={styles.screenDot} />
-                <span>MDM Academy</span>
+            <div className={styles.bezel}>
+              <div className={styles.notch} />
+              <div className={styles.screen}>
+                <div className={styles.screenContent}>
+                  <span className={styles.screenDot} />
+                  <span>MDM Academy</span>
+                </div>
               </div>
             </div>
           </div>
+          <div className={styles.hinge} />
           <div className={styles.base} />
           <div className={styles.glow} />
+          <div className={styles.floorShadow} />
         </div>
       </div>
     </div>

@@ -20,8 +20,10 @@ import sys
 # Couleurs MDM Academy
 COLOR_ACCENT = (0.145, 0.388, 0.922, 1.0)  # #2563EB
 COLOR_TEAL = (0.051, 0.580, 0.533, 1.0)  # #0d9488
-COLOR_METAL = (0.12, 0.13, 0.16, 1.0)
-COLOR_METAL_LIGHT = (0.22, 0.24, 0.28, 1.0)
+COLOR_METAL = (0.18, 0.20, 0.24, 1.0)  # Space Gray aluminum
+COLOR_METAL_LIGHT = (0.32, 0.35, 0.40, 1.0)
+COLOR_METAL_DARK = (0.08, 0.09, 0.11, 1.0)
+COLOR_BEZEL = (0.04, 0.05, 0.07, 1.0)
 
 REPO_ROOT = os.path.abspath(
     os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, os.pardir)
@@ -67,7 +69,7 @@ def clear_scene():
             bpy.data.collections.remove(bpy.data.collections[coll])
 
 
-def make_material(name: str, base_color, metallic=0.85, roughness=0.35, emission=None):
+def make_material(name: str, base_color, metallic=0.92, roughness=0.28, emission=None):
     import bpy
 
     mat = bpy.data.materials.new(name=name)
@@ -122,55 +124,99 @@ def make_screen_material():
     return mat
 
 
+def bevel_object(obj, width=0.012, segments=3):
+    """Rounded corners for a more believable aluminum chassis."""
+    import bpy
+
+    bevel = obj.modifiers.new(name="Bevel", type="BEVEL")
+    bevel.width = width
+    bevel.segments = segments
+    bevel.limit_method = "NONE"
+    bpy.context.view_layer.objects.active = obj
+    bpy.ops.object.modifier_apply(modifier=bevel.name)
+
+
 def build_macbook():
     import bpy
 
     mats = {
-        "body": make_material("Body", COLOR_METAL),
-        "body_light": make_material("BodyLight", COLOR_METAL_LIGHT, roughness=0.25),
+        "body": make_material("Body", COLOR_METAL, roughness=0.32),
+        "body_light": make_material("BodyLight", COLOR_METAL_LIGHT, roughness=0.22),
+        "body_dark": make_material("BodyDark", COLOR_METAL_DARK, roughness=0.38),
+        "bezel": make_material("Bezel", COLOR_BEZEL, metallic=0.6, roughness=0.45),
         "screen": make_screen_material(),
     }
 
-    # Base (clavier)
-    bpy.ops.mesh.primitive_cube_add(size=1, location=(0, 0, 0.04))
+    # Base (keyboard deck) — thinner profile
+    bpy.ops.mesh.primitive_cube_add(size=1, location=(0, 0, 0.035))
     base = bpy.context.active_object
     base.name = "MacBook_Base"
-    base.scale = (1.45, 0.95, 0.07)
+    base.scale = (1.48, 0.98, 0.055)
     base.data.materials.append(mats["body"])
+    bevel_object(base, width=0.014)
 
-    # Trackpad hint
-    bpy.ops.mesh.primitive_cube_add(size=1, location=(0, -0.22, 0.095))
+    # Keyboard hint (inset plane)
+    bpy.ops.mesh.primitive_plane_add(size=1, location=(0, -0.08, 0.072))
+    keys = bpy.context.active_object
+    keys.name = "Keyboard_Hint"
+    keys.scale = (1.22, 0.52, 1.0)
+    keys.rotation_euler = (math.pi / 2, 0, 0)
+    keys.data.materials.append(mats["body_dark"])
+
+    # Trackpad
+    bpy.ops.mesh.primitive_cube_add(size=1, location=(0, -0.28, 0.078))
     track = bpy.context.active_object
     track.name = "Trackpad"
-    track.scale = (0.42, 0.28, 0.008)
+    track.scale = (0.44, 0.30, 0.006)
     track.data.materials.append(mats["body_light"])
+    bevel_object(track, width=0.004, segments=2)
 
-    # Charnière
-    bpy.ops.mesh.primitive_cylinder_add(
-        radius=0.04, depth=1.35, location=(0, 0.48, 0.11), rotation=(math.pi / 2, 0, 0)
-    )
+    # Charnière (slim bar)
+    bpy.ops.mesh.primitive_cube_add(size=1, location=(0, 0.49, 0.095))
     hinge = bpy.context.active_object
     hinge.name = "Hinge"
+    hinge.scale = (1.38, 0.04, 0.025)
     hinge.data.materials.append(mats["body_light"])
+    bevel_object(hinge, width=0.003, segments=2)
 
     # Écran (lid) — parent empty pour animation
-    bpy.ops.object.empty_add(type="PLAIN_AXES", location=(0, 0.48, 0.11))
+    bpy.ops.object.empty_add(type="PLAIN_AXES", location=(0, 0.49, 0.095))
     lid_pivot = bpy.context.active_object
     lid_pivot.name = "Lid_Pivot"
 
-    bpy.ops.mesh.primitive_cube_add(size=1, location=(0, 0.48, 0.62))
+    # Thin lid shell
+    bpy.ops.mesh.primitive_cube_add(size=1, location=(0, 0.49, 0.58))
     lid = bpy.context.active_object
     lid.name = "MacBook_Lid"
-    lid.scale = (1.45, 0.06, 0.92)
+    lid.scale = (1.48, 0.032, 0.94)
     lid.data.materials.append(mats["body"])
+    bevel_object(lid, width=0.012)
     lid.parent = lid_pivot
     lid.matrix_parent_inverse = lid_pivot.matrix_world.inverted()
 
-    # Face écran (léger décalage)
-    bpy.ops.mesh.primitive_plane_add(size=1, location=(0, 0.44, 0.62))
+    # Bezel frame around display
+    bpy.ops.mesh.primitive_cube_add(size=1, location=(0, 0.455, 0.58))
+    bezel = bpy.context.active_object
+    bezel.name = "Screen_Bezel"
+    bezel.scale = (1.38, 0.018, 0.84)
+    bezel.data.materials.append(mats["bezel"])
+    bevel_object(bezel, width=0.006, segments=2)
+    bezel.parent = lid_pivot
+    bezel.matrix_parent_inverse = lid_pivot.matrix_world.inverted()
+
+    # Camera dot (generic, no Apple logo)
+    bpy.ops.mesh.primitive_uv_sphere_add(radius=0.012, location=(0, 0.442, 0.92))
+    cam_dot = bpy.context.active_object
+    cam_dot.name = "Camera_Dot"
+    cam_dot.data.materials.append(mats["body_dark"])
+    cam_dot.parent = lid_pivot
+    cam_dot.matrix_parent_inverse = lid_pivot.matrix_world.inverted()
+
+    # Face écran (emissive display)
+    bpy.ops.mesh.primitive_plane_add(size=1, location=(0, 0.448, 0.58))
     display = bpy.context.active_object
     display.name = "Screen_Display"
-    display.scale = (1.32, 1.32, 1.0)
+    display.scale = (1.28, 1.28, 1.0)
     display.rotation_euler = (math.pi / 2, 0, 0)
     display.data.materials.append(mats["screen"])
     display.parent = lid_pivot
@@ -206,7 +252,7 @@ def setup_camera_and_lights():
     fill.data.energy = 120
     fill.data.size = 3.0
 
-  # Lumière bleue sur l'écran
+    # Lumière bleue sur l'écran
     bpy.ops.object.light_add(type="POINT", location=(0, 0.3, 0.7))
     rim = bpy.context.active_object
     rim.data.energy = 45

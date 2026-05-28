@@ -55,7 +55,14 @@ Variables d’environnement :
 - `HERO_RESOLUTION=720` ou `1080`
 - `HERO_SAMPLES=128`
 
-## Animation
+## Style visuel
+
+- **Space Gray** : aluminium générique (métal ~0.92, rugosité ~0.28), sans logo Apple
+- **Proportions 16"** : capot fin (~3 mm visuel), charnière plate, trackpad et clavier suggérés
+- **Écran** : bezel sombre, point caméra générique, émission bleu `#2563EB` → teal `#0d9488`
+- **Coins arrondis** : modificateur Bevel appliqué sur le châssis pour un rendu moins « bloc »
+
+Le poster SVG (`macbook-hero-poster.svg`) sert de fallback immédiat ; le rendu Blender remplace la vidéo quand exporté.
 
 - Durée boucle : **5 s** (150 images à 30 fps)
 - Mouvement : légère orbite de la caméra + ouverture subtile du capot + lueur écran bleu `#2563EB`
