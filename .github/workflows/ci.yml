@@ -35,6 +35,9 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
+      - name: QCM distractor balance
+        run: pnpm qcm:balance:check
+
       - name: Lint
         run: pnpm lint
 
