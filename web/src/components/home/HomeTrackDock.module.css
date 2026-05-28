@@ -1,0 +1,51 @@
+/* macOS Genie minimize curve: strong ease-in toward dock baseline (bottom-center),
+   brief overshoot on release — approximates y = 1 - (1-t)^2.4 suction + settle. */
+
+.genieFilter {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.dockLive :global(.home-track-choice) {
+  transition:
+    transform 0.22s cubic-bezier(0.32, 0.94, 0.42, 1),
+    box-shadow 0.25s ease,
+    border-color 0.25s ease,
+    filter 0.2s ease;
+}
+
+.dockLive :global(.home-track-choice[data-genie-active]) {
+  filter: url(#home-genie-warp);
+}
+
+@keyframes genie-warp-click {
+  0% {
+    transform: perspective(560px) translate3d(0, 0, 0) scale(1) scaleY(1) skewX(0deg);
+  }
+  45% {
+    transform: perspective(560px) translate3d(0, 14px, 0) scale(0.97) scaleY(1.24) skewX(-6deg);
+  }
+  100% {
+    transform: perspective(560px) translate3d(0, 0, 0) scale(1) scaleY(1) skewX(0deg);
+  }
+}
+
+@media (hover: none) {
+  .dockTouch :global(.home-track-choice:active) {
+    animation: genie-warp-click 0.38s cubic-bezier(0.32, 0.94, 0.42, 1) both;
+    transform-origin: center bottom;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dockLive :global(.home-track-choice[data-genie-active]) {
+    filter: none;
+  }
+
+  .dockTouch :global(.home-track-choice:active) {
+    animation: none;
+  }
+}

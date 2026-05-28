@@ -4546,6 +4546,16 @@ html[data-theme='dark'] .analytics-opt-in-banner {
   align-items: end;
 }
 
+/* Dock-live: JS owns transform (magnification + genie); keep glow-only hover rules below. */
+@media (hover: hover) {
+  .home-track-choices--dock-live .home-track-choice:hover,
+  .home-track-choices--dock-live .home-track-choice[data-dock-active],
+  .home-track-choices--dock-live:has(.home-track-choice:hover)
+    .home-track-choice:not(:hover) {
+    transform: none;
+  }
+}
+
 .home-track-choice {
   display: flex;
   flex-direction: column;
