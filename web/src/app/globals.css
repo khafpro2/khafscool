@@ -4533,12 +4533,11 @@ html[data-theme='dark'] .analytics-opt-in-banner {
 .home-track-choices {
   display: grid;
   gap: 1rem;
-  width: min(100%, 520px);
-  margin-top: clamp(2rem, 5vw, 2.75rem);
+  width: 100%;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   list-style: none;
   padding: 0;
-  margin-bottom: 0;
+  margin: 0;
 }
 
 .home-track-choices--dock {
@@ -4579,7 +4578,6 @@ html[data-theme='dark'] .analytics-opt-in-banner {
     box-shadow 0.25s ease,
     border-color 0.25s ease;
   animation: home-track-in 0.55s ease both;
-  will-change: transform;
 }
 
 .home-track-choice[data-track='apple'] {
@@ -4651,7 +4649,6 @@ html[data-theme='dark'] .analytics-opt-in-banner {
 
 @media (prefers-reduced-motion: reduce) {
   .home-track-choice {
-    will-change: auto;
     transition:
       box-shadow 0.25s ease,
       border-color 0.25s ease;
@@ -4719,7 +4716,6 @@ html[data-theme='dark'] .analytics-opt-in-banner {
 @media (max-width: 540px) {
   .home-track-choices {
     grid-template-columns: 1fr;
-    width: min(100%, 280px);
   }
 
   .home-track-choice {

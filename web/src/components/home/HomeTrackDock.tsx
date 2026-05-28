@@ -6,6 +6,7 @@ import {
   useRef,
   useState,
   type CSSProperties,
+  type KeyboardEvent as ReactKeyboardEvent,
   type PointerEvent as ReactPointerEvent,
 } from 'react';
 import Link from 'next/link';
@@ -26,6 +27,8 @@ const DOCK_INFLUENCE_RADIUS = 140;
 const GENIE_PRESS_BOOST = 0.72;
 /** Softer press on touch — avoids stacking with :active keyframe on narrow viewports. */
 const GENIE_PRESS_BOOST_TOUCH = 0.38;
+/** Skip React updates when dock transforms are visually unchanged. */
+const DOCK_TRANSFORM_EPS = 0.008;
 
 type DockTransform = { scale: number; lift: number; genie: number };
 
@@ -81,6 +84,22 @@ function useMotionPrefs(): MotionPrefs {
   return prefs;
 }
 
+function dockTransformsEqual(
+  a: Array<DockTransform | null>,
+  b: Array<DockTransform | null>,
+): boolean {
+  if (a.length !== b.length) return false;
+  return a.every((next, index) => {
+    const prev = b[index];
+    if (!next || !prev) return next === prev;
+    return (
+      Math.abs(next.scale - prev.scale) < DOCK_TRANSFORM_EPS &&
+      Math.abs(next.lift - prev.lift) < DOCK_TRANSFORM_EPS &&
+      Math.abs(next.genie - prev.genie) < DOCK_TRANSFORM_EPS
+    );
+  });
+}
+
 function buildDockTransformStyle(
   dock: DockTransform,
   pressBoost: number,
@@ -108,6 +127,9 @@ export function HomeTrackDock() {
   const itemRefs = useRef<(HTMLAnchorElement | null)[]>([]);
   const frameRef = useRef<number | null>(null);
   const pendingPointer = useRef<{ x: number; y: number } | null>(null);
+  const transformsRef = useRef<Array<DockTransform | null>>(
+    LEARNING_PATHS.map(() => null),
+  );
   const [transforms, setTransforms] = useState<Array<DockTransform | null>>(() =>
     LEARNING_PATHS.map(() => null),
   );
@@ -134,6 +156,9 @@ export function HomeTrackDock() {
       };
     });
 
+    if (dockTransformsEqual(next, transformsRef.current)) return;
+
+    transformsRef.current = next;
     setTransforms(next);
   }, [genieEnabled]);
 
@@ -160,8 +185,34 @@ export function HomeTrackDock() {
       cancelAnimationFrame(frameRef.current);
       frameRef.current = null;
     }
-    setTransforms(LEARNING_PATHS.map(() => null));
+    const reset = LEARNING_PATHS.map(() => null);
+    transformsRef.current = reset;
+    setTransforms(reset);
     setPressedIndex(null);
+  }, []);
+
+  const handleKeyDown = useCallback((event: ReactKeyboardEvent<HTMLUListElement>) => {
+    const { key } = event;
+    if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(key)) return;
+
+    const currentIndex = itemRefs.current.findIndex((el) => el === document.activeElement);
+    if (currentIndex === -1) return;
+
+    let nextIndex = currentIndex;
+    if (key === 'ArrowRight') {
+      nextIndex = (currentIndex + 1) % LEARNING_PATHS.length;
+    } else if (key === 'ArrowLeft') {
+      nextIndex = (currentIndex - 1 + LEARNING_PATHS.length) % LEARNING_PATHS.length;
+    } else if (key === 'Home') {
+      nextIndex = 0;
+    } else if (key === 'End') {
+      nextIndex = LEARNING_PATHS.length - 1;
+    }
+
+    if (nextIndex === currentIndex) return;
+
+    event.preventDefault();
+    itemRefs.current[nextIndex]?.focus();
   }, []);
 
   const handlePointerDown = useCallback(
@@ -218,37 +269,41 @@ export function HomeTrackDock() {
         </svg>
       ) : null}
 
-      <ul
-        data-testid="home-track-dock"
-        className={[
-          'home-track-choices',
-          'home-track-choices--dock',
-          dockLive ? 'home-track-choices--dock-live' : '',
-          dockLive ? styles.dockLive : '',
-          dockTouch ? styles.dockTouch : '',
-        ]
-          .filter(Boolean)
-          .join(' ')}
-        aria-label="Choix de piste MDM"
-        onMouseMove={dockEnabled ? handleMouseMove : undefined}
-        onMouseLeave={dockEnabled ? handleMouseLeave : undefined}
-      >
-        {LEARNING_PATHS.map((path, index) => (
-          <TrackChoiceLink
-            key={path.slug}
-            path={path}
-            index={index}
-            dockTransform={dockEnabled ? transforms[index] : null}
-            geniePress={genieEnabled && pressedIndex === index}
-            geniePressBoost={dockTouch ? GENIE_PRESS_BOOST_TOUCH : GENIE_PRESS_BOOST}
-            onGeniePointerDown={() => handlePointerDown(index)}
-            onGeniePointerUp={handlePointerUp}
-            linkRef={(el) => {
-              itemRefs.current[index] = el;
-            }}
-          />
-        ))}
-      </ul>
+      <div className={styles.dockShell}>
+        <ul
+          data-testid="home-track-dock"
+          className={[
+            'home-track-choices',
+            'home-track-choices--dock',
+            dockLive ? 'home-track-choices--dock-live' : '',
+            dockLive ? styles.dockLive : '',
+            dockTouch ? styles.dockTouch : '',
+          ]
+            .filter(Boolean)
+            .join(' ')}
+          aria-label="Choix de piste MDM"
+          onMouseMove={dockEnabled ? handleMouseMove : undefined}
+          onMouseLeave={dockEnabled ? handleMouseLeave : undefined}
+          onKeyDown={handleKeyDown}
+        >
+          {LEARNING_PATHS.map((path, index) => (
+            <TrackChoiceLink
+              key={path.slug}
+              path={path}
+              index={index}
+              dockTransform={dockEnabled ? transforms[index] : null}
+              geniePress={genieEnabled && pressedIndex === index}
+              geniePressBoost={dockTouch ? GENIE_PRESS_BOOST_TOUCH : GENIE_PRESS_BOOST}
+              onGeniePointerDown={() => handlePointerDown(index)}
+              onGeniePointerUp={handlePointerUp}
+              linkRef={(el) => {
+                itemRefs.current[index] = el;
+              }}
+            />
+          ))}
+        </ul>
+        <div className={styles.dockReflection} aria-hidden />
+      </div>
     </>
   );
 }
