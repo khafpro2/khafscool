@@ -76,7 +76,6 @@ function HeroMacbookSkeleton() {
 
 export function HeroMacbookVisual() {
   const reducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
-  const isNarrow = useMediaQuery('(max-width: 540px)');
   const [mediaReady, setMediaReady] = useState(false);
   const [hasWebm, setHasWebm] = useState(false);
   const [hasMp4, setHasMp4] = useState(false);
@@ -110,8 +109,10 @@ export function HeroMacbookVisual() {
 
   const showVideo =
     mediaReady && (hasWebm || hasMp4) && !reducedMotion && !videoFailed;
-  const showStaticPoster = mediaReady && !showVideo && (reducedMotion || isNarrow);
-  const showCss3d = mediaReady && !showVideo && !reducedMotion && !isNarrow;
+  // Poster SVG/WebP : mobile, reduced-motion, ou desktop sans export vidéo Blender.
+  const showStaticPoster = mediaReady && !showVideo;
+  // CSS 3D conservé pour un futur mode « démo » ; le layout 3D seul reste fragile sans vidéo.
+  const showCss3d = false;
 
   return (
     <div className={styles.wrap} aria-hidden={showVideo || showCss3d}>

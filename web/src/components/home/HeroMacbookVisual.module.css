@@ -45,6 +45,8 @@
 .laptop {
   position: relative;
   width: min(72%, 340px);
+  /* Hauteur explicite : le couvercle est en absolute, sinon le bloc s’effondre (~14px). */
+  height: clamp(150px, 20vw, 210px);
   transform-style: preserve-3d;
   transform: rotateX(12deg) rotateY(-18deg);
 }
