@@ -4468,8 +4468,36 @@ html[data-theme='dark'] .analytics-opt-in-banner {
   }
 }
 
+.home-hello-title {
+  margin: 0;
+  font-family: var(--font-display), var(--font-display-fallback);
+  font-size: clamp(3.5rem, 14vw, 7rem);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  background: var(--gradient-hero);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.home-hello-letter {
+  display: inline-block;
+  animation: hello-wave 1.4s ease-in-out infinite;
+}
+
+@keyframes hello-wave {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-0.14em) scale(1.04);
+  }
+}
+
 .home-welcome-tagline {
-  margin: 0.5rem 0 0;
+  margin: 1.25rem 0 0;
   font-family: var(--font-display), var(--font-display-fallback);
   font-size: clamp(1.15rem, 3vw, 1.45rem);
   font-weight: 700;

@@ -1,14 +1,46 @@
 'use client';
 
 /**
- * Hero MacBook — CSS 3D interactif avec « Hello » sur l’écran.
- * Pas de dépendance three.js ; poster/vidéo Blender désactivés pour un LCP léger.
+ * Hero MacBook — vidéo Blender si exportée, sinon poster photoréal (AI) ou SVG.
+ * Pipeline vidéo : /media/hero/macbook-hero.webm (+ .mp4)
+ * Poster AI : /media/hero/macbook-hero-ai.webp (+ .png)
  */
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import styles from './HeroMacbookVisual.module.css';
 
-const HELLO = 'Hello';
+const HERO_MEDIA = {
+  webm: '/media/hero/macbook-hero.webm',
+  mp4: '/media/hero/macbook-hero.mp4',
+  posterAiWebp: '/media/hero/macbook-hero-ai.webp',
+  posterAiPng: '/media/hero/macbook-hero-ai.png',
+  posterWebp: '/media/hero/macbook-hero-poster.webp',
+  posterSvg: '/media/hero/macbook-hero-poster.svg',
+} as const;
+
+const POSTER_CASCADE = [
+  HERO_MEDIA.posterAiWebp,
+  HERO_MEDIA.posterAiPng,
+  HERO_MEDIA.posterWebp,
+  HERO_MEDIA.posterSvg,
+] as const;
+
+type PosterUrl = (typeof POSTER_CASCADE)[number];
+
+async function mediaExists(url: string): Promise<boolean> {
+  try {
+    const res = await fetch(url, { method: 'HEAD', cache: 'no-store' });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+function nextPosterInCascade(current: string): PosterUrl | null {
+  const index = POSTER_CASCADE.indexOf(current as PosterUrl);
+  if (index < 0 || index >= POSTER_CASCADE.length - 1) return null;
+  return POSTER_CASCADE[index + 1] ?? null;
+}
 
 function useMediaQuery(query: string): boolean {
   const [matches, setMatches] = useState(false);
@@ -24,38 +56,20 @@ function useMediaQuery(query: string): boolean {
   return matches;
 }
 
-function MacbookScreenHello({ animate }: { animate: boolean }) {
+function CssMacbookFallback() {
   return (
-    <div className={styles.screenContent} aria-hidden>
-      <div className={styles.screenHello}>
-        {HELLO.split('').map((char, index) => (
-          <span
-            key={`${char}-${index}`}
-            className={styles.screenHelloLetter}
-            style={animate ? { animationDelay: `${index * 0.12}s` } : undefined}
-          >
-            {char}
-          </span>
-        ))}
-      </div>
-      <p className={styles.screenSubtitle}>MDM Academy</p>
-    </div>
-  );
-}
-
-function CssMacbook3D({ reducedMotion }: { reducedMotion: boolean }) {
-  const animate = !reducedMotion;
-
-  return (
-    <div className={styles.scene} role="img" aria-label="MacBook affichant Hello">
-      <div className={styles.orbit} data-animate={animate ? 'true' : undefined}>
-        <div className={styles.laptop} data-animate={animate ? 'true' : undefined}>
-          <div className={styles.lid} data-animate={animate ? 'true' : undefined}>
+    <div className={styles.scene} aria-hidden>
+      <div className={styles.orbit}>
+        <div className={styles.laptop}>
+          <div className={styles.lid}>
             <div className={styles.shell} />
             <div className={styles.bezel}>
               <div className={styles.notch} />
-              <div className={styles.screen} data-animate={animate ? 'true' : undefined}>
-                <MacbookScreenHello animate={animate} />
+              <div className={styles.screen}>
+                <div className={styles.screenContent}>
+                  <span className={styles.screenDot} />
+                  <span>MDM Academy</span>
+                </div>
               </div>
             </div>
           </div>
@@ -69,12 +83,98 @@ function CssMacbook3D({ reducedMotion }: { reducedMotion: boolean }) {
   );
 }
 
+function HeroMacbookSkeleton() {
+  return (
+    <div
+      className={styles.skeleton}
+      role="status"
+      aria-live="polite"
+      aria-label="Chargement de l’illustration MacBook"
+    >
+      <span className="sr-only">Chargement…</span>
+    </div>
+  );
+}
+
 export function HeroMacbookVisual() {
   const reducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
+  const [mediaReady, setMediaReady] = useState(false);
+  const [hasWebm, setHasWebm] = useState(false);
+  const [hasMp4, setHasMp4] = useState(false);
+  const [posterUrl, setPosterUrl] = useState<PosterUrl>(HERO_MEDIA.posterSvg);
+  const [videoFailed, setVideoFailed] = useState(false);
+
+  const handlePosterError = useCallback(() => {
+    setPosterUrl((current) => nextPosterInCascade(current) ?? current);
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      for (const candidate of POSTER_CASCADE) {
+        if (await mediaExists(candidate)) {
+          if (!cancelled) setPosterUrl(candidate);
+          break;
+        }
+      }
+
+      if (!reducedMotion) {
+        const webmOk = await mediaExists(HERO_MEDIA.webm);
+        if (!cancelled) setHasWebm(webmOk);
+
+        const mp4Ok = await mediaExists(HERO_MEDIA.mp4);
+        if (!cancelled) setHasMp4(mp4Ok);
+      }
+
+      if (!cancelled) setMediaReady(true);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [reducedMotion]);
+
+  const showVideo =
+    mediaReady && (hasWebm || hasMp4) && !reducedMotion && !videoFailed;
+  const showStaticPoster = mediaReady && !showVideo;
+  const showCss3d = false;
 
   return (
-    <div className={styles.wrap}>
-      <CssMacbook3D reducedMotion={reducedMotion} />
+    <div className={styles.wrap} aria-hidden={showVideo || showCss3d}>
+      {!mediaReady ? <HeroMacbookSkeleton /> : null}
+
+      {showVideo ? (
+        <video
+          className={styles.video}
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="metadata"
+          poster={posterUrl}
+          aria-hidden
+          onError={() => setVideoFailed(true)}
+        >
+          {hasWebm ? <source src={HERO_MEDIA.webm} type="video/webm" /> : null}
+          {hasMp4 ? <source src={HERO_MEDIA.mp4} type="video/mp4" /> : null}
+        </video>
+      ) : null}
+
+      {showStaticPoster ? (
+        // eslint-disable-next-line @next/next/no-img-element -- poster décoratif statique
+        <img
+          className={styles.posterImg}
+          src={posterUrl}
+          alt=""
+          aria-hidden
+          loading="eager"
+          decoding="async"
+          onError={handlePosterError}
+        />
+      ) : null}
+
+      {showCss3d ? <CssMacbookFallback /> : null}
     </div>
   );
 }
