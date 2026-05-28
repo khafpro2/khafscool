@@ -1,20 +1,31 @@
 'use client';
 
 /**
- * Hero MacBook — vidéo Blender si exportée, sinon MacBook CSS 3D.
- * Remplacer par l’export Blender : /media/hero/macbook-hero.webm (+ .mp4)
- * Pipeline : assets/blender/hero-macbook/
+ * Hero MacBook — vidéo Blender si exportée, sinon poster photoréal (AI) ou SVG.
+ * Pipeline vidéo : /media/hero/macbook-hero.webm (+ .mp4)
+ * Poster AI : /media/hero/macbook-hero-ai.webp (+ .png)
  */
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import styles from './HeroMacbookVisual.module.css';
 
 const HERO_MEDIA = {
   webm: '/media/hero/macbook-hero.webm',
   mp4: '/media/hero/macbook-hero.mp4',
+  posterAiWebp: '/media/hero/macbook-hero-ai.webp',
+  posterAiPng: '/media/hero/macbook-hero-ai.png',
   posterWebp: '/media/hero/macbook-hero-poster.webp',
   posterSvg: '/media/hero/macbook-hero-poster.svg',
 } as const;
+
+const POSTER_CASCADE = [
+  HERO_MEDIA.posterAiWebp,
+  HERO_MEDIA.posterAiPng,
+  HERO_MEDIA.posterWebp,
+  HERO_MEDIA.posterSvg,
+] as const;
+
+type PosterUrl = (typeof POSTER_CASCADE)[number];
 
 async function mediaExists(url: string): Promise<boolean> {
   try {
@@ -23,6 +34,12 @@ async function mediaExists(url: string): Promise<boolean> {
   } catch {
     return false;
   }
+}
+
+function nextPosterInCascade(current: string): PosterUrl | null {
+  const index = POSTER_CASCADE.indexOf(current as PosterUrl);
+  if (index < 0 || index >= POSTER_CASCADE.length - 1) return null;
+  return POSTER_CASCADE[index + 1] ?? null;
 }
 
 function useMediaQuery(query: string): boolean {
@@ -84,16 +101,22 @@ export function HeroMacbookVisual() {
   const [mediaReady, setMediaReady] = useState(false);
   const [hasWebm, setHasWebm] = useState(false);
   const [hasMp4, setHasMp4] = useState(false);
-  const [posterUrl, setPosterUrl] = useState<string>(HERO_MEDIA.posterSvg);
+  const [posterUrl, setPosterUrl] = useState<PosterUrl>(HERO_MEDIA.posterSvg);
   const [videoFailed, setVideoFailed] = useState(false);
+
+  const handlePosterError = useCallback(() => {
+    setPosterUrl((current) => nextPosterInCascade(current) ?? current);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
 
     (async () => {
-      const hasWebp = await mediaExists(HERO_MEDIA.posterWebp);
-      if (!cancelled && hasWebp) {
-        setPosterUrl(HERO_MEDIA.posterWebp);
+      for (const candidate of POSTER_CASCADE) {
+        if (await mediaExists(candidate)) {
+          if (!cancelled) setPosterUrl(candidate);
+          break;
+        }
       }
 
       if (!reducedMotion) {
@@ -114,9 +137,7 @@ export function HeroMacbookVisual() {
 
   const showVideo =
     mediaReady && (hasWebm || hasMp4) && !reducedMotion && !videoFailed;
-  // Poster SVG/WebP : mobile, reduced-motion, ou desktop sans export vidéo Blender.
   const showStaticPoster = mediaReady && !showVideo;
-  // CSS 3D conservé pour un futur mode « démo » ; le layout 3D seul reste fragile sans vidéo.
   const showCss3d = false;
 
   return (
@@ -149,6 +170,7 @@ export function HeroMacbookVisual() {
           aria-hidden
           loading="eager"
           decoding="async"
+          onError={handlePosterError}
         />
       ) : null}
 
