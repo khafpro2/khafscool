@@ -340,6 +340,13 @@ pnpm build
 
 Tests E2E Playwright (web déjà lancé ou démarré automatiquement) : `pnpm --filter web test:e2e`.
 
+**Équilibre des QCM** (longueur des distracteurs vs bonne réponse dans `shared/src/quiz-content.ts`) :
+
+```bash
+pnpm qcm:balance          # rapport stdout (+ copie /tmp si déséquilibres)
+pnpm qcm:balance:check    # exit 1 si ratio > 1.4x — garde-fou CI / pre-commit
+```
+
 ## Contribution
 
 Les évolutions majeures de la branche `cursor/progress-dashboard-auth-v2` sont regroupées dans [PR #6](https://github.com/khafpro2/khafscool/pull/6) (catalogue parcours gamifiés, complétion de parcours, mobile et auth gamification). Voir aussi [CHANGELOG.md](./CHANGELOG.md).

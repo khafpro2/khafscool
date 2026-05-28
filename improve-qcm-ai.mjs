@@ -8,12 +8,14 @@
  *   node improve-qcm-ai.mjs [projectRoot]
  *   node improve-qcm-ai.mjs --report /tmp/qcm-report.txt
  *   node improve-qcm-ai.mjs --rewrite   # réécriture API (nécessite ANTHROPIC_API_KEY) → stdout JSON
+ *   node improve-qcm-ai.mjs --check     # exit 1 si au moins une question déséquilibrée (CI)
  */
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
 
 const args = process.argv.slice(2);
+const checkMode = args.includes('--check');
 const reportFlag = args.find((a) => a.startsWith('--report'));
 const reportPath = reportFlag?.includes('=')
   ? reportFlag.split('=')[1]
@@ -190,6 +192,19 @@ async function runRewrite() {
 
   console.log('\n' + JSON.stringify({ rewritten: results.length, items: results }, null, 2));
   console.log('\nAppliquez manuellement les distracteurs dans quiz-content.ts, puis: pnpm db:seed');
+}
+
+if (checkMode && toImprove.length > 0) {
+  console.error(
+    '\n❌ Échec --check : ' +
+      toImprove.length +
+      ' question(s) avec ratio longueur correcte / distracteurs > 1.4x',
+  );
+  process.exit(1);
+}
+
+if (checkMode) {
+  console.log('\n✅ QCM équilibrés (' + questions.length + ' questions, seuil 1.4x).');
 }
 
 if (rewriteMode) {

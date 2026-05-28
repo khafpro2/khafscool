@@ -61,10 +61,25 @@ function CssMacbookFallback() {
   );
 }
 
+function HeroMacbookSkeleton() {
+  return (
+    <div
+      className={styles.skeleton}
+      role="status"
+      aria-live="polite"
+      aria-label="Chargement de l’illustration MacBook"
+    >
+      <span className="sr-only">Chargement…</span>
+    </div>
+  );
+}
+
 export function HeroMacbookVisual() {
   const reducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
   const isNarrow = useMediaQuery('(max-width: 540px)');
-  const [videoSrc, setVideoSrc] = useState<string | null>(null);
+  const [mediaReady, setMediaReady] = useState(false);
+  const [hasWebm, setHasWebm] = useState(false);
+  const [hasMp4, setHasMp4] = useState(false);
   const [posterUrl, setPosterUrl] = useState<string>(HERO_MEDIA.posterSvg);
   const [videoFailed, setVideoFailed] = useState(false);
 
@@ -77,18 +92,15 @@ export function HeroMacbookVisual() {
         setPosterUrl(HERO_MEDIA.posterWebp);
       }
 
-      if (reducedMotion) return;
+      if (!reducedMotion) {
+        const webmOk = await mediaExists(HERO_MEDIA.webm);
+        if (!cancelled) setHasWebm(webmOk);
 
-      const hasWebm = await mediaExists(HERO_MEDIA.webm);
-      if (!cancelled && hasWebm) {
-        setVideoSrc(HERO_MEDIA.webm);
-        return;
+        const mp4Ok = await mediaExists(HERO_MEDIA.mp4);
+        if (!cancelled) setHasMp4(mp4Ok);
       }
 
-      const hasMp4 = await mediaExists(HERO_MEDIA.mp4);
-      if (!cancelled && hasMp4) {
-        setVideoSrc(HERO_MEDIA.mp4);
-      }
+      if (!cancelled) setMediaReady(true);
     })();
 
     return () => {
@@ -96,12 +108,15 @@ export function HeroMacbookVisual() {
     };
   }, [reducedMotion]);
 
-  const showVideo = Boolean(videoSrc) && !reducedMotion && !videoFailed;
-  const showStaticPoster = !showVideo && (reducedMotion || isNarrow);
-  const showCss3d = !showVideo && !reducedMotion && !isNarrow;
+  const showVideo =
+    mediaReady && (hasWebm || hasMp4) && !reducedMotion && !videoFailed;
+  const showStaticPoster = mediaReady && !showVideo && (reducedMotion || isNarrow);
+  const showCss3d = mediaReady && !showVideo && !reducedMotion && !isNarrow;
 
   return (
-    <div className={styles.wrap}>
+    <div className={styles.wrap} aria-hidden={showVideo || showCss3d}>
+      {!mediaReady ? <HeroMacbookSkeleton /> : null}
+
       {showVideo ? (
         <video
           className={styles.video}
@@ -109,15 +124,13 @@ export function HeroMacbookVisual() {
           loop
           muted
           playsInline
-          preload="none"
+          preload="metadata"
           poster={posterUrl}
           aria-hidden
           onError={() => setVideoFailed(true)}
         >
-          {videoSrc === HERO_MEDIA.webm ? (
-            <source src={HERO_MEDIA.webm} type="video/webm" />
-          ) : null}
-          <source src={videoSrc ?? HERO_MEDIA.mp4} type="video/mp4" />
+          {hasWebm ? <source src={HERO_MEDIA.webm} type="video/webm" /> : null}
+          {hasMp4 ? <source src={HERO_MEDIA.mp4} type="video/mp4" /> : null}
         </video>
       ) : null}
 
@@ -128,7 +141,7 @@ export function HeroMacbookVisual() {
           src={posterUrl}
           alt=""
           aria-hidden
-          loading="lazy"
+          loading="eager"
           decoding="async"
         />
       ) : null}

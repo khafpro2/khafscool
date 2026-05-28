@@ -163,6 +163,29 @@
   border-radius: var(--radius-lg);
 }
 
+.skeleton {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(
+    110deg,
+    var(--surface-elevated, #f1f5f9) 8%,
+    var(--surface, #e2e8f0) 18%,
+    var(--surface-elevated, #f1f5f9) 33%
+  );
+  background-size: 200% 100%;
+  animation: hero-macbook-shimmer 1.2s ease-in-out infinite;
+}
+
+@keyframes hero-macbook-shimmer {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
+}
+
 @keyframes macbook-orbit {
   0%,
   100% {
@@ -210,6 +233,11 @@
 @media (prefers-reduced-motion: reduce) {
   .wrap {
     animation: none;
+  }
+
+  .skeleton {
+    animation: none;
+    background: var(--surface-elevated, #f1f5f9);
   }
 
   .orbit,
