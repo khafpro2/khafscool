@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.3.6] — 2026-05-30
+
+### Accueil — dock pistes et retrait hero
+- **Web accueil** — dock style macOS sur les 3 pistes MDM (magnification au survol, effet genie au clic, reflet sous le dock) ; navigation clavier flèches / Home / End ; `aria-label` par piste
+- **Web accueil** — retrait du hero MacBook (poster 3D) ; écran Hello + tagline + dock uniquement
+- **Mobile** — retour visuel discret au press sur les cartes piste (`MdmTracksSection`)
+- **Locale** — dates et fuseau `fr-FR` / `Europe/Paris` (web, API, affichage relatif)
+- **QCM** — distracteurs contextualisés (Jamf/Intune), scripts `improve-qcm-ai.mjs` / `fix-qcm.mjs`, garde-fou CI `qcm:balance:check`
+- Tests : e2e `home-hero` (4 scénarios), `qcm:balance:check`
+
 ## [0.3.5] — 2026-05-25
 
 ### Retrait vidéo Smart Groups (module 1 Jamf)
