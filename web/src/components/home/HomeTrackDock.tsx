@@ -21,6 +21,12 @@ const TRACK_LABELS: Record<LearningPathMeta['track'], string> = {
   INTUNE: 'Intune',
 };
 
+const TRACK_DESCRIPTIONS: Record<LearningPathMeta['track'], string> = {
+  APPLE: 'Support Device, sauvegardes et bases MDM Apple.',
+  JAMF: 'Smart groups, politiques et inventaire Jamf Pro.',
+  INTUNE: 'Enrôlement iOS/iPadOS et conformité Microsoft Intune.',
+};
+
 const DOCK_MAX_SCALE = 1.22;
 const DOCK_INFLUENCE_RADIUS = 140;
 /** Extra genie suction on pointer down (0–1), layered on hover proximity. */
@@ -329,6 +335,7 @@ function TrackChoiceLink({
 }) {
   const visual = getTrackVisual(path.track);
   const label = TRACK_LABELS[path.track];
+  const description = TRACK_DESCRIPTIONS[path.track];
 
   const dock = dockTransform ?? { scale: 1, lift: 0, genie: 0 };
   const pressBoost = geniePress ? geniePressBoost : 0;
@@ -357,7 +364,7 @@ function TrackChoiceLink({
             ...dockStyle,
           } as CSSProperties
         }
-        aria-label={`Parcours ${label} — commencer`}
+        aria-label={`Parcours ${label} — ${description}`}
         onPointerDown={onPointerDown}
         onPointerUp={onGeniePointerUp}
         onPointerCancel={onGeniePointerUp}
@@ -365,7 +372,10 @@ function TrackChoiceLink({
         <span className="home-track-choice-icon" aria-hidden>
           <BrandIcon brand={path.brand} size="lg" variant="onColor" />
         </span>
-        <span className="home-track-choice-label">{label}</span>
+        <span className="home-track-choice-text">
+          <span className="home-track-choice-label">{label}</span>
+          <span className="home-track-choice-desc">{description}</span>
+        </span>
       </Link>
     </li>
   );

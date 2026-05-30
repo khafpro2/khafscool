@@ -1,10 +1,12 @@
-# Checklist mainteneur — fusion PR #6
+# Checklist mainteneur — fusion PR #7
 
 Checklist à valider avant de fusionner la branche `cursor/progress-dashboard-auth-v2` dans `main`.
 
-**Pull request :** [PR #6 — Progress dashboard auth v2](https://github.com/khafpro2/khafscool/pull/6)
+**Pull request :** [PR #7 — Progress dashboard auth v2](https://github.com/khafpro2/khafscool/pull/7)
 
-**Version cible :** `0.2.1` (monorepo `@ama/shared`, backend, web, mobile)
+**Version cible :** `0.3.6` (monorepo `@ama/shared`, backend, web, mobile)
+
+**Prod (aperçu)** — [apple-mdm-academy.vercel.app](https://apple-mdm-academy.vercel.app) : accueil Hello + **dock pistes** (magnification / genie), sans hero MacBook.
 
 **HEAD de référence :** vérifier avec `git rev-parse --short HEAD` sur la branche avant merge.
 
@@ -44,7 +46,7 @@ Workflow : `.github/workflows/ci.yml`
 
 | Job | Contenu |
 | --- | --- |
-| **build-test** | install, smoke scripts, tests backend, typecheck mobile, build backend + web |
+| **build-test** | install, smoke scripts, `pnpm qcm:balance:check`, lint, tests backend, typecheck mobile, build backend + web |
 | **integration** | Postgres service, `db:migrate` + `db:seed`, API, `pnpm smoke:api` |
 | **e2e-web** | Playwright Chromium, `pnpm --filter web test:e2e` |
 
@@ -52,7 +54,20 @@ Workflow : `.github/workflows/ci.yml`
 - [ ] Job **integration** — vert
 - [ ] Job **e2e-web** — vert
 
-Vérifier sur la PR : `gh pr checks 6`
+Vérifier sur la PR : `gh pr checks 7`
+
+---
+
+## v0.3.6 — Accueil, locale, QCM
+
+- [ ] **`/`** — dock 3 pistes (Apple / Jamf / Intune), descriptions une ligne, clavier flèches / Home / End
+- [ ] **Locale** — dates `fr-FR`, fuseau `Europe/Paris` (web + API)
+- [ ] **QCM** — `pnpm qcm:balance:check` vert en CI ; scripts `improve-qcm-ai.mjs` / `fix-qcm.mjs` (maintenance locale)
+
+```bash
+pnpm qcm:balance          # rapport équilibre distracteurs
+pnpm qcm:balance:check    # garde-fou CI (ratio > 1.4x → exit 1)
+```
 
 ---
 
@@ -185,8 +200,8 @@ pnpm db:seed
 
 ## Fusion
 
-- [ ] Tous les jobs CI verts sur PR #6
-- [ ] [CHANGELOG.md](./CHANGELOG.md) section `[0.2.1]` à jour
+- [ ] Tous les jobs CI verts sur PR #7
+- [ ] [CHANGELOG.md](./CHANGELOG.md) section `[0.3.6]` à jour
 - [ ] Revue code effectuée
 - [ ] Squash ou merge selon politique repo
 - [ ] **Ne pas merger sans demande explicite du mainteneur**
@@ -195,6 +210,6 @@ pnpm db:seed
 
 ## Documentation associée
 
-- [CHANGELOG.md](./CHANGELOG.md) — notes `0.2.1`
+- [CHANGELOG.md](./CHANGELOG.md) — notes `0.3.6` et historique
 - [DEPLOYMENT.md](./DEPLOYMENT.md) — variables prod
 - [docs/OAUTH-PRODUCTION.md](./docs/OAUTH-PRODUCTION.md) — OAuth prod

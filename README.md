@@ -32,11 +32,12 @@ pnpm dev:stack  # Postgres + API (:4000) + web (:3000)
 
 ## Fonctionnalités récentes
 
-Voir le détail dans [CHANGELOG.md](./CHANGELOG.md) (branche `cursor/progress-dashboard-auth-v2`, PR #6).
+Voir le détail dans [CHANGELOG.md](./CHANGELOG.md) (branche `cursor/progress-dashboard-auth-v2`, [PR #7](https://github.com/khafpro2/khafscool/pull/7)).
 
-- Toasts gamification web/mobile, progression modules, complétion avec confettis
-- Mini-scénarios accessibles au clavier, erreurs auth en français, filtre classement par piste
-- Certificat imprimable, partage de réussite, thème sombre et PWA
+- **Accueil** — dock pistes MDM (Apple / Jamf / Intune) sur `/` ; descriptions une ligne sous chaque libellé
+- **Locale** — affichage des dates en `fr-FR`, fuseau `Europe/Paris`
+- **QCM** — garde-fou `pnpm qcm:balance:check` (CI) ; maintenance `pnpm qcm:balance` / scripts `improve-qcm-ai.mjs`, `fix-qcm.mjs`
+- Toasts gamification, certificat, thème sombre et PWA (voir CHANGELOG)
 
 **Compte démo** — sans inscription, explore le catalogue, le classement et les parcours en mode local (`demo@mdmacademy.local`, mot de passe `DemoTest2026!` après seed). Pour sauvegarder ta progression, connecte-toi sur [`/auth`](http://127.0.0.1:3000/auth) ou suis le [guide démo](/demo).
 
@@ -349,7 +350,7 @@ pnpm qcm:balance:check    # exit 1 si ratio > 1.4x — garde-fou CI / pre-commit
 
 ## Contribution
 
-Les évolutions majeures de la branche `cursor/progress-dashboard-auth-v2` sont regroupées dans [PR #6](https://github.com/khafpro2/khafscool/pull/6) (catalogue parcours gamifiés, complétion de parcours, mobile et auth gamification). Voir aussi [CHANGELOG.md](./CHANGELOG.md).
+Les évolutions majeures de la branche `cursor/progress-dashboard-auth-v2` sont regroupées dans [PR #7](https://github.com/khafpro2/khafscool/pull/7) (dock accueil, gamification, mobile, QCM). Voir aussi [CHANGELOG.md](./CHANGELOG.md) et [MERGE.md](./MERGE.md).
 
 ## Contenu et ressources
 
