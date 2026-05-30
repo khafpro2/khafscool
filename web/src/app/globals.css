@@ -4589,48 +4589,100 @@ main:has(.home-page-minimal) {
   box-sizing: border-box;
 }
 
-.home-hello-title {
+.apple-hello-wrapper {
+  position: relative;
+  display: block;
   margin: 0;
-  font-family: var(--font-display), var(--font-display-fallback);
-  font-size: clamp(3.5rem, 14vw, 7rem);
-  font-weight: 800;
-  letter-spacing: -0.04em;
-  line-height: 1;
-  background: var(--gradient-hero);
+  line-height: 0.85;
+  overflow: visible;
+}
+
+.apple-hello-text {
+  display: inline-block;
+  font-family: var(--font-hello), 'Caveat', cursive;
+  font-size: clamp(5.5rem, 24vw, 13rem);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 0.9;
+  background: linear-gradient(
+    115deg,
+    #0A84FF 0%,
+    #5E5CE6 22%,
+    #BF5AF2 42%,
+    #FF375F 62%,
+    #FF9F0A 80%,
+    #30D158 100%
+  );
+  background-size: 200% 100%;
   -webkit-background-clip: text;
   background-clip: text;
+  -webkit-text-fill-color: transparent;
   color: transparent;
+  animation:
+    apple-hello-write 1.6s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both,
+    apple-gradient-breathe 6s ease-in-out 2s infinite;
+  filter: drop-shadow(0 2px 12px color-mix(in srgb, #5E5CE6 20%, transparent));
 }
 
-.home-hello-letter {
-  display: inline-block;
-  animation: hello-wave 1.4s ease-in-out infinite;
+@keyframes apple-hello-write {
+  0% {
+    clip-path: inset(0 105% 0 0 round 2px);
+  }
+  3% {
+    clip-path: inset(-5% 100% -5% 0 round 2px);
+  }
+  100% {
+    clip-path: inset(-5% -10% -5% 0 round 2px);
+  }
 }
 
-@keyframes hello-wave {
+@keyframes apple-gradient-breathe {
   0%,
   100% {
-    transform: translateY(0) scale(1);
+    background-position: 0% 50%;
+    filter: drop-shadow(0 2px 16px color-mix(in srgb, #5E5CE6 25%, transparent));
   }
-  50% {
-    transform: translateY(-0.14em) scale(1.04);
+  33% {
+    background-position: 60% 50%;
+    filter: drop-shadow(0 2px 16px color-mix(in srgb, #BF5AF2 25%, transparent));
   }
+  66% {
+    background-position: 100% 50%;
+    filter: drop-shadow(0 2px 16px color-mix(in srgb, #FF375F 20%, transparent));
+  }
+}
+
+[data-theme='dark'] .apple-hello-text,
+.dark .apple-hello-text {
+  background: linear-gradient(
+    115deg,
+    #40AFFF 0%,
+    #7D7AFF 22%,
+    #DA8FFF 42%,
+    #FF6080 62%,
+    #FFB340 80%,
+    #4CD964 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  filter: drop-shadow(0 2px 20px color-mix(in srgb, #7D7AFF 30%, transparent));
 }
 
 .home-welcome-tagline {
-  margin: 1.25rem 0 0;
+  margin: 1rem 0 0;
   font-family: var(--font-display), var(--font-display-fallback);
   font-size: clamp(1.15rem, 3vw, 1.45rem);
   font-weight: 700;
   color: var(--muted);
   letter-spacing: -0.01em;
-  animation: home-tagline-in 0.7s ease 0.35s both;
+  animation: home-tagline-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) 1.4s both;
 }
 
 @keyframes home-tagline-in {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
