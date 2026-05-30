@@ -10,7 +10,7 @@ import { CookiePreferencesModal } from '@/components/layout/CookiePreferencesMod
 import { AnalyticsOptInBanner } from '@/components/layout/AnalyticsOptInBanner';
 import { Toaster } from '@/components/ui/Toast';
 import { SessionBootstrap } from '@/components/layout/SessionBootstrap';
-import { bodyFont, displayFont } from '@/lib/fonts';
+import { bodyFont, displayFont, helloFont } from '@/lib/fonts';
 import { themeInitScript } from '@/lib/theme';
 import './globals.css';
 
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     template: '%s | MDM Academy',
   },
   description:
-    'Formation gamifiée gratuite : Apple Device Support, Jamf Pro et Microsoft Intune. Quiz, mini-jeux, badges et sprints certification.',
+    'Formation gamifiée gratuite : Apple Device Support, Jamf Pro et Microsoft Intune. Quiz, mini-jeux, badges et sprints certification.',
   keywords: [
     'MDM',
     'Apple Device Support',
@@ -49,7 +49,7 @@ export const metadata: Metadata = {
     siteName: 'MDM Academy',
     title: 'MDM Academy Pro — Apple, Jamf Pro et Intune gratuits',
     description:
-      'Formation gamifiée gratuite : Apple Device Support, Jamf Pro et Microsoft Intune. Quiz, mini-jeux, badges et sprints certification.',
+      'Formation gamifiée gratuite : Apple Device Support, Jamf Pro et Microsoft Intune. Quiz, mini-jeux, badges et sprints certification.',
     images: [
       {
         url: '/opengraph-image',
@@ -63,7 +63,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'MDM Academy Pro — Apple, Jamf Pro et Intune gratuits',
     description:
-      'Formation gamifiée gratuite : Apple Device Support, Jamf Pro et Microsoft Intune.',
+      'Formation gamifiée gratuite : Apple Device Support, Jamf Pro et Microsoft Intune.',
     images: ['/opengraph-image'],
   },
   robots: {
@@ -87,7 +87,11 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fr" className={`${bodyFont.variable} ${displayFont.variable}`} suppressHydrationWarning>
+    <html
+      lang="fr"
+      className={`${bodyFont.variable} ${displayFont.variable} ${helloFont.variable}`}
+      suppressHydrationWarning
+    >
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
