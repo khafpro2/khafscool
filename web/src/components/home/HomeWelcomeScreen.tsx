@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { BrandIcon } from '@/components/ui/BrandIcon';
 import { getTrackVisual } from '@/lib/design';
 import { LEARNING_PATHS, type LearningPathMeta } from '@/lib/learningPaths';
-const HELLO = 'Hello';
 
 const TRACK_LABELS: Record<LearningPathMeta['track'], string> = {
   APPLE: 'Apple',
@@ -16,19 +15,11 @@ const TRACK_LABELS: Record<LearningPathMeta['track'], string> = {
 export function HomeWelcomeScreen() {
   return (
     <section className="home-welcome" aria-labelledby="home-hello-title">
-      <h1 id="home-hello-title" className="home-hello-title">
-        {HELLO.split('').map((char, index) => (
-          <span
-            key={`${char}-${index}`}
-            className="home-hello-letter"
-            style={{ animationDelay: `${index * 0.1}s` }}
-            aria-hidden
-          >
-            {char}
-          </span>
-        ))}
-        <span className="sr-only">Hello</span>
-      </h1>
+      {/* Apple-style cursive Hello */}
+      <div className="apple-hello-wrapper" aria-hidden="true">
+        <span className="apple-hello-text">Hello</span>
+      </div>
+      <h1 id="home-hello-title" className="sr-only">Hello</h1>
 
       <p className="home-welcome-tagline">Je veux apprendre</p>
 
@@ -51,17 +42,17 @@ function TrackChoiceLink({ path, index }: { path: LearningPathMeta; index: numbe
         href={path.href}
         className="home-track-choice"
         data-track={path.track.toLowerCase()}
-      style={
-        {
-          '--track-gradient': visual.gradient,
-          animationDelay: `${0.35 + index * 0.12}s`,
-        } as CSSProperties
-      }
-      aria-label={`Parcours ${label} — commencer`}
-    >
-      <span className="home-track-choice-icon" aria-hidden>
-        <BrandIcon brand={path.brand} size="lg" variant="onColor" />
-      </span>
+        style={
+          {
+            '--track-gradient': visual.gradient,
+            animationDelay: `${1.4 + index * 0.12}s`,
+          } as CSSProperties
+        }
+        aria-label={`Parcours ${label} — commencer`}
+      >
+        <span className="home-track-choice-icon" aria-hidden>
+          <BrandIcon brand={path.brand} size="lg" variant="onColor" />
+        </span>
         <span className="home-track-choice-label">{label}</span>
       </Link>
     </li>
