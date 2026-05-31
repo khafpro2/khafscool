@@ -3,8 +3,8 @@
 import { useEffect, useRef, useState } from 'react';
 
 /* ------------------------------------------------------------------ */
-/* iOS 26 Liquid Glass Hello Intro                                      */
-/* Gong de démarrage synthétisé via Web Audio API                         */
+/* iOS 26 Liquid Glass Hello Intro — v2 refined                         */
+/* Gong de démarrage synthétisé via Web Audio API                       */
 /* ------------------------------------------------------------------ */
 
 function playStartupGong() {
@@ -74,7 +74,7 @@ function playStartupGong() {
 
 /* ------------------------------------------------------------------
    Component
-   ------------------------------------------------------------------ */
+------------------------------------------------------------------ */
 interface IOSHelloIntroProps {
   onDone: () => void;
 }
@@ -84,27 +84,36 @@ export function IOSHelloIntro({ onDone }: IOSHelloIntroProps) {
   const doneRef = useRef(false);
 
   useEffect(() => {
-    // Play gong immediately on mount
-    playStartupGong();
+    // Léger délai avant le gong pour laisser le navigateur peindre
+    const tGong = setTimeout(() => playStartupGong(), 80);
 
-    const t1 = setTimeout(() => setPhase('show'), 150);
-    const t2 = setTimeout(() => setPhase('exit'), 3400);
+    // Phase show : Hello pleinement visible
+    const t1 = setTimeout(() => setPhase('show'), 200);
+
+    // Phase exit : allongé à 4 200 ms — l'écriture (1.5 s) + shimmer sont bien visibles
+    const t2 = setTimeout(() => setPhase('exit'), 4200);
+
+    // Unmount après la transition CSS (800 ms)
     const t3 = setTimeout(() => {
       if (!doneRef.current) {
         doneRef.current = true;
         onDone();
       }
-    }, 4200);
+    }, 5100);
 
-    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
+    return () => {
+      clearTimeout(tGong);
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+    };
   }, [onDone]);
 
-  // Click / tap to skip
   const skip = () => {
     if (!doneRef.current) {
       doneRef.current = true;
       setPhase('exit');
-      setTimeout(onDone, 600);
+      setTimeout(onDone, 700);
     }
   };
 
@@ -114,22 +123,20 @@ export function IOSHelloIntro({ onDone }: IOSHelloIntroProps) {
       onClick={skip}
       aria-hidden="true"
     >
-      {/* Radial bloom glow */}
       <div className="ios26-bloom" />
 
-      {/* Liquid Glass Hello */}
       <div className="ios26-hello-wrap">
         <span className="ios26-hello-text">Hello</span>
-        {/* Glass shimmer overlay */}
         <span className="ios26-hello-shimmer" aria-hidden="true" />
       </div>
 
-      {/* iOS 26 Liquid Glass particles */}
       <div className="ios26-particles" aria-hidden="true">
         {[...Array(6)].map((_, i) => (
           <div key={i} className={`ios26-particle ios26-particle--${i + 1}`} />
         ))}
       </div>
+
+      <p className="ios26-skip-hint" aria-hidden="true">Appuyer pour passer</p>
     </div>
   );
 }
