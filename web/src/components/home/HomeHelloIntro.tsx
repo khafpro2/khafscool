@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import styles from './HomeHelloIntro.module.css';
 
 const STORAGE_KEY = 'apple-mdm-academy:hello-intro-seen:v1';
 
@@ -23,9 +24,14 @@ type HomeHelloIntroProps = {
   onFinish?: () => void;
 };
 
+declare global {
+  interface Window {
+    webkitAudioContext?: typeof AudioContext;
+  }
+}
+
 function playWelcomeTone() {
-  const AudioContextClass = window.AudioContext ||
-    (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
 
   if (!AudioContextClass) return;
 
@@ -74,14 +80,21 @@ export function HomeHelloIntro({ onFinish }: HomeHelloIntroProps) {
   const timeoutRef = useRef<number | null>(null);
   const intervalRef = useRef<number | null>(null);
 
-  const prefersReducedMotion = useMemo(() => {
-    if (typeof window === 'undefined') return false;
-    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  }, []);
+  const finish = useCallback(() => {
+    window.sessionStorage.setItem(STORAGE_KEY, 'true');
+    setLeaving(true);
+
+    timeoutRef.current = window.setTimeout(() => {
+      setVisible(false);
+      onFinish?.();
+    }, 900);
+  }, [onFinish]);
 
   useEffect(() => {
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const alreadySeen = window.sessionStorage.getItem(STORAGE_KEY) === 'true';
-    if (alreadySeen || prefersReducedMotion) {
+
+    if (alreadySeen || reducedMotion) {
       onFinish?.();
       return;
     }
@@ -92,17 +105,7 @@ export function HomeHelloIntro({ onFinish }: HomeHelloIntroProps) {
       if (timeoutRef.current) window.clearTimeout(timeoutRef.current);
       if (intervalRef.current) window.clearInterval(intervalRef.current);
     };
-  }, [onFinish, prefersReducedMotion]);
-
-  const finish = () => {
-    window.sessionStorage.setItem(STORAGE_KEY, 'true');
-    setLeaving(true);
-
-    timeoutRef.current = window.setTimeout(() => {
-      setVisible(false);
-      onFinish?.();
-    }, 900);
-  };
+  }, [onFinish]);
 
   const startIntro = () => {
     if (started) return;
@@ -126,20 +129,20 @@ export function HomeHelloIntro({ onFinish }: HomeHelloIntroProps) {
   if (!visible) return null;
 
   return (
-    <div className={`home-hello-intro${leaving ? ' home-hello-intro--leaving' : ''}`}>
-      <div className="home-hello-intro__aurora" aria-hidden />
-      <div className="home-hello-intro__content" aria-live="polite">
-        <p className="home-hello-intro__eyebrow">Apple MDM Academy</p>
-        <div key={GREETINGS[index]} className="home-hello-intro__word">
+    <div className={`${styles.intro}${leaving ? ` ${styles.leaving}` : ''}`}>
+      <div className={styles.aurora} aria-hidden />
+      <div className={styles.content} aria-live="polite">
+        <p className={styles.eyebrow}>Apple MDM Academy</p>
+        <div key={GREETINGS[index]} className={styles.word}>
           {GREETINGS[index]}
         </div>
         {!started ? (
-          <button className="home-hello-intro__start" type="button" onClick={startIntro}>
+          <button className={styles.start} type="button" onClick={startIntro}>
             Démarrer
           </button>
         ) : null}
       </div>
-      <button className="home-hello-intro__skip" type="button" onClick={finish}>
+      <button className={styles.skip} type="button" onClick={finish}>
         Passer
       </button>
     </div>
