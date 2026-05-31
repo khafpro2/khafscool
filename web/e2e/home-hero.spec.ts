@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 test.describe('Accueil — écran de bienvenue', () => {
-  test('affiche Hello animé, tagline et pistes MDM', async ({ page }) => {
+  test('affiche Hello, tagline et pistes MDM', async ({ page }) => {
     const response = await page.goto('/');
     expect(response?.status()).toBe(200);
 

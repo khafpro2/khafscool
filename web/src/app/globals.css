@@ -4471,7 +4471,6 @@ html[data-theme='dark'] .analytics-opt-in-banner {
 
 .home-hello-title {
   margin: 0;
-  animation: home-hello-in 0.75s ease 0.05s both;
   font-family: var(--font-display), var(--font-display-fallback);
   font-size: clamp(3.5rem, 14vw, 7rem);
   font-weight: 800;
@@ -4483,32 +4482,6 @@ html[data-theme='dark'] .analytics-opt-in-banner {
   color: transparent;
 }
 
-.home-hello-letter {
-  display: inline-block;
-  animation: hello-wave 1.4s ease-in-out infinite;
-}
-
-@keyframes hello-wave {
-  0%,
-  100% {
-    transform: translateY(0) scale(1);
-  }
-  50% {
-    transform: translateY(-0.14em) scale(1.04);
-  }
-}
-
-@keyframes home-hello-in {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 .home-welcome-tagline {
   margin: 1.25rem 0 0;
   font-family: var(--font-display), var(--font-display-fallback);
@@ -4516,18 +4489,6 @@ html[data-theme='dark'] .analytics-opt-in-banner {
   font-weight: 700;
   color: var(--muted);
   letter-spacing: -0.01em;
-  animation: home-tagline-in 0.7s ease 0.35s both;
-}
-
-@keyframes home-tagline-in {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 .home-track-choices {
@@ -4543,16 +4504,6 @@ html[data-theme='dark'] .analytics-opt-in-banner {
 .home-track-choices--dock {
   padding-top: 0.65rem;
   align-items: end;
-}
-
-/* Dock-live: JS owns transform (magnification + genie); keep glow-only hover rules below. */
-@media (hover: hover) {
-  .home-track-choices--dock-live .home-track-choice:hover,
-  .home-track-choices--dock-live .home-track-choice[data-dock-active],
-  .home-track-choices--dock-live:has(.home-track-choice:hover)
-    .home-track-choice:not(:hover) {
-    transform: none;
-  }
 }
 
 .home-track-choice {
@@ -4572,12 +4523,9 @@ html[data-theme='dark'] .analytics-opt-in-banner {
   letter-spacing: -0.01em;
   border: 1px solid rgba(255, 255, 255, 0.14);
   box-shadow: 0 6px 18px rgba(15, 23, 42, 0.1);
-  transform-origin: center bottom;
   transition:
-    transform 0.32s cubic-bezier(0.34, 1.45, 0.64, 1),
     box-shadow 0.25s ease,
     border-color 0.25s ease;
-  animation: home-track-in 0.55s ease both;
 }
 
 .home-track-choice[data-track='apple'] {
@@ -4594,33 +4542,19 @@ html[data-theme='dark'] .analytics-opt-in-banner {
 
 @media (hover: hover) {
   .home-track-choice:hover,
-  .home-track-choice:focus-visible,
-  .home-track-choice[data-dock-active] {
+  .home-track-choice:focus-visible {
     border-color: rgba(255, 255, 255, 0.48);
   }
 
-  .home-track-choice:focus-visible {
-    transform: translateY(-5px) scale(1.05);
-  }
-
-  .home-track-choices--dock .home-track-choice:hover {
-    transform: translateY(-10px) scale(1.2);
-  }
-
-  .home-track-choices--dock:has(.home-track-choice:hover) .home-track-choice:not(:hover) {
-    transform: translateY(-3px) scale(1.05);
-  }
-
   .home-track-choice:hover,
-  .home-track-choice[data-dock-active] {
+  .home-track-choice:focus-visible {
     box-shadow:
       0 14px 28px rgba(15, 23, 42, 0.18),
       0 0 22px rgba(15, 23, 42, 0.12);
   }
 
   .home-track-choice[data-track='apple']:hover,
-  .home-track-choice[data-track='apple']:focus-visible,
-  .home-track-choice[data-track='apple'][data-dock-active] {
+  .home-track-choice[data-track='apple']:focus-visible {
     box-shadow:
       0 14px 32px rgba(29, 29, 31, 0.38),
       0 0 24px rgba(148, 163, 184, 0.45),
@@ -4628,8 +4562,7 @@ html[data-theme='dark'] .analytics-opt-in-banner {
   }
 
   .home-track-choice[data-track='jamf']:hover,
-  .home-track-choice[data-track='jamf']:focus-visible,
-  .home-track-choice[data-track='jamf'][data-dock-active] {
+  .home-track-choice[data-track='jamf']:focus-visible {
     box-shadow:
       0 14px 32px rgba(90, 146, 0, 0.35),
       0 0 26px rgba(118, 185, 0, 0.55),
@@ -4637,31 +4570,13 @@ html[data-theme='dark'] .analytics-opt-in-banner {
   }
 
   .home-track-choice[data-track='intune']:hover,
-  .home-track-choice[data-track='intune']:focus-visible,
-  .home-track-choice[data-track='intune'][data-dock-active] {
+  .home-track-choice[data-track='intune']:focus-visible {
     box-shadow:
       0 14px 32px rgba(37, 99, 235, 0.32),
       0 0 26px rgba(56, 189, 248, 0.5),
       0 0 48px rgba(37, 99, 235, 0.28);
   }
 
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .home-track-choice {
-    transition:
-      box-shadow 0.25s ease,
-      border-color 0.25s ease;
-  }
-
-  @media (hover: hover) {
-    .home-track-choice:hover,
-    .home-track-choice:focus-visible,
-    .home-track-choice[data-dock-active],
-    .home-track-choices:has(.home-track-choice:hover) .home-track-choice:not(:hover) {
-      transform: none;
-    }
-  }
 }
 
 .home-track-choice[data-track='intune'] .home-track-choice-icon {
@@ -4717,17 +4632,6 @@ html[data-theme='dark'] .analytics-opt-in-banner {
   opacity: 0.9;
   letter-spacing: 0;
   max-width: 11rem;
-}
-
-@keyframes home-track-in {
-  from {
-    opacity: 0;
-    transform: translateY(16px) scale(0.96);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
 }
 
 @media (max-width: 540px) {
