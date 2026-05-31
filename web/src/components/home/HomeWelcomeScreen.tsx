@@ -1,10 +1,11 @@
 'use client';
 
-import type { CSSProperties } from 'react';
+import { useState, type CSSProperties } from 'react';
 import Link from 'next/link';
 import { BrandIcon } from '@/components/ui/BrandIcon';
 import { getTrackVisual } from '@/lib/design';
 import { LEARNING_PATHS, type LearningPathMeta } from '@/lib/learningPaths';
+import { IOSHelloIntro } from './IOSHelloIntro';
 
 const TRACK_LABELS: Record<LearningPathMeta['track'], string> = {
   APPLE: 'Apple',
@@ -13,22 +14,35 @@ const TRACK_LABELS: Record<LearningPathMeta['track'], string> = {
 };
 
 export function HomeWelcomeScreen() {
+  const [introDone, setIntroDone] = useState(false);
+
   return (
-    <section className="home-welcome" aria-labelledby="home-hello-title">
-      {/* Apple-style cursive Hello */}
-      <div className="apple-hello-wrapper" aria-hidden="true">
-        <span className="apple-hello-text">Hello</span>
-      </div>
-      <h1 id="home-hello-title" className="sr-only">Hello</h1>
+    <>
+      {/* iOS 26 Liquid Glass Hello Intro */}
+      {!introDone && (
+        <IOSHelloIntro onDone={() => setIntroDone(true)} />
+      )}
 
-      <p className="home-welcome-tagline">Je veux apprendre</p>
+      {/* Main content */}
+      <section
+        className={`home-welcome ${introDone ? 'home-welcome--visible' : 'home-welcome--hidden'}`}
+        aria-labelledby="home-hello-title"
+      >
+        {/* Apple-style cursive Hello */}
+        <div className="apple-hello-wrapper" aria-hidden="true">
+          <span className="apple-hello-text">Hello</span>
+        </div>
+        <h1 id="home-hello-title" className="sr-only">Hello</h1>
 
-      <ul className="home-track-choices" aria-label="Choix de piste MDM">
-        {LEARNING_PATHS.map((path, index) => (
-          <TrackChoiceLink key={path.slug} path={path} index={index} />
-        ))}
-      </ul>
-    </section>
+        <p className="home-welcome-tagline">Je veux apprendre</p>
+
+        <ul className="home-track-choices" aria-label="Choix de piste MDM">
+          {LEARNING_PATHS.map((path, index) => (
+            <TrackChoiceLink key={path.slug} path={path} index={index} />
+          ))}
+        </ul>
+      </section>
+    </>
   );
 }
 
