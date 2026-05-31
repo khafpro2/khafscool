@@ -18,7 +18,9 @@ test.describe('Quiz — mélange des options', () => {
     const firstQuestion = moduleQuestions[0];
     expect(firstQuestion).toBeDefined();
 
-    const shuffled = shuffleQuizQuestionOptions(firstQuestion!.options, firstQuestion!.id);
+    // Utilise le prompt comme seed déterministe (SeedQuestion n'expose pas d'id)
+    const questionSeed = firstQuestion!.prompt;
+    const shuffled = shuffleQuizQuestionOptions(firstQuestion!.options, questionSeed);
     const defaultOrder = firstQuestion!.options.map((option) => option.id);
     expect(shuffled.map((option) => option.id)).not.toEqual(defaultOrder);
 
