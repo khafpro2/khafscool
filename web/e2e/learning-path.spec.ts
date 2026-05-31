@@ -7,8 +7,6 @@ test.beforeEach(async ({ page }) => {
   });
 });
 
-import { expect, test } from '@playwright/test';
-
 
 
 test.describe('Parcours d’apprentissage — smoke', () => {
