@@ -4,9 +4,8 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "pnpm --filter @ama/shared build && tsc",
-            "postinstall": "node_modules/.bin/prisma generate",
-    "test": "vitest run",
+    "build" "pnpm --filter @ama/shared build && tsc",
+            
     "start": "node dist/index.js",
     "start:prod": "node dist/index.js"
   },
