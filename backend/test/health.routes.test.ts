@@ -83,4 +83,22 @@ describe('health routes', () => {
 
     await app.close();
   });
+
+  it('exposes /health/auth with JWT diagnostics', async () => {
+    process.env.JWT_SECRET = 'ci-test-jwt-secret-min-32-characters-long';
+    process.env.JWT_REFRESH_SECRET = 'ci-test-jwt-refresh-secret-min-32-chars';
+    process.env.CORS_ORIGIN = 'https://apple-mdm-academy.vercel.app';
+    process.env.NODE_ENV = 'development';
+
+    const app = Fastify();
+    await app.register(healthRoutes);
+    const response = await app.inject({ method: 'GET', url: '/health/auth' });
+
+    expect(response.statusCode).toBe(200);
+    const body = response.json();
+    expect(body.status).toBe('ok');
+    expect(body.jwtRoundTripOk).toBe(true);
+
+    await app.close();
+  });
 });

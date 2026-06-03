@@ -51,6 +51,7 @@ export default function DiagnosticsPage() {
   const [catalogCheck, setCatalogCheck] = useState<EndpointCheck>(initialEndpointCheck);
   const [oauthStatus, setOauthStatus] = useState<OAuthStatusSnapshot | null>(null);
   const [oauthCheck, setOauthCheck] = useState<EndpointCheck>(initialEndpointCheck);
+  const [authServerCheck, setAuthServerCheck] = useState<EndpointCheck>(initialEndpointCheck);
   const [tokenPresence, setTokenPresence] = useState<AuthTokenPresence>(() => getAuthTokenPresence());
   const [cookieSessionChecked, setCookieSessionChecked] = useState(false);
 
@@ -68,11 +69,12 @@ export default function DiagnosticsPage() {
   }, []);
 
   async function runEndpointChecks() {
-    const [health, database, catalog, oauth] = await Promise.all([
+    const [health, database, catalog, oauth, authServer] = await Promise.all([
       checkHealth(),
       checkDatabase(),
       checkCatalog(),
       checkOAuthStatus(),
+      checkAuthServer(),
     ]);
     setHealthCheck(health.check);
     setApiVersion(health.version);
@@ -81,6 +83,7 @@ export default function DiagnosticsPage() {
     setCatalogCheck(catalog);
     setOauthStatus(oauth.snapshot);
     setOauthCheck(oauth.check);
+    setAuthServerCheck(authServer);
   }
 
   const hasCookieSession = tokenPresence.accessTokenCookie && tokenPresence.refreshTokenCookie;
@@ -176,15 +179,16 @@ export default function DiagnosticsPage() {
       {
         id: 'auth-server',
         label: 'Auth API (JWT côté serveur)',
-        status: 'warning' as CheckStatus,
-        detail:
-          'Non vérifiable depuis le navigateur. Contrôle JWT_SECRET, JWT_REFRESH_SECRET et CORS_ORIGIN (voir DEPLOYMENT.md).',
+        status: authServerCheck.status,
+        detail: authServerCheck.detail,
       },
     ],
     [
       apiUrlConfigured,
       apiVersion,
       authClientStatus,
+      authServerCheck.detail,
+      authServerCheck.status,
       oauthCheck.detail,
       oauthCheck.status,
       catalogCheck.detail,
@@ -526,6 +530,68 @@ async function checkHealth(): Promise<{ check: EndpointCheck; version: string | 
         status: 'error',
       },
       version: null,
+    };
+  }
+}
+
+async function checkAuthServer(): Promise<EndpointCheck> {
+  try {
+    const res = await fetch(resolveClientApiPath('/health/auth'), { cache: 'no-store' });
+    if (res.status === 404) {
+      return {
+        detail:
+          'Endpoint /health/auth absent — redéploie l’API (v0.3.15+). En attendant, vérifie JWT_SECRET, JWT_REFRESH_SECRET et CORS_ORIGIN sur Railway.',
+        status: 'warning',
+      };
+    }
+
+    const data = (await res.json().catch(() => null)) as {
+      status?: 'ok' | 'warning' | 'error';
+      message?: string;
+      environment?: string;
+      jwtRoundTripOk?: boolean;
+    } | null;
+
+    const message = data?.message ?? `Réponse HTTP ${res.status} sans message exploitable.`;
+    const status: CheckStatus =
+      data?.status === 'ok' ? 'ok' : data?.status === 'warning' ? 'warning' : res.ok ? 'warning' : 'error';
+
+    if (!res.ok || data?.status === 'error') {
+      return { detail: message, status: 'error' };
+    }
+
+    let detail = message;
+    if (data?.environment) {
+      detail += ` (${data.environment})`;
+    }
+
+    try {
+      const sessionRes = await fetch('/api/auth/session', { credentials: 'include', cache: 'no-store' });
+      if (sessionRes.ok) {
+        const session = (await sessionRes.json()) as { authenticated?: boolean };
+        if (session.authenticated) {
+          const meRes = await fetch('/api/proxy/auth/me', { credentials: 'include', cache: 'no-store' });
+          if (meRes.ok) {
+            detail += ' · GET /auth/me OK avec la session courante.';
+          } else if (meRes.status === 401) {
+            return {
+              status: 'warning',
+              detail: `${message} · Session cookie présente mais rejetée par /auth/me (401).`,
+            };
+          }
+        } else if (status === 'ok') {
+          detail += ' · Connecte-toi via /auth pour valider /auth/me.';
+        }
+      }
+    } catch {
+      /* session probe optional */
+    }
+
+    return { detail, status };
+  } catch {
+    return {
+      detail: 'Diagnostic auth inaccessible. Vérifie que le backend répond sur /health/auth.',
+      status: 'error',
     };
   }
 }
