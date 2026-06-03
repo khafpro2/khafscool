@@ -16,10 +16,17 @@ if [[ -z "${DATABASE_URL:-}" ]]; then
 fi
 
 echo "==> prisma migrate deploy"
-if ! pnpm db:migrate; then
-  echo "==> migrate deploy a échoué — corriger les migrations avant redéploiement." >&2
-  exit 1
+migrate_log="$(mktemp)"
+if ! pnpm db:migrate 2>&1 | tee "$migrate_log"; then
+  if grep -q 'P3005' "$migrate_log"; then
+    echo "==> migrate deploy P3005 — schéma déjà présent sans historique Prisma, démarrage poursuivi."
+  else
+    echo "==> migrate deploy a échoué — corriger les migrations avant redéploiement." >&2
+    rm -f "$migrate_log"
+    exit 1
+  fi
 fi
+rm -f "$migrate_log"
 
 echo "==> seed si catalogue vide (ou RUN_DB_SEED=true)"
 pnpm --filter backend exec tsx scripts/bootstrap-seed-if-empty.ts
