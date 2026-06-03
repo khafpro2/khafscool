@@ -19,7 +19,7 @@ buildCommand = "corepack enable && corepack prepare pnpm@9.15.0 --activate && pn
 watchPatterns = ["backend/**", "shared/**", "pnpm-lock.yaml", "railway.toml"]
 
 [deploy]
-startCommand = "bash scripts/railway-start.sh"
+startCommand = "sed -i 's/\r//' scripts/railway-start.sh && bash scripts/railway-start.sh"
 healthcheckPath = "/health"
 healthcheckTimeout = 120
 restartPolicyType = "ON_FAILURE"
