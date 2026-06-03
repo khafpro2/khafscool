@@ -15,7 +15,7 @@ NODE_ENV = "production"
 
 [build]
 builder = "NIXPACKS"
-buildCommand = "corepack enable && corepack prepare pnpm@9.15.0 --activate && pnpm install --frozen-lockfile && pnpm --filter @ama/shared build && pnpm --filter backend exec prisma generate && pnpm --filter backend build"
+buildCommand = "corepack enable && corepack prepare pnpm@9.15.0 --activate && pnpm install --frozen-lockfile && pnpm --filter @ama/shared build && pnpm --filter backend exec npx prisma generate && pnpm --filter backend build"
 watchPatterns = ["backend/**", "shared/**", "pnpm-lock.yaml", "railway.toml"]
 
 [deploy]
