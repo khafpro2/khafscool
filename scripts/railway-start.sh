@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Démarre l'API Railway : migrations Prisma, seed si catalogue vide, puis node.
-set -euo pipefail
+set -e
+set -o pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
