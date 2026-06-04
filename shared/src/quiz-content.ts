@@ -620,10 +620,10 @@ export const appleCertPrepQuestions: Record<string, SeedQuestion[]> = {
       prompt:
         'Piège examen Device Support : un collègue affirme que « retirer manuellement une app gérée VPP depuis l’écran d’accueil iOS » prouve un bug MDM. Réponse la plus exacte ?',
       options: opt(
-        'Sur appareil non supervisé ou app Available, l\'utilisateur peut retirer l\'app : cela ne prouve pas un défaut VPP Required sur flotte supervisée et assignée',
-        'Toute app VPP est impossible à retirer, y compris sur iPhone personnel non supervisé où l\'utilisateur l\'a installée en Available',
-        'Le MDM ne contrôle jamais les applications : supervision, mode Required et jeton VPP n\'influencent pas la suppression manuelle',
-        'Seul un jailbreak permet de retirer une app gérée ; Apple bloque sinon toute désinstallation, même pour une app en Available'
+        "Sur appareil non supervisé ou app Available, l'utilisateur peut retirer l'app : cela ne prouve pas un défaut VPP Required sur flotte supervisée",
+        "Toute app VPP est impossible à retirer, y compris sur iPhone personnel non supervisé où l'utilisateur l'a installée en Available sans diagnostic préalable",
+        "Le MDM ne contrôle jamais les applications : supervision, mode Required et jeton VPP n'influencent pas la suppression manuelle sans diagnostic préalable",
+        "Seul un jailbreak permet de retirer une app gérée ; Apple bloque sinon toute désinstallation, même pour une app en Available sans diagnostic préalable"
       ),
       correctOption: 'a',
       explanation:
@@ -1666,10 +1666,10 @@ export const intuneIosEnrollmentQuestions: Record<string, SeedQuestion[]> = {
       prompt:
         'Un utilisateur BYOD accède à Outlook sans PIN applicatif malgré une politique App Protection assignée. Où investiguer ?',
       options: opt(
-        'Assignation de la politique MAM au bon groupe utilisateur, état d’enregistrement Intune MAM dans Company Portal, version Outlook supportée',
-        'Réinstallation de BitLocker sur le PC de l’admin, ce qui peut bloquer Conditional Access sans revue des policies de conformité',
-        'Changement du certificat Push Apple dans Jamf, sans passer par un groupe pilote avant assignation à toute la flotte',
-        'Désactivation du MFA Entra ID globalement, sans consulter les journaux Company Portal ni le statut de sync Entra ID'
+        "Assignation de la politique MAM au bon groupe utilisateur, état d’enregistrement Intune MAM dans Company Portal, version Outlook supportée",
+        "Réinstallation de BitLocker sur le PC de l’admin, ce qui peut bloquer Conditional Access sans revue des policies de conformité",
+        "Changement du certificat Push Apple dans Jamf, sans passer par un groupe pilote avant assignation à toute la flotte sans diagnostic préalable",
+        "Désactivation du MFA Entra ID globalement, sans consulter les journaux Company Portal ni le statut de sync Entra ID sans diagnostic préalable"
       ),
       correctOption: 'a',
       explanation:
@@ -1876,10 +1876,10 @@ export const intuneIosEnrollmentQuestions: Record<string, SeedQuestion[]> = {
       prompt:
         'Piège examen Intune : 40 iPhone affichent « Pending install » Teams alors que le token VPP vient d’être renouvelé hier. Première action conforme ?',
       options: opt(
-        'Confirmer sync token VPP dans Intune + ABM, licences disponibles, connectivité CDN Apple sur site, puis repush sur Smart Group pilote',
-        'Wipe immédiat des 40 appareils, ce qui peut bloquer Conditional Access sans revue des policies de conformité',
-        'Désinstaller Company Portal sur toute la flotte, sans passer par un groupe pilote avant assignation à toute la flotte',
-        'Basculer tous les iPhone en mode BYOD sans MAM, sans consulter les journaux Company Portal ni le statut de sync Entra ID'
+        "Confirmer sync token VPP dans Intune + ABM, licences disponibles, connectivité CDN Apple sur site, puis repush sur Smart Group pilote",
+        "Wipe immédiat des 40 appareils, ce qui peut bloquer Conditional Access sans revue des policies de conformité sans diagnostic préalable",
+        "Désinstaller Company Portal sur toute la flotte, sans passer par un groupe pilote avant assignation à toute la flotte sans diagnostic préalable",
+        "Basculer tous les iPhone en mode BYOD sans MAM, sans consulter les journaux Company Portal ni le statut de sync Entra ID"
       ),
       correctOption: 'a',
       explanation:
