@@ -1,14 +1,16 @@
 # Checklist mainteneur — fusion PR #7
 
-Checklist à valider avant de fusionner la branche `cursor/progress-dashboard-auth-v2` dans `main`.
+> **Statut : fusionnée** — PR [#6](https://github.com/khafpro2/khafscool/pull/6) intégrée dans `main` le **2026-05-27**. Ce document reste comme archive de la checklist pré-merge.
 
 **Pull request :** [PR #7 — Progress dashboard auth v2](https://github.com/khafpro2/khafscool/pull/7)
 
-**Version cible :** `0.3.6` (monorepo `@ama/shared`, backend, web, mobile)
+**Version cible :** `0.3.17` (monorepo aligné sur `main` ; fonctionnalités PR #7 : dock pistes, locale, QCM)
 
-**Prod (aperçu)** — [apple-mdm-academy.vercel.app](https://apple-mdm-academy.vercel.app) : accueil Hello + **dock pistes** (magnification / genie), sans hero MacBook.
+**Prod (aperçu)** — [apple-mdm-academy.vercel.app](https://apple-mdm-academy.vercel.app) : accueil Hello + **dock pistes** (magnification / genie), sans hero MacBook ni intro iOS 26.
 
-**HEAD de référence :** vérifier avec `git rev-parse --short HEAD` sur la branche avant merge.
+**Historique :** [PR #6](https://github.com/khafpro2/khafscool/pull/6) — **MERGED** dans `main` le 2026-05-27.
+
+**HEAD de référence :** `3c79694` (avant v0.3.13) — vérifier avec `git rev-parse --short HEAD` sur la branche avant merge.
 
 ---
 
@@ -203,8 +205,8 @@ pnpm db:seed
 - [ ] Tous les jobs CI verts sur PR #7
 - [ ] [CHANGELOG.md](./CHANGELOG.md) section `[0.3.6]` à jour
 - [ ] Revue code effectuée
-- [ ] Squash ou merge selon politique repo
-- [ ] **Ne pas merger sans demande explicite du mainteneur**
+- [ ] Merge dans `main` (PR #7)
+- [x] Stack prod : Railway API + Neon DB + Vercel web — voir [docs/HANDOFF.md](./docs/HANDOFF.md)
 
 ---
 

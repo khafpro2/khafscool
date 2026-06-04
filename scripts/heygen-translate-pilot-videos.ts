@@ -18,7 +18,7 @@
  *   2. Importer la vidéo source (téléchargée depuis YouTube ou enregistrement écran)
  *   3. Langue cible : French (France), mode Precision
  *   4. Exporter le MP4 dans web/public/media/videos/fr/<basename>.mp4
- *   5. pnpm heygen:register -- --basename apple-device-support-basics-fr
+ *   5. pnpm heygen:register -- --basename jamf-enrollment-apple-integration-fr
  */
 import fs from 'node:fs';
 import path from 'node:path';

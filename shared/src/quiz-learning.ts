@@ -66,3 +66,66 @@ export function truncateQuizPrompt(prompt: string, maxLength = 72): string {
   if (trimmed.length <= maxLength) return trimmed;
   return `${trimmed.slice(0, maxLength - 1)}…`;
 }
+
+/** Dérive un entier 32 bits à partir d’une chaîne (ordre stable par question). */
+export function hashSeedString(seed: string): number {
+  let hash = 2166136261;
+  for (let index = 0; index < seed.length; index += 1) {
+    hash ^= seed.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
+}
+
+/** Mélange Fisher-Yates déterministe (même ordre pour un même seed de session). */
+export function shuffleWithSeed<T>(items: readonly T[], seed: string): T[] {
+  const shuffled = [...items];
+  let state = hashSeedString(seed);
+
+  const random = () => {
+    state = (Math.imul(state, 1664525) + 1013904223) >>> 0;
+    return state / 0x100000000;
+  };
+
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(random() * (index + 1));
+    [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]];
+  }
+
+  return shuffled;
+}
+
+/** Mélange les options d’une question (les ids a–d restent liés aux libellés). */
+export function shuffleQuizQuestionOptions<T extends { id: string }>(
+  options: readonly T[],
+  questionId: string
+): T[] {
+  if (options.length <= 1) return [...options];
+  return shuffleWithSeed(options, questionId);
+}
+
+export function withShuffledQuizOptions<T extends { id: string; options: { id: string }[] }>(
+  questions: readonly T[]
+): T[] {
+  return questions.map((question) => ({
+    ...question,
+    options: shuffleQuizQuestionOptions(question.options, question.id),
+  }));
+}
+
+/** Lettre affichée (A–D) pour une option après mélange. */
+export function getQuizOptionDisplayLetter(
+  options: readonly { id: string }[],
+  optionId: string
+): string | undefined {
+  const index = options.findIndex((option) => option.id === optionId);
+  if (index < 0) return undefined;
+  return String.fromCharCode(65 + index);
+}
+
+/** Index 0–3 pour les touches A–D (insensible à la casse), ou null si hors plage. */
+export function resolveQuizOptionIndexFromKey(key: string, optionCount: number): number | null {
+  const index = 'abcd'.indexOf(key.toLowerCase());
+  if (index < 0 || index >= optionCount) return null;
+  return index;
+}

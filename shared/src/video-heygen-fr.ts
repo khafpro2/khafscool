@@ -12,14 +12,9 @@ export type VideoHeyGenFrEntry = {
 
 export const VIDEO_HEYGEN_FR_BY_MODULE: Record<string, Record<string, VideoHeyGenFrEntry>> = {
   'apple-cert-prep': {
-    'device-support-basics': {
-      basename: 'apple-device-support-basics-fr',
-      sourceYouTubeUrl: 'https://www.youtube.com/watch?v=_g-0V2AFCW0',
-      sourceLocalFilename: 'device-support-basics-ade-en.heygen.mp4',
-      heygenTitle: 'Apple MDM Academy — ABM, supervision et ADE (FR)',
-    },
     'ios-troubleshooting': {
       basename: 'apple-ios-troubleshooting-fr',
+      sourceYouTubeUrl: 'https://www.youtube.com/watch?v=lgMDK4zU114',
       heygenTitle: 'Apple MDM Academy — Dépannage iOS en environnement géré (FR)',
     },
     'acmt-exam-prep': {
@@ -28,6 +23,7 @@ export const VIDEO_HEYGEN_FR_BY_MODULE: Record<string, Record<string, VideoHeyGe
     },
     'apps-vpp-management': {
       basename: 'apple-apps-vpp-management-fr',
+      sourceYouTubeUrl: 'https://www.youtube.com/watch?v=k0cchC6mE88',
       heygenTitle: 'Apple MDM Academy — Apps VPP et apps gérées (FR)',
     },
   },
@@ -39,11 +35,12 @@ export const VIDEO_HEYGEN_FR_BY_MODULE: Record<string, Record<string, VideoHeyGe
     'enrollment-apple-integration': {
       basename: 'jamf-enrollment-apple-integration-fr',
       sourceYouTubeUrl: 'https://www.youtube.com/watch?v=_g-0V2AFCW0',
-      sourceLocalFilename: 'device-support-basics-ade-en.mp4',
+      sourceLocalFilename: 'device-support-basics-ade-en.heygen.mp4',
       heygenTitle: 'Apple MDM Academy — Enrôlement ABM et Jamf Pro (FR)',
     },
     'api-automation-advanced-policies': {
       basename: 'jamf-api-automation-fr',
+      sourceYouTubeUrl: 'https://www.youtube.com/watch?v=t3j9TkFfUJw',
       heygenTitle: 'Apple MDM Academy — Automatisation API Jamf Pro (FR)',
     },
   },
@@ -65,6 +62,7 @@ export const VIDEO_HEYGEN_FR_BY_MODULE: Record<string, Record<string, VideoHeyGe
     },
     'vpp-abm-business-apps': {
       basename: 'intune-vpp-abm-business-apps-fr',
+      sourceYouTubeUrl: 'https://www.youtube.com/watch?v=k0cchC6mE88',
       heygenTitle: 'Apple MDM Academy — VPP ABM et apps métier Intune (FR)',
     },
   },

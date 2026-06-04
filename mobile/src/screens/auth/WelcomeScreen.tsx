@@ -13,7 +13,8 @@ import {
 } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
 import * as Linking from 'expo-linking';
-import { API_URL } from '../../config';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { API_URL, WEB_URL } from '../../config';
 import { useAppTheme } from '../../context/ThemeContext';
 import type { AppThemeColors } from '../../lib/design';
 import { useThemedStyles } from '../../hooks/useThemedStyles';
@@ -33,6 +34,7 @@ interface WelcomeScreenProps {
 }
 
 export function WelcomeScreen({ onAuthSuccess }: WelcomeScreenProps) {
+  const insets = useSafeAreaInsets();
   const { colors } = useAppTheme();
   const styles = useThemedStyles(createStyles);
   const [mode, setMode] = useState<'login' | 'register'>('login');
@@ -121,7 +123,14 @@ export function WelcomeScreen({ onAuthSuccess }: WelcomeScreenProps) {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <ScrollView
-        contentContainerStyle={styles.container}
+        contentContainerStyle={[
+          styles.container,
+          {
+            paddingTop: Math.max(insets.top, 16) + 12,
+            paddingBottom: Math.max(insets.bottom, 20) + 16,
+            paddingHorizontal: Math.max(insets.left, insets.right, 20),
+          },
+        ]}
         keyboardShouldPersistTaps="handled"
       >
         <Text style={styles.eyebrow}>MDM Academy Pro</Text>
@@ -235,6 +244,40 @@ export function WelcomeScreen({ onAuthSuccess }: WelcomeScreenProps) {
             )}
           </Pressable>
         ))}
+
+        <View style={styles.footerLinks}>
+          <Pressable
+            style={styles.footerLink}
+            onPress={() => void Linking.openURL(`${WEB_URL}/courses`)}
+            disabled={isBusy}
+            accessibilityRole="link"
+            accessibilityLabel="Parcours — catalogue web"
+          >
+            <Text style={styles.footerLinkText}>Parcours</Text>
+          </Pressable>
+          <Text style={styles.footerLinkSep} accessibilityElementsHidden>
+            ·
+          </Text>
+          <Pressable
+            style={styles.footerLink}
+            onPress={() => void Linking.openURL(`${WEB_URL}/auth`)}
+            disabled={isBusy}
+            accessibilityRole="link"
+            accessibilityLabel="Connexion — page web"
+          >
+            <Text style={styles.footerLinkText}>Connexion</Text>
+          </Pressable>
+        </View>
+
+        <Pressable
+          style={styles.cookiePrefsLink}
+          onPress={() => void Linking.openURL(`${WEB_URL}/legal/confidentialite`)}
+          disabled={isBusy}
+          accessibilityRole="link"
+          accessibilityLabel="Préférences cookies — politique de confidentialité"
+        >
+          <Text style={styles.cookiePrefsText}>Préférences cookies</Text>
+        </Pressable>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -245,8 +288,8 @@ function createStyles(colors: AppThemeColors) {
     flex: { flex: 1, backgroundColor: colors.bg },
     container: {
       flexGrow: 1,
-      padding: 24,
       justifyContent: 'center',
+      minHeight: '100%',
       backgroundColor: colors.bg,
     },
     eyebrow: {
@@ -339,6 +382,38 @@ function createStyles(colors: AppThemeColors) {
       borderWidth: 1.5,
     },
     ssoButtonText: { textAlign: 'center', fontWeight: '700', fontSize: 15 },
+    footerLinks: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 8,
+      marginTop: 16,
+    },
+    footerLink: {
+      paddingVertical: 6,
+    },
+    footerLinkText: {
+      color: colors.muted,
+      fontSize: 13,
+      fontWeight: '600',
+      textDecorationLine: 'underline',
+    },
+    footerLinkSep: {
+      color: colors.muted,
+      fontSize: 13,
+      opacity: 0.45,
+    },
+    cookiePrefsLink: {
+      marginTop: 8,
+      paddingVertical: 8,
+      alignSelf: 'center',
+    },
+    cookiePrefsText: {
+      color: colors.muted,
+      fontSize: 13,
+      fontWeight: '600',
+      textDecorationLine: 'underline',
+    },
     disabled: { opacity: 0.65 },
   });
 }

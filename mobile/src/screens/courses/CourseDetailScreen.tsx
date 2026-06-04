@@ -19,15 +19,18 @@ import { useThemedStyles } from '../../hooks/useThemedStyles';
 import { toastBadgeUnlocked, toastModuleCompleted } from '../../lib/gamification-toasts';
 import { LessonContent } from '../../components/LessonContent';
 import { ModuleVideoSection } from '../../components/ModuleVideoSection';
+import { useQuizLetterKeys } from '../../hooks/useQuizLetterKeys';
 import { moduleHasVideo } from '@ama/shared/video-embed';
 import { ModuleObjectives } from '../../components/ModuleObjectives';
 import { QUESTIONS_PER_MODULE } from '@ama/shared/constants';
 import { countLessonWords, formatCourseHeroBanner, formatReadingTimeLabel, sumLessonReadingMinutes } from '@ama/shared/reading-time';
 import { findGlossaryTermInText, glossaryMobilePath } from '@ama/shared/glossary';
 import {
+  getQuizOptionDisplayLetter,
   getQuizQuestionTypeMeta,
   listIncorrectQuestionIds,
   truncateQuizPrompt,
+  withShuffledQuizOptions,
 } from '@ama/shared/quiz-learning';
 import {
   CheckAnswerResult,
@@ -116,8 +119,15 @@ export function CourseDetailScreen() {
     if (!course) return null;
     const nextId = progress?.progress.nextModule?.id;
     const targetId = expandedModuleId ?? nextId;
-    if (!targetId) return course.modules[0] ?? null;
-    return course.modules.find((item) => item.id === targetId) ?? course.modules[0] ?? null;
+    const module =
+      (targetId ? course.modules.find((item) => item.id === targetId) : null) ??
+      course.modules[0] ??
+      null;
+    if (!module) return null;
+    return {
+      ...module,
+      questions: withShuffledQuizOptions(module.questions),
+    };
   }, [course, expandedModuleId, progress?.progress.nextModule?.id]);
 
   useEffect(() => {
@@ -132,6 +142,27 @@ export function CourseDetailScreen() {
     setQuizFocusWrongOnly(false);
     setQuizFeedback(null);
   }, [activeModule?.id]);
+
+  const currentQuizQuestion = useMemo(() => {
+    if (!activeModule?.questions.length) return null;
+    const safeIndex = Math.min(quizQuestionIndex, activeModule.questions.length - 1);
+    return activeModule.questions[safeIndex] ?? null;
+  }, [activeModule, quizQuestionIndex]);
+
+  const currentQuizRevealed = currentQuizQuestion
+    ? revealedQuestions.has(currentQuizQuestion.id)
+    : true;
+
+  const activeModuleUnlocked = useMemo(() => {
+    if (!activeModule || !progress) return false;
+    const moduleProgress = moduleProgressById.get(activeModule.id);
+    const status = getModuleStatus(
+      activeModule.id,
+      moduleProgress,
+      progress.progress.nextModule?.id
+    );
+    return status !== 'locked';
+  }, [activeModule, moduleProgressById, progress]);
 
   const canSubmit = useMemo(() => {
     if (!activeModule?.questions.length) return false;
@@ -204,6 +235,24 @@ export function CourseDetailScreen() {
       setCheckingQuestionId(null);
     }
   }
+
+  useQuizLetterKeys({
+    enabled: Boolean(activeModuleUnlocked && currentQuizQuestion && !currentQuizRevealed),
+    revealed: currentQuizRevealed,
+    disabled: checkingQuestionId === currentQuizQuestion?.id,
+    options: currentQuizQuestion?.options ?? [],
+    selectedOptionId: currentQuizQuestion ? answers[currentQuizQuestion.id] : undefined,
+    onSelect: (optionId) => {
+      if (!currentQuizQuestion) return;
+      setAnswers((current) => ({ ...current, [currentQuizQuestion.id]: optionId }));
+      setLocalResult(null);
+      setQuizFeedback(null);
+    },
+    onCheck: () => {
+      if (!activeModule || !currentQuizQuestion) return;
+      void handleCheckAnswer(activeModule, currentQuizQuestion.id);
+    },
+  });
 
   async function handleSubmit(module: CourseModule, review = false) {
     if (!module.questions.length) return;
@@ -628,10 +677,15 @@ export function CourseDetailScreen() {
                                 option.id === revealedCorrectId &&
                                 !isCorrectSelection;
 
+                              const optionLetter = String.fromCharCode(65 + optionIndex);
+
                               return (
                                 <Pressable
                                   key={option.id}
                                   disabled={revealed}
+                                  accessibilityRole="radio"
+                                  accessibilityState={{ selected, disabled: revealed }}
+                                  accessibilityLabel={`Option ${optionLetter} : ${option.label}`}
                                   onPress={() => {
                                     if (revealed) return;
                                     setAnswers((current) => ({ ...current, [question.id]: option.id }));
@@ -651,8 +705,8 @@ export function CourseDetailScreen() {
                                             : null,
                                   ]}
                                 >
-                                  <Text style={styles.optionLetter}>
-                                    {String.fromCharCode(65 + optionIndex)}
+                                  <Text style={styles.optionLetter} accessibilityElementsHidden importantForAccessibility="no">
+                                    {optionLetter}
                                   </Text>
                                   <Text
                                     style={[
@@ -696,7 +750,11 @@ export function CourseDetailScreen() {
                               <Text style={styles.quizCorrectAnswerHint}>
                                 La bonne réponse est l’option{' '}
                                 <Text style={styles.quizCorrectAnswerHintStrong}>
-                                  {(checkResult.correctOptionId ?? question.correctOption ?? '').toUpperCase()}
+                                  {getQuizOptionDisplayLetter(
+                                    question.options,
+                                    checkResult.correctOptionId ?? question.correctOption ?? ''
+                                  ) ??
+                                    (checkResult.correctOptionId ?? question.correctOption ?? '').toUpperCase()}
                                 </Text>{' '}
                                 — relis l’explication ci-dessous.
                               </Text>

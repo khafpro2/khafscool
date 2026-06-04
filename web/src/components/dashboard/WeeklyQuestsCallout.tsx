@@ -7,6 +7,7 @@ import { toastQuestsCompleted } from '@/lib/gamification-toasts';
 import { countCompletedQuests, detectNewlyCompletedQuests } from '@/lib/quest-feedback';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { ProgressBar } from '@/components/ui/ProgressBar';
 
 export function WeeklyQuestsCallout() {
   const [dashboard, setDashboard] = useState<DashboardData | null>(null);
@@ -30,7 +31,11 @@ export function WeeklyQuestsCallout() {
       });
   }, []);
 
-  const completedCount = dashboard ? countCompletedQuests(mapDashboardQuests(dashboard)) : 0;
+  const quests = dashboard ? mapDashboardQuests(dashboard) : [];
+  const completedCount = countCompletedQuests(quests);
+  const totalQuests = quests.length;
+  const questProgressPercent =
+    totalQuests > 0 ? Math.min(100, Math.round((completedCount / totalQuests) * 100)) : 0;
 
   return (
     <Card
@@ -76,6 +81,30 @@ export function WeeklyQuestsCallout() {
           Suis tes quêtes Apple, Jamf et Intune, leur progression et les points à débloquer avant la
           réinitialisation hebdomadaire.
         </p>
+        {totalQuests > 0 ? (
+          <div style={{ marginTop: '0.85rem' }}>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                gap: '0.5rem',
+                fontSize: '0.85rem',
+                fontWeight: 700,
+              }}
+            >
+              <span className="muted">Progression hebdo</span>
+              <span>
+                {completedCount}/{totalQuests} quêtes
+              </span>
+            </div>
+            <ProgressBar
+              value={questProgressPercent}
+              tone={completedCount === totalQuests ? 'success' : 'accent'}
+              className="dashboard-quest-callout-progress"
+              style={{ marginTop: '0.45rem' }}
+            />
+          </div>
+        ) : null}
       </div>
       <Button href="/quests">Voir mes quêtes</Button>
     </Card>

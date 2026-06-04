@@ -16,6 +16,16 @@ import {
   writeRememberMePreference,
 } from '@/lib/auth';
 import { resolveAuthErrorMessage } from '@/lib/auth-errors';
+import {
+  fetchOAuthStatus,
+  isOAuthProviderClickable,
+  oauthProviderHelpText,
+  oauthStatusLabel,
+  oauthStatusTone,
+  summarizeOAuthStatus,
+  type OAuthProviderName,
+  type OAuthStatusSnapshot,
+} from '@/lib/oauth-status';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -23,7 +33,7 @@ import { BrandIcon } from '@/components/ui/BrandIcon';
 import type { BrandId } from '@/lib/brands';
 
 const SSO_PROVIDERS: {
-  id: string;
+  id: OAuthProviderName;
   label: string;
   brand?: BrandId;
   icon?: string;
@@ -60,11 +70,13 @@ export default function AuthPage() {
   const [hasSession, setHasSession] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
+  const [oauthStatus, setOauthStatus] = useState<OAuthStatusSnapshot | null>(null);
 
   useEffect(() => {
     setRedirectPath(readRedirectFromLocation());
     setHasSession(Boolean(getAccessToken()));
     setRememberMe(readRememberMePreference());
+    void fetchOAuthStatus().then(setOauthStatus);
   }, []);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -250,35 +262,62 @@ export default function AuthPage() {
 
         <aside style={{ display: 'grid', gap: '1rem' }}>
           <Card variant="soft" className="auth-card-glass">
-            <p className="section-eyebrow">Connexion rapide (dev)</p>
+            <p className="section-eyebrow">
+              {oauthStatus?.environment === 'production' ? 'Connexion SSO' : 'Connexion rapide (dev)'}
+            </p>
             <p className="muted" style={{ marginTop: '0.35rem', fontSize: '0.9rem' }}>
-              En développement, les fournisseurs OAuth simulent un profil sans appeler les API réelles.
+              {oauthStatus
+                ? summarizeOAuthStatus(oauthStatus)
+                : 'Chargement du statut OAuth depuis l’API…'}
             </p>
             <div style={{ display: 'grid', gap: '0.6rem', marginTop: '0.85rem' }}>
-              {SSO_PROVIDERS.map((provider) => (
-                <Button
-                  key={provider.id}
-                  href={buildOAuthStartUrl(provider.id, redirectPath)}
-                  variant={provider.variant}
-                  fullWidth
-                  icon={provider.brand ? undefined : provider.icon}
-                  style={
-                    provider.brand
-                      ? { display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }
-                      : undefined
-                  }
-                >
-                  {provider.brand ? (
-                    <BrandIcon
-                      brand={provider.brand}
-                      size="sm"
-                      variant={provider.variant === 'dark' ? 'onColor' : 'default'}
-                    />
-                  ) : null}
-                  {provider.label}
-                </Button>
-              ))}
+              {SSO_PROVIDERS.map((provider) => {
+                const status = oauthStatus?.[provider.id] ?? 'stub';
+                const environment = oauthStatus?.environment ?? 'development';
+                const clickable = isOAuthProviderClickable(status, environment);
+
+                return (
+                  <div key={provider.id} style={{ display: 'grid', gap: '0.35rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                      <Badge tone={oauthStatusTone(status)}>{oauthStatusLabel(status)}</Badge>
+                    </div>
+                    {clickable ? (
+                      <Button
+                        href={buildOAuthStartUrl(provider.id, redirectPath)}
+                        variant={provider.variant}
+                        fullWidth
+                        icon={provider.brand ? undefined : provider.icon}
+                        style={
+                          provider.brand
+                            ? { display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }
+                            : undefined
+                        }
+                      >
+                        {provider.brand ? (
+                          <BrandIcon
+                            brand={provider.brand}
+                            size="sm"
+                            variant={provider.variant === 'dark' ? 'onColor' : 'default'}
+                          />
+                        ) : null}
+                        {provider.label}
+                      </Button>
+                    ) : (
+                      <Button variant={provider.variant} fullWidth disabled>
+                        {provider.label} — indisponible
+                      </Button>
+                    )}
+                    <p className="muted" style={{ fontSize: '0.8rem', margin: 0 }}>
+                      {oauthProviderHelpText(provider.id, status, environment)}
+                    </p>
+                  </div>
+                );
+              })}
             </div>
+            <p className="muted" style={{ marginTop: '0.85rem', fontSize: '0.8rem' }}>
+              Mise en prod : <code>docs/OAUTH-PRODUCTION.md</code> · état détaillé sur{' '}
+              <a href="/diagnostics">/diagnostics</a>.
+            </p>
           </Card>
 
           <Card className="auth-card-glass">

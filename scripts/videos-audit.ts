@@ -53,6 +53,7 @@ function main() {
     if (heygenReady) mode = 'heygen-mp4';
     else if (config.videoProvider === 'mp4' && config.videoUrl.includes('/sources/')) mode = 'dub-sync';
     else if (config.videoProvider === 'mp4') mode = 'mp4-local';
+    else if (config.videoProvider === 'youtube') mode = 'youtube-fr';
 
     const frMp4 = basename ? path.join(frDir, `${basename}.mp4`) : null;
     const sourceMp4 = heygenEntry?.sourceLocalFilename
@@ -96,7 +97,7 @@ function main() {
     (key) => VIDEO_HEYGEN_FR_MANIFEST[key]?.ready
   ).length;
   console.log(`\nManifest HeyGen : ${heygenCount} MP4 prêt(s).`);
-  console.log('Modes : heygen-mp4 | dub-sync (voix FR segmentée) | placeholder\n');
+  console.log('Modes : heygen-mp4 | dub-sync (voix FR segmentée) | youtube-fr | placeholder\n');
 }
 
 main();

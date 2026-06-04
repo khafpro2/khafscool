@@ -1,11 +1,14 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { readAnalyticsOptIn, writeAnalyticsOptIn } from '@/lib/analytics-opt-in';
 import { readCookieConsent } from '@/lib/cookie-consent';
 
+/** Masqué sur `/` — accueil plein écran. */
 export function AnalyticsOptInBanner() {
+  const pathname = usePathname();
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -30,7 +33,7 @@ export function AnalyticsOptInBanner() {
     setVisible(false);
   }
 
-  if (!visible) return null;
+  if (pathname === '/' || !visible) return null;
 
   return (
     <div

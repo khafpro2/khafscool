@@ -1,8 +1,17 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { API_URL } from '@/lib/api';
-import { getAuthTokenPresence } from '@/lib/auth';
+import { API_URL_DISPLAY, IS_API_URL_CONFIGURED, resolveClientApiPath } from '@/lib/api';
+import { getAuthTokenPresence, type AuthTokenPresence } from '@/lib/auth';
+import {
+  fetchOAuthStatus,
+  OAUTH_PROVIDER_ORDER,
+  oauthStatusLabel,
+  oauthStatusTone,
+  resolveOAuthEnvironment,
+  summarizeOAuthStatus,
+  type OAuthStatusSnapshot,
+} from '@/lib/oauth-status';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -29,14 +38,6 @@ const quickLinks = [
   { href: '/mvp', label: 'MVP' },
 ];
 
-type OAuthProviderStatus = 'configured' | 'stub' | 'disabled';
-
-type OAuthStatusSnapshot = {
-  apple: OAuthProviderStatus;
-  google: OAuthProviderStatus;
-  microsoft: OAuthProviderStatus;
-};
-
 const initialEndpointCheck: EndpointCheck = {
   detail: 'Vérification en cours…',
   status: 'pending',
@@ -46,44 +47,72 @@ export default function DiagnosticsPage() {
   const [healthCheck, setHealthCheck] = useState<EndpointCheck>(initialEndpointCheck);
   const [apiVersion, setApiVersion] = useState<string | null>(null);
   const [databaseCheck, setDatabaseCheck] = useState<EndpointCheck>(initialEndpointCheck);
+  const [schemaReady, setSchemaReady] = useState<boolean | null>(null);
   const [catalogCheck, setCatalogCheck] = useState<EndpointCheck>(initialEndpointCheck);
   const [oauthStatus, setOauthStatus] = useState<OAuthStatusSnapshot | null>(null);
   const [oauthCheck, setOauthCheck] = useState<EndpointCheck>(initialEndpointCheck);
-  const [tokenPresence, setTokenPresence] = useState(() => ({
-    accessTokenCookie: false,
-    accessTokenLocal: false,
-    refreshTokenCookie: false,
-    refreshTokenLocal: false,
-  }));
+  const [authServerCheck, setAuthServerCheck] = useState<EndpointCheck>(initialEndpointCheck);
+  const [tokenPresence, setTokenPresence] = useState<AuthTokenPresence>(() => getAuthTokenPresence());
+  const [cookieSessionChecked, setCookieSessionChecked] = useState(false);
 
   useEffect(() => {
     setTokenPresence(getAuthTokenPresence());
+    void checkBrowserSession().then((session) => {
+      setTokenPresence((prev) => ({
+        ...prev,
+        accessTokenCookie: session.hasAccessToken,
+        refreshTokenCookie: session.hasRefreshToken,
+      }));
+      setCookieSessionChecked(true);
+    });
     void runEndpointChecks();
   }, []);
 
   async function runEndpointChecks() {
-    const [health, database, catalog, oauth] = await Promise.all([
+    const [health, database, catalog, oauth, authServer] = await Promise.all([
       checkHealth(),
       checkDatabase(),
       checkCatalog(),
       checkOAuthStatus(),
+      checkAuthServer(),
     ]);
     setHealthCheck(health.check);
     setApiVersion(health.version);
-    setDatabaseCheck(database);
+    setDatabaseCheck(database.check);
+    setSchemaReady(database.schemaReady);
     setCatalogCheck(catalog);
     setOauthStatus(oauth.snapshot);
     setOauthCheck(oauth.check);
+    setAuthServerCheck(authServer);
   }
 
-  const hasAnyToken = Object.values(tokenPresence).some(Boolean);
-  const hasAccessToken = tokenPresence.accessTokenCookie || tokenPresence.accessTokenLocal;
-  const hasRefreshToken = tokenPresence.refreshTokenCookie || tokenPresence.refreshTokenLocal;
-  const sessionStatus: CheckStatus =
-    hasAccessToken && hasRefreshToken ? 'ok' : hasAnyToken ? 'warning' : 'error';
+  const hasCookieSession = tokenPresence.accessTokenCookie && tokenPresence.refreshTokenCookie;
+  const hasUserProfile = tokenPresence.userProfileLocal;
+  const hasJwtInLocalStorage = tokenPresence.accessTokenLocal || tokenPresence.refreshTokenLocal;
+  const sessionStatus: CheckStatus = !cookieSessionChecked
+    ? 'pending'
+    : hasCookieSession
+      ? hasUserProfile
+        ? 'ok'
+        : 'warning'
+      : hasUserProfile || hasJwtInLocalStorage
+        ? 'warning'
+        : 'error';
 
-  const apiUrlConfigured = Boolean(API_URL?.trim());
-  const authClientStatus: CheckStatus = hasAccessToken && hasRefreshToken ? 'ok' : hasAnyToken ? 'warning' : 'error';
+  const sessionDetail = !cookieSessionChecked
+    ? 'Vérification des cookies HttpOnly en cours…'
+    : hasCookieSession
+      ? hasUserProfile
+        ? 'Session active — cookies HttpOnly valides et profil local présent (valeurs masquées).'
+        : 'Cookies de session détectés sans profil local — ouvre /auth ou recharge la page.'
+      : hasUserProfile
+        ? 'Profil local présent mais session cookie expirée ou absente — reconnecte-toi via /auth.'
+        : hasJwtInLocalStorage
+          ? 'Anciens jetons en localStorage sans session cookie — déconnecte-toi puis reconnecte-toi.'
+          : 'Aucune session — connecte-toi via /auth pour tester le tableau de bord.';
+
+  const apiUrlConfigured = IS_API_URL_CONFIGURED;
+  const authClientStatus = sessionStatus;
 
   const checklist = useMemo<Array<{ id: string; label: string; status: CheckStatus; detail: string }>>(
     () => [
@@ -108,6 +137,20 @@ export default function DiagnosticsPage() {
         detail: databaseCheck.detail,
       },
       {
+        id: 'schema-ready',
+        label: 'Schéma Prisma (schemaReady)',
+        status:
+          schemaReady === true ? 'ok' : schemaReady === false ? 'error' : databaseCheck.status === 'ok' ? 'ok' : 'warning',
+        detail:
+          schemaReady === true
+            ? 'Tables Prisma présentes — migrations appliquées.'
+            : schemaReady === false
+              ? 'Schéma absent ou incomplet — exécuter pnpm db:migrate puis pnpm db:seed (voir carte ci-dessous).'
+              : schemaReady === undefined && databaseCheck.status === 'error'
+                ? 'Connexion DB en échec — schemaReady non déterminé.'
+                : 'Champ schemaReady non exposé par l’API (mettre à jour le backend).',
+      },
+      {
         id: 'catalog',
         label: 'Catalogue seedé (/catalog)',
         status: catalogCheck.status,
@@ -124,36 +167,36 @@ export default function DiagnosticsPage() {
         label: 'URL API configurée (web)',
         status: apiUrlConfigured ? 'ok' : 'error',
         detail: apiUrlConfigured
-          ? `NEXT_PUBLIC_API_URL → ${API_URL}`
-          : 'Variable NEXT_PUBLIC_API_URL absente — le front bascule en mode démo.',
+          ? `NEXT_PUBLIC_API_URL → ${API_URL_DISPLAY}`
+          : 'Variable NEXT_PUBLIC_API_URL absente ou vide — le front bascule en mode démo.',
       },
       {
         id: 'auth-session',
-        label: 'Session navigateur (tokens locaux)',
+        label: 'Session navigateur (cookies + profil)',
         status: authClientStatus,
-        detail: hasAnyToken
-          ? 'Jetons détectés en localStorage ou cookie (valeurs masquées).'
-          : 'Aucun jeton — connecte-toi via /auth pour tester le dashboard.',
+        detail: sessionDetail,
       },
       {
         id: 'auth-server',
         label: 'Auth API (JWT côté serveur)',
-        status: 'warning' as CheckStatus,
-        detail:
-          'Non vérifiable depuis le navigateur. Contrôle JWT_SECRET, JWT_REFRESH_SECRET et CORS_ORIGIN (voir DEPLOYMENT.md).',
+        status: authServerCheck.status,
+        detail: authServerCheck.detail,
       },
     ],
     [
       apiUrlConfigured,
       apiVersion,
       authClientStatus,
+      authServerCheck.detail,
+      authServerCheck.status,
       oauthCheck.detail,
       oauthCheck.status,
       catalogCheck.detail,
       catalogCheck.status,
       databaseCheck.detail,
       databaseCheck.status,
-      hasAnyToken,
+      schemaReady,
+      sessionDetail,
       healthCheck.detail,
       healthCheck.status,
     ]
@@ -242,45 +285,49 @@ export default function DiagnosticsPage() {
           status={catalogCheck.status}
           title="Catalogue public"
         />
-        <StatusCard
-          detail={
-            hasAnyToken
-              ? 'Présence détectée en stockage local ou cookie. Les valeurs restent masquées.'
-              : 'Aucun token local ou cookie détecté dans ce navigateur.'
-          }
-          label="Session locale"
-          status={sessionStatus}
-          title="Tokens navigateur"
-        />
+        <StatusCard detail={sessionDetail} label="Session locale" status={sessionStatus} title="Tokens navigateur" />
       </section>
 
       <Card style={{ marginTop: '1rem' }}>
         <p className="section-eyebrow">OAuth</p>
         <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginTop: '0.35rem' }}>État des fournisseurs SSO</h2>
         <p className="muted" style={{ marginTop: '0.35rem' }}>
-          Lecture seule depuis <code>/auth/oauth/status</code>. En dev sans credentials, le mode <strong>stub</strong>{' '}
-          simule un profil utilisateur. Voir <code>docs/OAUTH-PRODUCTION.md</code> pour la mise en prod.
+          Lecture seule depuis <code>/auth/oauth/status</code>. <strong>Configuré</strong> = credentials sur Railway ;
+          <strong> Stub</strong> = simulation en dev uniquement ; en production sans variables, les boutons SSO échouent.
+          Guide : <code>docs/OAUTH-PRODUCTION.md</code>.
         </p>
         {oauthStatus ? (
-          <ul style={{ display: 'grid', gap: '0.65rem', marginTop: '1rem', padding: 0, listStyle: 'none' }}>
-            {(['google', 'apple', 'microsoft'] as const).map((provider) => (
-              <li
-                key={provider}
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  gap: '0.75rem',
-                  alignItems: 'center',
-                  padding: '0.65rem 0.85rem',
-                  borderRadius: 12,
-                  background: 'var(--accent-soft)',
-                }}
-              >
-                <strong style={{ fontSize: '0.92rem', textTransform: 'capitalize' }}>{provider}</strong>
-                <Badge tone={oauthStatusTone(oauthStatus[provider])}>{oauthStatusLabel(oauthStatus[provider])}</Badge>
-              </li>
-            ))}
-          </ul>
+          <>
+            <p className="muted" style={{ marginTop: '0.65rem', fontSize: '0.88rem' }}>
+              Environnement API :{' '}
+              <strong>
+                {resolveOAuthEnvironment(oauthStatus) === 'production' ? 'production' : 'développement'}
+              </strong>
+              {' · '}
+              {summarizeOAuthStatus(oauthStatus)}
+            </p>
+            <ul style={{ display: 'grid', gap: '0.65rem', marginTop: '1rem', padding: 0, listStyle: 'none' }}>
+              {OAUTH_PROVIDER_ORDER.map((provider) => (
+                <li
+                  key={provider}
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    gap: '0.75rem',
+                    alignItems: 'center',
+                    padding: '0.65rem 0.85rem',
+                    borderRadius: 12,
+                    background: 'var(--accent-soft)',
+                  }}
+                >
+                  <strong style={{ fontSize: '0.92rem', textTransform: 'capitalize' }}>{provider}</strong>
+                  <Badge tone={oauthStatusTone(oauthStatus[provider])}>
+                    {oauthStatusLabel(oauthStatus[provider])}
+                  </Badge>
+                </li>
+              ))}
+            </ul>
+          </>
         ) : (
           <p className="muted" style={{ marginTop: '0.85rem' }}>
             {oauthCheck.detail}
@@ -315,6 +362,47 @@ export default function DiagnosticsPage() {
           </Button>
         </div>
       </Card>
+
+      {schemaReady === false ? (
+        <Card style={{ marginTop: '1rem', borderColor: 'var(--danger)' }}>
+          <p className="section-eyebrow">Schéma Postgres</p>
+          <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginTop: '0.35rem' }}>Migrations requises</h2>
+          <p className="muted" style={{ marginTop: '0.35rem' }}>
+            L’API répond mais les tables Prisma sont absentes (<code>schemaReady: false</code>). Le catalogue renverra
+            une erreur <strong>503</strong> tant que le schéma n’est pas à jour.
+          </p>
+          <ol
+            style={{
+              color: 'var(--muted)',
+              display: 'grid',
+              gap: '0.45rem',
+              marginTop: '0.85rem',
+              paddingLeft: '1.25rem',
+            }}
+          >
+            <li>
+              Local : <code>pnpm db:up</code> puis <code>pnpm db:migrate</code> et <code>pnpm db:seed</code>.
+            </li>
+            <li>
+              Railway / Neon : vérifier <code>DATABASE_URL</code>, puis redéployer (script{' '}
+              <code>scripts/railway-start.sh</code> applique migrate + seed si la base est vide).
+            </li>
+            <li>Relance ce diagnostic après migration.</li>
+          </ol>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '1rem' }}>
+            <Button type="button" onClick={runEndpointChecks} size="sm">
+              Revérifier le schéma
+            </Button>
+            <Button
+              href="https://github.com/khafpro2/khafscool/blob/main/docs/NEON-DATABASE.md"
+              variant="secondary"
+              size="sm"
+            >
+              Guide Neon (prod)
+            </Button>
+          </div>
+        </Card>
+      ) : null}
 
       <Card style={{ marginTop: '1rem' }}>
         <p className="section-eyebrow">Dépannage local</p>
@@ -351,10 +439,18 @@ export default function DiagnosticsPage() {
             marginTop: '1rem',
           }}
         >
-          <TokenPresence label="Jeton d’accès (localStorage)" present={tokenPresence.accessTokenLocal} />
-          <TokenPresence label="Jeton d’accès (cookie)" present={tokenPresence.accessTokenCookie} />
-          <TokenPresence label="Jeton de rafraîchissement (localStorage)" present={tokenPresence.refreshTokenLocal} />
-          <TokenPresence label="Jeton de rafraîchissement (cookie)" present={tokenPresence.refreshTokenCookie} />
+          <TokenPresence label="Profil utilisateur (localStorage)" present={tokenPresence.userProfileLocal} />
+          <TokenPresence
+            label="Jeton d’accès (cookie HttpOnly)"
+            present={cookieSessionChecked ? tokenPresence.accessTokenCookie : false}
+            pending={!cookieSessionChecked}
+          />
+          <TokenPresence
+            label="Jeton de rafraîchissement (cookie HttpOnly)"
+            present={cookieSessionChecked ? tokenPresence.refreshTokenCookie : false}
+            pending={!cookieSessionChecked}
+          />
+          <TokenPresence label="JWT en localStorage (legacy)" present={hasJwtInLocalStorage} />
         </div>
       </Card>
 
@@ -371,38 +467,15 @@ export default function DiagnosticsPage() {
       </Card>
 
       <p className="muted" style={{ fontSize: '0.85rem', marginTop: '1rem' }}>
-        API ciblée : <code>{API_URL}</code>. Page interne — aucun token ni secret n’est affiché.
+        API ciblée : <code>{API_URL_DISPLAY}</code>. Page interne — aucun token ni secret n’est affiché.
       </p>
     </section>
   );
 }
 
 async function checkOAuthStatus(): Promise<{ check: EndpointCheck; snapshot: OAuthStatusSnapshot | null }> {
-  try {
-    const res = await fetch(`${API_URL}/auth/oauth/status`, { cache: 'no-store' });
-    if (!res.ok) {
-      return {
-        check: { detail: `Erreur HTTP ${res.status} sur /auth/oauth/status.`, status: 'error' },
-        snapshot: null,
-      };
-    }
-
-    const data = (await res.json()) as OAuthStatusSnapshot;
-    const providers = ['google', 'apple', 'microsoft'] as const;
-    const configured = providers.filter((p) => data[p] === 'configured').length;
-    const stub = providers.filter((p) => data[p] === 'stub').length;
-    const disabled = providers.filter((p) => data[p] === 'disabled').length;
-
-    const detail =
-      configured > 0
-        ? `${configured} fournisseur(s) configuré(s), ${stub} en stub, ${disabled} désactivé(s).`
-        : `Mode dev : ${stub} stub, ${disabled} désactivé(s) — credentials OAuth non requis.`;
-
-    return {
-      check: { detail, status: configured > 0 ? 'ok' : 'warning' },
-      snapshot: data,
-    };
-  } catch {
+  const data = await fetchOAuthStatus();
+  if (!data) {
     return {
       check: {
         detail: 'Statut OAuth indisponible. Vérifie que le backend répond sur /auth/oauth/status.',
@@ -411,11 +484,21 @@ async function checkOAuthStatus(): Promise<{ check: EndpointCheck; snapshot: OAu
       snapshot: null,
     };
   }
+
+  const configured = OAUTH_PROVIDER_ORDER.filter((p) => data[p] === 'configured').length;
+  const detail = summarizeOAuthStatus(data);
+  const status =
+    configured > 0 ? 'ok' : resolveOAuthEnvironment(data) === 'production' ? 'warning' : ('warning' as const);
+
+  return {
+    check: { detail, status },
+    snapshot: data,
+  };
 }
 
 async function checkHealth(): Promise<{ check: EndpointCheck; version: string | null }> {
   try {
-    const res = await fetch(`${API_URL}/health`, { cache: 'no-store' });
+    const res = await fetch(resolveClientApiPath('/health'), { cache: 'no-store' });
     if (!res.ok) {
       return {
         check: { detail: `Erreur HTTP ${res.status} sur /health.`, status: 'error' },
@@ -451,48 +534,138 @@ async function checkHealth(): Promise<{ check: EndpointCheck; version: string | 
   }
 }
 
-async function checkDatabase(): Promise<EndpointCheck> {
+async function checkAuthServer(): Promise<EndpointCheck> {
   try {
-    const res = await fetch(`${API_URL}/health/db`, { cache: 'no-store' });
+    const res = await fetch(resolveClientApiPath('/health/auth'), { cache: 'no-store' });
     if (res.status === 404) {
       return {
-        detail: 'Endpoint /health/db absent sur ce backend. Les autres diagnostics restent disponibles.',
+        detail:
+          'Endpoint /health/auth absent — redéploie l’API (v0.3.15+). En attendant, vérifie JWT_SECRET, JWT_REFRESH_SECRET et CORS_ORIGIN sur Railway.',
         status: 'warning',
       };
     }
 
-    const data = (await res.json().catch(() => null)) as { message?: string; status?: 'ok' | 'error' } | null;
+    const data = (await res.json().catch(() => null)) as {
+      status?: 'ok' | 'warning' | 'error';
+      message?: string;
+      environment?: string;
+      jwtRoundTripOk?: boolean;
+    } | null;
+
     const message = data?.message ?? `Réponse HTTP ${res.status} sans message exploitable.`;
+    const status: CheckStatus =
+      data?.status === 'ok' ? 'ok' : data?.status === 'warning' ? 'warning' : res.ok ? 'warning' : 'error';
 
     if (!res.ok || data?.status === 'error') {
+      return { detail: message, status: 'error' };
+    }
+
+    let detail = message;
+    if (data?.environment) {
+      detail += ` (${data.environment})`;
+    }
+
+    try {
+      const sessionRes = await fetch('/api/auth/session', { credentials: 'include', cache: 'no-store' });
+      if (sessionRes.ok) {
+        const session = (await sessionRes.json()) as { authenticated?: boolean };
+        if (session.authenticated) {
+          const meRes = await fetch('/api/proxy/auth/me', { credentials: 'include', cache: 'no-store' });
+          if (meRes.ok) {
+            detail += ' · GET /auth/me OK avec la session courante.';
+          } else if (meRes.status === 401) {
+            return {
+              status: 'warning',
+              detail: `${message} · Session cookie présente mais rejetée par /auth/me (401).`,
+            };
+          }
+        } else if (status === 'ok') {
+          detail += ' · Connecte-toi via /auth pour valider /auth/me.';
+        }
+      }
+    } catch {
+      /* session probe optional */
+    }
+
+    return { detail, status };
+  } catch {
+    return {
+      detail: 'Diagnostic auth inaccessible. Vérifie que le backend répond sur /health/auth.',
+      status: 'error',
+    };
+  }
+}
+
+async function checkDatabase(): Promise<{ check: EndpointCheck; schemaReady: boolean | null }> {
+  try {
+    const res = await fetch(resolveClientApiPath('/health/db'), { cache: 'no-store' });
+    if (res.status === 404) {
       return {
-        detail: `${message} Vérifie Docker, DATABASE_URL, puis migrate/seed.`,
-        status: 'error',
+        check: {
+          detail: 'Endpoint /health/db absent sur ce backend. Les autres diagnostics restent disponibles.',
+          status: 'warning',
+        },
+        schemaReady: null,
+      };
+    }
+
+    const data = (await res.json().catch(() => null)) as {
+      message?: string;
+      status?: 'ok' | 'error';
+      schemaReady?: boolean;
+    } | null;
+    const message = data?.message ?? `Réponse HTTP ${res.status} sans message exploitable.`;
+    const ready =
+      typeof data?.schemaReady === 'boolean' ? data.schemaReady : data?.status === 'ok' ? true : null;
+
+    if (!res.ok || data?.status === 'error') {
+      const schemaHint =
+        data?.schemaReady === false
+          ? ' Schéma Prisma absent — voir la carte « Migrations requises ».'
+          : ' Vérifie Docker, DATABASE_URL, puis migrate/seed.';
+      return {
+        check: {
+          detail: `${message}${schemaHint}`,
+          status: 'error',
+        },
+        schemaReady: ready,
       };
     }
 
     if (data?.status !== 'ok') {
       return {
-        detail: 'Réponse reçue, mais le champ status est absent ou inattendu.',
-        status: 'warning',
+        check: {
+          detail: 'Réponse reçue, mais le champ status est absent ou inattendu.',
+          status: 'warning',
+        },
+        schemaReady: ready,
       };
     }
 
+    const schemaSuffix =
+      ready === true ? ' · schemaReady: true' : ready === false ? ' · schemaReady: false' : '';
+
     return {
-      detail: `OK — ${message}`,
-      status: 'ok',
+      check: {
+        detail: `OK — ${message}${schemaSuffix}`,
+        status: 'ok',
+      },
+      schemaReady: ready,
     };
   } catch {
     return {
-      detail: 'Diagnostic DB inaccessible. Vérifie d’abord que le backend répond sur /health.',
-      status: 'error',
+      check: {
+        detail: 'Diagnostic DB inaccessible. Vérifie d’abord que le backend répond sur /health.',
+        status: 'error',
+      },
+      schemaReady: null,
     };
   }
 }
 
 async function checkCatalog(): Promise<EndpointCheck> {
   try {
-    const res = await fetch(`${API_URL}/catalog`, { cache: 'no-store' });
+    const res = await fetch(resolveClientApiPath('/catalog'), { cache: 'no-store' });
     if (!res.ok) {
       return { detail: `Erreur HTTP ${res.status} sur /catalog.`, status: 'error' };
     }
@@ -551,29 +724,45 @@ function StatusCard({
   );
 }
 
-function TokenPresence({ label, present }: { label: string; present: boolean }) {
+async function checkBrowserSession(): Promise<{ hasAccessToken: boolean; hasRefreshToken: boolean }> {
+  try {
+    const res = await fetch('/api/auth/session', { credentials: 'include', cache: 'no-store' });
+    if (!res.ok) return { hasAccessToken: false, hasRefreshToken: false };
+    const data = (await res.json()) as { hasAccessToken?: boolean; hasRefreshToken?: boolean };
+    return {
+      hasAccessToken: Boolean(data.hasAccessToken),
+      hasRefreshToken: Boolean(data.hasRefreshToken),
+    };
+  } catch {
+    return { hasAccessToken: false, hasRefreshToken: false };
+  }
+}
+
+function TokenPresence({
+  label,
+  present,
+  pending = false,
+}: {
+  label: string;
+  present: boolean;
+  pending?: boolean;
+}) {
   return (
     <div style={{ background: 'var(--accent-soft)', borderRadius: 12, padding: '0.85rem' }}>
       <p className="muted" style={{ fontSize: '0.85rem', fontWeight: 700 }}>
         {label}
       </p>
-      <strong style={{ color: present ? 'var(--success)' : 'var(--danger)', display: 'block', marginTop: '0.2rem' }}>
-        {present ? 'Présent' : 'Absent'}
+      <strong
+        style={{
+          color: pending ? 'var(--muted)' : present ? 'var(--success)' : 'var(--danger)',
+          display: 'block',
+          marginTop: '0.2rem',
+        }}
+      >
+        {pending ? '…' : present ? 'Présent' : 'Absent'}
       </strong>
     </div>
   );
-}
-
-function oauthStatusLabel(status: OAuthProviderStatus) {
-  if (status === 'configured') return 'Configuré';
-  if (status === 'stub') return 'Stub (dev)';
-  return 'Désactivé';
-}
-
-function oauthStatusTone(status: OAuthProviderStatus): 'success' | 'warning' | 'neutral' {
-  if (status === 'configured') return 'success';
-  if (status === 'stub') return 'warning';
-  return 'neutral';
 }
 
 function statusLabel(status: CheckStatus) {

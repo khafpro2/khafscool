@@ -44,6 +44,8 @@ export function ModuleVideoSection({
   moduleTitle,
 }: ModuleVideoSectionProps) {
   const [localVideoMissing, setLocalVideoMissing] = useState(false);
+  const [isInView, setIsInView] = useState(false);
+  const sectionRef = useRef<HTMLElement | null>(null);
   const watchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const parsed = useMemo(
     () => parseVideoEmbed(videoUrl, videoProvider, { locale: 'fr' }),
@@ -68,6 +70,28 @@ export function ModuleVideoSection({
     };
   }, [moduleId, videoUrl]);
 
+  useEffect(() => {
+    setIsInView(false);
+    const node = sectionRef.current;
+    if (!node || typeof IntersectionObserver === 'undefined') {
+      setIsInView(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting) {
+          setIsInView(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '240px 0px', threshold: 0.01 }
+    );
+
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [moduleId, videoUrl]);
+
   if (!moduleHasVideo({ videoUrl, videoProvider })) {
     return null;
   }
@@ -88,7 +112,7 @@ export function ModuleVideoSection({
     ((parsed.provider === 'youtube' || parsed.provider === 'vimeo') && !allowExternalEmbed);
 
   return (
-    <section className="module-video-section" aria-label={ariaLabel}>
+    <section ref={sectionRef} className="module-video-section" aria-label={ariaLabel}>
       <div className="module-video-section-header">
         <h3 className="module-video-section-title">{title}</h3>
         <div className="module-video-section-badges">
@@ -113,7 +137,14 @@ export function ModuleVideoSection({
               : 'Regardez la vidéo, puis lisez la leçon et passez le quiz.'}
       </p>
 
-      {hasHeyGenFrenchVideo ? (
+      {!isInView ? (
+        <div
+          className="module-video-frame module-video-frame--lazy"
+          aria-hidden
+        >
+          <p className="muted module-video-lazy-hint">Faites défiler pour charger la vidéo…</p>
+        </div>
+      ) : hasHeyGenFrenchVideo ? (
         <div className="module-video-dub-sync">
           <div className="module-video-frame">
             <video

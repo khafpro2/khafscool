@@ -1,9 +1,3 @@
-function required(name: string): string {
-  const value = process.env[name];
-  if (!value) throw new Error(`Missing env: ${name}`);
-  return value;
-}
-
 function parseCorsOrigin(value: string | undefined) {
   if (!value?.trim()) return undefined;
   const origins = value.split(',').map((part) => part.trim()).filter(Boolean);
@@ -20,10 +14,21 @@ export const env = {
   isDev: process.env.NODE_ENV !== 'production',
 };
 
+const PRODUCTION_REQUIRED_ENV = [
+  'DATABASE_URL',
+  'JWT_SECRET',
+  'JWT_REFRESH_SECRET',
+  'CORS_ORIGIN',
+] as const;
+
 export function assertProductionSecrets() {
   if (!env.isDev) {
-    required('JWT_SECRET');
-    required('JWT_REFRESH_SECRET');
-    required('CORS_ORIGIN');
+    const missing = PRODUCTION_REQUIRED_ENV.filter((name) => !process.env[name]?.trim());
+    if (missing.length > 0) {
+      throw new Error(
+        `Variables d'environnement manquantes en production : ${missing.join(', ')}. ` +
+          'Renseignez-les dans le dashboard Render (ou Railway) puis redéployez.',
+      );
+    }
   }
 }

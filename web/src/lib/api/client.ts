@@ -1,6 +1,6 @@
 import { AuthRequestError, throwAuthRequestError } from '../auth-errors';
 import { COOKIE_SESSION, ACCESS_TOKEN_TTL_MINUTES, refreshSession } from '../auth';
-import { recordApiFailure, recordApiSuccess } from '../api-status-store';
+import { recordApiFailure, recordApiSuccess, shouldMarkApiUnavailable } from '../api-status-store';
 import { clearDemoMode, markDemoFallback } from '../demo-mode-store';
 import {
   courseToProgress,
@@ -47,11 +47,10 @@ import type {
   WeeklyQuestsResponse,
 } from './types';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://127.0.0.1:4000';
+import { API_URL, resolveClientApiPath } from '../api-url';
 
 function resolveApiUrl(path: string) {
-  if (typeof window !== 'undefined') return `/api/proxy${path}`;
-  return `${API_URL}${path}`;
+  return resolveClientApiPath(path);
 }
 
 function useBrowserProxy() {
@@ -89,7 +88,9 @@ async function apiRequest<T>(path: string, init: RequestInit = {}) {
     }
 
     if (!res.ok) {
-      recordApiFailure();
+      if (shouldMarkApiUnavailable(res.status)) {
+        recordApiFailure();
+      }
       const contentType = res.headers.get('content-type') ?? '';
       if (contentType.includes('application/json')) {
         await throwAuthRequestError(res);
@@ -128,7 +129,9 @@ async function browserAuthRequest<T extends AuthResponse>(
   });
 
   if (!res.ok) {
-    recordApiFailure();
+    if (shouldMarkApiUnavailable(res.status)) {
+      recordApiFailure();
+    }
     await throwAuthRequestError(res);
   }
 
@@ -153,7 +156,9 @@ async function authRequest<T>(path: string, body: unknown): Promise<T> {
     });
 
     if (!res.ok) {
-      recordApiFailure();
+      if (shouldMarkApiUnavailable(res.status)) {
+        recordApiFailure();
+      }
       await throwAuthRequestError(res);
     }
 
@@ -554,5 +559,3 @@ export async function startCertificationSprint(
     return mockCertificationSprint(payload.track, payload.days);
   }
 }
-
-export { API_URL };

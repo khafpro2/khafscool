@@ -10,7 +10,8 @@ test.describe('Bannière cookies', () => {
   });
 
   test('affiche la bannière puis la masque après acceptation', async ({ page }) => {
-    await page.goto('/');
+    // Bannière masquée sur `/` (accueil plein écran) — test sur une page interne.
+    await page.goto('/courses');
     const banner = page.getByRole('dialog', { name: /Cookies et stockage local/i });
     await expect(banner).toBeVisible({ timeout: 15_000 });
     await expect(banner.getByRole('link', { name: 'En savoir plus' })).toHaveAttribute(
@@ -33,7 +34,7 @@ test.describe('Bannière cookies', () => {
       },
       CONSENT_KEY
     );
-    await page.goto('/');
+    await page.goto('/courses');
     await expect(page.getByRole('dialog', { name: /Cookies et stockage local/i })).toBeHidden();
   });
 });

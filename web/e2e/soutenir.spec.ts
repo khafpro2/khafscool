@@ -127,7 +127,7 @@ test.describe('Page Soutenir', () => {
   });
 
   test('expose le lien footer « Faire un don »', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/courses');
     const footerLink = page.getByRole('contentinfo').getByRole('link', { name: 'Faire un don' });
     await expect(footerLink).toBeVisible();
     await expect(footerLink).toHaveAttribute('href', '/soutenir');

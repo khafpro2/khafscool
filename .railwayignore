@@ -1,0 +1,15 @@
+node_modules
+.git
+.turbo
+.pnpm-store
+.next
+.vercel
+.expo
+.venv-dub
+web/public/media
+web/test-results
+web/playwright-report
+mobile
+logs
+*.db
+.DS_Store

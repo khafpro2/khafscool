@@ -1,12 +1,13 @@
 {
   "name": "apple-mdm-academy",
-  "version": "0.3.6",
+  "version": "0.3.17",
   "private": true,
   "scripts": {
     "dev": "turbo run dev",
     "dev:stack": "bash scripts/dev-stack.sh",
     "setup": "bash scripts/setup.sh",
     "build": "turbo run build",
+    "vercel-build": "pnpm --filter web build",
     "test": "turbo run test",
     "typecheck": "pnpm --filter @ama/shared typecheck && pnpm --filter backend exec tsc --noEmit && pnpm --filter web exec tsc --noEmit && pnpm --filter mobile exec tsc --noEmit",
     "lint": "eslint .",
@@ -18,6 +19,7 @@
     "db:migrate": "pnpm --filter backend exec prisma migrate deploy",
     "db:migrate:dev": "pnpm --filter backend exec prisma migrate dev",
     "db:seed": "pnpm --filter backend exec tsx prisma/seed.ts",
+    "neon:bootstrap": "pnpm db:migrate && pnpm db:seed",
     "smoke:api": "node scripts/smoke-api.mjs",
     "smoke:web": "node scripts/smoke-web.mjs",
     "smoke:all": "pnpm smoke:api && pnpm smoke:web",

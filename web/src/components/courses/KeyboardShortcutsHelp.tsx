@@ -9,6 +9,7 @@ type KeyboardShortcutsHelpProps = {
 };
 
 const QUIZ_SHORTCUTS = [
+  { keys: 'A B C D', action: 'Choisir la réponse correspondante' },
   { keys: '↑ ↓ ou ← →', action: 'Parcourir les choix de réponse' },
   { keys: 'Entrée', action: 'Sélectionner une réponse ou valider' },
   { keys: 'Entrée (après correction)', action: 'Passer à la question suivante' },

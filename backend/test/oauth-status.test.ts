@@ -26,12 +26,28 @@ describe('OAuth provider status', () => {
   });
 
   it('returns stub when credentials are absent', async () => {
+    delete process.env.NODE_ENV;
+    delete process.env.RAILWAY_ENVIRONMENT;
     const { getOAuthStatusSnapshot } = await import('../src/config/oauth.js');
-    expect(getOAuthStatusSnapshot()).toEqual({
+    expect(getOAuthStatusSnapshot()).toMatchObject({
       apple: 'stub',
       google: 'stub',
       microsoft: 'stub',
+      environment: 'development',
     });
+  });
+
+  it('returns environment production when NODE_ENV=production', async () => {
+    process.env.NODE_ENV = 'production';
+    const { getOAuthStatusSnapshot } = await import('../src/config/oauth.js');
+    expect(getOAuthStatusSnapshot().environment).toBe('production');
+  });
+
+  it('returns environment production when RAILWAY_ENVIRONMENT=production', async () => {
+    delete process.env.NODE_ENV;
+    process.env.RAILWAY_ENVIRONMENT = 'production';
+    const { getOAuthStatusSnapshot } = await import('../src/config/oauth.js');
+    expect(getOAuthStatusSnapshot().environment).toBe('production');
   });
 
   it('returns configured when client id and secret are set', async () => {
@@ -63,10 +79,11 @@ describe('OAuth provider status', () => {
     const response = await app.inject({ method: 'GET', url: '/auth/oauth/status' });
 
     expect(response.statusCode).toBe(200);
-    expect(response.json()).toEqual({
+    expect(response.json()).toMatchObject({
       apple: 'stub',
       google: 'stub',
       microsoft: 'stub',
+      environment: 'development',
     });
 
     await app.close();

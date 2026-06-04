@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { prisma } from '../lib/prisma.js';
 import * as gamification from '../services/gamification.service.js';
 import * as practiceExam from '../services/practice-exam.service.js';
+import { isSchemaMissing, schemaMissingMessage } from '../lib/database-health.js';
 import { sanitizeCourse } from '../utils/course-sanitize.js';
 
 const checkAnswerBodySchema = z.object({
@@ -56,24 +57,40 @@ export async function listCourses(_req: FastifyRequest, reply: FastifyReply) {
   return reply.send({ courses });
 }
 
-export async function listPublicCatalog(_req: FastifyRequest, reply: FastifyReply) {
-  const courses = await prisma.course.findMany({
-    orderBy: { sortOrder: 'asc' },
-    select: {
-      slug: true,
-      track: true,
-      title: true,
-      description: true,
-      _count: { select: { modules: true } },
-    },
-  });
+const PUBLIC_CATALOG_CACHE_CONTROL = 'public, max-age=300, stale-while-revalidate=60';
 
-  return reply.send({
-    courses: courses.map(({ _count, ...course }) => ({
-      ...course,
-      moduleCount: _count.modules,
-    })),
-  });
+export async function listPublicCatalog(_req: FastifyRequest, reply: FastifyReply) {
+  try {
+    const courses = await prisma.course.findMany({
+      orderBy: { sortOrder: 'asc' },
+      select: {
+        slug: true,
+        track: true,
+        title: true,
+        description: true,
+        _count: { select: { modules: true } },
+      },
+    });
+
+    reply.header('Cache-Control', PUBLIC_CATALOG_CACHE_CONTROL);
+    return reply.send({
+      courses: courses.map(({ _count, ...course }) => ({
+        ...course,
+        moduleCount: _count.modules,
+      })),
+    });
+  } catch (error) {
+    if (isSchemaMissing(error)) {
+      reply.header('Cache-Control', 'no-store');
+      return reply.status(503).send({
+        error: 'SCHEMA_NOT_READY',
+        message: schemaMissingMessage('fr'),
+        courses: [],
+        hint: 'pnpm db:migrate && pnpm db:seed (local) ou scripts/railway-start.sh (Railway)',
+      });
+    }
+    throw error;
+  }
 }
 
 export async function getPracticeExam(

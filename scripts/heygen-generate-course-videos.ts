@@ -8,7 +8,7 @@
  *   pnpm heygen:download              # reprend les téléchargements
  *   pnpm heygen:generate:status       # état des jobs
  *   pnpm heygen:generate -- --force   # régénère même si un MP4 existe
- *   pnpm heygen:generate -- --module device-support-basics
+ *   pnpm heygen:generate -- --module ios-troubleshooting
  */
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';

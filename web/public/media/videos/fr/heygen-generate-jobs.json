@@ -2,16 +2,6 @@
   "jobs": [
     {
       "courseSlug": "apple-cert-prep",
-      "moduleSlug": "device-support-basics",
-      "basename": "apple-device-support-basics-fr",
-      "title": "Apple MDM Academy — ABM et enrôlement MDM (FR)",
-      "status": "completed",
-      "videoId": "109a8027629f48d58cc22398654d3114",
-      "outputVideoUrl": "https://files2.heygen.ai/aws_pacific/avatar_tmp/ba4e9c657fa74093a450f806e067c237/v176ec487eb8f46439e5a867b25c237c9/109a8027629f48d58cc22398654d3114.mp4?Expires=1780263463&Signature=pBjDDpO0dRvvMp8NTQkBmWP8kHpeSXKqeIIYo5uyiXyDLr47OprmrodqmbNB9QU1HfyGe6ZyjK-wp6zo9GW-4Pi6UDe5OG3AynbOT5SWmQYKFoMZxS1ZDnug99Tlk38mhnE59GS-fv5rbH0GWWNYyVXP0NzKdKL8eq7DDrUkV78vOaBvaAQFIxzCx~zkSdTsIwTcy1iKWTEZjqjUKxqqWhwLZMCnFxm0W0-yKdfb65OWvKyRnhoYEI1UvMlLpEJ7MqEpB55DLuwBfL0K3W84~V1SysREb7cvOCNMRyQXtj4Sz4UN7muVfu3qp5LGBfN2Om5URoY4QddwFvulJnhYeQ__&Key-Pair-Id=K38HBHX5LX3X2H",
-      "updatedAt": "2026-05-24T23:31:59.378Z"
-    },
-    {
-      "courseSlug": "apple-cert-prep",
       "moduleSlug": "ios-troubleshooting",
       "basename": "apple-ios-troubleshooting-fr",
       "title": "Apple MDM Academy — Dépannage iOS en environnement géré (FR)",

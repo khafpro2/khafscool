@@ -342,6 +342,11 @@ export function DonationChoiceGrid() {
         <div className="donation-mode-grid" role="radiogroup" aria-label="Mode de paiement">
           {DONATION_PAYMENT_MODES.map(({ id, icon, label, hint }) => {
             const selected = paymentMode === id;
+            const availability = getPaymentModeAvailability(id, {
+              checkoutEnabled,
+              fallbackUrl,
+              paypalConfigured: Boolean(paypalBaseUrl),
+            });
             return (
               <button
                 key={id}
@@ -349,7 +354,9 @@ export function DonationChoiceGrid() {
                 role="radio"
                 aria-checked={selected}
                 id={id}
-                className={`donation-mode-card${selected ? ' is-selected' : ''}`}
+                className={`donation-mode-card${selected ? ' is-selected' : ''}${
+                  !availability.available ? ' donation-mode-card--muted' : ''
+                }`}
                 onClick={() => {
                   setPaymentMode(id);
                   setError(null);
@@ -361,11 +368,21 @@ export function DonationChoiceGrid() {
                     ✓
                   </span>
                 ) : null}
+                <span
+                  className={`donation-mode-status${
+                    availability.available ? ' donation-mode-status--ok' : ''
+                  }`}
+                >
+                  {availability.statusLabel}
+                </span>
                 <span className="donation-mode-icon" aria-hidden>
                   {icon}
                 </span>
                 <span className="donation-mode-label">{label}</span>
                 <span className="donation-mode-hint">{hint}</span>
+                {!availability.available ? (
+                  <span className="donation-mode-unavailable muted">{availability.helper}</span>
+                ) : null}
               </button>
             );
           })}
@@ -580,4 +597,51 @@ export function DonationChoiceGrid() {
       </Card>
     </div>
   );
+}
+
+function getPaymentModeAvailability(
+  id: DonationPaymentModeId,
+  context: {
+    checkoutEnabled: boolean;
+    fallbackUrl?: string | null;
+    paypalConfigured: boolean;
+  }
+) {
+  if (id === 'carte') {
+    if (context.checkoutEnabled) {
+      return {
+        available: true,
+        statusLabel: 'Disponible',
+        helper: '',
+      };
+    }
+    if (context.fallbackUrl) {
+      return {
+        available: true,
+        statusLabel: 'Lien externe',
+        helper: '',
+      };
+    }
+    return {
+      available: false,
+      statusLabel: 'Indisponible',
+      helper: 'Stripe non configuré — voir docs/DONATIONS.md',
+    };
+  }
+
+  if (id === 'paypal') {
+    return context.paypalConfigured
+      ? { available: true, statusLabel: 'Disponible', helper: '' }
+      : {
+          available: false,
+          statusLabel: 'Non configuré',
+          helper: 'PayPal sera activé prochainement sur cette page.',
+        };
+  }
+
+  return {
+    available: true,
+    statusLabel: 'SEPA',
+    helper: '',
+  };
 }

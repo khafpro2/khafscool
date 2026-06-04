@@ -10,11 +10,110 @@
 - **QCM** — distracteurs contextualisés (Jamf/Intune), scripts `improve-qcm-ai.mjs` / `fix-qcm.mjs`, garde-fou CI `qcm:balance:check`
 - Tests : e2e `home-hero` (4 scénarios), `qcm:balance:check`
 
+## [0.3.17] — 2026-05-27
+
+### Auth, certificats, progression locale et dons
+- **API** — rate limit dédié login/register/refresh (5/min) avec message 429 en français
+- **Web** — certificat : gestion d’erreur FR à l’impression / export PDF (pop-ups, annulation)
+- **Web** — parcours : validation d’unité hors ligne (localStorage) si l’API est indisponible ou sans session
+- **Shared** — helper `quiz-stats` (`computeQuizScorePercent`, `summarizeQuizStats`) pour analytics
+- **Dons** — cartes mode de paiement avec badge Disponible / Indisponible
+- **Dashboard** — barre de progression des quêtes hebdo dans l’encart
+- **DX** — script `pnpm neon:bootstrap` (migrate + seed)
+
+## [0.3.16] — 2026-05-27
+
+### Examen blanc, vidéos, mobile et API
+- **Web** — examen blanc : minuteur indicatif (~15 min) avec alerte douce au dépassement
+- **Web** — vidéos module : chargement différé au scroll (IntersectionObserver) pour limiter le poids initial
+- **API** — `/catalog` : en-têtes `Cache-Control` (5 min + stale-while-revalidate) ; `no-store` si schéma absent
+- **Mobile** — quiz : raccourcis **A–D** sur web Expo ; libellés accessibilité sur les options
+- **Mobile** — diagnostics : contrôles `/health/db` (schemaReady) et `/catalog` alignés sur le web
+
+## [0.3.15] — 2026-05-27
+
+### Diagnostics, quiz et gamification
+- **Web** — page `/diagnostics` : affichage de `schemaReady` depuis `/health/db`, carte « Migrations requises » et lien guide Neon
+- **Quiz** — dernier rééquilibrage des libellés (gap ≤ 8) ; test backend sur le seuil modéré
+- **E2E** — `quiz-shuffle.spec.ts` : vérifie l’ordre mélangé des options sur une question pilote
+- **Classement** — état vide enrichi (CTA parcours et quêtes)
+
+## [0.3.14] — 2026-05-27
+
+### Quiz, API et catalogue
+- **Quiz** — mélange des options à l’affichage ; rééquilibrage des libellés pour réduire le biais « réponse la plus longue » ; raccourcis clavier **A–D** sur le web
+- **API** — `/catalog` renvoie **503** avec message en français si le schéma Postgres est absent ; `/health/db` expose `schemaReady`
+- **Railway** — migrations et seed automatiques au démarrage si la base est vide
+
+## [0.3.13] — 2026-05-25
+
+### Vidéos YouTube FR et accueil
+- **Placeholders pilotes** — `getPilotModuleVideoConfig` : repli YouTube (`sourceYouTubeUrl`) avant placeholder ; modules 3–4 Apple/Jamf/Intune et App Protection Intune en iframe `youtube-nocookie` (whitelist `videoSourceLanguage: 'fr'`)
+- **Accueil web** — liens discrets **Parcours** (`/courses`) et **Connexion** (`/auth`) sous les pistes Hello (sans header/footer)
+- **Mobile** — mêmes liens sur `WelcomeScreen` (catalogue et auth web)
+- Tests : `seed-video`, e2e `module-video`, `learning-path`
+
+## [0.3.12] — 2026-05-25
+
+### Catalogue, garde-fou ADE et seed
+- **Catalogue `/courses`** — parcours Apple : métadonnées **3 avec vidéo** (module 1 `device-support-basics` sans section vidéo ADE/ABM) ; Jamf et Intune **4 avec vidéo**
+- **CI** — script `scripts/check-no-ade-video.sh` : refuse le titre interdit « Vidéo : ABM, supervision et enrôlement automatisé (ADE) » dans le contenu partagé
+- **README** — note seed idempotent après `git pull` (`pnpm db:migrate && pnpm db:seed`)
+- **E2E** — `quiz-learning` : unité 4 Apple (démo 75 %, bandeau conseils hors mode révision)
+- Tests : e2e `glossary-catalog` (badge Apple 3 vidéos), `check-no-ade-video.sh` en CI
+
+## [0.3.11] — 2026-05-25
+
+### Grille vidéos module 2 et catalogue
+- **Module 2 pilote** — Jamf `inventory-basics` : MP4 HeyGen FR (`jamf-inventory-basics-fr.mp4`) ; Intune `compliance-policies` : MP4 FR (`intune-compliance-policies-fr.mp4`) ; Apple `ios-troubleshooting` : YouTube FR `lgMDK4zU114` (inchangé)
+- **Module 1 Apple** — `device-support-basics` : **sans** section vidéo ADE/ABM (leçon et quiz inchangés)
+- **Catalogue** — métadonnées cohérentes sur les 3 parcours (4 modules) : Apple **3 avec vidéo**, Jamf et Intune **4 avec vidéo** (`TrailCard`, hero parcours)
+- **PR #6** — description FR résumant v0.3.7–0.3.11 (accueil épuré, dons, vidéos FR, intro Jamf `t3j9TkFfUJw`, pas de vidéo ADE module 1 Apple)
+- Tests : `seed-video`, e2e `module-video` (modules 2), `glossary-catalog`
+
+## [0.3.10] — 2026-05-25
+
+### Vidéos module 4 et cookies mobile
+- **Module 4 pilote** — Apple `apps-vpp-management`, Jamf `api-automation-advanced-policies`, Intune `vpp-abm-business-apps` : placeholders animés FR (`videoSourceLanguage: 'fr'`) ; module 1 Apple toujours sans vidéo ADE
+- **Mobile** — lien « Préférences cookies » sur `WelcomeScreen` (politique de confidentialité web)
+- **E2E** — modale cookies accueil (`cookie-consent.spec.ts`), placeholders module 4 (`module-video.spec.ts`), comptages vidéo (`seed-video`)
+- Tests : `seed-video`, e2e `module-video`, `cookie-consent`, `learning-path`
+
+## [0.3.9] — 2026-05-25
+
+### Vidéos module 3 et cookies accueil
+- **Module 3 pilote** — Apple `acmt-exam-prep` : MP4 HeyGen FR ; Jamf `api-automation-advanced-policies` et Intune `vpp-abm-business-apps` : placeholder animé FR (`videoSourceLanguage: 'fr'`)
+- **Accueil** — lien discret « Préférences » sous les pistes : modale cookies (même contenu que la bannière `/courses`) sans bannière fixe sur `/`
+- **Jamf module 1** — intro YouTube `t3j9TkFfUJw`, titre **Vidéo : introduction Jamf Pro** (inchangé, whitelist `fr`)
+- Tests : `seed-video` (module 3), e2e `learning-path` (Préférences + modale)
+
+## [0.3.8] — 2026-05-25
+
+### Accueil minimal et mobile
+- **Web accueil** — masquage sur `/` de `ApiStatusBanner`, `DemoModeBanner`, `CookieConsentBanner` et `AnalyticsOptInBanner` (plein écran Hello sans chrome)
+- **Mobile** — `WelcomeScreen` et `LearnerDashboardScreen` : safe area (encoches), espacement accueil aligné web
+- **Vidéo Apple module 2** — `ios-troubleshooting` : YouTube FR `lgMDK4zU114` (redémarrage forcé iPhone), titre « Vidéo : dépannage iOS en environnement géré » (pas de titre ADE)
+- Tests : `seed-video`, e2e `learning-path` (absence bannières accueil)
+
+## [0.3.7] — 2026-05-25
+
+### Version 0.3.7
+- **Accueil plein écran** — hero Hello centré sur 100vh ; padding `main` retiré sur `/` uniquement
+- **Versions** — alignement `package.json` (racine, web, backend, shared, mobile), API health et bannière « Nouveau »
+
+## [0.3.6] — 2026-05-25
+
+### Accueil sans footer
+- **Web accueil** — retrait du footer global (`SiteFooter`) sur `/` uniquement, comme le header ; autres pages inchangées
+- Tests e2e : `learning-path` (absence footer accueil), `legal-pages` et `soutenir` (footer vérifié sur `/courses`)
+
 ## [0.3.5] — 2026-05-25
 
-### Retrait vidéo Smart Groups (module 1 Jamf)
-- **Contenu** — module `smart-groups-policies` (`jamf-pro-foundations`) : retrait de la vidéo « Smart Groups et politiques Jamf Pro » et de l’intro YouTube `t3j9TkFfUJw` (MP4/doublage) ; leçon et quiz inchangés
-- **Pilote** — retrait de `smart-groups-policies` dans `PILOT_VIDEO_MODULES` (10 vidéos ; catalogue Jamf **3 avec vidéo**)
+### Intro Jamf module 1 (YouTube whitelist)
+- **Contenu** — module `smart-groups-policies` : intro YouTube `t3j9TkFfUJw` avec titre **Vidéo : introduction Jamf Pro** (pas de titre vidéo « Smart Groups… ») ; `videoSourceLanguage: 'fr'` pour embed
+- **Pilote** — `smart-groups-policies` réintégré dans `PILOT_VIDEO_MODULES` (11 vidéos ; Jamf **4 avec vidéo**)
+- **E2E** — `module-video.spec.ts` : intro visible + titre module en `exact: true` (évite collision avec le h2 leçon)
+- **Handoff** — `docs/HANDOFF.md`, `CLAUDE.md` pour reprise Claude Code / Cursor après push
 - Tests : `seed-video`, `video-dub-sync`, e2e `module-video`
 
 ## [0.3.4] — 2026-05-25

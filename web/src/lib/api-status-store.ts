@@ -4,6 +4,12 @@ const listeners = new Set<() => void>();
 
 const FAILURE_THRESHOLD = 2;
 
+/** Seules les pannes réseau ou serveur (5xx) doivent afficher « API indisponible ». */
+export function shouldMarkApiUnavailable(httpStatus?: number): boolean {
+  if (httpStatus == null) return true;
+  return httpStatus >= 500 || httpStatus === 408;
+}
+
 function emit() {
   listeners.forEach((listener) => listener());
 }

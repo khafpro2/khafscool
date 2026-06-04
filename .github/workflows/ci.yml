@@ -32,6 +32,9 @@ jobs:
       - name: Validate smoke scripts syntax
         run: node --check scripts/smoke-api.mjs scripts/smoke-web.mjs
 
+      - name: Check no ADE video on Apple module 1
+        run: bash scripts/check-no-ade-video.sh
+
       - name: Typecheck
         run: pnpm typecheck
 

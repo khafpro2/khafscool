@@ -1,0 +1,25 @@
+# Railway — service API (plateforme préférée, voir docs/DEPLOY-RAILWAY.md)
+# https://docs.railway.com/guides/config-as-code
+#
+# Monorepo : racine du dépôt (.), pas backend/ seul — @ama/shared doit être buildé avant backend.
+# Dashboard → Settings → Source → Root Directory = . (ou laisser vide = racine repo)
+# Variables sensibles : dashboard Railway ou `railway variables set` (ne pas committer).
+# DATABASE_URL : Neon (docs/NEON-DATABASE.md) — pas le plugin Postgres Railway par défaut.
+# Migrations + seed auto au démarrage : scripts/railway-start.sh
+# Seed manuel : railway run pnpm db:seed  (ou RUN_DB_SEED=true sur le service)
+# PORT : injecté par Railway — ne pas le définir manuellement.
+# NODE_ENV : aussi forcé dans scripts/railway-start.sh ; [env] ci-dessous pour /auth/oauth/status et le dashboard.
+
+[env]
+NODE_ENV = "production"
+
+[build]
+builder = "NIXPACKS"
+buildCommand = "corepack enable && corepack prepare pnpm@9.15.0 --activate && pnpm install --frozen-lockfile && pnpm --filter @ama/shared build && DATABASE_URL=postgresql://x:x@localhost/x pnpm --filter backend exec npx prisma generate && pnpm --filter backend build"
+watchPatterns = ["backend/**", "shared/**", "pnpm-lock.yaml", "railway.toml"]
+
+[deploy]
+startCommand = "bash -c 'cd /app && pnpm db:migrate; exec env NODE_ENV=production pnpm --filter backend start:prod'"
+healthcheckPath = "/health"
+healthcheckTimeout = 120
+restartPolicyType = "ON_FAILURE"

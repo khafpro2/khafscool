@@ -1,0 +1,44 @@
+# Blueprint Render — API Fastify (monorepo pnpm) — LEGACY / SECOURS
+# https://render.com/docs/blueprint-spec
+#
+# Plateforme préférée : Railway — voir docs/DEPLOY-RAILWAY.md et railway.toml
+# Ce fichier reste pour migration inverse ou fallback Render (plan free, cold start).
+#
+# Déploiement : Dashboard Render → New → Blueprint → ce dépôt.
+# Renseigner les variables marquées sync: false (jamais de secrets dans Git).
+
+services:
+  - type: web
+    name: apple-mdm-academy-api
+    runtime: node
+    plan: free
+    region: frankfurt
+    rootDir: .
+    buildCommand: >-
+      corepack enable &&
+      corepack prepare pnpm@9.15.0 --activate &&
+      pnpm install --frozen-lockfile --prod=false &&
+      pnpm --filter @ama/shared build &&
+      pnpm --filter backend exec prisma generate &&
+      pnpm --filter backend build
+    preDeployCommand: >-
+      corepack enable &&
+      corepack prepare pnpm@9.15.0 --activate &&
+      pnpm --filter backend exec prisma migrate deploy
+    startCommand: NODE_ENV=production pnpm --filter backend start:prod
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_REFRESH_SECRET
+        sync: false
+      - key: CORS_ORIGIN
+        value: https://apple-mdm-academy.vercel.app
+      - key: WEB_URL
+        value: https://apple-mdm-academy.vercel.app
+      - key: API_URL
+        value: https://apple-mdm-academy-api.onrender.com

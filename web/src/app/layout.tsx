@@ -1,16 +1,16 @@
 import type { Metadata, Viewport } from 'next';
-import Link from 'next/link';
 import { AppErrorBoundary } from '@/components/ErrorBoundary';
 import { ApiHealthPoller } from '@/components/layout/ApiHealthPoller';
 import { ApiStatusBanner } from '@/components/layout/ApiStatusBanner';
 import { DemoModeBanner } from '@/components/layout/DemoModeBanner';
+import { SiteFooter } from '@/components/layout/SiteFooter';
 import { SiteHeader } from '@/components/layout/SiteHeader';
 import { CookieConsentBanner } from '@/components/layout/CookieConsentBanner';
+import { CookiePreferencesModal } from '@/components/layout/CookiePreferencesModal';
 import { AnalyticsOptInBanner } from '@/components/layout/AnalyticsOptInBanner';
 import { Toaster } from '@/components/ui/Toast';
-import { getContactMailto } from '@/lib/contact';
 import { SessionBootstrap } from '@/components/layout/SessionBootstrap';
-import { bodyFont, displayFont } from '@/lib/fonts';
+import { bodyFont, displayFont, helloFont } from '@/lib/fonts';
 import { themeInitScript } from '@/lib/theme';
 import './globals.css';
 
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     template: '%s | MDM Academy',
   },
   description:
-    'Formation gamifiée gratuite : Apple Device Support, Jamf Pro et Microsoft Intune. Quiz, mini-jeux, badges et sprints certification.',
+    'Formation gamifiée gratuite : Apple Device Support, Jamf Pro et Microsoft Intune. Quiz, mini-jeux, badges et sprints certification.',
   keywords: [
     'MDM',
     'Apple Device Support',
@@ -49,7 +49,7 @@ export const metadata: Metadata = {
     siteName: 'MDM Academy',
     title: 'MDM Academy Pro — Apple, Jamf Pro et Intune gratuits',
     description:
-      'Formation gamifiée gratuite : Apple Device Support, Jamf Pro et Microsoft Intune. Quiz, mini-jeux, badges et sprints certification.',
+      'Formation gamifiée gratuite : Apple Device Support, Jamf Pro et Microsoft Intune. Quiz, mini-jeux, badges et sprints certification.',
     images: [
       {
         url: '/opengraph-image',
@@ -63,7 +63,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'MDM Academy Pro — Apple, Jamf Pro et Intune gratuits',
     description:
-      'Formation gamifiée gratuite : Apple Device Support, Jamf Pro et Microsoft Intune.',
+      'Formation gamifiée gratuite : Apple Device Support, Jamf Pro et Microsoft Intune.',
     images: ['/opengraph-image'],
   },
   robots: {
@@ -86,10 +86,12 @@ export const viewport: Viewport = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  const contactMailto = getContactMailto();
-
   return (
-    <html lang="fr" className={`${bodyFont.variable} ${displayFont.variable}`} suppressHydrationWarning>
+    <html
+      lang="fr"
+      className={`${bodyFont.variable} ${displayFont.variable} ${helloFont.variable}`}
+      suppressHydrationWarning
+    >
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
@@ -107,33 +109,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </main>
         <Toaster />
         <CookieConsentBanner />
+        <CookiePreferencesModal />
         <AnalyticsOptInBanner />
-        <footer className="site-footer">
-          <div className="container site-footer-inner">
-            <div>
-              <strong>MDM Academy</strong> · Apple, Jamf Pro et Intune en mode jeu
-            </div>
-            <div style={{ display: 'flex', gap: '1.25rem', flexWrap: 'wrap', alignItems: 'center' }}>
-              <Link href="/courses">Parcours</Link>
-              <Link href="/resources">Ressources</Link>
-              <Link href="/about">À propos</Link>
-              <Link href={contactMailto}>Nous contacter</Link>
-              <Link href="/soutenir">Faire un don</Link>
-              <Link href="/demo">Démo</Link>
-              <Link href="/diagnostics" className="site-footer-tools">
-                Diagnostics
-              </Link>
-              <Link href="/legal/confidentialite">Confidentialité</Link>
-              <Link href="/legal/conditions">Conditions</Link>
-            </div>
-            <div style={{ color: 'var(--muted)', fontSize: '0.8rem' }}>
-              Non affilié à Apple Inc., Jamf ou Microsoft. ·{' '}
-              <Link href={contactMailto} style={{ color: 'inherit' }}>
-                Assistance
-              </Link>
-            </div>
-          </div>
-        </footer>
+        <SiteFooter />
       </body>
     </html>
   );

@@ -5,9 +5,11 @@ import Link from 'next/link';
 import type { CourseModule } from '@/lib/api';
 import { findGlossaryTermInText, glossaryWebHref } from '@ama/shared/glossary';
 import {
+  getQuizOptionDisplayLetter,
   getQuizQuestionTypeMeta,
   listIncorrectQuestionIds,
   truncateQuizPrompt,
+  withShuffledQuizOptions,
   type QuizQuestionTypeMeta,
 } from '@ama/shared/quiz-learning';
 import { resolveApiErrorMessage } from '@/lib/auth-errors';
@@ -17,6 +19,10 @@ import { Button } from '@/components/ui/Button';
 import { BrandIcon } from '@/components/ui/BrandIcon';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import { modulePointsFromScores } from '@/lib/points';
+import {
+  computeQuizScorePercent,
+  countCorrectAnswers,
+} from '@ama/shared/quiz-stats';
 
 export const QUIZ_PASS_PERCENT = 50;
 
@@ -91,7 +97,10 @@ export function QuizPanel({
   estimatedGameScore = 0,
   keyTakeaways = [],
 }: QuizPanelProps) {
-  const questions = module.questions;
+  const questions = useMemo(
+    () => withShuffledQuizOptions(module.questions),
+    [module.id, module.questions]
+  );
   const totalQuestions = questions.length;
   const questionIds = useMemo(() => questions.map((question) => question.id), [questions]);
   const trackVisual = getTrackVisual(track);
@@ -538,6 +547,45 @@ function QuizQuestionStep({
     optionRefs.current = [];
   }, [question.id]);
 
+  useEffect(() => {
+    function onLetterKeyDown(event: globalThis.KeyboardEvent) {
+      if (revealed || disabled || isChecking) return;
+
+      const target = event.target as HTMLElement | null;
+      const tag = target?.tagName?.toLowerCase();
+      if (tag === 'input' || tag === 'textarea' || tag === 'select' || target?.isContentEditable) {
+        return;
+      }
+
+      const letterIndex = 'abcd'.indexOf(event.key.toLowerCase());
+      if (letterIndex < 0 || letterIndex >= question.options.length) return;
+
+      event.preventDefault();
+      const option = question.options[letterIndex];
+      if (!option) return;
+
+      focusOption(letterIndex);
+      if (selectedOptionId === option.id && canValidate) {
+        onCheck();
+        return;
+      }
+      onSelect(option.id);
+    }
+
+    window.addEventListener('keydown', onLetterKeyDown);
+    return () => window.removeEventListener('keydown', onLetterKeyDown);
+  }, [
+    canValidate,
+    disabled,
+    isChecking,
+    onCheck,
+    onSelect,
+    question.id,
+    question.options,
+    revealed,
+    selectedOptionId,
+  ]);
+
   function focusOption(index: number) {
     const safeIndex = Math.max(0, Math.min(index, question.options.length - 1));
     optionRefs.current[safeIndex]?.focus();
@@ -717,7 +765,11 @@ function QuizQuestionStep({
         {revealed && isIncorrect && revealedCorrectOptionId && (
           <p className="quiz-correct-answer-hint" role="status">
             La bonne réponse est l’option{' '}
-            <strong>{revealedCorrectOptionId.toUpperCase()}</strong> — relis l’explication ci-dessous.
+            <strong>
+              {getQuizOptionDisplayLetter(question.options, revealedCorrectOptionId) ??
+                revealedCorrectOptionId.toUpperCase()}
+            </strong>{' '}
+            — relis l’explication ci-dessous.
           </p>
         )}
 
@@ -823,17 +875,9 @@ const CONFETTI_PIECES = Array.from({ length: 12 }, (_, index) => ({
   hue: `${(index * 37) % 360}`,
 }));
 
-export function computeQuizScorePercent(
-  totalQuestions: number,
-  questionResults: Record<string, QuestionCheckResult>
-) {
-  if (!totalQuestions) return 0;
-  const checkedCount = Object.keys(questionResults).length;
-  if (!checkedCount) return 0;
-  const correct = Object.values(questionResults).filter((result) => result.correct).length;
-  return Math.round((correct / totalQuestions) * 100);
-}
-
-export function countCorrectAnswers(questionResults: Record<string, QuestionCheckResult>) {
-  return Object.values(questionResults).filter((result) => result.correct).length;
-}
+export {
+  computeQuizScorePercent,
+  countCorrectAnswers,
+  summarizeQuizStats,
+} from '@ama/shared/quiz-stats';
+export type { QuizStatsSummary } from '@ama/shared/quiz-stats';

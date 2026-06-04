@@ -1,34 +1,125 @@
 {
   "name": "@ama/shared",
-  "version": "0.3.6",
+  "version": "0.3.18",
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts",
-    "./quiz-content": "./src/quiz-content.ts",
-    "./learning-paths": "./src/learning-paths.ts",
-    "./constants": "./src/constants.ts",
-    "./course-content": "./src/course-content.ts",
-    "./glossary": "./src/glossary.ts",
-    "./lesson-markdown": "./src/lesson-markdown.ts",
-    "./reading-time": "./src/reading-time.ts",
-    "./revision-sheet": "./src/revision-sheet.ts",
-    "./practice-exam": "./src/practice-exam.ts",
-    "./donation-bank": "./src/donation-bank.ts",
-    "./donation-methods": "./src/donation-methods.ts",
-    "./donation-amounts": "./src/donation-amounts.ts",
-    "./video-embed": "./src/video-embed.ts",
-    "./video-local": "./src/video-local.ts",
-    "./video-dub-fr": "./src/video-dub-fr.ts",
-    "./video-heygen-fr": "./src/video-heygen-fr.ts",
-    "./quiz-learning": "./src/quiz-learning.ts",
-    "./locale": "./src/locale.ts"
+    ".": {
+      "types": "./src/index.ts",
+      "development": "./src/index.ts",
+      "default": "./dist/index.js"
+    },
+    "./quiz-content": {
+      "types": "./src/quiz-content.ts",
+      "development": "./src/quiz-content.ts",
+      "default": "./dist/quiz-content.js"
+    },
+    "./learning-paths": {
+      "types": "./src/learning-paths.ts",
+      "development": "./src/learning-paths.ts",
+      "default": "./dist/learning-paths.js"
+    },
+    "./constants": {
+      "types": "./src/constants.ts",
+      "development": "./src/constants.ts",
+      "default": "./dist/constants.js"
+    },
+    "./course-content": {
+      "types": "./src/course-content.ts",
+      "development": "./src/course-content.ts",
+      "default": "./dist/course-content.js"
+    },
+    "./glossary": {
+      "types": "./src/glossary.ts",
+      "development": "./src/glossary.ts",
+      "default": "./dist/glossary.js"
+    },
+    "./lesson-markdown": {
+      "types": "./src/lesson-markdown.ts",
+      "development": "./src/lesson-markdown.ts",
+      "default": "./dist/lesson-markdown.js"
+    },
+    "./reading-time": {
+      "types": "./src/reading-time.ts",
+      "development": "./src/reading-time.ts",
+      "default": "./dist/reading-time.js"
+    },
+    "./revision-sheet": {
+      "types": "./src/revision-sheet.ts",
+      "development": "./src/revision-sheet.ts",
+      "default": "./dist/revision-sheet.js"
+    },
+    "./practice-exam": {
+      "types": "./src/practice-exam.ts",
+      "development": "./src/practice-exam.ts",
+      "default": "./dist/practice-exam.js"
+    },
+    "./donation-bank": {
+      "types": "./src/donation-bank.ts",
+      "development": "./src/donation-bank.ts",
+      "default": "./dist/donation-bank.js"
+    },
+    "./donation-methods": {
+      "types": "./src/donation-methods.ts",
+      "development": "./src/donation-methods.ts",
+      "default": "./dist/donation-methods.js"
+    },
+    "./donation-amounts": {
+      "types": "./src/donation-amounts.ts",
+      "development": "./src/donation-amounts.ts",
+      "default": "./dist/donation-amounts.js"
+    },
+    "./donation-payment-modes": {
+      "types": "./src/donation-payment-modes.ts",
+      "development": "./src/donation-payment-modes.ts",
+      "default": "./dist/donation-payment-modes.js"
+    },
+    "./video-embed": {
+      "types": "./src/video-embed.ts",
+      "development": "./src/video-embed.ts",
+      "default": "./dist/video-embed.js"
+    },
+    "./video-local": {
+      "types": "./src/video-local.ts",
+      "development": "./src/video-local.ts",
+      "default": "./dist/video-local.js"
+    },
+    "./video-dub-fr": {
+      "types": "./src/video-dub-fr.ts",
+      "development": "./src/video-dub-fr.ts",
+      "default": "./dist/video-dub-fr.js"
+    },
+    "./video-heygen-fr": {
+      "types": "./src/video-heygen-fr.ts",
+      "development": "./src/video-heygen-fr.ts",
+      "default": "./dist/video-heygen-fr.js"
+    },
+    "./quiz-learning": {
+      "types": "./src/quiz-learning.ts",
+      "development": "./src/quiz-learning.ts",
+      "default": "./dist/quiz-learning.js"
+    },
+    "./quiz-option-balance": {
+      "types": "./src/quiz-option-balance.ts",
+      "development": "./src/quiz-option-balance.ts",
+      "default": "./dist/quiz-option-balance.js"
+    },
+    "./quiz-stats": {
+      "types": "./src/quiz-stats.ts",
+      "development": "./src/quiz-stats.ts",
+      "default": "./dist/quiz-stats.js"
+    },
+    "./locale": {
+      "types": "./src/locale.ts",
+      "development": "./src/locale.ts",
+      "default": "./dist/locale.js"
+    }
   },
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit"
   },
-  "devDependencies": {
+  "dependencies": {
     "typescript": "^5.7.2"
   }
 }

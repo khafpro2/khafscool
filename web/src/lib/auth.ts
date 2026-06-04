@@ -1,6 +1,6 @@
 import type { AuthResponse, AuthUser } from './api';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://127.0.0.1:4000';
+import { API_URL } from './api-url';
 const USER_KEY = 'ama_user';
 const REMEMBER_KEY = 'ama_remember_me';
 
@@ -94,14 +94,24 @@ export function updateStoredUserDisplayName(displayName: string) {
   window.localStorage.setItem(USER_KEY, JSON.stringify({ ...user, displayName }));
 }
 
-export function getAuthTokenPresence() {
+export type AuthTokenPresence = {
+  /** Profil utilisateur (`ama_user`) — pas un JWT. */
+  userProfileLocal: boolean;
+  accessTokenLocal: boolean;
+  refreshTokenLocal: boolean;
+  /** Cookies HttpOnly — renseigné après `GET /api/auth/session`. */
+  accessTokenCookie: boolean;
+  refreshTokenCookie: boolean;
+};
+
+export function getAuthTokenPresence(): AuthTokenPresence {
   const hasUser = Boolean(getStoredUser());
   return {
-    accessTokenCookie: hasUser,
+    userProfileLocal: hasUser,
     accessTokenLocal: false,
-    refreshTokenCookie: hasUser,
     refreshTokenLocal: false,
-    rememberMe: readRememberMePreference(),
+    accessTokenCookie: false,
+    refreshTokenCookie: false,
   };
 }
 

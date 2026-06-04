@@ -79,8 +79,9 @@ pnpm setup
 # Après un git pull (schéma ou contenu modifié) :
 # pnpm db:migrate && pnpm db:seed
 #
-# Migration `Question.examOnly` : le seed idempotent recrée les bonus examen blanc
-# (44 Q par parcours). Toujours enchaîner migrate puis seed après pull.
+# Le seed est idempotent : upsert des parcours/modules, recréation des questions par module
+# (bonus examen blanc 44 Q par parcours). Toujours enchaîner migrate puis seed après pull
+# pour aligner Postgres sur shared/ (vidéos pilotes, comptages « 3 avec vidéo » Apple, etc.).
 
 # 3. API + web en un terminal (Ctrl+C arrête tout)
 pnpm dev:stack
@@ -185,6 +186,89 @@ Le backend écoute sur `http://localhost:4000`. Le web écoute sur [http://127.0
 Le seed crée les parcours MVP, modules, quiz, mini-jeux et données de progression nécessaires pour explorer l'application localelement.
 
 Pour un déploiement production (Vercel, Railway/Render, Neon, EAS), voir [DEPLOYMENT.md](./DEPLOYMENT.md).
+
+## Tester l'app mobile
+
+Application Expo (`mobile/`) — auth email, dashboard, quêtes et classement. Nécessite le backend et la base comme pour le web.
+
+### Prérequis
+
+```bash
+pnpm install          # ou pnpm setup (première fois)
+pnpm db:up
+pnpm db:migrate
+pnpm db:seed
+```
+
+API sur le port **4000** (recommandé : `pnpm dev:stack` depuis la racine, ou `pnpm --filter backend dev` dans un terminal dédié).
+
+### Variables d'environnement
+
+Modèle complet : [`mobile/.env.example`](./mobile/.env.example) (copier vers `mobile/.env` local, non versionné, ou exporter les variables dans le shell).
+
+| Variable | Rôle |
+| --- | --- |
+| `EXPO_PUBLIC_API_URL` | Backend Fastify — auth, catalogue, progression |
+| `EXPO_PUBLIC_WEB_URL` | Liens vers le front Next.js (certificats, profil, quêtes web) |
+
+**Simulateur iOS / Android (Expo)** — `127.0.0.1` ou `localhost` atteignent l’API et le web sur la machine hôte :
+
+```env
+EXPO_PUBLIC_API_URL=http://127.0.0.1:4000
+EXPO_PUBLIC_WEB_URL=http://127.0.0.1:3000
+```
+
+**Téléphone physique (Expo Go)** — `localhost` sur le téléphone ne pointe pas vers votre Mac/PC. Utiliser l’**IP LAN** de la machine qui héberge l’API (ex. `192.168.1.42`, visible dans les réglages réseau ou via `ipconfig` / `ifconfig`) :
+
+```bash
+EXPO_PUBLIC_API_URL=http://192.168.1.42:4000 \
+EXPO_PUBLIC_WEB_URL=http://192.168.1.42:3000 \
+pnpm --filter mobile dev
+```
+
+Le téléphone et l’ordinateur doivent être sur le **même réseau Wi‑Fi** ; autoriser le port **4000** dans le pare-feu si besoin.
+
+### Lancer avec Expo Go
+
+```bash
+pnpm --filter mobile dev
+```
+
+1. Le terminal affiche Metro / Expo Dev Tools (souvent http://localhost:8081).
+2. **Appareil physique** : installer [Expo Go](https://expo.dev/go), scanner le **QR code** affiché dans le terminal ou le navigateur Dev Tools.
+3. **Simulateur** : dans le terminal Expo, appuyer sur **`i`** (simulateur iOS) ou **`a`** (émulateur Android) une fois le simulateur installé (Xcode / Android Studio).
+
+### Compte démo
+
+Après `pnpm db:seed` :
+
+- **Email** : `demo@mdmacademy.local`
+- **Mot de passe** : `DemoTest2026!`
+
+Connexion sur l’écran auth de l’app pour synchroniser la progression avec l’API. Sans token, un **mode démo local** (catalogue FR) reste disponible si l’API est injoignable.
+
+### Build preview EAS (optionnel)
+
+Pour un binaire interne (TestFlight / APK) sans Expo Go, le profil `preview` de [`mobile/eas.json`](./mobile/eas.json) injecte `EXPO_PUBLIC_API_URL` au build :
+
+```bash
+cd mobile
+npm i -g eas-cli   # une fois
+eas login          # une fois
+eas build --profile preview --platform ios     # ou android / all
+```
+
+Adapter l’URL dans `mobile/eas.json` ou via secret EAS (`eas secret:create --name EXPO_PUBLIC_API_URL --value https://api.votredomaine.com`). Voir aussi [DEPLOYMENT.md](./DEPLOYMENT.md).
+
+### Dépannage — « API indisponible »
+
+L’app affiche une bannière ou un état dégradé lorsque le backend ne répond pas.
+
+1. **Backend** : `curl http://localhost:4000/health` doit renvoyer `{"status":"ok"}` (ou l’URL configurée dans `EXPO_PUBLIC_API_URL`).
+2. **URL** : sur téléphone physique, vérifier l’IP LAN et le port `:4000`, pas `localhost`.
+3. **Réseau** : même Wi‑Fi, pas de VPN isolant le téléphone.
+4. **Écran Diagnostics** dans l’app : détail de `EXPO_PUBLIC_API_URL` et test de connectivité.
+5. Relancer Metro après changement d’env : arrêter `pnpm --filter mobile dev` (Ctrl+C) puis relancer avec les variables mises à jour.
 
 ## Parcours d'apprentissage
 

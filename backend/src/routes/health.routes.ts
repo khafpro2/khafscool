@@ -1,28 +1,12 @@
 import type { FastifyInstance } from 'fastify';
-import { prisma } from '../lib/prisma.js';
+import { getAuthHealth, type AuthHealthResponse } from '../lib/auth-health.js';
+import { getDatabaseHealth, type DatabaseHealthResponse } from '../lib/database-health.js';
 
-export type DatabaseHealthResponse = {
-  message: string;
-  status: 'ok' | 'error';
-};
+export type { AuthHealthResponse, DatabaseHealthResponse };
+export { getAuthHealth } from '../lib/auth-health.js';
+export { getDatabaseHealth, isSchemaMissing, schemaMissingMessage } from '../lib/database-health.js';
 
-export async function getDatabaseHealth(): Promise<DatabaseHealthResponse> {
-  try {
-    await prisma.$queryRaw`SELECT 1`;
-
-    return {
-      status: 'ok',
-      message: 'Database reachable.',
-    };
-  } catch {
-    return {
-      status: 'error',
-      message: 'Database unavailable. Check Docker Desktop, DATABASE_URL, migrations and seed.',
-    };
-  }
-}
-
-const API_VERSION = '0.3.0';
+const API_VERSION = '0.3.15';
 
 export async function healthRoutes(app: FastifyInstance) {
   app.get('/health', async () => ({
@@ -33,6 +17,16 @@ export async function healthRoutes(app: FastifyInstance) {
 
   app.get('/health/db', async (_req, reply) => {
     const health = await getDatabaseHealth();
+
+    if (health.status === 'error') {
+      return reply.status(503).send(health);
+    }
+
+    return reply.send(health);
+  });
+
+  app.get('/health/auth', async (_req, reply) => {
+    const health = getAuthHealth();
 
     if (health.status === 'error') {
       return reply.status(503).send(health);

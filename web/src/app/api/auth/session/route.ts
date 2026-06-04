@@ -5,6 +5,7 @@ import {
   clearSessionCookies,
   readRememberMe,
   refreshBackendSession,
+  ACCESS_COOKIE,
   REFRESH_COOKIE,
 } from '@/lib/auth-session.server';
 
@@ -38,7 +39,9 @@ export async function DELETE() {
 export async function GET() {
   const cookieStore = await cookies();
   const refreshToken = cookieStore.get(REFRESH_COOKIE)?.value;
+  const accessToken = cookieStore.get(ACCESS_COOKIE)?.value;
   return NextResponse.json({
+    hasAccessToken: Boolean(accessToken),
     hasRefreshToken: Boolean(refreshToken),
     authenticated: Boolean(refreshToken),
   });

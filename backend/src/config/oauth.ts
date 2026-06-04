@@ -61,11 +61,25 @@ export function getOAuthProviderStatus(name: OAuthProviderName): OAuthProviderSt
   return 'stub';
 }
 
-export function getOAuthStatusSnapshot(): Record<OAuthProviderName, OAuthProviderStatus> {
+export type OAuthStatusSnapshot = Record<OAuthProviderName, OAuthProviderStatus> & {
+  /** Indique si l’API tourne en production (stub SSO refusé côté /start). */
+  environment: 'development' | 'production';
+};
+
+/** True quand l’API refuse le stub OAuth (NODE_ENV ou Railway production). */
+export function isProductionRuntime(): boolean {
+  if (process.env.NODE_ENV === 'production') return true;
+  const railway = process.env.RAILWAY_ENVIRONMENT?.trim().toLowerCase();
+  return railway === 'production';
+}
+
+export function getOAuthStatusSnapshot(): OAuthStatusSnapshot {
+  const environment = isProductionRuntime() ? 'production' : 'development';
   return {
     apple: getOAuthProviderStatus('apple'),
     google: getOAuthProviderStatus('google'),
     microsoft: getOAuthProviderStatus('microsoft'),
+    environment,
   };
 }
 

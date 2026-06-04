@@ -24,4 +24,11 @@ test.describe('Catalogue parcours — métadonnées', () => {
       timeout: 15_000,
     });
   });
+
+  test('parcours Apple : 3 avec vidéo (module 1 sans vidéo ADE)', async ({ page }) => {
+    await page.goto('/courses');
+    const appleCard = page.locator('a[href*="/courses/apple-cert-prep"]').first();
+    await expect(appleCard.getByText(/3 avec vidéo/i)).toBeVisible({ timeout: 15_000 });
+    await expect(appleCard.getByText(/4 avec vidéo/i)).toHaveCount(0);
+  });
 });
