@@ -19,7 +19,7 @@ buildCommand = "corepack enable && corepack prepare pnpm@9.15.0 --activate && pn
 watchPatterns = ["backend/**", "shared/**", "pnpm-lock.yaml", "railway.toml"]
 
 [deploy]
-startCommand = "sed -i 's/\r//' scripts/railway-start.sh && bash scripts/railway-start.sh"
+startCommand = "bash -c 'cd /app && pnpm db:migrate; exec env NODE_ENV=production pnpm --filter backend start:prod'"
 healthcheckPath = "/health"
 healthcheckTimeout = 120
 restartPolicyType = "ON_FAILURE"
