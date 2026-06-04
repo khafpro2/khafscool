@@ -11,6 +11,7 @@ import {
 import { AuthConnectBanner } from '@/components/auth/AuthConnectBanner';
 import { getAccessToken } from '@/lib/auth';
 import { formatTrack } from '@/lib/tracks';
+import { formatDateParis } from '@ama/shared/locale';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -526,11 +527,11 @@ function CurrentSprintCard({
   const statusLabel = formatSprintStatus(sprint);
   const statusTone = sprint.completed ? 'success' : sprint.expired ? 'neutral' : 'accent';
   const daysRemaining = computeDaysRemaining(sprint.endsAt);
-  const endsAtLabel = new Intl.DateTimeFormat('fr-FR', {
+  const endsAtLabel = formatDateParis(new Date(sprint.endsAt), {
     day: '2-digit',
     month: 'long',
     year: 'numeric',
-  }).format(new Date(sprint.endsAt));
+  });
   const objectiveLabel = `${formatTrack(sprint.track)} · ${sprint.days} jours · ${sprint.target} unités`;
 
   return (

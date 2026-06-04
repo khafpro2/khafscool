@@ -18,6 +18,7 @@ import {
 } from '@/lib/leaderboard-tracks';
 import { filterQuestsByTrack } from '@/lib/quest-track-filter';
 import { formatTrack } from '@/lib/tracks';
+import { formatDateParis } from '@ama/shared/locale';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -367,7 +368,7 @@ function formatResetLabel(weekEndIso: string | null): string {
   const date = new Date(weekEndIso);
   if (Number.isNaN(date.getTime())) return 'chaque lundi';
   try {
-    return date.toLocaleDateString('fr-FR', { weekday: 'long', day: '2-digit', month: 'long' });
+    return formatDateParis(date, { weekday: 'long', day: '2-digit', month: 'long' });
   } catch {
     return 'chaque lundi';
   }

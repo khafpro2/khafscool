@@ -1,12 +1,14 @@
-# Checklist mainteneur — fusion PR #6
+# Checklist mainteneur — fusion PR #7
 
 > **Statut : fusionnée** — PR [#6](https://github.com/khafpro2/khafscool/pull/6) intégrée dans `main` le **2026-05-27**. Ce document reste comme archive de la checklist pré-merge.
 
-Checklist historique à valider avant fusion (déjà effectuée).
+**Pull request :** [PR #7 — Progress dashboard auth v2](https://github.com/khafpro2/khafscool/pull/7)
 
-**Pull request :** [PR #6 — Progress dashboard auth v2](https://github.com/khafpro2/khafscool/pull/6) — **MERGED**
+**Version cible :** `0.3.17` (monorepo aligné sur `main` ; fonctionnalités PR #7 : dock pistes, locale, QCM)
 
-**Version cible :** `0.3.13` (monorepo `@ama/shared`, backend, web, mobile)
+**Prod (aperçu)** — [apple-mdm-academy.vercel.app](https://apple-mdm-academy.vercel.app) : accueil Hello + **dock pistes** (magnification / genie), sans hero MacBook ni intro iOS 26.
+
+**Historique :** [PR #6](https://github.com/khafpro2/khafscool/pull/6) — **MERGED** dans `main` le 2026-05-27.
 
 **HEAD de référence :** `3c79694` (avant v0.3.13) — vérifier avec `git rev-parse --short HEAD` sur la branche avant merge.
 
@@ -46,7 +48,7 @@ Workflow : `.github/workflows/ci.yml`
 
 | Job | Contenu |
 | --- | --- |
-| **build-test** | install, smoke scripts, tests backend, typecheck mobile, build backend + web |
+| **build-test** | install, smoke scripts, `pnpm qcm:balance:check`, lint, tests backend, typecheck mobile, build backend + web |
 | **integration** | Postgres service, `db:migrate` + `db:seed`, API, `pnpm smoke:api` |
 | **e2e-web** | Playwright Chromium, `pnpm --filter web test:e2e` |
 
@@ -54,7 +56,20 @@ Workflow : `.github/workflows/ci.yml`
 - [ ] Job **integration** — vert
 - [ ] Job **e2e-web** — vert
 
-Vérifier sur la PR : `gh pr checks 6`
+Vérifier sur la PR : `gh pr checks 7`
+
+---
+
+## v0.3.6 — Accueil, locale, QCM
+
+- [ ] **`/`** — dock 3 pistes (Apple / Jamf / Intune), descriptions une ligne, clavier flèches / Home / End
+- [ ] **Locale** — dates `fr-FR`, fuseau `Europe/Paris` (web + API)
+- [ ] **QCM** — `pnpm qcm:balance:check` vert en CI ; scripts `improve-qcm-ai.mjs` / `fix-qcm.mjs` (maintenance locale)
+
+```bash
+pnpm qcm:balance          # rapport équilibre distracteurs
+pnpm qcm:balance:check    # garde-fou CI (ratio > 1.4x → exit 1)
+```
 
 ---
 
@@ -187,16 +202,16 @@ pnpm db:seed
 
 ## Fusion
 
-- [x] Tous les jobs CI verts sur PR #6
-- [x] [CHANGELOG.md](./CHANGELOG.md) section `[0.2.1]` à jour
-- [x] Revue code effectuée
-- [x] Merge dans `main` (2026-05-27)
+- [ ] Tous les jobs CI verts sur PR #7
+- [ ] [CHANGELOG.md](./CHANGELOG.md) section `[0.3.6]` à jour
+- [ ] Revue code effectuée
+- [ ] Merge dans `main` (PR #7)
 - [x] Stack prod : Railway API + Neon DB + Vercel web — voir [docs/HANDOFF.md](./docs/HANDOFF.md)
 
 ---
 
 ## Documentation associée
 
-- [CHANGELOG.md](./CHANGELOG.md) — notes `0.2.1`
+- [CHANGELOG.md](./CHANGELOG.md) — notes `0.3.6` et historique
 - [DEPLOYMENT.md](./DEPLOYMENT.md) — variables prod
 - [docs/OAUTH-PRODUCTION.md](./docs/OAUTH-PRODUCTION.md) — OAuth prod

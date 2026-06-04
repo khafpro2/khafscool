@@ -33,7 +33,7 @@ describe('buildLearningStreak', () => {
   it('keeps the streak alive when the last activity was yesterday', () => {
     const now = new Date('2026-05-19T08:00:00.000Z');
     const result = buildLearningStreak(
-      [new Date('2026-05-18T21:00:00.000Z'), new Date('2026-05-17T12:00:00.000Z')],
+      [new Date('2026-05-18T10:00:00.000Z'), new Date('2026-05-17T12:00:00.000Z')],
       now
     );
 

@@ -27,11 +27,15 @@ export function MdmTracksSection({ courses }: { courses: CourseSummary[] }) {
         const percent = course?.progressPercent ?? 0;
         const visual = getTrackVisual(path.track);
 
+        const trackLabel = formatTrack(path.track);
+
         return (
           <Pressable
             key={path.slug}
-            style={styles.card}
+            style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
             onPress={() => router.push(`/course/${path.slug}`)}
+            accessibilityRole="button"
+            accessibilityLabel={`Parcours ${trackLabel} — ${course?.title ?? path.title}`}
           >
             <View style={[styles.banner, { backgroundColor: visual.gradient[0] }]}>
               <BrandIcon brand={path.brand} size="md" />
@@ -39,7 +43,7 @@ export function MdmTracksSection({ courses }: { courses: CourseSummary[] }) {
             <View style={styles.body}>
               <View style={styles.headerRow}>
                 <TrackIcon track={path.track} size="sm" />
-                <Text style={styles.trackLabel}>{formatTrack(path.track)}</Text>
+                <Text style={styles.trackLabel}>{trackLabel}</Text>
               </View>
               <Text style={styles.cardTitle}>{course?.title ?? path.title}</Text>
               <Text style={styles.meta}>
@@ -75,6 +79,10 @@ function createStyles(colors: AppThemeColors) {
       borderColor: colors.border,
       backgroundColor: colors.bgSoft,
       marginBottom: 10,
+    },
+    cardPressed: {
+      opacity: 0.92,
+      transform: [{ scale: 0.985 }],
     },
     banner: { padding: 16, alignItems: 'flex-start' },
     body: { padding: 14 },

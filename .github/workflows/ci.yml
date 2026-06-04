@@ -29,6 +29,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Generate Prisma client
+        run: pnpm db:generate
+
       - name: Validate smoke scripts syntax
         run: node --check scripts/smoke-api.mjs scripts/smoke-web.mjs
 
@@ -37,6 +40,9 @@ jobs:
 
       - name: Typecheck
         run: pnpm typecheck
+
+      - name: QCM distractor balance
+        run: pnpm qcm:balance:check
 
       - name: Lint
         run: pnpm lint
@@ -122,6 +128,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Generate Prisma client
+        run: pnpm db:generate
+
       - name: Migrate and seed database
         run: |
           pnpm db:migrate
@@ -173,6 +182,7 @@ jobs:
       - name: Install Playwright Chromium
         run: pnpm --filter web exec playwright install --with-deps chromium
 
+      # Suite: e2e/home-hero.spec.ts — Hello, tagline, dock (3 pistes), sans hero MacBook
       - name: Run Playwright E2E
         env:
           CI: true
@@ -223,6 +233,9 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client
+        run: pnpm db:generate
 
       - name: Migrate and seed database
         run: |

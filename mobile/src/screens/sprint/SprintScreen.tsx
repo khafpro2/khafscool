@@ -11,6 +11,7 @@ import {
 import { TrackIcon } from '../../components/TrackIcon';
 import { useAppTheme } from '../../context/ThemeContext';
 import type { AppThemeColors } from '../../lib/design';
+import { formatDateParis } from '@ama/shared/locale';
 import { formatTrack, getTrackVisual } from '../../lib/design';
 import { useThemedStyles } from '../../hooks/useThemedStyles';
 import {
@@ -228,7 +229,7 @@ function CurrentSprintCard({
 
   const statusLabel = formatSprintStatus(sprint);
   const daysRemaining = computeDaysRemaining(sprint.endsAt);
-  const endsAtLabel = new Date(sprint.endsAt).toLocaleDateString('fr-FR', {
+  const endsAtLabel = formatDateParis(new Date(sprint.endsAt), {
     day: '2-digit',
     month: 'short',
   });

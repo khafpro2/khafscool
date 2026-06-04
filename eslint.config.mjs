@@ -14,10 +14,20 @@ export default tseslint.config(
       'backend/src/generated/**',
       'scripts/**',
       'web/next-env.d.ts',
+      'fix-qcm.mjs',
+      'improve-qcm-ai.mjs',
     ],
   },
   eslint.configs.recommended,
   ...tseslint.configs.recommended,
+  {
+    files: ['**/*.mjs'],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+      },
+    },
+  },
   {
     files: ['**/*.{ts,tsx}'],
     languageOptions: {

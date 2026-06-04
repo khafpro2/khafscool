@@ -1,14 +1,5 @@
 import { expect, test } from '@playwright/test';
 
-// Ignore l’intro iOS 26 pour tous les tests (sessionStorage lu par IOSHelloIntro)
-test.beforeEach(async ({ page }) => {
-  await page.addInitScript(() => {
-    sessionStorage.setItem('ama-intro-skip', 'true');
-  });
-});
-
-
-
 test.describe('Parcours d’apprentissage — smoke', () => {
 
   test('accueil charge', async ({ page }) => {
@@ -238,5 +229,3 @@ test.describe('Parcours d’apprentissage — smoke', () => {
   });
 
 });
-
-fix(e2e): learning-path.spec 125L propre no import duplicate

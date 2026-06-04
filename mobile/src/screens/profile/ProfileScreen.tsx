@@ -16,6 +16,7 @@ import {
 import { preferenceLabel, useAppTheme } from '../../context/ThemeContext';
 import { WEB_URL } from '../../config';
 import type { AppThemeColors } from '../../lib/design';
+import { formatDateParis } from '@ama/shared/locale';
 import { formatLevel, formatTrack, getBadgeVisual, getRankInfo } from '../../lib/design';
 import { useThemedStyles } from '../../hooks/useThemedStyles';
 import { RecentActivitySection } from '../../components/profile/RecentActivitySection';
@@ -684,7 +685,7 @@ function CompletedCourseRow({
 function formatCompletedDate(value: string) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return 'date à confirmer';
-  return date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
+  return formatDateParis(date, { day: '2-digit', month: 'long', year: 'numeric' });
 }
 
 function Stat({

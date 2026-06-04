@@ -13,6 +13,7 @@ import { WEB_URL } from '../../config';
 import { TrackIcon } from '../../components/TrackIcon';
 import { useAppTheme } from '../../context/ThemeContext';
 import type { AppThemeColors } from '../../lib/design';
+import { formatDateParis } from '@ama/shared/locale';
 import { formatTrack, getTrackVisual } from '../../lib/design';
 import { useThemedStyles } from '../../hooks/useThemedStyles';
 import { toastBadgeUnlocked, toastModuleCompleted } from '../../lib/gamification-toasts';
@@ -500,7 +501,7 @@ export function CourseDetailScreen() {
                 />
                 {moduleProgress?.completedAt ? (
                   <Text style={styles.moduleCompletedAt}>
-                    Terminée le {new Date(moduleProgress.completedAt).toLocaleDateString('fr-FR')}
+                    Terminée le {formatDateParis(moduleProgress.completedAt)}
                   </Text>
                 ) : null}
               </View>

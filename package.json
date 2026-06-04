@@ -35,7 +35,9 @@
     "heygen:recover": "pnpm --filter backend exec tsx ../scripts/heygen-generate-course-videos.ts -- --recover",
     "heygen:submit": "pnpm --filter backend exec tsx ../scripts/heygen-generate-course-videos.ts -- --submit --force",
     "videos:audit": "pnpm --filter backend exec tsx ../scripts/videos-audit.ts",
-    "heygen:retry-failed": "pnpm --filter backend exec tsx ../scripts/heygen-translate-pilot-videos.ts -- --retry-failed"
+    "heygen:retry-failed": "pnpm --filter backend exec tsx ../scripts/heygen-translate-pilot-videos.ts -- --retry-failed",
+    "qcm:balance": "node improve-qcm-ai.mjs",
+    "qcm:balance:check": "node improve-qcm-ai.mjs --check"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",

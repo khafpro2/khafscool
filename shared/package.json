@@ -1,6 +1,6 @@
 {
   "name": "@ama/shared",
-    "version": "0.3.18",
+  "version": "0.3.18",
   "private": true,
   "type": "module",
   "exports": {
@@ -108,13 +108,18 @@
       "types": "./src/quiz-stats.ts",
       "development": "./src/quiz-stats.ts",
       "default": "./dist/quiz-stats.js"
+    },
+    "./locale": {
+      "types": "./src/locale.ts",
+      "development": "./src/locale.ts",
+      "default": "./dist/locale.js"
     }
   },
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit"
   },
-    "dependencies": {
+  "dependencies": {
     "typescript": "^5.7.2"
   }
 }
