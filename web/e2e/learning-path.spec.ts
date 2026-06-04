@@ -229,5 +229,3 @@ test.describe('Parcours d’apprentissage — smoke', () => {
   });
 
 });
-
-fix(e2e): learning-path.spec 125L propre no import duplicate
