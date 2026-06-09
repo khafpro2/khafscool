@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import { QuestNavDot } from '@/components/layout/QuestNavIndicator';
 import { PointsRankNavIndicator } from '@/components/layout/PointsRankNavIndicator';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
@@ -19,6 +20,7 @@ const FOCUSABLE =
 
 export function SiteMobileNav() {
   const [open, setOpen] = useState(false);
+  const pathname = usePathname();
   const panelId = useId();
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLElement>(null);
@@ -133,7 +135,8 @@ export function SiteMobileNav() {
             <Link
               key={item.href}
               href={item.href}
-              className={`site-nav-drawer-link${'showQuestDot' in item && item.showQuestDot ? ' nav-link-quests' : ''}`}
+              className={`site-nav-drawer-link${'showQuestDot' in item && item.showQuestDot ? ' nav-link-quests' : ''}${pathname === item.href ? ' nav-link-active' : ''}`}
+              aria-current={pathname === item.href ? 'page' : undefined}
               onClick={close}
             >
               <span className="nav-link-label">{item.label}</span>

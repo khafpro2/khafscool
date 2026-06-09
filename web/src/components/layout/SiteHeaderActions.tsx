@@ -9,8 +9,22 @@ export function SiteHeaderActions() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    // Hydration côté client — lit localStorage/sessionStorage
+    // Hydration initiale
     setIsLoggedIn(Boolean(getStoredUser()));
+
+    // Synchronisation en temps réel (login/logout dans le même onglet ou un autre)
+    function onStorage() {
+      setIsLoggedIn(Boolean(getStoredUser()));
+    }
+
+    window.addEventListener('storage', onStorage);
+    // Écoute aussi les changements dans le même onglet via un event custom
+    window.addEventListener('ama:auth-change', onStorage);
+
+    return () => {
+      window.removeEventListener('storage', onStorage);
+      window.removeEventListener('ama:auth-change', onStorage);
+    };
   }, []);
 
   return (

@@ -1,14 +1,16 @@
-'use client';
+import { redirect } from 'next/navigation';
 
-import { useEffect } from 'react';
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+type DonatePageProps = {
+  searchParams: Promise<Record<string, string>>;
+};
 
-/** Redirige /donate → /soutenir en préservant query string et fragment (#carte, #paypal…). */
-export default function DonateRedirectPage() {
-  useEffect(() => {
-    const { search, hash } = window.location;
-    window.location.replace(`/soutenir${search}${hash}`);
-  }, []);
-
-  return <LoadingSpinner label="Redirection vers la page Soutenir…" />;
+/**
+ * Redirige /donate → /soutenir en préservant les query params.
+ * Version serveur (plus rapide que le useEffect client-side précédent).
+ */
+export default async function DonateRedirectPage({ searchParams }: DonatePageProps) {
+  const params = await searchParams;
+  const query = new URLSearchParams(params).toString();
+  const destination = query ? `/soutenir?${query}` : '/soutenir';
+  redirect(destination);
 }

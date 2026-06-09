@@ -65,6 +65,7 @@ export async function storeAuthTokens(auth: AuthResponse, options?: StoreAuthOpt
 export function storeAuthenticatedUser(user: AuthUser) {
   if (typeof window === 'undefined') return;
   window.localStorage.setItem(USER_KEY, JSON.stringify(user));
+  window.dispatchEvent(new Event('ama:auth-change'));
 }
 
 export function getAccessToken() {
@@ -162,6 +163,7 @@ export async function logoutAllDevices() {
 export function clearAuthTokens() {
   if (typeof window === 'undefined') return;
   window.localStorage.removeItem(USER_KEY);
+  window.dispatchEvent(new Event('ama:auth-change'));
   void fetch('/api/auth/session', {
     method: 'DELETE',
     credentials: 'include',
