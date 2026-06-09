@@ -1,16 +1,23 @@
-import { redirect } from 'next/navigation';
+'use client';
 
-type DonatePageProps = {
-  searchParams: Promise<Record<string, string>>;
-};
+import { useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 /**
- * Redirige /donate → /soutenir en préservant les query params.
- * Version serveur (plus rapide que le useEffect client-side précédent).
+ * Redirige /donate → /soutenir en préservant query string ET fragment.
+ * Client-side nécessaire car les fragments (#) ne sont pas transmis au serveur.
  */
-export default async function DonateRedirectPage({ searchParams }: DonatePageProps) {
-  const params = await searchParams;
-  const query = new URLSearchParams(params).toString();
-  const destination = query ? `/soutenir?${query}` : '/soutenir';
-  redirect(destination);
+export default function DonateRedirectPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const query = searchParams.toString();
+    const hash = window.location.hash; // fragment non disponible côté serveur
+    const destination = `/soutenir${query ? `?${query}` : ''}${hash}`;
+    router.replace(destination);
+  }, [router, searchParams]);
+
+  return <LoadingSpinner label="Redirection vers la page Soutenir…" />;
 }
