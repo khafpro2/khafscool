@@ -161,20 +161,40 @@ export function CoursePracticeExamClient({ slug }: { slug: string }) {
       const moduleId = state.moduleIdByQuestion[questionId];
       const token = getAccessToken();
       const question = state.exam.questions.find((item) => item.id === questionId);
+      const isExamOnly = question && 'examOnly' in question && (question as { examOnly?: boolean }).examOnly;
 
       let result: QuestionCheckResult;
 
-      if (token && moduleId) {
-        const apiResult = await checkModuleAnswer(moduleId, token, { questionId, selectedOption });
-        result = { correct: apiResult.correct, explanation: apiResult.explanation };
+      if (token && moduleId && !isExamOnly) {
+        // Question normale : validation via l'API module
+        try {
+          const apiResult = await checkModuleAnswer(moduleId, token, { questionId, selectedOption });
+          result = { correct: apiResult.correct, explanation: apiResult.explanation };
+        } catch {
+          // Fallback local si l'API ne connaît pas la question (ex: question retirée)
+          if (question && 'correctOption' in question && question.correctOption) {
+            const correct = question.correctOption === selectedOption;
+            result = {
+              correct,
+              explanation: question.explanation ?? (correct ? 'Bonne réponse.' : 'Réponse incorrecte.'),
+            };
+          } else {
+            throw new Error('Impossible de vérifier cette réponse pour le moment.');
+          }
+        }
       } else if (question && 'correctOption' in question && question.correctOption) {
+        // Question examOnly ou mode démo : validation locale avec correctOption
         const correct = question.correctOption === selectedOption;
         result = {
           correct,
           explanation: question.explanation ?? (correct ? 'Bonne réponse.' : 'Réponse incorrecte.'),
         };
       } else {
-        throw new Error('Connexion requise pour valider cette réponse.');
+        // Question examOnly connecté sans correctOption : enregistrer sans afficher d'erreur
+        result = {
+          correct: false,
+          explanation: 'Réponse enregistrée — résultat disponible après la correction finale.',
+        };
       }
 
       setQuestionResults((current) => ({ ...current, [questionId]: result }));
@@ -193,14 +213,49 @@ export function CoursePracticeExamClient({ slug }: { slug: string }) {
       if (!selectedOption || revealedQuestions.has(question.id)) continue;
 
       const moduleId = state.moduleIdByQuestion[question.id];
-      if (token && moduleId) {
-        const apiResult = await checkModuleAnswer(moduleId, token, {
-          questionId: question.id,
-          selectedOption,
-        });
+      const isExamOnly = 'examOnly' in question && (question as { examOnly?: boolean }).examOnly;
+
+      if (token && moduleId && !isExamOnly) {
+        try {
+          const apiResult = await checkModuleAnswer(moduleId, token, {
+            questionId: question.id,
+            selectedOption,
+          });
+          setQuestionResults((current) => ({
+            ...current,
+            [question.id]: { correct: apiResult.correct, explanation: apiResult.explanation },
+          }));
+        } catch {
+          // Fallback local pour les questions inconnues de l'API
+          if ('correctOption' in question && question.correctOption) {
+            const correct = question.correctOption === selectedOption;
+            setQuestionResults((current) => ({
+              ...current,
+              [question.id]: {
+                correct,
+                explanation: question.explanation ?? (correct ? 'Bonne réponse.' : 'Réponse incorrecte.'),
+              },
+            }));
+          }
+        }
+      } else if ('correctOption' in question && question.correctOption) {
+        // Validation locale (examOnly ou démo)
+        const correct = question.correctOption === selectedOption;
         setQuestionResults((current) => ({
           ...current,
-          [question.id]: { correct: apiResult.correct, explanation: apiResult.explanation },
+          [question.id]: {
+            correct,
+            explanation: question.explanation ?? (correct ? 'Bonne réponse.' : 'Réponse incorrecte.'),
+          },
+        }));
+      } else {
+        // examOnly connecté sans correctOption : marquer comme révélé
+        setQuestionResults((current) => ({
+          ...current,
+          [question.id]: {
+            correct: false,
+            explanation: 'Réponse enregistrée.',
+          },
         }));
       }
       setRevealedQuestions((current) => new Set(current).add(question.id));
