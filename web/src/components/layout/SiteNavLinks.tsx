@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { QuestNavDot } from '@/components/layout/QuestNavIndicator';
 
 const NAV_ITEMS = [
+  { href: '/courses', label: 'Parcours' },
   { href: '/quests', label: 'Quêtes', showQuestDot: true as const },
   { href: '/leaderboard', label: 'Classement' },
   { href: '/badges', label: 'Badges' },

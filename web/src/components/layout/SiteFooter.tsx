@@ -21,6 +21,11 @@ export function SiteFooter() {
         </div>
         <div style={{ display: 'flex', gap: '1.25rem', flexWrap: 'wrap', alignItems: 'center' }}>
           <Link href="/courses">Parcours</Link>
+          <Link href="/dashboard">Tableau de bord</Link>
+          <Link href="/quests">Quêtes</Link>
+          <Link href="/sprint">Sprint</Link>
+          <Link href="/badges">Badges</Link>
+          <Link href="/leaderboard">Classement</Link>
           <Link href="/resources">Ressources</Link>
           <Link href="/about">À propos</Link>
           <Link href={contactMailto}>Nous contacter</Link>

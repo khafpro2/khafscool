@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 import { CourseRevisionClient } from '@/components/courses/CourseRevisionClient';
 import { getLearningPath } from '@/lib/learningPaths';
 import { buildCourseRevisionMetadata } from '@/lib/seo-metadata';
@@ -28,5 +29,6 @@ export default async function CourseRevisionPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  if (!getLearningPath(slug)) notFound();
   return <CourseRevisionClient slug={slug} />;
 }

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 import { CourseCertificateClient } from '@/components/courses/CourseCertificateClient';
 import { getLearningPath } from '@/lib/learningPaths';
 import { buildCourseCertificateMetadata } from '@/lib/seo-metadata';
@@ -28,5 +29,6 @@ export default async function CourseCertificatePage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  if (!getLearningPath(slug)) notFound();
   return <CourseCertificateClient slug={slug} />;
 }

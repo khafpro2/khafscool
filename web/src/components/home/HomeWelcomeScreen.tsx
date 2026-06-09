@@ -1,17 +1,26 @@
 'use client';
 
 import { HomeTrackDock } from '@/components/home/HomeTrackDock';
+import { HomeWhatsNewBanner } from '@/components/home/HomeWhatsNewBanner';
+import { HomeOnboardingBanner } from '@/components/home/HomeOnboardingBanner';
+import { ContinueLearningSection } from '@/components/home/ContinueLearningSection';
 
 export function HomeWelcomeScreen() {
   return (
-    <section className="home-welcome" aria-labelledby="home-hello-title">
-      <h1 id="home-hello-title" className="home-hello-title">
-        Hello
-      </h1>
+    <>
+      <section className="home-welcome" aria-labelledby="home-hello-title">
+        <h1 id="home-hello-title" className="home-hello-title">
+          Hello
+        </h1>
 
-      <p className="home-welcome-tagline">Je veux apprendre</p>
+        <p className="home-welcome-tagline">Je veux apprendre</p>
 
-      <HomeTrackDock />
-    </section>
+        <HomeTrackDock />
+      </section>
+
+      <HomeWhatsNewBanner />
+      <ContinueLearningSection />
+      <HomeOnboardingBanner />
+    </>
   );
 }

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 import { CoursePracticeExamClient } from '@/components/courses/CoursePracticeExamClient';
 import { getLearningPath } from '@/lib/learningPaths';
 import { buildCoursePracticeExamMetadata } from '@/lib/seo-metadata';
@@ -28,5 +29,6 @@ export default async function CoursePracticeExamPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  if (!getLearningPath(slug)) notFound();
   return <CoursePracticeExamClient slug={slug} />;
 }

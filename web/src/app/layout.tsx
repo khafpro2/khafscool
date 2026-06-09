@@ -71,7 +71,7 @@ export const metadata: Metadata = {
     follow: true,
   },
   alternates: {
-    canonical: '/',
+    canonical: siteUrl,
   },
   manifest: '/manifest.webmanifest',
   appleWebApp: {

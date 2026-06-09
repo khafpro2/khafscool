@@ -60,6 +60,12 @@ export default function NotFound() {
             <Link href="/courses">Parcours — Apple, Jamf Pro et Microsoft Intune</Link>
           </li>
           <li>
+            <Link href="/dashboard">Tableau de bord — ma progression</Link>
+          </li>
+          <li>
+            <Link href="/sprint">Sprint certification — programme 7 jours</Link>
+          </li>
+          <li>
             <Link href="/auth">Connexion — commencer gratuitement</Link>
           </li>
           <li>

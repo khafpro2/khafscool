@@ -233,6 +233,16 @@ h1, h2, h3, h4 {
 }
 .site-nav a:hover { color: var(--accent); text-decoration: none; }
 
+/* Masquer nav desktop et afficher hamburger sous 900px */
+@media (max-width: 900px) {
+  .site-nav {
+    display: none;
+  }
+  .site-mobile-nav {
+    display: block !important;
+  }
+}
+
 .nav-link-quests {
   position: relative;
   display: inline-flex;

@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 import { getLearningPath } from '@/lib/learningPaths';
+import { MVP_TRACK_SLUGS } from '@ama/shared/learning-paths';
 import { CourseDetailClient } from '@/components/courses/CourseDetailClient';
 
 export async function generateMetadata({
@@ -30,7 +32,15 @@ export async function generateMetadata({
   };
 }
 
+export function generateStaticParams() {
+  return MVP_TRACK_SLUGS.map((slug) => ({ slug }));
+}
+
 export default async function CourseDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
+  const path = getLearningPath(slug);
+  if (!path) {
+    notFound();
+  }
   return <CourseDetailClient slug={slug} />;
 }
