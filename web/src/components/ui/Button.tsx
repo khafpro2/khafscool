@@ -89,7 +89,7 @@ export function Button(props: ButtonProps) {
   void _st;
   void _ch;
   return (
-    <button {...rest} className={computedClassName} style={finalStyle}>
+    <button type="button" {...rest} className={computedClassName} style={finalStyle}>
       {icon && <span aria-hidden>{icon}</span>}
       <span>{children}</span>
     </button>

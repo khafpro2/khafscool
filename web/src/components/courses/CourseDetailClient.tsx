@@ -7,9 +7,13 @@ import type { CourseDetail, CourseProgressData, CourseProgressModule } from '@/l
 import { checkModuleAnswer, completeModule, fetchCourse, fetchCourseProgress } from '@/lib/api';
 import { AuthRequestError, resolveApiErrorMessage } from '@/lib/auth-errors';
 import { buildAuthUrl, getAccessToken } from '@/lib/auth';
+import dynamic from 'next/dynamic';
 import { KeyboardShortcutsHelp } from '@/components/courses/KeyboardShortcutsHelp';
 import { LessonContent, ModuleObjectives } from '@/components/courses/LessonContent';
-import { ModuleVideoSection } from '@/components/courses/ModuleVideoSection';
+const ModuleVideoSection = dynamic(
+  () => import('@/components/courses/ModuleVideoSection').then((m) => ({ default: m.ModuleVideoSection })),
+  { ssr: false }
+);
 import { formatTrack } from '@/lib/tracks';
 import { formatDateParis } from '@ama/shared/locale';
 import {

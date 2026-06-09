@@ -1,6 +1,6 @@
 {
   "name": "web",
-  "version": "0.3.16",
+  "version": "0.3.17",
   "private": true,
   "scripts": {
     "dev": "WATCHPACK_POLLING=true next dev . -p 3000 -H 127.0.0.1",
