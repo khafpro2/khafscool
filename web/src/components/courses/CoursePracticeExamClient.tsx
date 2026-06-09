@@ -383,7 +383,7 @@ export function CoursePracticeExamClient({ slug }: { slug: string }) {
 
 function PracticeExamResults({
   slug,
-  courseTitle,
+  courseTitle: _courseTitle,
   track,
   correctCount,
   totalQuestions,
@@ -392,7 +392,7 @@ function PracticeExamResults({
   questionResults,
 }: {
   slug: string;
-  courseTitle: string;
+  courseTitle: string; // kept for API compatibility
   track: string;
   correctCount: number;
   totalQuestions: number;
@@ -402,48 +402,148 @@ function PracticeExamResults({
 }) {
   const visual = getTrackVisual(track);
   const passed = scorePercent >= PRACTICE_EXAM_PASS_PERCENT;
+  const incorrectCount = totalQuestions - correctCount;
+  const unansweredCount = questions.filter((q) => !questionResults[q.id]).length;
 
   return (
     <Card style={{ marginTop: '1.25rem' }}>
-      <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start', flexWrap: 'wrap' }}>
-        <TrackIcon track={track} size="md" style={{ background: visual.gradient }} />
-        <div style={{ flex: 1, minWidth: 220 }}>
-          <p className="muted" style={{ fontWeight: 800, fontSize: '0.78rem', textTransform: 'uppercase' }}>
-            Résultat examen blanc
+
+      {/* ── En-tête résultat ─────────────────────────────────────────────── */}
+      <div
+        style={{
+          display: 'flex',
+          gap: '1rem',
+          alignItems: 'flex-start',
+          flexWrap: 'wrap',
+          padding: '1rem',
+          borderRadius: 12,
+          background: passed
+            ? 'var(--success-soft, #ecfdf5)'
+            : 'var(--warning-soft, #fffbeb)',
+          border: `1px solid ${passed ? '#6ee7b7' : '#fcd34d'}`,
+          marginBottom: '1.25rem',
+        }}
+      >
+        <TrackIcon track={track} size="md" style={{ background: visual.gradient, flexShrink: 0 }} />
+        <div style={{ flex: 1, minWidth: 200 }}>
+          <p style={{
+            fontWeight: 800,
+            fontSize: '0.78rem',
+            textTransform: 'uppercase',
+            color: passed ? '#065f46' : '#92400e',
+            letterSpacing: '0.06em',
+          }}>
+            {passed ? '✅ Examen réussi' : '⚠️ Examen non réussi'}
           </p>
-          <h2 style={{ fontSize: '1.6rem', fontWeight: 900, marginTop: '0.35rem' }}>
-            {correctCount}/{totalQuestions} — {scorePercent}%
-          </h2>
-          <p style={{ marginTop: '0.5rem', lineHeight: 1.55 }}>
-            {passed
-              ? `Seuil de réussite atteint (≥ ${PRACTICE_EXAM_PASS_PERCENT} %) — le badge « Examen blanc réussi » est enregistré sur ton profil. Revois les explications des questions manquées avant la certification.`
-              : `Score inférieur à ${PRACTICE_EXAM_PASS_PERCENT} % — continue avec la fiche révision et les modules du parcours, puis retente l'examen pour viser le badge « Examen blanc réussi ».`}
+
+          {/* Score principal */}
+          <p style={{
+            fontSize: 'clamp(2rem, 5vw, 2.6rem)',
+            fontWeight: 900,
+            lineHeight: 1.1,
+            marginTop: '0.25rem',
+            color: passed ? '#065f46' : '#92400e',
+          }}>
+            {scorePercent}%
+          </p>
+
+          {/* Détail numérique */}
+          <div style={{
+            display: 'flex',
+            gap: '1rem',
+            flexWrap: 'wrap',
+            marginTop: '0.5rem',
+            fontSize: '0.9rem',
+          }}>
+            <span style={{ fontWeight: 700, color: '#065f46' }}>
+              ✅ {correctCount} bonne{correctCount !== 1 ? 's' : ''}
+            </span>
+            <span style={{ fontWeight: 700, color: incorrectCount > 0 ? '#dc2626' : 'var(--muted)' }}>
+              ❌ {incorrectCount} erreur{incorrectCount !== 1 ? 's' : ''}
+            </span>
+            {unansweredCount > 0 && (
+              <span style={{ color: 'var(--muted)' }}>
+                — {unansweredCount} sans réponse
+              </span>
+            )}
+          </div>
+
+          {/* Seuil */}
+          <p style={{ marginTop: '0.45rem', fontSize: '0.83rem', color: 'var(--muted)' }}>
+            Seuil de réussite : {PRACTICE_EXAM_PASS_PERCENT}% &mdash; {Math.ceil((PRACTICE_EXAM_PASS_PERCENT / 100) * totalQuestions)}/{totalQuestions} bonnes réponses requises
           </p>
         </div>
       </div>
 
-      <ul style={{ marginTop: '1.25rem', paddingLeft: '1.1rem', lineHeight: 1.6 }}>
-        {questions.map((question, index) => {
-          const result = questionResults[question.id];
-          const icon = result?.correct ? '\u2705' : result ? '\u274C' : '\u2014';
-          return (
-            <li key={question.id} style={{ marginBottom: '0.35rem' }}>
-              {icon} Question {index + 1} — {question.prompt.slice(0, 80)}
-              {question.prompt.length > 80 ? '…' : ''}
-            </li>
-          );
-        })}
-      </ul>
+      {/* ── Message ─────────────────────────────────────────────────────── */}
+      <p style={{ lineHeight: 1.6, fontSize: '0.92rem', marginBottom: '1.25rem' }}>
+        {passed
+          ? `Félicitations ! Le badge « Examen blanc réussi » est enregistré sur ton profil. Revois les explications des questions manquées avant ta certification.`
+          : `Score de ${scorePercent}% — le seuil est ${PRACTICE_EXAM_PASS_PERCENT}%. Continue avec la fiche révision et les modules du parcours, puis retente l'examen.`}
+      </p>
 
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem', marginTop: '1.25rem' }}>
+      {/* ── Liste détaillée des questions ───────────────────────────────── */}
+      <div style={{ borderTop: '1px solid var(--border-soft)', paddingTop: '1rem' }}>
+        <p style={{ fontWeight: 700, fontSize: '0.88rem', marginBottom: '0.65rem' }}>
+          Détail par question
+        </p>
+        <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
+          {questions.map((question, index) => {
+            const result = questionResults[question.id];
+            const isCorrect = result?.correct;
+            const hasResult = Boolean(result);
+            return (
+              <li
+                key={question.id}
+                style={{
+                  display: 'flex',
+                  gap: '0.6rem',
+                  alignItems: 'flex-start',
+                  padding: '0.45rem 0.65rem',
+                  borderRadius: 8,
+                  background: isCorrect
+                    ? 'var(--success-soft, #ecfdf5)'
+                    : hasResult
+                      ? '#fef2f2'
+                      : 'var(--bg-soft)',
+                  border: '1px solid',
+                  borderColor: isCorrect ? '#d1fae5' : hasResult ? '#fecaca' : 'var(--border-soft)',
+                  fontSize: '0.85rem',
+                  lineHeight: 1.45,
+                }}
+              >
+                <span aria-hidden style={{ flexShrink: 0, fontSize: '1rem' }}>
+                  {isCorrect ? '✅' : hasResult ? '❌' : '—'}
+                </span>
+                <span>
+                  <span style={{ fontWeight: 600, color: 'var(--muted)', marginRight: '0.35rem' }}>
+                    Q{index + 1}.
+                  </span>
+                  {question.prompt.length > 90
+                    ? question.prompt.slice(0, 90) + '…'
+                    : question.prompt}
+                  {result?.explanation && !isCorrect && (
+                    <span style={{ display: 'block', fontSize: '0.8rem', color: 'var(--muted)', marginTop: '0.2rem' }}>
+                      💡 {result.explanation.slice(0, 120)}{result.explanation.length > 120 ? '…' : ''}
+                    </span>
+                  )}
+                </span>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+
+      {/* ── Actions ─────────────────────────────────────────────────────── */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem', marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px solid var(--border-soft)' }}>
         <Button href={`/courses/${slug}/revision`} icon={'\u{1F4D1}'}>
-          Retour fiche révision
+          Fiche révision
         </Button>
         <Button type="button" variant="secondary" onClick={() => window.location.assign(`/courses/${slug}/examen`)}>
           Refaire l&apos;examen
         </Button>
         <Button href={`/courses/${slug}`} variant="ghost">
-          Parcours {courseTitle}
+          Retour au parcours
         </Button>
       </div>
     </Card>

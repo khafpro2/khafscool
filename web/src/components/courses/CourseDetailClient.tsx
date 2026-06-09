@@ -926,7 +926,7 @@ export function CourseDetailClient({ slug }: { slug: string }) {
                 </p>
               )}
               {result && (
-                <p style={{ marginTop: '0.85rem', fontWeight: 700, color: 'var(--accent-strong)' }}>{result}</p>
+                <ResultMessage result={result} />
               )}
             </Card>
           )}
@@ -965,7 +965,7 @@ export function CourseDetailClient({ slug }: { slug: string }) {
                 </p>
               )}
               {result && (
-                <p style={{ marginTop: '0.85rem', fontWeight: 700, color: 'var(--accent-strong)' }}>{result}</p>
+                <ResultMessage result={result} />
               )}
             </Card>
           )}
@@ -1231,4 +1231,43 @@ function buildLocalCourseProgress(course: CourseDetail): CourseProgressData {
     },
     modules,
   };
+}
+
+/** Affiche le résultat de validation d'une unité avec la couleur adaptée (succès / avertissement / erreur). */
+function ResultMessage({ result }: { result: string }) {
+  const isError =
+    result.startsWith('Score local') ||
+    result.includes('Impossible') ||
+    result.includes('échoué');
+  const isWarning =
+    !isError &&
+    (result.includes('local') || result.includes('sync') || result.includes('déconnect'));
+  const isSuccess = !isError && !isWarning;
+
+  const colors = isError
+    ? { color: '#dc2626', bg: '#fef2f2', border: '#fca5a5' }
+    : isWarning
+      ? { color: '#92400e', bg: 'var(--warning-soft)', border: '#fcd34d' }
+      : { color: '#065f46', bg: 'var(--success-soft, #ecfdf5)', border: '#6ee7b7' };
+
+  return (
+    <p
+      style={{
+        marginTop: '0.85rem',
+        fontWeight: 600,
+        fontSize: '0.92rem',
+        color: colors.color,
+        background: colors.bg,
+        border: `1px solid ${colors.border}`,
+        borderRadius: 10,
+        padding: '0.65rem 0.85rem',
+        lineHeight: 1.55,
+      }}
+      role="status"
+      aria-live="assertive"
+    >
+      {isSuccess ? '✅ ' : isWarning ? '⚠️ ' : '❌ '}
+      {result}
+    </p>
+  );
 }

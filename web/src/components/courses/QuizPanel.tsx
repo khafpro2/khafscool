@@ -187,6 +187,16 @@ export function QuizPanel({
     setCurrentIndex(0);
   }, [module.id]);
 
+  // Scroll automatiquement vers le récap quand toutes les réponses sont validées
+  const recapRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!allRevealed) return;
+    const timeout = window.setTimeout(() => {
+      recapRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 150);
+    return () => window.clearTimeout(timeout);
+  }, [allRevealed]);
+
   const goToQuestion = useCallback(
     (index: number) => {
       if (index < 0 || index >= totalQuestions) return;
@@ -464,6 +474,7 @@ export function QuizPanel({
         )}
 
         {allRevealed && (
+          <div ref={recapRef}>
           <QuizRecap
             correctCount={correctCount}
             totalQuestions={totalQuestions}
@@ -481,11 +492,14 @@ export function QuizPanel({
               goToQuestion(index);
             }}
           />
+          </div>
         )}
 
         {!reviewMode && revealedCount > 0 && revealedCount < totalQuestions && (
           <p className="quiz-hint muted">
-            Valide chaque réponse pour débloquer la question suivante.
+            {totalQuestions - revealedCount === 1
+              ? 'Valide la dernière réponse pour voir ton résultat.'
+              : `Valide chaque réponse pour avancer — ${totalQuestions - revealedCount} question${totalQuestions - revealedCount > 1 ? 's' : ''} restante${totalQuestions - revealedCount > 1 ? 's' : ''}.`}
           </p>
         )}
       </div>
@@ -810,26 +824,45 @@ function QuizRecap({
 
   return (
     <div className={`quiz-recap${meetsMinimum ? ' quiz-recap-success' : ' quiz-recap-warning'}`}>
-      <p style={{ fontWeight: 800 }}>Récapitulatif avant validation de l'unité</p>
-      <p className="muted" style={{ marginTop: '0.35rem', fontSize: '0.9rem', lineHeight: 1.5 }}>
-        {correctCount}/{totalQuestions} bonnes réponses · score quiz{' '}
-        <strong>{estimatedScore}%</strong>
+      {/* En-tête score */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap' }}>
+        <span style={{ fontSize: '1.8rem', lineHeight: 1 }} aria-hidden>
+          {meetsMinimum ? '✅' : '⚠️'}
+        </span>
+        <div>
+          <p style={{ fontWeight: 800, fontSize: '1rem' }}>
+            {meetsMinimum ? 'Objectif atteint !' : 'Score insuffisant'}
+          </p>
+          <p style={{ fontWeight: 800, fontSize: '1.4rem', lineHeight: 1.15,
+            color: meetsMinimum ? '#065f46' : '#92400e' }}>
+            {correctCount}/{totalQuestions} &mdash; {estimatedScore}%
+          </p>
+        </div>
+      </div>
+
+      {/* Détail bonnes/mauvaises */}
+      <p className="muted" style={{ marginTop: '0.55rem', fontSize: '0.88rem', lineHeight: 1.6 }}>
+        <strong style={{ color: '#065f46' }}>{correctCount} bonne{correctCount !== 1 ? 's' : ''} réponse{correctCount !== 1 ? 's' : ''}</strong>
+        {' · '}
+        <strong style={{ color: totalQuestions - correctCount > 0 ? '#dc2626' : 'inherit' }}>
+          {totalQuestions - correctCount} erreur{(totalQuestions - correctCount) !== 1 ? 's' : ''}
+        </strong>
         {estimatedPointsEarned > 0 ? (
           <>
-            {' '}
-            · <strong>+{estimatedPointsEarned} points</strong> estimés
+            {' · '}
+            <strong>+{estimatedPointsEarned} pts</strong> estimés
           </>
         ) : null}
         {totalQuestions > 0 && (
           <>
-            {' '}
-            · objectif recommandé <strong>{minCorrect}/{totalQuestions}</strong> ({passPercent}%+)
+            {' · '}
+            objectif <strong>{minCorrect}/{totalQuestions}</strong> ({passPercent}%+)
           </>
         )}
       </p>
       {!meetsMinimum && (
         <p style={{ marginTop: '0.5rem', fontSize: '0.88rem', color: '#92400e' }}>
-          Tu peux valider l'unité, mais revoir les explications améliorera ton score et tes points.
+          Tu peux valider l&apos;unité, mais revoir les explications améliorera ton score et tes points.
         </p>
       )}
 

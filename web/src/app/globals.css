@@ -2202,6 +2202,24 @@ html[data-theme='dark'] .analytics-opt-in-banner {
   flex-direction: column;
   align-items: flex-end;
   gap: 0.35rem;
+  min-width: 0;
+  flex-shrink: 0;
+}
+
+/* Responsive: réduire la taille du score sur petits écrans */
+@media (max-width: 400px) {
+  .quiz-panel-header-inner {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .quiz-panel-stats {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.6rem;
+  }
+  .quiz-score-estimate {
+    font-size: 1.1rem;
+  }
 }
 
 .quiz-score-pill {
