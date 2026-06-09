@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { getContactMailto } from '@/lib/contact';
+import { InstallAppButton } from '@/components/home/InstallAppButton';
 
 /** Masqué sur `/` uniquement — footer global conservé sur les autres routes. */
 export function SiteFooter() {
@@ -16,8 +17,10 @@ export function SiteFooter() {
   return (
     <footer className="site-footer">
       <div className="container site-footer-inner">
-        <div>
-          <strong>MDM Academy</strong> · Apple, Jamf Pro et Intune en mode jeu
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+          <strong>MDM Academy</strong>
+          <span style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>Apple, Jamf Pro et Intune en mode jeu</span>
+          <InstallAppButton />
         </div>
         <div style={{ display: 'flex', gap: '1.25rem', flexWrap: 'wrap', alignItems: 'center' }}>
           <Link href="/courses">Parcours</Link>

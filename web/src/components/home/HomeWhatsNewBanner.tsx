@@ -51,14 +51,18 @@ export function HomeWhatsNewBanner() {
             textTransform: 'uppercase',
           }}
         >
-          Nouveau · v0.3.13
+          Nouveau · v0.3.16
         </span>
         <span className="muted" style={{ flex: '1 1 220px' }}>
-          Vidéos YouTube FR sur les modules pilotes, liens Parcours/Connexion sur l’accueil,{' '}
+          Navigation complète sur toutes les pages, menu mobile hamburger, tableau de bord depuis l'accueil,{' '}
+          <Link href="/sprint" style={{ fontWeight: 700 }}>
+            sprint certification
+          </Link>{' '}
+          et{' '}
           <Link href="/resources/glossaire" style={{ fontWeight: 700 }}>
             glossaire MDM
           </Link>{' '}
-          et dons en 3 modes (carte, PayPal, virement).
+          accessibles depuis le footer.
         </span>
         <button
           type="button"

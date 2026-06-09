@@ -1,5 +1,6 @@
 'use client';
 
+import { HomeHelloIntro } from '@/components/home/HomeHelloIntro';
 import { HomeTrackDock } from '@/components/home/HomeTrackDock';
 import { HomeWhatsNewBanner } from '@/components/home/HomeWhatsNewBanner';
 import { HomeOnboardingBanner } from '@/components/home/HomeOnboardingBanner';
@@ -8,7 +9,12 @@ import { ContinueLearningSection } from '@/components/home/ContinueLearningSecti
 export function HomeWelcomeScreen() {
   return (
     <>
-      <section className="home-welcome" aria-labelledby="home-hello-title">
+      <HomeHelloIntro />
+
+      <section
+        className="home-welcome"
+        aria-labelledby="home-hello-title"
+      >
         <h1 id="home-hello-title" className="home-hello-title">
           Hello
         </h1>
