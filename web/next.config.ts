@@ -156,6 +156,71 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
 
+
+      // Slugs marketing supplémentaires → apple-cert-prep
+      {
+        source: '/courses/apple-device-management/:path*',
+        destination: '/courses/apple-cert-prep/:path*',
+        permanent: true,
+      },
+      {
+        source: '/courses/apple-device-management',
+        destination: '/courses/apple-cert-prep',
+        permanent: true,
+      },
+      {
+        source: '/courses/apple-enterprise/:path*',
+        destination: '/courses/apple-cert-prep/:path*',
+        permanent: true,
+      },
+      {
+        source: '/courses/apple-enterprise',
+        destination: '/courses/apple-cert-prep',
+        permanent: true,
+      },
+      // Slugs marketing Jamf supplémentaires → jamf-pro-foundations
+      {
+        source: '/courses/jamf-300/:path*',
+        destination: '/courses/jamf-pro-foundations/:path*',
+        permanent: true,
+      },
+      {
+        source: '/courses/jamf-300',
+        destination: '/courses/jamf-pro-foundations',
+        permanent: true,
+      },
+      {
+        source: '/courses/jamf-pro-administration/:path*',
+        destination: '/courses/jamf-pro-foundations/:path*',
+        permanent: true,
+      },
+      {
+        source: '/courses/jamf-pro-administration',
+        destination: '/courses/jamf-pro-foundations',
+        permanent: true,
+      },
+      // Slugs marketing Intune supplémentaires → intune-ios-enrollment
+      {
+        source: '/courses/intune-for-apple/:path*',
+        destination: '/courses/intune-ios-enrollment/:path*',
+        permanent: true,
+      },
+      {
+        source: '/courses/intune-for-apple',
+        destination: '/courses/intune-ios-enrollment',
+        permanent: true,
+      },
+      {
+        source: '/courses/microsoft-intune-apple/:path*',
+        destination: '/courses/intune-ios-enrollment/:path*',
+        permanent: true,
+      },
+      {
+        source: '/courses/microsoft-intune-apple',
+        destination: '/courses/intune-ios-enrollment',
+        permanent: true,
+      },
+
       // ── /cours/:slug (site marketing) → /courses/:slug ──────────────────
       {
         source: '/cours/:slug',
