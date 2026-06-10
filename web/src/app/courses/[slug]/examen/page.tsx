@@ -1,6 +1,10 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { CoursePracticeExamClient } from '@/components/courses/CoursePracticeExamClient';
+import dynamic from 'next/dynamic';
+const CoursePracticeExamClient = dynamic(
+  () => import('@/components/courses/CoursePracticeExamClient').then(m => ({ default: m.CoursePracticeExamClient })),
+  { ssr: false }
+);
 import { getLearningPath } from '@/lib/learningPaths';
 import { buildCoursePracticeExamMetadata } from '@/lib/seo-metadata';
 

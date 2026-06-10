@@ -2,7 +2,11 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getLearningPath } from '@/lib/learningPaths';
 import { courseCompletePageMetadata } from '@/lib/seo-metadata';
-import { CourseCompleteClient } from '@/components/courses/CourseCompleteClient';
+import dynamic from 'next/dynamic';
+const CourseCompleteClient = dynamic(
+  () => import('@/components/courses/CourseCompleteClient').then(m => ({ default: m.CourseCompleteClient })),
+  { ssr: false }
+);
 
 export async function generateMetadata({
   params,
