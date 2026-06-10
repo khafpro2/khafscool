@@ -944,6 +944,15 @@ html[data-theme='dark'] .analytics-opt-in-banner {
   box-shadow: var(--shadow-md);
 }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.btn:focus-visible {
+  outline: 2.5px solid var(--accent);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.18);
+}
+.btn-secondary:focus-visible,
+.btn-ghost:focus-visible {
+  outline-color: var(--accent);
+}
 .btn-secondary {
   background: var(--surface);
   color: var(--fg);
