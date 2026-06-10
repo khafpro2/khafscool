@@ -15,7 +15,7 @@ export async function generateMetadata({
   if (!path) {
     return {
       title: 'Parcours introuvable',
-      description: 'Ce parcours MDM Academy n’existe pas ou n’est plus disponible.',
+      description: "Ce parcours MDM Academy n'existe pas ou n'est plus disponible.",
     };
   }
 
@@ -25,6 +25,7 @@ export async function generateMetadata({
     openGraph: {
       title: `${path.title} — MDM Academy Pro`,
       description: path.objectives[0],
+      type: 'website',
     },
     alternates: {
       canonical: `/courses/${slug}`,
@@ -42,5 +43,31 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
   if (!path) {
     notFound();
   }
-  return <CourseDetailClient slug={slug} />;
+
+  // Course JSON-LD structured data
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Course",
+    name: path.title,
+    description: path.objectives[0] ?? path.shortTitle,
+    provider: {
+      "@type": "Organization",
+      name: "MDM Academy Pro",
+      url: "https://apple-mdm-academy-refonte.vercel.app",
+    },
+    url: `https://apple-mdm-academy-refonte.vercel.app/courses/${slug}`,
+    inLanguage: "fr",
+    isAccessibleForFree: true,
+    teaches: "Apple MDM, Jamf Pro, Microsoft Intune",
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <CourseDetailClient slug={slug} />
+    </>
+  );
 }
