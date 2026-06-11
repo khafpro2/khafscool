@@ -4708,3 +4708,32 @@ html[data-theme='dark'] .analytics-opt-in-banner {
     height: 48px;
   }
 }
+
+/* ── Dark mode: quiz components ─────────────────────────── */
+[data-theme='dark'] .quiz-recap {
+  background: var(--card);
+  border-color: var(--border);
+}
+
+[data-theme='dark'] .quiz-recap-success {
+  background: rgba(16,185,129,0.12);
+  border-color: rgba(16,185,129,0.3);
+}
+
+[data-theme='dark'] .quiz-recap-warning {
+  background: rgba(245,158,11,0.12);
+  border-color: rgba(245,158,11,0.3);
+}
+
+[data-theme='dark'] .quiz-learning-tip {
+  background: color-mix(in srgb, var(--quiz-accent, var(--accent)) 12%, var(--card));
+  border-color: color-mix(in srgb, var(--quiz-accent, var(--accent)) 30%, var(--border));
+}
+
+[data-theme='dark'] .quiz-recap-wrong-list {
+  background: rgba(239,68,68,0.08);
+  border-color: rgba(239,68,68,0.25);
+}
+
+[data-theme='dark'] .quiz-correct { color: #34d399; }
+[data-theme='dark'] .quiz-wrong   { color: #f87171; }
