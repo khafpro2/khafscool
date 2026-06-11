@@ -5,6 +5,7 @@ import { HomeTrackDock } from '@/components/home/HomeTrackDock';
 import { HomeWhatsNewBanner } from '@/components/home/HomeWhatsNewBanner';
 import { HomeOnboardingBanner } from '@/components/home/HomeOnboardingBanner';
 import { ContinueLearningSection } from '@/components/home/ContinueLearningSection';
+import { HomeStatsBar } from '@/components/home/HomeStatsBar';
 
 export function HomeWelcomeScreen() {
   return (
@@ -24,6 +25,7 @@ export function HomeWelcomeScreen() {
         <HomeTrackDock />
       </section>
 
+      <HomeStatsBar />
       <HomeWhatsNewBanner />
       <ContinueLearningSection />
       <HomeOnboardingBanner />
