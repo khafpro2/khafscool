@@ -8,10 +8,10 @@ import { SiteHeader } from '@/components/layout/SiteHeader';
 import { CookieConsentBanner } from '@/components/layout/CookieConsentBanner';
 import { CookiePreferencesModal } from '@/components/layout/CookiePreferencesModal';
 import { AnalyticsOptInBanner } from '@/components/layout/AnalyticsOptInBanner';
-import { Toaster } from '@/components/ui/Toast';
 import { SessionBootstrap } from '@/components/layout/SessionBootstrap';
 import { bodyFont, displayFont, helloFont } from '@/lib/fonts';
 import { themeInitScript } from '@/lib/theme';
+import { ToastProvider } from '@/components/ui/Toast';
 import './globals.css';
 
 const siteUrl = process.env.WEB_URL ?? 'http://127.0.0.1:3000';
@@ -105,9 +105,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ApiStatusBanner />
         <DemoModeBanner />
         <main id="main-content" className="container" style={{ paddingTop: '1.5rem' }}>
-          <AppErrorBoundary>{children}</AppErrorBoundary>
+          <AppErrorBoundary><ToastProvider>{children}</ToastProvider></AppErrorBoundary>
         </main>
-        <Toaster />
+        
         <CookieConsentBanner />
         <CookiePreferencesModal />
         <AnalyticsOptInBanner />
